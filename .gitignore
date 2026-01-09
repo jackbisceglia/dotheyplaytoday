@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+
+# scratchpad
+*.scratch.txt
+*.scratch.md
+
+# env
+.env*.local
+.env
+
+# misc
+.DS_Store

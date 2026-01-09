@@ -1,0 +1,23 @@
+{
+  "name": "dotheyplaytoday",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "@core": "pnpm -F @dtpt/core"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@tsconfig/bun": "^1.0.7",
+    "@tsconfig/strictest": "^2.0.6",
+    "@types/bun": "^1.2.16",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1"
+  },
+  "packageManager": "pnpm@10.11.0"
+}
