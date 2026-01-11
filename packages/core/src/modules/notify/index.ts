@@ -1,4 +1,5 @@
-import { Effect } from "effect";
+import { DateTime, Effect } from "effect";
+import { toTimeZone, type TimezoneId } from "../../lib/effect";
 
 export type NotificationTemplate = {
   subject: string;
@@ -7,8 +8,21 @@ export type NotificationTemplate = {
 
 export type BuildTemplateParams = {
   teamName: string;
-  gameTime: string;
+  userTimeZone: TimezoneId;
+  datetime: DateTime.Utc;
   opponent: string;
+};
+
+const formatGameTime = (date: DateTime.Utc, timezone: TimezoneId): string => {
+  const zone = toTimeZone(timezone);
+
+  const zonedDate = DateTime.setZone(date, zone);
+
+  return DateTime.format(zonedDate, {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 };
 
 export class Notify extends Effect.Service<Notify>()("Notify", {
@@ -25,7 +39,10 @@ export class Notify extends Effect.Service<Notify>()("Notify", {
         // (email, WhatsApp, Signal, etc.) that transform it to their format
         return {
           subject: `${params.teamName} play today!`,
-          body: `Game against ${params.opponent} at ${params.gameTime}`,
+          body: `Game against ${params.opponent} at ${formatGameTime(
+            params.datetime,
+            params.userTimeZone,
+          )}`,
         } satisfies NotificationTemplate;
       }),
     };

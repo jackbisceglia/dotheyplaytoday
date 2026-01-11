@@ -1,0 +1,17 @@
+{
+  "name": "@dtpt/scripts",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "notify": "bun src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@dtpt/core": "workspace:*",
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:"
+  }
+}

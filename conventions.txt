@@ -1,0 +1,2 @@
+Effect:
+ - services, suffix with "Service" to not clash with type defs

@@ -6,7 +6,9 @@
     "typecheck": "pnpm -r run typecheck",
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
-    "@core": "pnpm -F @dtpt/core"
+    "notify": "pnpm -F @dtpt/scripts notify",
+    "@core": "pnpm -F @dtpt/core",
+    "@scripts": "pnpm -F @dtpt/scripts"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
