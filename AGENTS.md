@@ -6,169 +6,60 @@ This file contains guidelines for agentic coding agents working in this reposito
 
 A configurable notification service that checks if a sports team (starting with Boston Celtics) has a game today and sends notifications. Built with Effect, Bun, and TypeScript in a monorepo structure.
 
-**Tech Stack:**
+**Tech Stack:** Bun, pnpm, Effect, TypeScript (strict), ESLint, Prettier
 
-- Runtime: Bun
-- Package Manager: pnpm (v10.11.0)
-- Effect: v3.19.13 with @effect/platform and @effect/platform-bun
-- TypeScript: v5.9.2 extending @tsconfig/bun + @tsconfig/strictest
-- ESLint: v9 with typescript-eslint strict type-checked rules
-- Prettier: v3.6
-
-## Build/Lint/Test Commands
-
-### Root-level Commands
+## Commands
 
 ```bash
 pnpm typecheck    # Type check all packages
 pnpm lint         # ESLint all packages
 pnpm format       # Prettier all packages
+
+pnpm @core <cmd>  # Run command in @dtpt/core package (e.g., pnpm @core typecheck)
 ```
 
-### Package-specific Commands
-
-```bash
-pnpm @core <cmd>  # Run command in @dtpt/core package
-pnpm @core typecheck
-pnpm @core lint
-pnpm @core format
-```
-
-### Running Commands in Specific Packages
-
-```bash
-pnpm -F @dtpt/core <cmd>  # Alternative syntax
-pnpm -r run <cmd>         # Run in all packages
-```
-
-**Note:** No test framework is set up yet. Tests will be added later.
+Run all three checks before considering work complete.
 
 ## Project Structure
 
 ```
 dotheyplaytoday/
 ├── packages/
-│   └── core/                    # @dtpt/core - shared core logic
-│       └── src/
-│           ├── lib/effect/      # Effect utilities (TaggedError)
-│           └── modules/         # Effect.Service modules
-│               ├── user/        # User service
-│               ├── notify/      # Notification template builder
-│               └── schedule/    # Schedule checking logic
-└── AGENTS.md                    # This file
+│   ├── core/     # @dtpt/core - shared core logic
+│   └── scripts/  # Build/utility scripts
+└── .reference/   # Dependency source code for reference (e.g., effect/)
 ```
 
-- `packages/` contains consuming surfaces (future packages)
-- `packages/core/` contains core logic shared across packages
-- Each module follows the `Effect.Service` pattern
+## Code Style
 
-## Code Style Guidelines
-
-### Imports
-
-- Import Effect utilities directly: `import { Effect } from "effect"`
-- Use barrel exports in `index.ts` files
-- Export modules from main package index: `export * from "./modules/user"`
-
-### TypeScript Configuration
-
-- Extends `@tsconfig/strictest` + `@tsconfig/bun`
+- Import Effect utilities directly: `import { Effect, Schema } from "effect"`
 - Use `type` keyword (not `interface`) per ESLint rule
-- **Do not add** `types: ["bun-types"]` to tsconfig - handled implicitly
-- Target: ESNext, Module: ESNext, ModuleResolution: Bundler
+- Prefix unused variables with `_`
+- Use pnpm `catalog:` for dependencies shared across packages
 
-### Naming Conventions
+## Effect Best Practices
 
-- PascalCase for Effect.Service classes: `Users`, `Notify`, `Schedule`
-- camelCase for functions and variables
-- Prefix unused variables with `_` to satisfy ESLint
-- Service names use PascalCase: `"User"`, `"Notify"`, `"Schedule"`
+**IMPORTANT:** Always consult effect-solutions before writing Effect code.
 
-### Effect Patterns
+1. Run `effect-solutions list` to see available guides
+2. Run `effect-solutions show <topic>...` for relevant patterns (supports multiple topics)
+3. Search `.reference/effect/` for real implementations
 
-#### Service Structure
+Topics: quick-start, project-setup, tsconfig, basics, services-and-layers, data-modeling, error-handling, config, testing, cli.
 
-```typescript
-export class Users extends Effect.Service<Users>()("User", {
-  effect: Effect.gen(function* () {
-    yield* Effect.void; // Required for ESLint require-yield rule
+Never guess at Effect patterns - check the guide first.
 
-    // Service methods
-    const get = Effect.fn("users.get")(function* () {
-      yield* Effect.void; // Required in all Effect.fn generators
-      return result;
-    });
+### Local Source References
 
-    return { get };
-  }),
-}) {}
+The `.reference/` directory contains cloned source repositories for reference.
+Use this to explore APIs, find usage examples, and understand implementation details when documentation isn't enough.
+
+### Effect Language Service
+
+This project uses the Effect Language Service for compile-time diagnostics. The plugin is configured in `tsconfig.base.json` and TypeScript has been patched to enable build-time checking.
+
+**If you reinstall dependencies, run:**
+
+```bash
+pnpm exec effect-language-service patch
 ```
-
-#### Key Requirements
-
-- **Always** include `yield* Effect.void` in Effect.gen generators
-- **Always** include `yield* Effect.void` in Effect.fn generators
-- Use `Effect.fn("name")` for named effect functions
-- Service methods are returned as object from generator
-
-#### Error Handling
-
-- Use custom `TaggedError` utility from `lib/effect/error.ts`
-- Create tagged errors: `class MyError extends TaggedError("MyError") {}`
-- Use `ensureTaggedError()` to normalize unknown errors
-- Prefer tag-based switches over instanceof checks
-
-### Formatting
-
-- Prettier uses default configuration (empty prettier.config.js)
-- ESLint config extends typescript-eslint strict type-checked rules
-- ESLint ignores `eslint.config.js` files
-- Use `satisfies` for type assertions when appropriate
-
-### Package Exports
-
-- Use direct TS imports via package exports: `"./*": "./src/*.ts"`
-- Allows imports like: `import { Users } from "@dtpt/core/modules/user"`
-
-## Dependencies
-
-### Catalog Management
-
-- Use catalog versions from `pnpm-workspace.yaml`
-- Effect versions must be compatible:
-  - `@effect/platform-bun@^0.87.0` requires `@effect/platform@^0.94.0`
-  - `effect@^3.19.13` is the core version
-
-### Adding Dependencies
-
-- Add to appropriate package.json
-- Use `catalog:` for Effect ecosystem packages
-- Update workspace catalog if adding new shared dependencies
-
-## Key Patterns & Gotchas
-
-### Effect Stubs
-
-- All Effect.gen generators must include `yield* Effect.void`
-- All Effect.fn generators must include `yield* Effect.void`
-- This satisfies ESLint's require-yield rule
-
-### Module Organization
-
-- Each module is an Effect.Service
-- Services are self-contained with their own effect context
-- Use barrel exports for clean public APIs
-- Keep business logic in service methods
-
-### Error Patterns
-
-- Tagged errors provide type-safe error handling
-- Use `_tag` for error discrimination
-- Wrap third-party errors with `ensureTaggedError()`
-
-### Development Workflow
-
-1. Run `pnpm typecheck` before committing
-2. Run `pnpm lint` to ensure code quality
-3. Run `pnpm format` to fix formatting issues
-4. All commands should pass before considering work complete
