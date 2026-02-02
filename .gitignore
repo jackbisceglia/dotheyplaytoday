@@ -13,4 +13,4 @@ node_modules/
 .DS_Store
 
 # reference repositories for AI assistance
-.reference/
+reference/
