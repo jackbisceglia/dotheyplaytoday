@@ -1,0 +1,9 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "command": {
+    "feature-init": {
+      "description": "Initialize a new feature workflow",
+      "template": "ok let's start implementing this application. please read @.context/project.md , @AGENTS.md to understand the project scope\n\nafter that's done, please understand our issue tracking system by reading @todo/AGENTS.md\n\nonce you've done all that, pick an issue and follow these guidelines\n1. make a plan\n2. while planning, conduct a thorough interview with me. ask all clarifying questions. as you do this, don't only ask my yes/no or multiple choice- pose the tough questions, and open the possibility of us collaborating as architects. my decisions should always be followed, but we should work through things together to understand best.\n3. once things are all very clear, begin implementing. follow @AGENTS.md very thoroughly. we are relying on Effect-ts a lot and they provide a lot out of the box. whenever you face a problem that is not novel, reach for effect. you have the CLI and the source code reference to understand patterns and how to best use it, so please do so. they solve a lot for us by nature of simply integrating deeply\n4. validate often. when making changes, you have the CLI commands to lint and typecheck, so make use of those to verify you're on the right path. Effect is really well integrated with the type system ,so you should be able to often tell if you're going down the right path\n5. step in to ask me to review from time to time. let's move fast by iterating, validting, code review, continue. rather than making a mega set of changes and waiting a while for me to review"
+    }
+  }
+}
