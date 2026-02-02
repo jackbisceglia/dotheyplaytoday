@@ -37,6 +37,18 @@ dotheyplaytoday/
 - Prefix unused variables with `_`
 - Use pnpm `catalog:` for dependencies shared across packages
 
+## Local Standards (Project-Specific)
+
+- Avoid barrel files; prefer direct module imports (core `src/index.ts` stays empty unless required).
+- Favor minimal abstraction early; only extract helpers/types once there are 3+ callsites or clear immediate reuse.
+- Colocate schema primitives with their owning schema/module; do not create shared primitives until 3+ callsites.
+- IDs: embed ID schemas directly in the owning struct; callers can reference `Struct.fields.id` when needed.
+- Branding: prefer branding only IDs; do not brand other primitives unless a concrete need appears.
+- Schema annotations: skip `.annotations(...)` unless there is a clear, immediate use (docs, JSON schema, tooling).
+- Tests: each schema should have positive + negative cases plus edge cases; for simple decoding use `Schema.decodeUnknownEither`.
+- Test utilities: only extract to shared utils when reuse is certain; if so, place in `packages/core/src/tests/`.
+- Export order preference for schemas: `export type` before `export const`.
+
 ## Effect Best Practices
 
 **IMPORTANT:** Always consult effect-solutions before writing Effect code.
