@@ -34,5 +34,5 @@ prereqs:
 - Store schemas in `packages/core/src/modules/<domain>/` (e.g., `modules/users/`, `modules/subscriptions/`)
 - Use Effect's `Schema` module for runtime validation
 - Follow discriminated union pattern for `FixedSchedule | RelativeSchedule`
-- Reference Effect guides in `.reference/effect/` for Schema patterns
+- Reference Effect guides in `reference/effect/` for Schema patterns
 - Focus on MVP requirements but keep extensible

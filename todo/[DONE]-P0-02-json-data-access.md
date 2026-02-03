@@ -2,7 +2,7 @@
 id: "02"
 title: JSON data access layer
 description: Implement JSON file loading and validation for users, subscriptions, and topic data
-status: TODO
+status: WIP
 priority: P0
 prereqs:
   - 01-domain-models-and-schemas.md

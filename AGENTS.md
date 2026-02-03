@@ -27,7 +27,7 @@ dotheyplaytoday/
 ├── packages/
 │   ├── core/     # @dtpt/core - shared core logic
 │   └── scripts/  # Build/utility scripts
-└── .reference/   # Dependency source code for reference (e.g., effect/)
+└── reference/   # Dependency source code for reference (e.g., effect/)
 ```
 
 ## Code Style
@@ -55,7 +55,7 @@ dotheyplaytoday/
 
 1. Run `effect-solutions list` to see available guides
 2. Run `effect-solutions show <topic>...` for relevant patterns (supports multiple topics)
-3. Search `.reference/effect/` for real implementations
+3. Search `reference/effect/` for real implementations
 
 Topics: quick-start, project-setup, tsconfig, basics, services-and-layers, data-modeling, error-handling, config, testing, cli.
 
@@ -63,7 +63,7 @@ Never guess at Effect patterns - check the guide first.
 
 ### Local Source References
 
-The `.reference/` directory contains cloned source repositories for reference.
+The `reference/` directory contains cloned source repositories for reference.
 Use this to explore APIs, find usage examples, and understand implementation details when documentation isn't enough.
 
 ### Effect Language Service
