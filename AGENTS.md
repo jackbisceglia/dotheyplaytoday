@@ -39,6 +39,8 @@ dotheyplaytoday/
 
 ## Local Standards (Project-Specific)
 
+- Domain modules live in `packages/core/src/modules/<domain>`.
+- Public API should flow through `package.json` exports and `src/index.ts`.
 - Avoid barrel files; prefer direct module imports (core `src/index.ts` stays empty unless required).
 - Favor minimal abstraction early; only extract helpers/types once there are 3+ callsites or clear immediate reuse.
 - Colocate schema primitives with their owning schema/module; do not create shared primitives until 3+ callsites.
@@ -48,6 +50,9 @@ dotheyplaytoday/
 - Tests: each schema should have positive + negative cases plus edge cases; for simple decoding use `Schema.decodeUnknownEither`.
 - Test utilities: only extract to shared utils when reuse is certain; if so, place in `packages/core/src/tests/`.
 - Export order preference for schemas: `export type` before `export const`.
+- Prefer `Effect.Service` for services; export Tag/Layer only when needed.
+- Name services with the `Service` suffix when it avoids clashes with nearby type definitions.
+- Use Effect Config for environment parsing and validation.
 
 ## Effect Best Practices
 

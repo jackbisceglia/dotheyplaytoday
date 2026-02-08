@@ -18,7 +18,7 @@ If the Celtics are playing today, send me an email at 9:00 AM telling me so, and
 - Choose a delivery time for daily-style notifications (e.g., morning).
 - The system runs regularly, checks the schedule, and only sends when your rule matches.
 
-Note: MVP starts with daily notifications and a simple recurrence; details live in `prd-recurring-notifications.md`.
+Note: MVP starts with daily notifications and a simple recurrence; details live in `.context/prd-recurring-notifications.md`.
 
 ## How To Update This File
 
