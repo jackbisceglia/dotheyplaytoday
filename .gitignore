@@ -6,8 +6,8 @@ node_modules/
 *.scratch.md
 
 # env
-.env*.local
-.env
+.env*
+!.env.template
 
 # misc
 .DS_Store
