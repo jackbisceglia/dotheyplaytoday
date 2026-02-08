@@ -61,6 +61,17 @@ prereqs:
 
 When selecting a todo, you may discover a prereq that is still `[TODO]` and has a lower priority than your current item. This is a signal that the prereq's priority is too low—bump it to match the current item's priority so that work can be unblocked.
 
+## Implementation Continuity Checklist
+
+When moving an item to `[DONE]`, run a short continuity pass:
+
+1. **Naming continuity** - Keep domain names consistent across service tags, class names, fn labels, and tests (avoid unnecessary suffixes).
+2. **Effect-first utilities** - Prefer Effect modules (`DateTime`, `Duration`, `Match`, `Effect.fn`) before adding custom helper logic.
+3. **Readable signatures** - Use `*Options` object inputs for functions with 3+ args; prefix boolean predicates with `is`.
+4. **Export hygiene** - Export only APIs used cross-module or likely to be reused by orchestration; keep internal helpers/types local.
+5. **Behavior/message alignment** - Ensure error text and glob/path patterns reflect actual lookup behavior.
+6. **Doc sync** - Update the todo acceptance/notes so they match landed function names, signatures, and implementation choices.
+
 ## Directory Structure
 
 ```

@@ -1,5 +1,5 @@
 import { FileSystem, Path } from "@effect/platform";
-import { Effect, ParseResult, Schema } from "effect";
+import { Effect, Match, ParseResult, Schema } from "effect";
 
 import { Subscription } from "../subscriptions/schema";
 import { TopicData } from "../topics/schema";
@@ -7,10 +7,10 @@ import { User } from "../users/schema";
 
 const FsErrorPath = Schema.String;
 const FsErrorMessage = Schema.String;
+
 const fsErrorPayload = { path: FsErrorPath, message: FsErrorMessage };
 const validationErrorPayload = {
-  path: FsErrorPath,
-  message: FsErrorMessage,
+  ...fsErrorPayload,
   issues: Schema.Array(Schema.ArrayFormatterIssue),
 };
 
@@ -119,33 +119,65 @@ export class Database extends Effect.Service<Database>()("@dtpt/Database", {
     const loadSubscriptions = () =>
       readJsonSchema(Schema.Array(Subscription), subscriptionsPath);
 
-    const loadTopic = (topicId: string) =>
-      readJsonSchema(TopicData, path.join(topicsPath, `${topicId}.json`));
+    const loadTopic = Effect.fn("Database.loadTopic")(
+      function* (topicId: string) {
+        const asPath = (fileName: string) => path.join(topicsPath, fileName);
+        const asFileName = () => `${topicId}.json`;
 
-    const updateSubscription = (subscription: Subscription) => {
-      const Subscriptions = Schema.Array(Subscription);
+        const entries = yield* fs.readDirectory(topicsPath);
+        const fileName = entries.find((e) => e.endsWith(asFileName()));
 
-      const json = readJsonSchema(Subscriptions, subscriptionsPath);
+        if (!fileName) {
+          return yield* DataFileNotFound.make({
+            path: asPath(`*${asFileName()}`),
+          });
+        }
 
-      return json.pipe(
-        Effect.flatMap((subscriptions) => {
-          const hasExistingSubscription = subscriptions.some(
-            (entry) => entry.id === subscription.id,
-          );
-          const nextSubscriptions = hasExistingSubscription
-            ? subscriptions.map((entry) =>
-                entry.id === subscription.id ? subscription : entry,
-              )
-            : [...subscriptions, subscription];
+        return yield* readJsonSchema(TopicData, asPath(fileName));
+      },
+      Effect.catchTags({
+        SystemError: (e) =>
+          Effect.fail(
+            e.reason === "NotFound"
+              ? DataFileNotFound.make({ path: topicsPath })
+              : DataReadError.make({ path: topicsPath, message: e.message }),
+          ),
+        BadArgument: (e) =>
+          Effect.fail(
+            DataReadError.make({ path: topicsPath, message: e.message }),
+          ),
+      }),
+    );
 
-          return writeJsonSchema(
-            Schema.Array(Subscription),
-            subscriptionsPath,
-            nextSubscriptions,
-          );
-        }),
-      );
-    };
+    const updateSubscription = Effect.fn("Database.updateSubscription")(
+      function* (subscription: Subscription) {
+        const Subscriptions = Schema.Array(Subscription);
+
+        const subscriptions = yield* readJsonSchema(
+          Subscriptions,
+          subscriptionsPath,
+        );
+
+        const index = subscriptions.findIndex((e) => e.id === subscription.id);
+
+        const nextSubscriptions = Match.value(index).pipe(
+          Match.when(-1, () => [...subscriptions, subscription]),
+          Match.orElse((index) =>
+            subscriptions.map((e, eIndex) => {
+              if (eIndex === index) return subscription;
+
+              return e;
+            }),
+          ),
+        );
+
+        return yield* writeJsonSchema(
+          Subscriptions,
+          subscriptionsPath,
+          nextSubscriptions,
+        );
+      },
+    );
 
     return { loadUsers, loadSubscriptions, loadTopic, updateSubscription };
   }),
