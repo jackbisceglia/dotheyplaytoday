@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { SportsEvent } from "../events/schema";
+import { Event } from "../events/schema";
 
 export type Topic = Schema.Schema.Type<typeof Topic>;
 export const Topic = Schema.Struct({
@@ -9,5 +9,5 @@ export const Topic = Schema.Struct({
 
 export type TopicData = Schema.Schema.Type<typeof TopicData>;
 export const TopicData = Schema.Struct({
-  events: Schema.Array(SportsEvent),
+  events: Schema.Array(Event),
 });

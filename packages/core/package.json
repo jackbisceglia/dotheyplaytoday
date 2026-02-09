@@ -15,6 +15,7 @@
   "dependencies": {
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "resend": "catalog:"
   }
 }

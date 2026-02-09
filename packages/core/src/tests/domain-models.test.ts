@@ -18,6 +18,13 @@ const sampleIds = {
   eventId: "00000000-0000-0000-0000-000000000004",
 };
 
+const sportsEventInput = {
+  id: sampleIds.eventId,
+  startUtc: "2026-01-24T19:30:00Z",
+  teamName: "Celtics",
+  opponent: "Raptors",
+};
+
 describe("domain model schemas", () => {
   describe("User", () => {
     it("accepts valid user", () => {
@@ -65,26 +72,17 @@ describe("domain model schemas", () => {
 
   describe("SportsEvent", () => {
     it("accepts valid event", () => {
-      expectSuccess(SportsEvent, {
-        id: sampleIds.eventId,
-        startUtc: "2026-01-24T19:30:00Z",
-        opponent: "Raptors",
-      });
+      expectSuccess(SportsEvent, sportsEventInput);
     });
 
     it("rejects empty opponent", () => {
-      expectFailure(SportsEvent, {
-        id: sampleIds.eventId,
-        startUtc: "2026-01-24T19:30:00Z",
-        opponent: "",
-      });
+      expectFailure(SportsEvent, { ...sportsEventInput, opponent: "" });
     });
 
     it("rejects invalid startUtc", () => {
       expectFailure(SportsEvent, {
-        id: sampleIds.eventId,
+        ...sportsEventInput,
         startUtc: "not-a-date",
-        opponent: "Raptors",
       });
     });
   });
@@ -96,13 +94,7 @@ describe("domain model schemas", () => {
 
     it("rejects invalid event entry", () => {
       expectFailure(TopicData, {
-        events: [
-          {
-            id: "not-a-uuid",
-            startUtc: "2026-01-24T19:30:00Z",
-            opponent: "Raptors",
-          },
-        ],
+        events: [{ ...sportsEventInput, id: "not-a-uuid" }],
       });
     });
   });
