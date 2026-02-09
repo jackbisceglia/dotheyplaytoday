@@ -15,7 +15,7 @@ export class ResendClientRequestError extends Schema.TaggedError<ResendClientReq
 ) {}
 
 export class ResendClientService extends Effect.Service<ResendClientService>()(
-  "@dtpt/notifiers/providers/resend/ResendClientService",
+  "@dtpt/notifier/providers/resend/ResendClientService",
   {
     effect: Effect.gen(function* () {
       const apiKey = yield* Schema.Config("RESEND_API_KEY", ResendApiKey);

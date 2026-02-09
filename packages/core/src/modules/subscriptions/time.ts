@@ -17,7 +17,7 @@ type IsDueOptions = {
   now: DateTime.Utc;
 };
 
-type AlreadySentTodayOptions = {
+type IsAlreadySentTodayOptions = {
   lastSentAt: Subscription["lastSentAt"];
   tz: User["timezone"];
   now: DateTime.Utc;
@@ -57,7 +57,7 @@ export const isDue = (opts: IsDueOptions) => {
   );
 };
 
-export const isAlreadySentToday = (opts: AlreadySentTodayOptions) => {
+export const isAlreadySentToday = (opts: IsAlreadySentTodayOptions) => {
   if (!opts.lastSentAt) return false;
 
   const [sentLocal, nowLocal] = [opts.lastSentAt, opts.now].map((dt) =>

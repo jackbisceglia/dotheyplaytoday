@@ -2,12 +2,12 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
 import { SportsEvent } from "../modules/events/schema";
-import { Notifier } from "../modules/notifiers/service";
+import { Notifier } from "../modules/notifier/service";
 import {
   type NotifierMessage,
   NotifierContext,
   NotifierResponseError,
-} from "../modules/notifiers/providers/service";
+} from "../modules/notifier/providers/service";
 import { User } from "../modules/users/schema";
 
 const decode = Schema.decodeUnknownSync;

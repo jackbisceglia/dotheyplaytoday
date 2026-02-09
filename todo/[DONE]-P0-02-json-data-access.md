@@ -14,7 +14,7 @@ prereqs:
 - [ ] `Database` service (Effect.Service) with methods:
   - `loadUsers(): Effect<User[]>`
   - `loadSubscriptions(): Effect<Subscription[]>`
-  - `loadTopic(topicId: string): Effect<TopicData>`
+  - `loadTopic(topicId: string): Effect<Topic>`
   - `updateSubscription(subscription: Subscription): Effect<void>`
 - [ ] Proper error handling for missing/invalid files
 - [ ] Schema validation at load time with meaningful error messages

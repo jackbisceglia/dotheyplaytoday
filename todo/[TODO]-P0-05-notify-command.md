@@ -18,7 +18,7 @@ prereqs:
   2. Filter to enabled subscriptions only
   3. For each: check if due using time utilities
   4. Skip if `alreadySentToday` guard triggers
-  5. Call checker to get matching events
+  5. Call `Subscriptions.check` to get matching events
   6. If events found, send notification
   7. On success, update `lastSentAt`
 - [ ] Proper error handling and logging

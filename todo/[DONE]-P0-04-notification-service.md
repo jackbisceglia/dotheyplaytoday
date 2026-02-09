@@ -25,7 +25,7 @@ prereqs:
 
 **Notes:**
 
-- Implemented in `packages/core/src/modules/notifiers/` with provider split under `providers/`
+- Implemented in `packages/core/src/modules/notifier/` with provider split under `providers/`
 - Added generic provider contract (`NotifierMessage`) and explicit Resend provider layer (`ResendProvider`)
 - Resend uses official SDK wrapped in Effect service (`ResendClientService`) with fail-fast config
 - Config now requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL`
