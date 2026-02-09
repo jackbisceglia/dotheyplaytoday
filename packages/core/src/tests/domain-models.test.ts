@@ -7,7 +7,7 @@ import {
   Schedule,
   Subscription,
 } from "../modules/subscriptions/schema";
-import { Topic, TopicData } from "../modules/topics/schema";
+import { Topic } from "../modules/topics/schema";
 import { User } from "../modules/users/schema";
 import { expectFailure, expectSuccess } from "./test.utils";
 
@@ -62,11 +62,18 @@ describe("domain model schemas", () => {
 
   describe("Topic", () => {
     it("accepts valid topic", () => {
-      expectSuccess(Topic, { id: sampleIds.topicId });
+      expectSuccess(Topic, { id: sampleIds.topicId, events: [] });
     });
 
     it("rejects invalid topic id", () => {
-      expectFailure(Topic, { id: "topic" });
+      expectFailure(Topic, { id: "topic", events: [] });
+    });
+
+    it("rejects invalid event entry", () => {
+      expectFailure(Topic, {
+        id: sampleIds.topicId,
+        events: [{ ...sportsEventInput, id: "not-a-uuid" }],
+      });
     });
   });
 
@@ -83,18 +90,6 @@ describe("domain model schemas", () => {
       expectFailure(SportsEvent, {
         ...sportsEventInput,
         startUtc: "not-a-date",
-      });
-    });
-  });
-
-  describe("TopicData", () => {
-    it("accepts empty events list", () => {
-      expectSuccess(TopicData, { events: [] });
-    });
-
-    it("rejects invalid event entry", () => {
-      expectFailure(TopicData, {
-        events: [{ ...sportsEventInput, id: "not-a-uuid" }],
       });
     });
   });

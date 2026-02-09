@@ -26,14 +26,14 @@ The foundational scheduling and notification architecture must be established be
 
 ### Overview
 
-Create a small notification engine that evaluates user subscriptions on a recurring schedule, runs a generic event checker, and sends an email when matching events are found. The MVP uses JSON-backed data sources and supports a future extension where notifications can be relative to event times (e.g., 30 minutes before tipoff).
+Create a small notification engine that evaluates user subscriptions on a recurring schedule, runs `Subscriptions.check`, and sends an email when matching events are found. The MVP uses JSON-backed data sources and supports a future extension where notifications can be relative to event times (e.g., 30 minutes before tipoff).
 
 ### Core Concepts
 
 - **Topic:** An event source identified by `topicId` (e.g., "celtics"). Maps to a JSON file containing events.
 - **Event:** Something that happens at a specific time (game, match, etc.). Stored with UTC timestamps.
 - **Subscription:** A user's request to be notified about events from a topic at a specific time.
-- **Checker:** Generic logic that loads events from a topic and determines if any match the target date.
+- **Subscription check:** Generic logic (`Subscriptions.check`) that loads events from a topic and determines if any match the target date.
 
 ### User Experience
 
@@ -43,7 +43,7 @@ The user receives an email only on Celtics game days, delivered at the configure
 
 1. User has a subscription configured for a daily send time (10:00 AM local time).
 2. Scheduler runs every 15 minutes and evaluates due subscriptions.
-3. Checker loads the Celtics schedule and determines if there is a game on the user's local date.
+3. `Subscriptions.check` loads the Celtics schedule and determines if there is a game on the user's local date.
 4. Email is sent only if there is a game; no email is sent otherwise.
 
 ---
@@ -55,7 +55,7 @@ When this PRD is complete, the following will be true:
 - [ ] Users, subscriptions, and event schedules can be loaded from JSON-backed storage.
 - [ ] Subscriptions define a recurring send time using a discriminated union schedule type.
 - [ ] Scheduler runs on a 15-minute interval and evaluates due subscriptions with ±60s tolerance.
-- [ ] Generic checker sends emails only on game days, using schedule data from JSON.
+- [ ] `Subscriptions.check` sends emails only on game days, using schedule data from JSON.
 - [ ] Documentation and basic run instructions exist.
 
 ---
@@ -90,12 +90,12 @@ When this PRD is complete, the following will be true:
 - [ ] Tolerance window is ±60 seconds around the computed UTC send time.
 - [ ] `lastSentAt` timestamp prevents duplicate sends on the same user-local date.
 
-### Feature: Event Checker
+### Feature: Subscription Check
 
-- [ ] Generic checker loads events from JSON file by `topicId`.
+- [ ] `Subscriptions.check` loads events from JSON file by `topicId`.
 - [ ] Events are stored with UTC timestamps (ISO 8601 format).
-- [ ] Checker determines target date using user's local timezone at evaluation time.
-- [ ] Checker returns `Option<Event[]>` — matching events or none.
+- [ ] `Subscriptions.check` determines target date using user's local timezone at evaluation time.
+- [ ] `Subscriptions.check` returns `Option<Event[]>` — matching events or none.
 - [ ] For daily notifications, multiple games on same day result in a single email.
 
 ### Feature: Notification Delivery
@@ -177,11 +177,21 @@ type SportsEvent = {
 };
 ```
 
+#### Topic
+
+```typescript
+type Topic = {
+  id: string;
+  events: SportsEvent[];
+};
+```
+
 #### Topic Data (JSON file structure)
 
 ```typescript
 // File: data/topics/{topicId}.json
-type TopicData = {
+// `id` is derived from `{topicId}` when loading from storage.
+type TopicFile = {
   events: SportsEvent[];
 };
 ```
@@ -290,7 +300,7 @@ Description:
 | How should DST be handled?                                         | Store local time intent; compute UTC at runtime using user's timezone     |
 | What is the cron interval?                                         | 15 minutes; users select from 15-minute intervals                         |
 | How are duplicate sends prevented?                                 | `lastSentAt` timestamp; skip if already sent on user's local date         |
-| How are checkers resolved by `topicId`?                            | Generic checker loads events from `data/topics/{topicId}.json`            |
+| How are checks resolved by `topicId`?                              | `Subscriptions.check` loads events from `data/topics/{topicId}.json`      |
 | What happens with multiple games on same day?                      | Single email for daily (fixed) notifications; separate for event-relative |
 
 ---
@@ -302,35 +312,35 @@ Description:
 - **sendAtSecondsLocal:** Seconds since midnight in the user's local timezone representing the intended send time.
 - **timeOffsetSeconds:** Seconds offset relative to an event's start time (must be <= 0, i.e., before event).
 - **Topic:** An event source identified by `topicId`; maps to a JSON file containing events.
-- **Checker:** Generic logic that loads events from a topic and checks for matches against the target date.
+- **Subscription check:** `Subscriptions.check` logic that loads events from a topic and checks for matches against the target date.
 - **Target date:** The user's local date at evaluation time, used to find matching events.
 
 ### Decision Log
 
-| #   | Decision                                                                |
-| --- | ----------------------------------------------------------------------- |
-| 1   | Event times stored as UTC (ISO 8601)                                    |
-| 2   | User preference stored as `sendAtSecondsLocal` (local time)             |
-| 3   | UTC computed at runtime using `user.timezone` — handles DST             |
-| 4   | Target date = user's local date at evaluation time                      |
-| 5   | Cron interval = 15 minutes                                              |
-| 6   | Users select from 15-minute intervals                                   |
-| 7   | Tolerance window = ±60 seconds (symmetric)                              |
-| 8   | Duplicate prevention via `lastSentAt` (user's local date comparison)    |
-| 9   | `topicId` identifies event source                                       |
-| 10  | Schedule = discriminated union (`fixed` \| `relative`)                  |
-| 11  | Fixed/relative mutually exclusive (enforced by type)                    |
-| 12  | Generic checker loads events by `topicId`                               |
-| 13  | Checker returns `Option<Event[]>`                                       |
-| 14  | Checker receives full context `{ user, subscription, targetDate }`      |
-| 15  | Event metadata = sports-specific with tag for future extension          |
-| 16  | Multiple games = single email for daily notifications                   |
-| 17  | MVP = email only (Resend)                                               |
-| 18  | `lastSentAt` comparison uses user's local date                          |
-| 19  | Failed sends don't update `lastSentAt`                                  |
-| 20  | `timeOffsetSeconds` modeled for event-relative (not implemented in MVP) |
-| 21  | Event-relative notifications send at any hour (no quiet hours)          |
-| 22  | `timeOffsetSeconds` must be <= 0 (before event only)                    |
+| #   | Decision                                                                         |
+| --- | -------------------------------------------------------------------------------- |
+| 1   | Event times stored as UTC (ISO 8601)                                             |
+| 2   | User preference stored as `sendAtSecondsLocal` (local time)                      |
+| 3   | UTC computed at runtime using `user.timezone` — handles DST                      |
+| 4   | Target date = user's local date at evaluation time                               |
+| 5   | Cron interval = 15 minutes                                                       |
+| 6   | Users select from 15-minute intervals                                            |
+| 7   | Tolerance window = ±60 seconds (symmetric)                                       |
+| 8   | Duplicate prevention via `lastSentAt` (user's local date comparison)             |
+| 9   | `topicId` identifies event source                                                |
+| 10  | Schedule = discriminated union (`fixed` \| `relative`)                           |
+| 11  | Fixed/relative mutually exclusive (enforced by type)                             |
+| 12  | `Subscriptions.check` loads events by `topicId`                                  |
+| 13  | `Subscriptions.check` returns `Option<Event[]>`                                  |
+| 14  | `Subscriptions.check` receives full context `{ user, subscription, targetDate }` |
+| 15  | Event metadata = sports-specific with tag for future extension                   |
+| 16  | Multiple games = single email for daily notifications                            |
+| 17  | MVP = email only (Resend)                                                        |
+| 18  | `lastSentAt` comparison uses user's local date                                   |
+| 19  | Failed sends don't update `lastSentAt`                                           |
+| 20  | `timeOffsetSeconds` modeled for event-relative (not implemented in MVP)          |
+| 21  | Event-relative notifications send at any hour (no quiet hours)                   |
+| 22  | `timeOffsetSeconds` must be <= 0 (before event only)                             |
 
 ### References
 

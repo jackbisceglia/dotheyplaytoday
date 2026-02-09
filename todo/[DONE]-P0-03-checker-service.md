@@ -1,7 +1,7 @@
 ---
 id: "03"
-title: Checker service with time utilities
-description: Implement event checker that evaluates subscriptions including timezone conversion, due checks, and event matching
+title: Subscriptions service with time utilities
+description: Implement subscription checks that evaluate timezone conversion, due checks, and event matching
 status: DONE
 priority: P0
 prereqs:
@@ -18,9 +18,9 @@ prereqs:
 - [x] `isAlreadySentToday({ lastSentAt, tz, now })` guard using user's local date
 - [x] Get user's current local date from UTC timestamp + timezone
 
-**Checker service:**
+**Subscriptions service:**
 
-- [x] `Checker` service (Effect.Service) with method `check(opts): Effect<Option<SportsEvent[]>>`
+- [x] `Subscriptions` service (Effect.Service) with method `check(opts): Effect<Option<SportsEvent[]>>`
 - [x] Load events from `data/topics/*{topicId}.json`
 - [x] Match events where `startUtc` falls on user's local date (target date)
 - [x] Return `Option.none()` if no events, `Option.some(events)` if matches found
@@ -38,7 +38,7 @@ prereqs:
 **Notes:**
 
 - Place in `packages/core/src/modules/subscriptions/`
-- The checker + time utils together evaluate "should this subscription trigger now?"
+- The subscriptions service + time utils together evaluate "should this subscription trigger now?"
 - Context input: `{ user: User, subscription: Subscription, targetDate: LocalDate }`
 - Uses `Database` service to load topic data
 - Uses Effect `DateTime` and `Duration` utilities for timezone and tolerance logic

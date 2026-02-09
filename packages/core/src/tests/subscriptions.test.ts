@@ -2,10 +2,10 @@ import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Option, Schema } from "effect";
 
 import { Database } from "../modules/database/service";
-import { Checker } from "../modules/subscriptions/service.checker";
+import { Subscriptions } from "../modules/subscriptions/service";
 import { Subscription } from "../modules/subscriptions/schema";
 import { localDateFromUtc } from "../modules/subscriptions/time";
-import { TopicData } from "../modules/topics/schema";
+import { Topic } from "../modules/topics/schema";
 import { User } from "../modules/users/schema";
 
 const decode = Schema.decodeUnknownSync;
@@ -35,7 +35,8 @@ const subscription = decode(Subscription)({
   lastSentAt: null,
 });
 
-const topicData = decode(TopicData)({
+const topic = decode(Topic)({
+  id: sampleIds.topicId,
   events: [
     {
       id: sampleIds.eventIdA,
@@ -69,14 +70,16 @@ const databaseLayer = Layer.succeed(
   Database.make({
     loadUsers: () => Effect.succeed([]),
     loadSubscriptions: () => Effect.succeed([]),
-    loadTopic: () => Effect.succeed(topicData),
+    loadTopic: () => Effect.succeed(topic),
     updateSubscription: () => Effect.void,
   }),
 );
 
-const checkerLayer = Checker.Default.pipe(Layer.provide(databaseLayer));
+const subscriptionsLayer = Subscriptions.Default.pipe(
+  Layer.provide(databaseLayer),
+);
 
-describe("Checker", () => {
+describe("Subscriptions", () => {
   it.effect(
     "should return events sorted by startUtc when local date matches",
     () => {
@@ -86,8 +89,8 @@ describe("Checker", () => {
       );
 
       return Effect.gen(function* () {
-        const checker = yield* Checker;
-        const result = yield* checker.check({
+        const subscriptions = yield* Subscriptions;
+        const result = yield* subscriptions.check({
           user,
           subscription,
           targetDate,
@@ -104,7 +107,7 @@ describe("Checker", () => {
           sampleIds.eventIdB,
           sampleIds.eventIdA,
         ]);
-      }).pipe(Effect.provide(checkerLayer));
+      }).pipe(Effect.provide(subscriptionsLayer));
     },
   );
 
@@ -112,8 +115,8 @@ describe("Checker", () => {
     "should return matching event when UTC is next day but local date is today",
     () =>
       Effect.gen(function* () {
-        const checker = yield* Checker;
-        const result = yield* checker.check({
+        const subscriptions = yield* Subscriptions;
+        const result = yield* subscriptions.check({
           user,
           subscription,
           targetDate: "2026-02-10",
@@ -128,19 +131,19 @@ describe("Checker", () => {
         expect(events).toHaveLength(1);
         const [event] = events;
         expect(event?.id).toBe(sampleIds.eventIdD);
-      }).pipe(Effect.provide(checkerLayer)),
+      }).pipe(Effect.provide(subscriptionsLayer)),
   );
 
   it.effect("should return none when no event matches target local date", () =>
     Effect.gen(function* () {
-      const checker = yield* Checker;
-      const result = yield* checker.check({
+      const subscriptions = yield* Subscriptions;
+      const result = yield* subscriptions.check({
         user,
         subscription,
         targetDate: "2026-02-13",
       });
 
       expect(Option.isNone(result)).toBe(true);
-    }).pipe(Effect.provide(checkerLayer)),
+    }).pipe(Effect.provide(subscriptionsLayer)),
   );
 });

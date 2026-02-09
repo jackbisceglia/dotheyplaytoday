@@ -5,12 +5,12 @@ import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 import {
   NotifierContext,
   type NotifierMessage,
-} from "../modules/notifiers/providers/service";
+} from "../modules/notifier/providers/service";
 import {
   ResendClientRequestError,
   ResendClientService,
-} from "../modules/notifiers/providers/resend/client";
-import { ResendProvider } from "../modules/notifiers/providers/resend/service";
+} from "../modules/notifier/providers/resend/client";
+import { ResendProvider } from "../modules/notifier/providers/resend/service";
 
 const message: NotifierMessage = {
   channel: "email",

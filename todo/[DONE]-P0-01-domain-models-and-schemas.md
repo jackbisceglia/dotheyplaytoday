@@ -14,7 +14,7 @@ prereqs:
 - [x] `FixedSchedule` and `RelativeSchedule` discriminated union with Schema
 - [x] `Subscription` type: `{ id, userId, topicId, schedule, enabled, lastSentAt }`
 - [x] `SportsEvent` type: `{ id, startUtc, opponent }`
-- [x] `TopicData` type: wrapper for events array
+- [x] `Topic` type: `{ id, events }`
 - [x] Validation for `sendAtSecondsLocal` (0-86399, 15-min aligned)
 - [x] Validation for `timeOffsetSeconds` (<= 0 for before-event only)
 

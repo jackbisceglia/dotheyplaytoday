@@ -51,7 +51,7 @@ dotheyplaytoday/
 - Test utilities: only extract to shared utils when reuse is certain; if so, place in `packages/core/src/tests/`.
 - Export order preference for schemas: `export type` before `export const`.
 - Prefer `Effect.Service` for services; export Tag/Layer only when needed.
-- Name services with the `Service` suffix when it avoids clashes with nearby type definitions.
+- Service naming: if a module represents a domain entity (whether or not it has a schema), use a plural service name (e.g. `Subscriptions`); otherwise use the clearest natural service name for the concern (e.g. `Database`, `Notifier`, `ResendClientService`). Keep schemas/types singular (e.g. `Subscription`, `User`, `Topic`).
 - Use Effect Config for environment parsing and validation.
 
 ## Effect Best Practices

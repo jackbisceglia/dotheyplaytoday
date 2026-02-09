@@ -2,7 +2,7 @@ import { FileSystem, Path } from "@effect/platform";
 import { Effect, Match, ParseResult, Schema } from "effect";
 
 import { Subscription } from "../subscriptions/schema";
-import { TopicData } from "../topics/schema";
+import { Topic } from "../topics/schema";
 import { User } from "../users/schema";
 
 const FsErrorPath = Schema.String;
@@ -119,6 +119,8 @@ export class Database extends Effect.Service<Database>()("@dtpt/Database", {
     const loadSubscriptions = () =>
       readJsonSchema(Schema.Array(Subscription), subscriptionsPath);
 
+    const Events = Topic.pick("events");
+
     const loadTopic = Effect.fn("Database.loadTopic")(
       function* (topicId: string) {
         const asPath = (fileName: string) => path.join(topicsPath, fileName);
@@ -133,7 +135,9 @@ export class Database extends Effect.Service<Database>()("@dtpt/Database", {
           });
         }
 
-        return yield* readJsonSchema(TopicData, asPath(fileName));
+        const json = yield* readJsonSchema(Events, asPath(fileName));
+
+        return { id: topicId, events: json.events };
       },
       Effect.catchTags({
         SystemError: (e) =>
