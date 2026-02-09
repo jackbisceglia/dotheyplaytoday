@@ -63,12 +63,14 @@ const makeResendProvider = Effect.gen(function* () {
             ),
             Effect.flatMap((response) =>
               response.error
-                ? NotifierResponseError.make({
-                    channel: message.channel,
-                    message: response.error.message,
-                    code: response.error.name,
-                    statusCode: response.error.statusCode,
-                  })
+                ? Effect.fail(
+                    NotifierResponseError.make({
+                      channel: message.channel,
+                      message: response.error.message,
+                      code: response.error.name,
+                      statusCode: response.error.statusCode,
+                    }),
+                  )
                 : Effect.void,
             ),
           ),
