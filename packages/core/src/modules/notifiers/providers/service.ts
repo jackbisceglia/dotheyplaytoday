@@ -24,8 +24,8 @@ export class NotifierResponseError extends Schema.TaggedError<NotifierResponseEr
   },
 ) {}
 
-export class Notifier extends Context.Tag("@dtpt/Notifier")<
-  Notifier,
+export class NotifierContext extends Context.Tag("@dtpt/Notifier")<
+  NotifierContext,
   {
     send: (message: NotifierMessage) => Effect.Effect<void, NotifierError>;
   }

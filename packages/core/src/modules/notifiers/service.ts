@@ -2,12 +2,12 @@ import { DateTime, Effect } from "effect";
 
 import type { Event, NonEmptyEvents } from "../events/schema";
 import { formatBody, formatEventSubject } from "./format";
-import { Notifier as NotifierProvider } from "./providers/service";
+import { NotifierContext } from "./providers/service";
 import type { User } from "../users/schema";
 
 export class Notifier extends Effect.Service<Notifier>()("@dtpt/Notifier", {
   effect: Effect.gen(function* () {
-    const provider = yield* NotifierProvider;
+    const provider = yield* NotifierContext;
 
     const send = Effect.fn("Notifier.send")(function* (
       user: User,

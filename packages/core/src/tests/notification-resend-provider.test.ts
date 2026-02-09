@@ -3,7 +3,7 @@ import { ConfigProvider, Effect, Layer } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 
 import {
-  Notifier as NotifierProvider,
+  NotifierContext,
   type NotifierMessage,
 } from "../modules/notifiers/providers/service";
 import {
@@ -74,7 +74,7 @@ describe("ResendProvider", () => {
     );
 
     return Effect.gen(function* () {
-      const provider = yield* NotifierProvider;
+      const provider = yield* NotifierContext;
       const result = yield* Effect.either(provider.send(message));
 
       expect(result._tag).toBe("Left");
@@ -106,7 +106,7 @@ describe("ResendProvider", () => {
       });
 
       return Effect.gen(function* () {
-        const provider = yield* NotifierProvider;
+        const provider = yield* NotifierContext;
         const result = yield* Effect.either(provider.send(message));
 
         expect(result._tag).toBe("Right");
@@ -131,7 +131,7 @@ describe("ResendProvider", () => {
     });
 
     return Effect.gen(function* () {
-      const provider = yield* NotifierProvider;
+      const provider = yield* NotifierContext;
       const result = yield* Effect.either(provider.send(message));
 
       expect(result._tag).toBe("Right");
@@ -155,7 +155,7 @@ describe("ResendProvider", () => {
     });
 
     return Effect.gen(function* () {
-      const provider = yield* NotifierProvider;
+      const provider = yield* NotifierContext;
       const result = yield* Effect.either(provider.send(message));
 
       expect(result._tag).toBe("Left");

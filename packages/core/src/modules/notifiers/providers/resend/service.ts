@@ -2,7 +2,7 @@ import { Effect, Layer, Match, Schedule, Schema } from "effect";
 
 import { EmailAddress } from "../../../users/schema";
 import {
-  Notifier,
+  NotifierContext,
   NotifierRequestError,
   NotifierResponseError,
   type NotifierError,
@@ -79,4 +79,6 @@ const makeResendProvider = Effect.gen(function* () {
   return { send };
 });
 
-export const ResendProvider = makeResendProvider.pipe(Layer.effect(Notifier));
+export const ResendProvider = makeResendProvider.pipe(
+  Layer.effect(NotifierContext),
+);

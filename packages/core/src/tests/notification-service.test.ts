@@ -5,7 +5,7 @@ import { SportsEvent } from "../modules/events/schema";
 import { Notifier } from "../modules/notifiers/service";
 import {
   type NotifierMessage,
-  Notifier as NotifierProvider,
+  NotifierContext,
   NotifierResponseError,
 } from "../modules/notifiers/providers/service";
 import { User } from "../modules/users/schema";
@@ -63,7 +63,7 @@ const makeLayer = (opts: { sent: NotifierMessage[]; fail?: boolean }) => {
     },
   };
 
-  const providerLayer = Layer.succeed(NotifierProvider, provider);
+  const providerLayer = Layer.succeed(NotifierContext, provider);
 
   return Notifier.Default.pipe(Layer.provide(providerLayer));
 };
