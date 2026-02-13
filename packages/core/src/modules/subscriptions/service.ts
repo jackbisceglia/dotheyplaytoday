@@ -1,48 +1,53 @@
-import { DateTime, Effect, Match, Option } from "effect";
+import { DateTime, Effect } from "effect";
 
 import { Database } from "../database/service";
 import type { User } from "../users/schema";
 import type { Subscription } from "./schema";
 import type { LocalDate } from "./time";
-import { localDateFromUtc } from "./time";
+import {
+  isAlreadySentToday as _isAlreadySentToday,
+  isDue as _isDue,
+  localDateFromUtc,
+} from "./time";
 
-type CheckOptions = {
+type GetDueEventsOptions = {
   user: User;
   subscription: Subscription;
-  targetDate: LocalDate;
+  target: LocalDate;
 };
 
 export class Subscriptions extends Effect.Service<Subscriptions>()(
   "@dtpt/Subscriptions",
   {
+    dependencies: [Database.Default],
     effect: Effect.gen(function* () {
       const database = yield* Database;
 
-      const check = Effect.fn("Subscriptions.check")(function* (
-        opts: CheckOptions,
+      const getDueEvents = Effect.fn("getDueEvents")(function* (
+        opts: GetDueEventsOptions,
       ) {
-        const sortByStartUtc = (a: DateTime.Utc, b: DateTime.Utc) =>
-          DateTime.toEpochMillis(a) - DateTime.toEpochMillis(b);
-
         const topic = yield* database.loadTopic(opts.subscription.topicId);
 
         const matches = topic.events.filter(
           (event) =>
             localDateFromUtc(event.startUtc, opts.user.timezone) ===
-            opts.targetDate,
+            opts.target,
         );
 
-        return Match.value(matches.length).pipe(
-          Match.when(0, () => Option.none()),
-          Match.orElse(() =>
-            Option.some(
-              matches.sort((a, b) => sortByStartUtc(a.startUtc, b.startUtc)),
-            ),
-          ),
+        const sorted = matches.toSorted(
+          (a, b) =>
+            DateTime.toEpochMillis(a.startUtc) -
+            DateTime.toEpochMillis(b.startUtc),
         );
+
+        return sorted;
       });
 
-      return { check };
+      return {
+        isDue: _isDue,
+        isAlreadySentToday: _isAlreadySentToday,
+        getDueEvents,
+      };
     }),
   },
 ) {}

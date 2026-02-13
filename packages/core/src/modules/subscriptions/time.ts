@@ -11,13 +11,13 @@ type GetScheduledSendOptions = {
   now: DateTime.Utc;
 };
 
-type IsDueOptions = {
+export type IsDueOptions = {
   subscription: Subscription;
   user: User;
   now: DateTime.Utc;
 };
 
-type IsAlreadySentTodayOptions = {
+export type IsAlreadySentTodayOptions = {
   lastSentAt: Subscription["lastSentAt"];
   tz: User["timezone"];
   now: DateTime.Utc;

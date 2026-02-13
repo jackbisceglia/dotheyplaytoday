@@ -1,6 +1,6 @@
-import { DateTime, Effect } from "effect";
+import { Array, DateTime, Effect } from "effect";
 
-import type { Event, NonEmptyEvents } from "../events/schema";
+import type { NonEmptyEvents } from "../events/schema";
 import { formatBody, formatEventSubject } from "./format";
 import { NotifierContext } from "./providers/service";
 import type { User } from "../users/schema";
@@ -14,12 +14,18 @@ export class Notifier extends Effect.Service<Notifier>()("@dtpt/Notifier", {
       events: NonEmptyEvents,
     ) {
       const sortedEvents = events.toSorted(
-        (a: Event, b: Event) =>
+        (a, b) =>
           DateTime.toEpochMillis(a.startUtc) -
           DateTime.toEpochMillis(b.startUtc),
-      ) as unknown as NonEmptyEvents;
+      );
 
-      yield* provider.send({
+      if (!Array.isNonEmptyArray(sortedEvents)) {
+        return yield* Effect.dieMessage(
+          "Expected non-empty events after sorting",
+        );
+      }
+
+      return yield* provider.send({
         channel: "email",
         to: user.email,
         title: formatEventSubject({

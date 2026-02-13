@@ -1,8 +1,8 @@
-import { Schema } from "effect";
+import { Array, Schema } from "effect";
 
 import { TaggedStructWithOptional } from "../../lib/effect/schema";
 
-export type NonEmptyEvents = readonly [Event, ...Event[]];
+export type NonEmptyEvents = Array.NonEmptyArray<Event>;
 
 export const EventBase = Schema.Struct({
   id: Schema.UUID.pipe(Schema.brand("EventId")),

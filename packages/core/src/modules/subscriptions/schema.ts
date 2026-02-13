@@ -8,7 +8,7 @@ export const FixedSchedule = Schema.Struct({
   type: Schema.Literal("fixed"),
   sendAtSecondsLocal: Schema.Int.pipe(
     Schema.between(0, 86399),
-    Schema.multipleOf(900),
+    Schema.multipleOf(300),
   ),
 });
 
