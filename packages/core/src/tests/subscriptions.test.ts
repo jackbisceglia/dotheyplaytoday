@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer, Option, Schema } from "effect";
+import { Effect, Layer, Schema } from "effect";
 
 import { Database } from "../modules/database/service";
 import { Subscriptions } from "../modules/subscriptions/service";
@@ -75,7 +75,7 @@ const databaseLayer = Layer.succeed(
   }),
 );
 
-const subscriptionsLayer = Subscriptions.Default.pipe(
+const subscriptionsLayer = Subscriptions.DefaultWithoutDependencies.pipe(
   Layer.provide(databaseLayer),
 );
 
@@ -83,24 +83,20 @@ describe("Subscriptions", () => {
   it.effect(
     "should return events sorted by startUtc when local date matches",
     () => {
-      const targetDate = localDateFromUtc(
+      const target = localDateFromUtc(
         decode(Schema.DateTimeUtc)("2026-02-10T03:30:00Z"),
         user.timezone,
       );
 
       return Effect.gen(function* () {
         const subscriptions = yield* Subscriptions;
-        const result = yield* subscriptions.check({
+        const result = yield* subscriptions.getDueEvents({
           user,
           subscription,
-          targetDate,
+          target,
         });
 
-        expect(Option.isSome(result)).toBe(true);
-        const events = Option.getOrThrowWith(
-          result,
-          () => new Error("Expected matching events"),
-        );
+        const events = result;
 
         expect(events).toHaveLength(2);
         expect(events.map((e) => e.id)).toEqual([
@@ -116,17 +112,13 @@ describe("Subscriptions", () => {
     () =>
       Effect.gen(function* () {
         const subscriptions = yield* Subscriptions;
-        const result = yield* subscriptions.check({
+        const result = yield* subscriptions.getDueEvents({
           user,
           subscription,
-          targetDate: "2026-02-10",
+          target: "2026-02-10",
         });
 
-        expect(Option.isSome(result)).toBe(true);
-        const events = Option.getOrThrowWith(
-          result,
-          () => new Error("Expected one matching event"),
-        );
+        const events = result;
 
         expect(events).toHaveLength(1);
         const [event] = events;
@@ -134,16 +126,18 @@ describe("Subscriptions", () => {
       }).pipe(Effect.provide(subscriptionsLayer)),
   );
 
-  it.effect("should return none when no event matches target local date", () =>
-    Effect.gen(function* () {
-      const subscriptions = yield* Subscriptions;
-      const result = yield* subscriptions.check({
-        user,
-        subscription,
-        targetDate: "2026-02-13",
-      });
+  it.effect(
+    "should return empty array when no event matches target local date",
+    () =>
+      Effect.gen(function* () {
+        const subscriptions = yield* Subscriptions;
+        const result = yield* subscriptions.getDueEvents({
+          user,
+          subscription,
+          target: "2026-02-13",
+        });
 
-      expect(Option.isNone(result)).toBe(true);
-    }).pipe(Effect.provide(subscriptionsLayer)),
+        expect(result).toHaveLength(0);
+      }).pipe(Effect.provide(subscriptionsLayer)),
   );
 });

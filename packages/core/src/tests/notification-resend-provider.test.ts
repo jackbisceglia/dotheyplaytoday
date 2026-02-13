@@ -51,11 +51,14 @@ const makeLayer = (
 
   const configLayer = Layer.setConfigProvider(
     ConfigProvider.fromMap(
-      new Map<string, string>([["RESEND_FROM_EMAIL", "sender@example.com"]]),
+      new Map<string, string>([
+        ["RESEND_API_KEY", "re_test_key"],
+        ["RESEND_FROM_EMAIL", "sender@example.com"],
+      ]),
     ),
   );
 
-  return ResendProvider.pipe(
+  return ResendProvider.DefaultWithoutDependencies.pipe(
     Layer.provideMerge(resendClientLayer),
     Layer.provideMerge(configLayer),
   );
