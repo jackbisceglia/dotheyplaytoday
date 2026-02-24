@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "demo": "bun src/index.ts --ignore-already-sent",
     "notify": "bun src/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
