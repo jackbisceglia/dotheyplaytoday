@@ -1,6 +1,4 @@
-import { Effect, Layer, Match, Schedule, Schema } from "effect";
-
-import { EmailAddress } from "../../../users/schema";
+import { Effect, Layer, Match, Schedule } from "effect";
 import {
   NotifierContext,
   NotifierRequestError,
@@ -9,6 +7,7 @@ import {
   type NotifierMessage,
 } from "../service";
 import { ResendClientService } from "./client";
+import { ResendConfig } from "./config";
 
 const constraints = { retry: { max: 2 } };
 
@@ -39,16 +38,16 @@ const isRetriableError = (error: NotifierError) =>
     Match.exhaustive,
   );
 
-const makeResendProvider = Effect.gen(function* () {
+const ResendProviderInternal = Effect.gen(function* () {
   const resendClient = yield* ResendClientService;
-  const from = yield* Schema.Config("RESEND_FROM_EMAIL", EmailAddress);
+  const config = yield* ResendConfig;
 
   const send = Effect.fn("ResendProvider.send")(
     (message: NotifierMessage) =>
       Effect.suspend(() =>
         resendClient
           .sendEmail({
-            from,
+            from: config.from,
             to: message.to,
             subject: message.title,
             text: message.body,
@@ -81,6 +80,12 @@ const makeResendProvider = Effect.gen(function* () {
   return { send };
 });
 
-export const ResendProvider = makeResendProvider.pipe(
-  Layer.effect(NotifierContext),
-);
+export const ResendProvider = {
+  DefaultWithoutDependencies: ResendProviderInternal.pipe(
+    Layer.effect(NotifierContext),
+  ),
+  Default: ResendProviderInternal.pipe(
+    Layer.effect(NotifierContext),
+    Layer.provide(ResendClientService.Default),
+  ),
+};

@@ -43,7 +43,7 @@ export class Database extends Effect.Service<Database>()("@dtpt/Database", {
   effect: Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
-    const dataRoot = path.join(process.cwd(), "packages", "core", "data");
+    const dataRoot = path.join(import.meta.dirname, "..", "..", "..", "data");
     const usersPath = path.join(dataRoot, "users.json");
     const subscriptionsPath = path.join(dataRoot, "subscriptions.json");
     const topicsPath = path.join(dataRoot, "topics");

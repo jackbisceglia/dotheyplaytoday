@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { ConfigProvider, Effect, Layer } from "effect";
+import { ConfigProvider, Effect, Either, Layer, Ref } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 
 import {
@@ -27,142 +27,277 @@ const successResponse: CreateEmailResponse = {
 
 type ResendEmailError = Exclude<CreateEmailResponse["error"], null>;
 
-const makeErrorResponse = (opts: {
+type ErrorResponseOptions = {
   code: ResendEmailError["name"];
   statusCode: number | null;
   message: string;
-}): CreateEmailResponse => ({
+};
+
+const makeErrorResponse = (
+  options: ErrorResponseOptions,
+): CreateEmailResponse => ({
   data: null,
   error: {
-    name: opts.code,
-    statusCode: opts.statusCode,
-    message: opts.message,
+    name: options.code,
+    statusCode: options.statusCode,
+    message: options.message,
   },
   headers: null,
 });
 
-const makeLayer = (
+const ResendConfigLayerTest = Layer.setConfigProvider(
+  ConfigProvider.fromMap(
+    new Map<string, string>([
+      ["RESEND_API_KEY", "re_test_key"],
+      ["RESEND_FROM_EMAIL", "sender@example.com"],
+    ]),
+  ),
+);
+
+const makeResendProviderLayerTest = (
   sendEmail: (
     payload: CreateEmailOptions,
   ) => Effect.Effect<CreateEmailResponse, ResendClientRequestError>,
 ) => {
-  const resendClient = ResendClientService.make({ sendEmail });
-  const resendClientLayer = Layer.succeed(ResendClientService, resendClient);
-
-  const configLayer = Layer.setConfigProvider(
-    ConfigProvider.fromMap(
-      new Map<string, string>([["RESEND_FROM_EMAIL", "sender@example.com"]]),
-    ),
+  const ResendClientLayerTest = Layer.succeed(
+    ResendClientService,
+    ResendClientService.make({ sendEmail }),
   );
 
-  return ResendProvider.pipe(
-    Layer.provideMerge(resendClientLayer),
-    Layer.provideMerge(configLayer),
-  );
+  const ResendProviderLayerTest =
+    ResendProvider.DefaultWithoutDependencies.pipe(
+      Layer.provideMerge(ResendClientLayerTest),
+      Layer.provideMerge(ResendConfigLayerTest),
+    );
+
+  return ResendProviderLayerTest;
 };
+
+const sendMessageEither = () =>
+  NotifierContext.pipe(
+    Effect.flatMap((provider) => provider.send(message)),
+    Effect.either,
+  );
 
 describe("ResendProvider", () => {
   it.effect("should map resend API errors to response errors", () => {
-    const layer = makeLayer(() =>
-      Effect.succeed(
-        makeErrorResponse({
-          code: "validation_error",
-          statusCode: 422,
-          message: "Invalid recipient",
-        }),
-      ),
-    );
-
     return Effect.gen(function* () {
-      const provider = yield* NotifierContext;
-      const result = yield* Effect.either(provider.send(message));
+      const ResendProviderLayerTest = makeResendProviderLayerTest((payload) =>
+        Effect.sync(() => {
+          expect(payload.from).toBe("sender@example.com");
+          expect(payload.to).toBe(message.to);
+          expect(payload.subject).toBe(message.title);
+          expect(payload.text).toBe(message.body);
 
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left._tag).toBe("NotifierResponseError");
-      }
-    }).pipe(Effect.provide(layer));
+          return makeErrorResponse({
+            code: "validation_error",
+            statusCode: 422,
+            message: "Invalid recipient",
+          });
+        }),
+      );
+
+      const result = yield* sendMessageEither().pipe(
+        Effect.provide(ResendProviderLayerTest),
+      );
+
+      Either.match(result, {
+        onLeft: (error) => {
+          switch (error._tag) {
+            case "NotifierResponseError": {
+              expect(error.channel).toBe("email");
+              expect(error.message).toBe("Invalid recipient");
+              expect(error.code).toBe("validation_error");
+              expect(error.statusCode).toBe(422);
+              break;
+            }
+            default:
+              expect.fail(`Expected NotifierResponseError, got ${error._tag}`);
+          }
+        },
+        onRight: () => expect.fail("Expected provider send to fail"),
+      });
+    });
   });
 
   it.live(
     "should retry transient response failures and eventually succeed",
-    () => {
-      let attempts = 0;
+    () =>
+      Effect.gen(function* () {
+        const attemptsRef = yield* Ref.make(0);
 
-      const layer = makeLayer((_payload) => {
-        attempts += 1;
+        const ResendProviderLayerTest = makeResendProviderLayerTest(
+          (_payload) =>
+            Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
+              Effect.map((attempt) =>
+                attempt < 2
+                  ? makeErrorResponse({
+                      code: "application_error",
+                      statusCode: 500,
+                      message: "Temporary outage",
+                    })
+                  : successResponse,
+              ),
+            ),
+        );
 
-        if (attempts < 2) {
-          return Effect.succeed(
-            makeErrorResponse({
-              code: "application_error",
-              statusCode: 500,
-              message: "Temporary outage",
-            }),
-          );
-        }
+        const result = yield* sendMessageEither().pipe(
+          Effect.provide(ResendProviderLayerTest),
+        );
 
-        return Effect.succeed(successResponse);
-      });
+        Either.match(result, {
+          onLeft: (error) =>
+            expect.fail(`Expected provider send to succeed, got ${error._tag}`),
+          onRight: () => undefined,
+        });
 
-      return Effect.gen(function* () {
-        const provider = yield* NotifierContext;
-        const result = yield* Effect.either(provider.send(message));
-
-        expect(result._tag).toBe("Right");
+        const attempts = yield* Ref.get(attemptsRef);
         expect(attempts).toBe(2);
-      }).pipe(Effect.provide(layer));
-    },
+      }),
   );
 
-  it.live("should retry request failures from the resend client", () => {
-    let attempts = 0;
+  it.live("should retry request failures from the resend client", () =>
+    Effect.gen(function* () {
+      const attemptsRef = yield* Ref.make(0);
 
-    const layer = makeLayer((_payload) => {
-      attempts += 1;
-
-      if (attempts < 3) {
-        return Effect.fail(
-          ResendClientRequestError.make({ cause: new Error("network") }),
-        );
-      }
-
-      return Effect.succeed(successResponse);
-    });
-
-    return Effect.gen(function* () {
-      const provider = yield* NotifierContext;
-      const result = yield* Effect.either(provider.send(message));
-
-      expect(result._tag).toBe("Right");
-      expect(attempts).toBe(3);
-    }).pipe(Effect.provide(layer));
-  });
-
-  it.effect("should not retry non-transient response failures", () => {
-    let attempts = 0;
-
-    const layer = makeLayer((_payload) => {
-      attempts += 1;
-
-      return Effect.succeed(
-        makeErrorResponse({
-          code: "validation_error",
-          statusCode: 422,
-          message: "Bad request",
-        }),
+      const ResendProviderLayerTest = makeResendProviderLayerTest((_payload) =>
+        Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
+          Effect.flatMap((attempt) =>
+            attempt < 3
+              ? ResendClientRequestError.make({ cause: new Error("network") })
+              : Effect.succeed(successResponse),
+          ),
+        ),
       );
-    });
 
-    return Effect.gen(function* () {
-      const provider = yield* NotifierContext;
-      const result = yield* Effect.either(provider.send(message));
+      const result = yield* sendMessageEither().pipe(
+        Effect.provide(ResendProviderLayerTest),
+      );
 
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left._tag).toBe("NotifierResponseError");
-      }
+      Either.match(result, {
+        onLeft: (error) =>
+          expect.fail(`Expected provider send to succeed, got ${error._tag}`),
+        onRight: () => undefined,
+      });
+
+      const attempts = yield* Ref.get(attemptsRef);
+      expect(attempts).toBe(3);
+    }),
+  );
+
+  it.live(
+    "should fail after retry exhaustion for transient response failures",
+    () =>
+      Effect.gen(function* () {
+        const attemptsRef = yield* Ref.make(0);
+
+        const ResendProviderLayerTest = makeResendProviderLayerTest(
+          (_payload) =>
+            Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
+              Effect.as(
+                makeErrorResponse({
+                  code: "application_error",
+                  statusCode: 500,
+                  message: "Temporary outage",
+                }),
+              ),
+            ),
+        );
+
+        const result = yield* sendMessageEither().pipe(
+          Effect.provide(ResendProviderLayerTest),
+        );
+
+        Either.match(result, {
+          onLeft: (error) => {
+            switch (error._tag) {
+              case "NotifierResponseError": {
+                expect(error.channel).toBe("email");
+                expect(error.message).toBe("Temporary outage");
+                expect(error.code).toBe("application_error");
+                expect(error.statusCode).toBe(500);
+                break;
+              }
+              default:
+                expect.fail(
+                  `Expected NotifierResponseError, got ${error._tag}`,
+                );
+            }
+          },
+          onRight: () => expect.fail("Expected provider send to fail"),
+        });
+
+        const attempts = yield* Ref.get(attemptsRef);
+        expect(attempts).toBe(3);
+      }),
+  );
+
+  it.live("should fail after retry exhaustion for request failures", () =>
+    Effect.gen(function* () {
+      const attemptsRef = yield* Ref.make(0);
+
+      const ResendProviderLayerTest = makeResendProviderLayerTest((_payload) =>
+        Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
+          Effect.zipRight(
+            ResendClientRequestError.make({ cause: new Error("network") }),
+          ),
+        ),
+      );
+
+      const result = yield* sendMessageEither().pipe(
+        Effect.provide(ResendProviderLayerTest),
+      );
+
+      Either.match(result, {
+        onLeft: (error) => {
+          switch (error._tag) {
+            case "NotifierRequestError": {
+              expect(error.channel).toBe("email");
+              expect(error.message).toBe("Failed to reach Resend API");
+              expect(error.cause).toBeDefined();
+              break;
+            }
+            default:
+              expect.fail(`Expected NotifierRequestError, got ${error._tag}`);
+          }
+        },
+        onRight: () => expect.fail("Expected provider send to fail"),
+      });
+
+      const attempts = yield* Ref.get(attemptsRef);
+      expect(attempts).toBe(3);
+    }),
+  );
+
+  it.effect("should not retry non-transient response failures", () =>
+    Effect.gen(function* () {
+      const attemptsRef = yield* Ref.make(0);
+
+      const ResendProviderLayerTest = makeResendProviderLayerTest((_payload) =>
+        Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
+          Effect.as(
+            makeErrorResponse({
+              code: "validation_error",
+              statusCode: 422,
+              message: "Bad request",
+            }),
+          ),
+        ),
+      );
+
+      const result = yield* sendMessageEither().pipe(
+        Effect.provide(ResendProviderLayerTest),
+      );
+
+      Either.match(result, {
+        onLeft: (error) => {
+          expect(error._tag).toBe("NotifierResponseError");
+        },
+        onRight: () => expect.fail("Expected provider send to fail"),
+      });
+
+      const attempts = yield* Ref.get(attemptsRef);
       expect(attempts).toBe(1);
-    }).pipe(Effect.provide(layer));
-  });
+    }),
+  );
 });
