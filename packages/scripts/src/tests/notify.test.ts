@@ -291,6 +291,32 @@ describe("notify orchestration", () => {
     },
   );
 
+  it.effect("should ignore already-sent guard when configured", () => {
+    const user = makeUser();
+    const subscription = makeFixedSubscription({
+      lastSentAt: "2026-02-10T12:00:00Z",
+    });
+    const event = makeEvent();
+
+    const harness = makeHarness({
+      users: [user],
+      subscriptions: [subscription],
+      getDueEvents: () => Effect.succeed([event]),
+    });
+
+    return Effect.gen(function* () {
+      yield* runNotifyJob({
+        dryRun: false,
+        now,
+        ignoreAlreadySent: true,
+      }).pipe(Effect.provide(harness.layer));
+
+      expect(harness.checks).toHaveLength(1);
+      expect(harness.sends).toHaveLength(1);
+      expect(harness.updates).toHaveLength(1);
+    });
+  });
+
   it.effect("should skip relative schedules with no send attempt", () => {
     const user = makeUser();
     const subscription = makeRelativeSubscription();

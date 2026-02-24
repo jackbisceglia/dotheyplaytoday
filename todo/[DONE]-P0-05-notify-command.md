@@ -1,7 +1,7 @@
 ---
 id: "05"
 title: Notify command
-description: Implement pnpm notify CLI command that orchestrates the notification job
+description: Implement notify CLI command that orchestrates the notification job
 status: DONE
 priority: P0
 prereqs:
@@ -12,7 +12,7 @@ prereqs:
 
 **Acceptance:**
 
-- [x] `notify` script in `packages/scripts/` runnable via `pnpm notify`
+- [x] `notify` script in `packages/scripts/` runnable via `pnpm @scripts notify`
 - [x] Orchestration flow:
   1. Load all subscriptions
   2. Filter to enabled subscriptions only
@@ -26,7 +26,7 @@ prereqs:
 
 **Verify:**
 
-- `pnpm notify -- --dry-run` runs end-to-end without Resend credentials and exits successfully
+- `pnpm @scripts notify -- --dry-run` runs end-to-end without Resend credentials and exits successfully
 - `pnpm test -- packages/scripts/src/tests/notify.test.ts` passes orchestration coverage (due/send/update, skip paths, dry-run, notifier failure continue, fatal abort)
 - `pnpm typecheck`, `pnpm lint`, and `pnpm format` pass for the full repo
 
@@ -36,4 +36,4 @@ prereqs:
 - Added `packages/scripts/src/tests/notify.test.ts` with 8 orchestration tests
 - Relative schedules are explicitly skipped and logged for MVP
 - Notifier transport failures are logged and processing continues; integrity/dependency failures abort the run
-- Updated `packages/core/src/modules/database/service.ts` to resolve `data/` relative to module location so `pnpm notify` works when executed from `packages/scripts`
+- Updated `packages/core/src/modules/database/service.ts` to resolve `data/` relative to module location so `pnpm @scripts notify` works when executed from `packages/scripts`

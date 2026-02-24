@@ -16,6 +16,7 @@ import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/effect/config";
 
 export type NotifyOptions = {
   dryRun: boolean;
+  ignoreAlreadySent?: boolean;
   now?: DateTime.Utc;
 };
 
@@ -111,9 +112,10 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   const subscriptions = yield* Subscriptions;
   const notifier = yield* Notifier;
   const now = opts.now ?? (yield* DateTime.now);
+  const ignoreAlreadySent = opts.ignoreAlreadySent ?? false;
 
   yield* Effect.logInfo(
-    `notify: start dryRun=${String(opts.dryRun)} now=${DateTime.formatIso(now)}`,
+    `notify: start dryRun=${String(opts.dryRun)} ignoreAlreadySent=${String(ignoreAlreadySent)} now=${DateTime.formatIso(now)}`,
   );
 
   const [allUsers, allSubscriptions] = yield* Effect.all([
@@ -169,7 +171,7 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           tz: user.timezone,
           now,
         });
-        if (isAlreadySentToday) {
+        if (isAlreadySentToday && !ignoreAlreadySent) {
           return yield* new NotifySubscriptionAlreadySent({
             subscriptionId,
             topicId: subscription.topicId,
@@ -273,6 +275,7 @@ const DotEnvConfigProvider = createConfigProviderFromDotEnv("../../.env");
 function main() {
   const opts = process.argv.slice(2);
   const dryRun = opts.includes("--dry-run");
+  const ignoreAlreadySent = opts.includes("--ignore-already-sent");
 
   const ProgramLayer = Layer.mergeAll(
     getNotifierLayer(dryRun),
@@ -283,7 +286,9 @@ function main() {
     Layer.provideMerge(BunContext.layer),
   );
 
-  BunRuntime.runMain(notify({ dryRun }).pipe(Effect.provide(ProgramLayer)));
+  BunRuntime.runMain(
+    notify({ dryRun, ignoreAlreadySent }).pipe(Effect.provide(ProgramLayer)),
+  );
 }
 
 export default main;

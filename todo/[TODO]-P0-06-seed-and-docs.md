@@ -12,17 +12,17 @@ prereqs:
 
 - [ ] Sample `packages/core/data/users.json` with test user
 - [ ] Sample `packages/core/data/subscriptions.json` with Celtics subscription
-- [ ] Sample `packages/core/data/topics/celtics.json` with upcoming games
+- [ ] Sample `packages/core/data/topics/<topicId>-celtics.json` with upcoming games
 - [ ] README updated with:
   - Project overview
   - Setup instructions (install, env vars)
-  - How to run locally (`pnpm notify`)
+  - How to run locally (`pnpm @scripts notify`)
   - JSON data format documentation
   - Timezone handling notes and DST behavior
 
 **Verify:**
 
-- Can clone repo, install deps, and run `pnpm notify` successfully
+- Can clone repo, install deps, and run `pnpm @scripts notify` successfully
 - README explains how to add new users/subscriptions
 - Data format is clear and documented
 
