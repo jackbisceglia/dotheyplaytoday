@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer, Schema } from "effect";
+import { Effect, Either, Layer, Schema } from "effect";
 
 import { Database } from "../modules/database/service";
 import { Subscriptions } from "../modules/subscriptions/service";
@@ -9,6 +9,14 @@ import { Topic } from "../modules/topics/schema";
 import { User } from "../modules/users/schema";
 
 const decode = Schema.decodeUnknownSync;
+
+class DataReadError extends Schema.TaggedError<DataReadError>()(
+  "DataReadError",
+  {
+    path: Schema.String,
+    message: Schema.String,
+  },
+) {}
 
 const sampleIds = {
   userId: "00000000-0000-0000-0000-000000000021",
@@ -65,7 +73,7 @@ const topic = decode(Topic)({
   ],
 });
 
-const databaseLayer = Layer.succeed(
+const DatabaseLayerTest = Layer.succeed(
   Database,
   Database.make({
     loadUsers: () => Effect.succeed([]),
@@ -75,8 +83,8 @@ const databaseLayer = Layer.succeed(
   }),
 );
 
-const subscriptionsLayer = Subscriptions.DefaultWithoutDependencies.pipe(
-  Layer.provide(databaseLayer),
+const SubscriptionsLayerTest = Subscriptions.DefaultWithoutDependencies.pipe(
+  Layer.provide(DatabaseLayerTest),
 );
 
 describe("Subscriptions", () => {
@@ -103,7 +111,7 @@ describe("Subscriptions", () => {
           sampleIds.eventIdB,
           sampleIds.eventIdA,
         ]);
-      }).pipe(Effect.provide(subscriptionsLayer));
+      }).pipe(Effect.provide(SubscriptionsLayerTest));
     },
   );
 
@@ -123,7 +131,7 @@ describe("Subscriptions", () => {
         expect(events).toHaveLength(1);
         const [event] = events;
         expect(event?.id).toBe(sampleIds.eventIdD);
-      }).pipe(Effect.provide(subscriptionsLayer)),
+      }).pipe(Effect.provide(SubscriptionsLayerTest)),
   );
 
   it.effect(
@@ -138,6 +146,54 @@ describe("Subscriptions", () => {
         });
 
         expect(result).toHaveLength(0);
-      }).pipe(Effect.provide(subscriptionsLayer)),
+      }).pipe(Effect.provide(SubscriptionsLayerTest)),
   );
+
+  it.effect("should propagate loadTopic failures", () => {
+    const loadTopicError = DataReadError.make({
+      path: "data/topics",
+      message: "topic read failed",
+    });
+
+    const DatabaseLayerTestFails = Layer.succeed(
+      Database,
+      Database.make({
+        loadUsers: () => Effect.succeed([]),
+        loadSubscriptions: () => Effect.succeed([]),
+        loadTopic: () => Effect.fail(loadTopicError),
+        updateSubscription: () => Effect.void,
+      }),
+    );
+
+    const SubscriptionsLayerTestFails =
+      Subscriptions.DefaultWithoutDependencies.pipe(
+        Layer.provide(DatabaseLayerTestFails),
+      );
+
+    return Effect.gen(function* () {
+      const subscriptions = yield* Subscriptions;
+      const result = yield* Effect.either(
+        subscriptions.getDueEvents({
+          user,
+          subscription,
+          target: "2026-02-10",
+        }),
+      );
+
+      Either.match(result, {
+        onLeft: (error) => {
+          switch (error._tag) {
+            case "DataReadError": {
+              expect(error.path).toBe(loadTopicError.path);
+              expect(error.message).toBe(loadTopicError.message);
+              break;
+            }
+            default:
+              expect.fail(`Expected DataReadError, got ${error._tag}`);
+          }
+        },
+        onRight: () => expect.fail("Expected getDueEvents to fail"),
+      });
+    }).pipe(Effect.provide(SubscriptionsLayerTestFails));
+  });
 });

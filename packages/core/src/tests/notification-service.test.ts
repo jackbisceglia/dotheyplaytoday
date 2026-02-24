@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { DateTime, Effect, Layer, Schema } from "effect";
+import { DateTime, Effect, Either, Layer, Schema } from "effect";
 
 import { SportsEvent } from "../modules/events/schema";
 import { Notifier } from "../modules/notifier/service";
@@ -47,7 +47,10 @@ const formatStartTime = (utc: DateTime.Utc, timezone: User["timezone"]) =>
     timeZoneName: "short",
   });
 
-const makeLayer = (opts: { sent: NotifierMessage[]; fail?: boolean }) => {
+const makeNotifierLayerTest = (opts: {
+  sent: NotifierMessage[];
+  fail?: boolean;
+}) => {
   const provider = {
     send: (message: NotifierMessage) => {
       if (opts.fail) {
@@ -59,13 +62,19 @@ const makeLayer = (opts: { sent: NotifierMessage[]; fail?: boolean }) => {
         });
       }
 
-      return Effect.sync(() => void opts.sent.push(message));
+      return Effect.sync(() => {
+        opts.sent.push(message);
+      });
     },
   };
 
-  const providerLayer = Layer.succeed(NotifierContext, provider);
+  const NotifierContextLayerTest = Layer.succeed(NotifierContext, provider);
 
-  return Notifier.Default.pipe(Layer.provide(providerLayer));
+  const NotifierLayer = Notifier.Default.pipe(
+    Layer.provide(NotifierContextLayerTest),
+  );
+
+  return NotifierLayer;
 };
 
 describe("Notifier", () => {
@@ -91,7 +100,7 @@ describe("Notifier", () => {
       expect(message?.title).toBe(`Celtics vs. Raptors, ${expectedTime}`);
       expect(message?.body).toContain("Raptors");
       expect(message?.body).toContain(expectedTime);
-    }).pipe(Effect.provide(makeLayer({ sent })));
+    }).pipe(Effect.provide(makeNotifierLayerTest({ sent })));
   });
 
   it.effect("should render multi-game subject and include all matchups", () => {
@@ -126,7 +135,7 @@ describe("Notifier", () => {
 
       const body = message?.body ?? "";
       expect(body.indexOf("Raptors")).toBeLessThan(body.indexOf("Knicks"));
-    }).pipe(Effect.provide(makeLayer({ sent })));
+    }).pipe(Effect.provide(makeNotifierLayerTest({ sent })));
   });
 
   it.effect("should return provider failures to caller", () => {
@@ -143,11 +152,13 @@ describe("Notifier", () => {
       const notifier = yield* Notifier;
       const result = yield* Effect.either(notifier.send(user, [event]));
 
-      expect(result._tag).toBe("Left");
-      if (result._tag === "Left") {
-        expect(result.left._tag).toBe("NotifierResponseError");
-      }
+      Either.match(result, {
+        onLeft: (error) => {
+          expect(error._tag).toBe("NotifierResponseError");
+        },
+        onRight: () => expect.fail("Expected provider failure to propagate"),
+      });
       expect(sent).toHaveLength(0);
-    }).pipe(Effect.provide(makeLayer({ sent, fail: true })));
+    }).pipe(Effect.provide(makeNotifierLayerTest({ sent, fail: true })));
   });
 });
