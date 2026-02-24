@@ -124,14 +124,15 @@ export class Database extends Effect.Service<Database>()("@dtpt/Database", {
     const loadTopic = Effect.fn("Database.loadTopic")(
       function* (topicId: string) {
         const asPath = (fileName: string) => path.join(topicsPath, fileName);
-        const asFileName = () => `${topicId}.json`;
+        const isTopicFile = (fileName: string) =>
+          fileName.startsWith(`${topicId}-`) && fileName.endsWith(".json");
 
         const entries = yield* fs.readDirectory(topicsPath);
-        const fileName = entries.find((e) => e.endsWith(asFileName()));
+        const fileName = entries.find(isTopicFile);
 
         if (!fileName) {
           return yield* DataFileNotFound.make({
-            path: asPath(`*${asFileName()}`),
+            path: asPath(`${topicId}-*.json`),
           });
         }
 
