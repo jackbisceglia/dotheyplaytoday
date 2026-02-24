@@ -9,7 +9,6 @@
     "format": "pnpm -r run format",
     "test": "vitest run",
     "test:watch": "vitest",
-    "notify": "pnpm -F @dtpt/scripts notify",
     "@core": "pnpm -F @dtpt/core",
     "@scripts": "pnpm -F @dtpt/scripts",
     "prepare": "pnpm exec effect-language-service patch"

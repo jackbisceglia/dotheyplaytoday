@@ -274,7 +274,7 @@ type TopicFile = {
 ### CLI
 
 ```
-pnpm notify
+pnpm @scripts notify
 
 Description:
   Runs the notification evaluation job and sends any due notifications.
