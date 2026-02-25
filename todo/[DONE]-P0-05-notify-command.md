@@ -12,7 +12,7 @@ prereqs:
 
 **Acceptance:**
 
-- [x] `notify` script in `packages/scripts/` runnable via `pnpm @scripts notify`
+- [x] `start:notify` script in `packages/jobs/` runnable via `pnpm @jobs start:notify`
 - [x] Orchestration flow:
   1. Load all subscriptions
   2. Filter to enabled subscriptions only
@@ -26,14 +26,14 @@ prereqs:
 
 **Verify:**
 
-- `pnpm @scripts notify -- --dry-run` runs end-to-end without Resend credentials and exits successfully
-- `pnpm test -- packages/scripts/src/tests/notify.test.ts` passes orchestration coverage (due/send/update, skip paths, dry-run, notifier failure continue, fatal abort)
+- `pnpm @jobs start:notify -- --dry-run` runs end-to-end without Resend credentials and exits successfully
+- `pnpm test -- packages/jobs/src/notify/index.test.ts` passes orchestration coverage (due/send/update, skip paths, dry-run, notifier failure continue, fatal abort)
 - `pnpm typecheck`, `pnpm lint`, and `pnpm format` pass for the full repo
 
 **Notes:**
 
-- Implemented in `packages/scripts/src/index.ts` with `runNotifyJob` orchestration + `--dry-run` CLI parsing
-- Added `packages/scripts/src/tests/notify.test.ts` with 8 orchestration tests
+- Implemented in `packages/jobs/src/notify/index.ts` with `runNotifyJob` orchestration + `--dry-run` CLI parsing
+- Added `packages/jobs/src/notify/index.test.ts` with 8 orchestration tests
 - Relative schedules are explicitly skipped and logged for MVP
 - Notifier transport failures are logged and processing continues; integrity/dependency failures abort the run
-- Updated `packages/core/src/modules/database/service.ts` to resolve `data/` relative to module location so `pnpm @scripts notify` works when executed from `packages/scripts`
+- Updated `packages/core/src/modules/database/service.ts` to resolve `data/` relative to module location so `pnpm @jobs start:notify` works when executed from `packages/jobs`

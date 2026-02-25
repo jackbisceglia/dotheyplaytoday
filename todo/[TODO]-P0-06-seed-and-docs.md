@@ -17,14 +17,14 @@ prereqs:
 - [ ] README updated with:
   - Project overview
   - Setup instructions (install, env vars)
-  - How to run locally (`pnpm @scripts notify`)
+  - How to run locally (`pnpm @jobs start:notify`)
   - JSON data format documentation
   - Event `site` field (required) and sports-specific values (`home`/`away`) with notification phrasing (`vs.`/`at`)
   - Timezone handling notes and DST behavior
 
 **Verify:**
 
-- Can clone repo, install deps, and run `pnpm @scripts notify` successfully
+- Can clone repo, install deps, build, and run `pnpm @jobs start:notify` successfully
 - README explains how to add new users/subscriptions
 - Data format is clear and documented
 

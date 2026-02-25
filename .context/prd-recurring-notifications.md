@@ -113,21 +113,21 @@ When this PRD is complete, the following will be true:
 
 - `AGENTS.md` - Effect.Service module structure and conventions for future core modules.
 - `packages/core/package.json` - Core package entry point for shared logic and services.
-- `packages/scripts/package.json` - Script surface for running the notification job.
+- `packages/jobs/package.json` - Job script surface for running the notification job.
 
 ### Key Files
 
 - `AGENTS.md` - Project structure and Effect.Service conventions.
 - `packages/core/package.json` - Core service package configuration.
-- `packages/scripts/package.json` - Script entry for `notify` command.
+- `packages/jobs/package.json` - Script entry for `start:notify` command.
 
 ### System Dependencies
 
-- Runtime: Bun
-- Libraries: Effect, @effect/platform, @effect/platform-bun
+- Runtime: Node.js
+- Libraries: Effect, @effect/platform, @effect/platform-node
 - Email provider: Resend (initial)
 - Data sources: JSON files for users, subscriptions, and event schedules
-- Execution: External cron (every 15 minutes) invoking the `notify` script
+- Execution: External cron (every 15 minutes) invoking the `start:notify` job
 
 ### Data Model
 
@@ -274,7 +274,7 @@ type TopicFile = {
 ### CLI
 
 ```
-pnpm @scripts notify
+pnpm @jobs start:notify
 
 Description:
   Runs the notification evaluation job and sends any due notifications.

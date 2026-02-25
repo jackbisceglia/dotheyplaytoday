@@ -25,8 +25,8 @@ Issue chosen
   - 04-notification-service.md
 
 Current codebase findings relevant to issue 05
-- Root script exists: package.json has "notify": "pnpm -F @dtpt/scripts notify".
-- scripts package currently runs bun src/index.ts, and src/index.ts is empty.
+- Root script exists: package.json has "@jobs": "pnpm -F @dtpt/jobs".
+- jobs package now runs `start:notify` from built output at `dist/notify/index.js`.
 - Core services already implemented:
   - Database service:
     - loadUsers
@@ -70,7 +70,7 @@ Conversation decisions (architectural alignment)
   - Decision: one at a time is fine for now.
   - Note: can revisit batching later if useful with provider semantics.
 - Script structure:
-  - Decision: start in packages/scripts/src/index.ts now.
+  - Decision: start in `packages/jobs/src/notify/index.ts` now.
   - Refactor to thin index + notify module later as complexity grows.
 - Dry run mode:
   - Decision: add dry-run option to script.
@@ -116,8 +116,8 @@ Test plan for scripts orchestration
 
 Validation plan during implementation
 - Run frequently while coding:
-  - pnpm @scripts typecheck
-  - pnpm @scripts lint
+  - pnpm @jobs typecheck
+  - pnpm @jobs lint
 - Before marking complete:
   - pnpm typecheck
   - pnpm lint

@@ -4,13 +4,13 @@ Date: 2026-02-13
 
 ## Scope Reviewed
 
-- `packages/scripts/src/tests/notify.test.ts`
+- `packages/jobs/src/notify/index.test.ts`
 - `packages/core/src/tests/subscriptions.test.ts`
 - `packages/core/src/tests/notification-resend-provider.test.ts`
 
 ## Current Coverage Assessment
 
-### `packages/scripts/src/tests/notify.test.ts`
+### `packages/jobs/src/notify/index.test.ts`
 
 What is covered well:
 
@@ -75,7 +75,7 @@ Risk if not addressed:
 
 ## Recommended Amendments (Priority)
 
-1. Add missing orchestration branch tests in `packages/scripts/src/tests/notify.test.ts`.
+1. Add missing orchestration branch tests in `packages/jobs/src/notify/index.test.ts`.
 2. Rename the missing-user test title to match current non-fatal behavior.
 3. Strengthen Resend provider mapping assertions and add retry-exhaustion tests.
 4. Add `Database.loadTopic` failure propagation test in `packages/core/src/tests/subscriptions.test.ts`.
