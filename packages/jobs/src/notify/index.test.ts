@@ -16,7 +16,7 @@ import { Topic } from "@dtpt/core/modules/topics/schema";
 import { User } from "@dtpt/core/modules/users/schema";
 import { DateTime, Effect, Either, Layer, Schema } from "effect";
 
-import { runNotifyJob } from "../index";
+import { runNotifyJob } from "./index.js";
 
 const decode = Schema.decodeUnknownSync;
 

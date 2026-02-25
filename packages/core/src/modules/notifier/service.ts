@@ -1,9 +1,9 @@
 import { Array, DateTime, Effect } from "effect";
 
-import type { NonEmptyEvents } from "../events/schema";
-import { formatBody, formatEventSubject } from "./format";
-import { NotifierContext } from "./providers/service";
-import type { User } from "../users/schema";
+import type { NonEmptyEvents } from "../events/schema.js";
+import { formatBody, formatEventSubject } from "./format.js";
+import { NotifierContext } from "./providers/service.js";
+import type { User } from "../users/schema.js";
 
 export class Notifier extends Effect.Service<Notifier>()("@dtpt/Notifier", {
   effect: Effect.gen(function* () {

@@ -5,9 +5,9 @@ import {
   NotifierResponseError,
   type NotifierError,
   type NotifierMessage,
-} from "../service";
-import { ResendClientService } from "./client";
-import { ResendConfig } from "./config";
+} from "../service.js";
+import { ResendClientService } from "./client.js";
+import { ResendConfig } from "./config.js";
 
 const constraints = { retry: { max: 2 } };
 

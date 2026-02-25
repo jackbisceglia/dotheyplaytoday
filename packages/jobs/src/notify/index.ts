@@ -1,4 +1,6 @@
-import { BunContext, BunRuntime } from "@effect/platform-bun";
+import { pathToFileURL } from "node:url";
+
+import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Database } from "@dtpt/core/modules/database/service";
 import type {
   NotifierRequestError,
@@ -283,16 +285,20 @@ function main() {
     Subscriptions.Default,
   ).pipe(
     Layer.provide(DotEnvConfigProvider),
-    Layer.provideMerge(BunContext.layer),
+    Layer.provideMerge(NodeContext.layer),
   );
 
-  BunRuntime.runMain(
+  NodeRuntime.runMain(
     notify({ dryRun, ignoreAlreadySent }).pipe(Effect.provide(ProgramLayer)),
   );
 }
 
 export default main;
 
-if (import.meta.main) {
+const isMain =
+  typeof process.argv[1] === "string" &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMain) {
   main();
 }

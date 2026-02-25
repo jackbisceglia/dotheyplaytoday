@@ -3,7 +3,7 @@ packages:
 
 catalog:
   "@effect/platform": ^0.94.0
-  "@effect/platform-bun": ^0.87.0
+  "@effect/platform-node": 0.104.0
   effect: ^3.19.13
   resend: ^6.9.1
 

@@ -1,7 +1,7 @@
 import { DateTime, Match } from "effect";
 
-import type { Event, NonEmptyEvents } from "../events/schema";
-import type { User } from "../users/schema";
+import type { Event, NonEmptyEvents } from "../events/schema.js";
+import type { User } from "../users/schema.js";
 
 type NotifierFormatOptions = {
   events: NonEmptyEvents;

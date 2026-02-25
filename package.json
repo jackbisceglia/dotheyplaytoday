@@ -4,13 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
     "test": "vitest run",
     "test:watch": "vitest",
     "@core": "pnpm -F @dtpt/core",
-    "@scripts": "pnpm -F @dtpt/scripts",
+    "@jobs": "pnpm -F @dtpt/jobs",
     "prepare": "pnpm exec effect-language-service patch"
   },
   "devDependencies": {

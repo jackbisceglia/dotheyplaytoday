@@ -1,14 +1,14 @@
 import { DateTime, Effect } from "effect";
 
-import { Database } from "../database/service";
-import type { User } from "../users/schema";
-import type { Subscription } from "./schema";
-import type { LocalDate } from "./time";
+import { Database } from "../database/service.js";
+import type { User } from "../users/schema.js";
+import type { Subscription } from "./schema.js";
+import type { LocalDate } from "./time.js";
 import {
   isAlreadySentToday as _isAlreadySentToday,
   isDue as _isDue,
   localDateFromUtc,
-} from "./time";
+} from "./time.js";
 
 type GetDueEventsOptions = {
   user: User;
