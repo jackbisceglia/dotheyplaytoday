@@ -6,18 +6,20 @@ status: TODO
 priority: P0
 prereqs:
   - 05-notify-command.md
+  - 07-sports-event-home-away-context.md
 ---
 
 **Acceptance:**
 
 - [ ] Sample `packages/core/data/users.json` with test user
 - [ ] Sample `packages/core/data/subscriptions.json` with Celtics subscription
-- [ ] Sample `packages/core/data/topics/<topicId>-celtics.json` with upcoming games
+- [ ] Sample `packages/core/data/topics/<topicId>-celtics.json` with upcoming games and required event `site`
 - [ ] README updated with:
   - Project overview
   - Setup instructions (install, env vars)
   - How to run locally (`pnpm @scripts notify`)
   - JSON data format documentation
+  - Event `site` field (required) and sports-specific values (`home`/`away`) with notification phrasing (`vs.`/`at`)
   - Timezone handling notes and DST behavior
 
 **Verify:**
