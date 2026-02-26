@@ -49,24 +49,28 @@ const topic = decode(Topic)({
     {
       id: sampleIds.eventIdA,
       startUtc: "2026-02-10T03:30:00Z",
+      site: "home",
       teamName: "Celtics",
       opponent: "Raptors",
     },
     {
       id: sampleIds.eventIdB,
       startUtc: "2026-02-10T00:30:00Z",
+      site: "away",
       teamName: "Celtics",
       opponent: "Knicks",
     },
     {
       id: sampleIds.eventIdC,
       startUtc: "2026-02-12T00:30:00Z",
+      site: "home",
       teamName: "Celtics",
       opponent: "Heat",
     },
     {
       id: sampleIds.eventIdD,
       startUtc: "2026-02-11T00:30:00Z",
+      site: "away",
       teamName: "Celtics",
       opponent: "Bulls",
     },

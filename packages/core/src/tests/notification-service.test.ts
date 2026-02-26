@@ -27,6 +27,7 @@ const user = decode(User)({
 const makeEvent = (opts: {
   id: string;
   startUtc: string;
+  site: "home" | "away";
   teamName: string;
   opponent: string;
 }) =>
@@ -34,6 +35,7 @@ const makeEvent = (opts: {
     id: opts.id,
     _tag: "sports",
     startUtc: opts.startUtc,
+    site: opts.site,
     teamName: opts.teamName,
     opponent: opts.opponent,
   });
@@ -84,6 +86,7 @@ describe("Notifier", () => {
     const event = makeEvent({
       id: sampleIds.eventIdA,
       startUtc: "2026-02-10T00:30:00Z",
+      site: "home",
       teamName: "Celtics",
       opponent: "Raptors",
     });
@@ -109,6 +112,7 @@ describe("Notifier", () => {
     const earlyEvent = makeEvent({
       id: sampleIds.eventIdA,
       startUtc: "2026-02-10T00:30:00Z",
+      site: "away",
       teamName: "Celtics",
       opponent: "Raptors",
     });
@@ -116,6 +120,7 @@ describe("Notifier", () => {
     const lateEvent = makeEvent({
       id: sampleIds.eventIdB,
       startUtc: "2026-02-10T03:30:00Z",
+      site: "home",
       teamName: "Celtics",
       opponent: "Knicks",
     });
@@ -130,8 +135,8 @@ describe("Notifier", () => {
       expect(sent).toHaveLength(1);
       const [message] = sent;
       expect(message?.title).toBe("Celtics play today, 2 games");
-      expect(message?.body).toContain(`Raptors at ${expectedEarly}`);
-      expect(message?.body).toContain(`Knicks at ${expectedLate}`);
+      expect(message?.body).toContain(`Celtics @ Raptors, ${expectedEarly}`);
+      expect(message?.body).toContain(`Celtics vs. Knicks, ${expectedLate}`);
 
       const body = message?.body ?? "";
       expect(body.indexOf("Raptors")).toBeLessThan(body.indexOf("Knicks"));
@@ -144,6 +149,7 @@ describe("Notifier", () => {
     const event = makeEvent({
       id: sampleIds.eventIdA,
       startUtc: "2026-02-10T00:30:00Z",
+      site: "home",
       teamName: "Celtics",
       opponent: "Raptors",
     });

@@ -4,157 +4,183 @@
       "id": "34b0dcb9-09c6-5317-9aec-b9a6fd382b6a",
       "startUtc": "2026-02-25T02:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Phoenix Suns"
+      "opponent": "Phoenix Suns",
+      "site": "away"
     },
     {
       "id": "202d6a93-eb87-5359-b218-4af6cb7d9698",
       "startUtc": "2026-02-26T03:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Denver Nuggets"
+      "opponent": "Denver Nuggets",
+      "site": "away"
     },
     {
       "id": "d6eece4d-6d79-5dfc-9e04-c6bf0e6f1086",
       "startUtc": "2026-02-28T00:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Brooklyn Nets"
+      "opponent": "Brooklyn Nets",
+      "site": "home"
     },
     {
       "id": "651e2802-7379-586d-b75b-f996961ec7ed",
       "startUtc": "2026-03-02T01:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Philadelphia 76ers"
+      "opponent": "Philadelphia 76ers",
+      "site": "home"
     },
     {
       "id": "63b72fdf-6e30-5e8f-9056-2c40901a335c",
       "startUtc": "2026-03-03T00:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Milwaukee Bucks"
+      "opponent": "Milwaukee Bucks",
+      "site": "away"
     },
     {
       "id": "d6d1e476-9ee5-5b43-99c3-57fc892efa89",
       "startUtc": "2026-03-05T00:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Charlotte Hornets"
+      "opponent": "Charlotte Hornets",
+      "site": "home"
     },
     {
       "id": "ac4fc462-51fa-5fdd-8a4d-e41127ef680b",
       "startUtc": "2026-03-07T00:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Dallas Mavericks"
+      "opponent": "Dallas Mavericks",
+      "site": "home"
     },
     {
       "id": "9e2ecb30-2306-5608-b9cd-0c8f1f00a95e",
       "startUtc": "2026-03-08T17:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Cleveland Cavaliers"
+      "opponent": "Cleveland Cavaliers",
+      "site": "away"
     },
     {
       "id": "68b388da-2259-5c49-b2be-4941aeb40544",
       "startUtc": "2026-03-11T00:00:00Z",
       "teamName": "Celtics",
-      "opponent": "San Antonio Spurs"
+      "opponent": "San Antonio Spurs",
+      "site": "away"
     },
     {
       "id": "be0a0d34-72f4-5f4a-8547-6603c9e40a2e",
       "startUtc": "2026-03-13T01:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Oklahoma City Thunder"
+      "opponent": "Oklahoma City Thunder",
+      "site": "away"
     },
     {
       "id": "edc84bd0-599b-5253-85dc-960c7e674c0a",
       "startUtc": "2026-03-14T22:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Washington Wizards"
+      "opponent": "Washington Wizards",
+      "site": "home"
     },
     {
       "id": "56a0dce3-71e7-50cd-a961-96d6deddcb46",
       "startUtc": "2026-03-16T23:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Phoenix Suns"
+      "opponent": "Phoenix Suns",
+      "site": "home"
     },
     {
       "id": "0f592134-56cd-5653-aca1-2dfebd4700f0",
       "startUtc": "2026-03-18T23:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Golden State Warriors"
+      "opponent": "Golden State Warriors",
+      "site": "home"
     },
     {
       "id": "4b4455c5-6715-5c5a-87d0-49e539184b75",
       "startUtc": "2026-03-21T00:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Memphis Grizzlies"
+      "opponent": "Memphis Grizzlies",
+      "site": "away"
     },
     {
       "id": "0f6dce16-e728-542a-b322-b855c5738db5",
       "startUtc": "2026-03-23T00:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Minnesota Timberwolves"
+      "opponent": "Minnesota Timberwolves",
+      "site": "home"
     },
     {
       "id": "4d1b3010-094e-5d69-b4e3-1bff8f48cd16",
       "startUtc": "2026-03-25T23:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Oklahoma City Thunder"
+      "opponent": "Oklahoma City Thunder",
+      "site": "home"
     },
     {
       "id": "0b7bb4f4-d478-5ef8-954b-020061da4d7f",
       "startUtc": "2026-03-27T23:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Atlanta Hawks"
+      "opponent": "Atlanta Hawks",
+      "site": "home"
     },
     {
       "id": "79d93ede-04d4-54fe-931c-e9b2daf7dbca",
       "startUtc": "2026-03-29T22:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Charlotte Hornets"
+      "opponent": "Charlotte Hornets",
+      "site": "away"
     },
     {
       "id": "f5cfc6b7-b225-5720-a423-e0c2e4cb2083",
       "startUtc": "2026-03-30T23:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Atlanta Hawks"
+      "opponent": "Atlanta Hawks",
+      "site": "away"
     },
     {
       "id": "a43018f0-a70b-51da-9921-359e0c8431da",
       "startUtc": "2026-04-01T23:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Miami Heat"
+      "opponent": "Miami Heat",
+      "site": "away"
     },
     {
       "id": "654a87f9-6f40-5e39-a118-a9b7760afaa2",
       "startUtc": "2026-04-04T00:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Milwaukee Bucks"
+      "opponent": "Milwaukee Bucks",
+      "site": "away"
     },
     {
       "id": "ace09419-ca94-53be-a239-61bd0602d4aa",
       "startUtc": "2026-04-05T19:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Toronto Raptors"
+      "opponent": "Toronto Raptors",
+      "site": "home"
     },
     {
       "id": "13f8c537-cd63-5324-95e7-80d96808212b",
       "startUtc": "2026-04-07T23:30:00Z",
       "teamName": "Celtics",
-      "opponent": "Charlotte Hornets"
+      "opponent": "Charlotte Hornets",
+      "site": "home"
     },
     {
       "id": "e22b2d8d-ff54-5325-a7ce-6166a3019694",
       "startUtc": "2026-04-09T23:30:00Z",
       "teamName": "Celtics",
-      "opponent": "New York Knicks"
+      "opponent": "New York Knicks",
+      "site": "away"
     },
     {
       "id": "74047c47-a1c5-5b57-9f61-ea78f92638c2",
       "startUtc": "2026-04-10T23:30:00Z",
       "teamName": "Celtics",
-      "opponent": "New Orleans Pelicans"
+      "opponent": "New Orleans Pelicans",
+      "site": "home"
     },
     {
       "id": "2bb7c995-c498-59bd-9f0c-6a6eb8283316",
       "startUtc": "2026-04-12T22:00:00Z",
       "teamName": "Celtics",
-      "opponent": "Orlando Magic"
+      "opponent": "Orlando Magic",
+      "site": "home"
     }
   ]
 }

@@ -104,6 +104,7 @@ const makeEvent = (
   opts: {
     id?: string;
     startUtc?: string;
+    site?: "home" | "away";
     teamName?: string;
     opponent?: string;
   } = {},
@@ -112,6 +113,7 @@ const makeEvent = (
     id: opts.id ?? sampleIds.eventA,
     _tag: "sports",
     startUtc: opts.startUtc ?? "2026-02-10T00:30:00Z",
+    site: opts.site ?? "home",
     teamName: opts.teamName ?? "Celtics",
     opponent: opts.opponent ?? "Raptors",
   });
