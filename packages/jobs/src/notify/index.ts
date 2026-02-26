@@ -109,13 +109,6 @@ const logs = {
   },
 };
 
-const formatHeadline = (event: {
-  teamName: string;
-  opponent: string;
-  site: "home" | "away";
-}) =>
-  `${event.teamName} ${event.site === "home" ? "vs." : "@"} ${event.opponent}`;
-
 export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   const database = yield* Database;
   const subscriptions = yield* Subscriptions;
@@ -202,7 +195,7 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           });
         }
 
-        const headline = formatHeadline(events[0]);
+        const headline = `${events[0].teamName} ${events[0].site === "home" ? "vs." : "@"} ${events[0].opponent}`;
 
         if (opts.dryRun) {
           return yield* new NotifyDryRun({
