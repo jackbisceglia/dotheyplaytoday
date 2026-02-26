@@ -246,6 +246,35 @@ describe("notify orchestration", () => {
     });
   });
 
+  it.effect(
+    "should allow non-due fixed subscriptions when ignoreSubscriptionTiming is enabled",
+    () => {
+      const user = makeUser();
+      const subscription = makeFixedSubscription({
+        sendAtSecondsLocal: 10 * 3600,
+      });
+      const event = makeEvent();
+
+      const harness = makeHarness({
+        users: [user],
+        subscriptions: [subscription],
+        getDueEvents: () => Effect.succeed([event]),
+      });
+
+      return Effect.gen(function* () {
+        yield* runNotifyJob({
+          dryRun: false,
+          now,
+          ignoreSubscriptionTiming: true,
+        }).pipe(Effect.provide(harness.layer));
+
+        expect(harness.checks).toHaveLength(1);
+        expect(harness.sends).toHaveLength(1);
+        expect(harness.updates).toHaveLength(1);
+      });
+    },
+  );
+
   it.effect("should skip disabled subscriptions before due checks", () => {
     const user = makeUser();
     const subscription = makeFixedSubscription({ enabled: false });

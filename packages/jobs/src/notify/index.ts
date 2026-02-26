@@ -19,6 +19,7 @@ import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/effect/config";
 export type NotifyOptions = {
   dryRun: boolean;
   ignoreAlreadySent?: boolean;
+  ignoreSubscriptionTiming?: boolean;
   now?: DateTime.Utc;
 };
 
@@ -115,9 +116,10 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   const notifier = yield* Notifier;
   const now = opts.now ?? (yield* DateTime.now);
   const ignoreAlreadySent = opts.ignoreAlreadySent ?? false;
+  const ignoreSubscriptionTiming = opts.ignoreSubscriptionTiming ?? false;
 
   yield* Effect.logInfo(
-    `notify: start dryRun=${String(opts.dryRun)} ignoreAlreadySent=${String(ignoreAlreadySent)} now=${DateTime.formatIso(now)}`,
+    `notify: start dryRun=${String(opts.dryRun)} ignoreAlreadySent=${String(ignoreAlreadySent)} ignoreSubscriptionTiming=${String(ignoreSubscriptionTiming)} now=${DateTime.formatIso(now)}`,
   );
 
   const [allUsers, allSubscriptions] = yield* Effect.all([
@@ -161,7 +163,7 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
         }
 
         const isDue = subscriptions.isDue({ subscription, user, now });
-        if (!isDue) {
+        if (!isDue && !ignoreSubscriptionTiming) {
           return yield* new NotifySubscriptionNotDue({
             subscriptionId,
             topicId: subscription.topicId,
@@ -278,6 +280,9 @@ function main() {
   const opts = process.argv.slice(2);
   const dryRun = opts.includes("--dry-run");
   const ignoreAlreadySent = opts.includes("--ignore-already-sent");
+  const ignoreSubscriptionTiming = opts.includes(
+    "--ignore-subscription-timing",
+  );
 
   const ProgramLayer = Layer.mergeAll(
     getNotifierLayer(dryRun),
@@ -289,7 +294,11 @@ function main() {
   );
 
   NodeRuntime.runMain(
-    notify({ dryRun, ignoreAlreadySent }).pipe(Effect.provide(ProgramLayer)),
+    notify({
+      dryRun,
+      ignoreAlreadySent,
+      ignoreSubscriptionTiming,
+    }).pipe(Effect.provide(ProgramLayer)),
   );
 }
 
