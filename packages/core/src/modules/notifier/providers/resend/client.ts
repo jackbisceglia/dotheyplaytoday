@@ -1,7 +1,7 @@
 import { Effect, Redacted, Schema } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 import { Resend } from "resend";
-import { ResendConfig } from "./config";
+import { ResendConfig } from "./config.js";
 
 export class ResendClientInstantiationError extends Schema.TaggedError<ResendClientInstantiationError>()(
   "ResendClientInstantiationError",

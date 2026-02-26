@@ -1,15 +1,15 @@
 import { describe, it } from "@effect/vitest";
 
-import { SportsEvent } from "../modules/events/schema";
+import { SportsEvent } from "../modules/events/schema.js";
 import {
   FixedSchedule,
   RelativeSchedule,
   Schedule,
   Subscription,
-} from "../modules/subscriptions/schema";
-import { Topic } from "../modules/topics/schema";
-import { User } from "../modules/users/schema";
-import { expectFailure, expectSuccess } from "./test.utils";
+} from "../modules/subscriptions/schema.js";
+import { Topic } from "../modules/topics/schema.js";
+import { User } from "../modules/users/schema.js";
+import { expectFailure, expectSuccess } from "./test.utils.js";
 
 const sampleIds = {
   userId: "00000000-0000-0000-0000-000000000001",

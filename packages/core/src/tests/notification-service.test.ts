@@ -1,14 +1,14 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Either, Layer, Schema } from "effect";
 
-import { SportsEvent } from "../modules/events/schema";
-import { Notifier } from "../modules/notifier/service";
+import { SportsEvent } from "../modules/events/schema.js";
+import { Notifier } from "../modules/notifier/service.js";
 import {
   type NotifierMessage,
   NotifierContext,
   NotifierResponseError,
-} from "../modules/notifier/providers/service";
-import { User } from "../modules/users/schema";
+} from "../modules/notifier/providers/service.js";
+import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
 

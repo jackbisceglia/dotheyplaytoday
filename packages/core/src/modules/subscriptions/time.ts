@@ -1,7 +1,7 @@
 import { DateTime, Duration } from "effect";
 
-import type { User } from "../users/schema";
-import type { Subscription } from "./schema";
+import type { User } from "../users/schema.js";
+import type { Subscription } from "./schema.js";
 
 export type LocalDate = ReturnType<typeof DateTime.formatIsoDate>;
 

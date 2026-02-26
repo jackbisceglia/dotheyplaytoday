@@ -1,6 +1,6 @@
 import { Array, Schema } from "effect";
 
-import { TaggedStructWithOptional } from "../../lib/effect/schema";
+import { TaggedStructWithOptional } from "../../lib/effect/schema.js";
 
 export type NonEmptyEvents = Array.NonEmptyArray<Event>;
 

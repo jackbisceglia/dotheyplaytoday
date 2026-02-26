@@ -1,12 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Either, Layer, Schema } from "effect";
 
-import { Database } from "../modules/database/service";
-import { Subscriptions } from "../modules/subscriptions/service";
-import { Subscription } from "../modules/subscriptions/schema";
-import { localDateFromUtc } from "../modules/subscriptions/time";
-import { Topic } from "../modules/topics/schema";
-import { User } from "../modules/users/schema";
+import { Database } from "../modules/database/service.js";
+import { Subscriptions } from "../modules/subscriptions/service.js";
+import { Subscription } from "../modules/subscriptions/schema.js";
+import { localDateFromUtc } from "../modules/subscriptions/time.js";
+import { Topic } from "../modules/topics/schema.js";
+import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
 

@@ -1,7 +1,7 @@
 ---
 id: "00"
 title: Workspace scaffold
-description: Set up pnpm workspace, root configs (tsconfig base, eslint, prettier), and package layout for core + scripts
+description: Set up pnpm workspace, root configs (tsconfig base, eslint, prettier), and package layout for core + jobs
 status: DONE
 priority: P0
 prereqs: []
@@ -13,8 +13,8 @@ prereqs: []
 - [ ] Root `package.json` with devDeps (eslint, prettier, typescript)
 - [ ] `tsconfig.base.json` with Effect Language Service plugin
 - [ ] `packages/core/` with minimal `package.json` (`@dtpt/core`)
-- [ ] `packages/scripts/` with minimal `package.json` (`@dtpt/scripts`)
-- [ ] `pnpm @core <cmd>` / `pnpm @scripts <cmd>` scripts in root
+- [ ] `packages/jobs/` with minimal `package.json` (`@dtpt/jobs`)
+- [ ] `pnpm @core <cmd>` / `pnpm @jobs <cmd>` scripts in root
 - [ ] `AGENTS.md` commands work: `pnpm typecheck`, `pnpm lint`, `pnpm format`
 
 **Verify:** Run `pnpm install && pnpm typecheck` with zero errors.

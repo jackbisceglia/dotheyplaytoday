@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 
-import { Topic } from "../topics/schema";
-import { User } from "../users/schema";
+import { Topic } from "../topics/schema.js";
+import { User } from "../users/schema.js";
 
 export type FixedSchedule = Schema.Schema.Type<typeof FixedSchedule>;
 export const FixedSchedule = Schema.Struct({

@@ -26,7 +26,7 @@ prereqs:
 - `pnpm test -- packages/core/src/tests/domain-models.test.ts`
 - `pnpm test -- packages/core/src/tests/notification-service.test.ts`
 - `pnpm test -- packages/core/src/tests/subscriptions.test.ts`
-- `pnpm test -- packages/scripts/src/tests/notify.test.ts`
+- `pnpm test -- packages/jobs/src/notify/index.test.ts`
 - `pnpm typecheck`
 - `pnpm lint`
 - `pnpm format`

@@ -1,9 +1,9 @@
 import { FileSystem, Path } from "@effect/platform";
 import { Effect, Match, ParseResult, Schema } from "effect";
 
-import { Subscription } from "../subscriptions/schema";
-import { Topic } from "../topics/schema";
-import { User } from "../users/schema";
+import { Subscription } from "../subscriptions/schema.js";
+import { Topic } from "../topics/schema.js";
+import { User } from "../users/schema.js";
 
 const FsErrorPath = Schema.String;
 const FsErrorMessage = Schema.String;

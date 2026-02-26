@@ -4,9 +4,9 @@ This file contains guidelines for agentic coding agents working in this reposito
 
 ## Project Overview
 
-A configurable notification service that checks if a sports team (starting with Boston Celtics) has a game today and sends notifications. Built with Effect, Bun, and TypeScript in a monorepo structure.
+A configurable notification service that checks if a sports team (starting with Boston Celtics) has a game today and sends notifications. Built with Effect, Node.js, and TypeScript in a monorepo structure.
 
-**Tech Stack:** Bun, pnpm, Effect, TypeScript (strict), ESLint, Prettier
+**Tech Stack:** Node.js, pnpm, Effect, TypeScript (strict), ESLint, Prettier
 
 ## Commands
 
@@ -16,6 +16,7 @@ pnpm lint         # ESLint all packages
 pnpm format       # Prettier all packages
 
 pnpm @core <cmd>  # Run command in @dtpt/core package (e.g., pnpm @core typecheck)
+pnpm @jobs <cmd>  # Run command in @dtpt/jobs package (e.g., pnpm @jobs start:notify)
 ```
 
 Run all three checks before considering work complete.
@@ -26,7 +27,7 @@ Run all three checks before considering work complete.
 dotheyplaytoday/
 ├── packages/
 │   ├── core/     # @dtpt/core - shared core logic
-│   └── scripts/  # Build/utility scripts
+│   └── jobs/     # @dtpt/jobs - runnable background jobs
 └── reference/   # Dependency source code for reference (e.g., effect/)
 ```
 

@@ -1,14 +1,14 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Schema } from "effect";
 
-import { Subscription } from "../modules/subscriptions/schema";
+import { Subscription } from "../modules/subscriptions/schema.js";
 import {
   getScheduledSend,
   isAlreadySentToday,
   isDue,
   localDateFromUtc,
-} from "../modules/subscriptions/time";
-import { User } from "../modules/users/schema";
+} from "../modules/subscriptions/time.js";
+import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
 
