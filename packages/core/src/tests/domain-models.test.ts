@@ -21,6 +21,7 @@ const sampleIds = {
 const sportsEventInput = {
   id: sampleIds.eventId,
   startUtc: "2026-01-24T19:30:00Z",
+  site: "home",
   teamName: "Celtics",
   opponent: "Raptors",
 };
@@ -90,6 +91,13 @@ describe("domain model schemas", () => {
       expectFailure(SportsEvent, {
         ...sportsEventInput,
         startUtc: "not-a-date",
+      });
+    });
+
+    it("rejects invalid site value", () => {
+      expectFailure(SportsEvent, {
+        ...sportsEventInput,
+        site: "neutral",
       });
     });
   });

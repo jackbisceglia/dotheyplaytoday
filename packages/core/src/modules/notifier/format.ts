@@ -17,10 +17,11 @@ const formatEventStart = (startUtc: Event["startUtc"], tz: User["timezone"]) =>
     timeZoneName: "short",
   });
 
-const formatEventSummary = (event: Event) =>
+export const formatEventMatchup = (event: Event) =>
   Match.value(event).pipe(
     Match.tags({
-      sports: (e) => `${e.teamName} vs. ${e.opponent}`,
+      sports: (e) =>
+        `${e.teamName} ${e.site === "home" ? "vs." : "@"} ${e.opponent}`,
     }),
     Match.exhaustive,
   );
@@ -30,7 +31,7 @@ export const formatEventSubject = (opts: NotifierFormatOptions) =>
     Match.when(
       (events) => events.length === 1,
       (events) =>
-        `${formatEventSummary(events[0])}, ${formatEventStart(events[0].startUtc, opts.timezone)}`,
+        `${formatEventMatchup(events[0])}, ${formatEventStart(events[0].startUtc, opts.timezone)}`,
     ),
     Match.when(
       (events) => events.length > 1,
@@ -55,7 +56,7 @@ export const formatBody = (opts: NotifierFormatOptions) =>
         "",
         ...opts.events.map(
           (e) =>
-            `- ${e.teamName} vs. ${e.opponent} at ${formatEventStart(e.startUtc, opts.timezone)}`,
+            `- ${formatEventMatchup(e)}, ${formatEventStart(e.startUtc, opts.timezone)}`,
         ),
       ].join("\n");
     }),

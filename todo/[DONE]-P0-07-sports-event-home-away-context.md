@@ -2,7 +2,7 @@
 id: "07"
 title: Sports event home or away context
 description: Add required event site context and narrow sports events to home or away for notification phrasing
-status: TODO
+status: DONE
 priority: P0
 prereqs:
   - 01-domain-models-and-schemas.md
@@ -11,15 +11,15 @@ prereqs:
 
 **Acceptance:**
 
-- [ ] `EventBase` includes required `site` field for all events
-- [ ] `SportsEvent` narrows `site` to `"home" | "away"`
-- [ ] Non-sports event types can use free-text site labels (for example, `"Las Vegas"`)
-- [ ] Topic event JSON validation requires site for sports events
-- [ ] Notification rendering conveys home/away context:
+- [x] `EventBase` includes required `site` field for all events
+- [x] `SportsEvent` narrows `site` to `"home" | "away"`
+- [x] Non-sports event types can use free-text site labels (for example, `"Las Vegas"`)
+- [x] Topic event JSON validation requires site for sports events
+- [x] Notification rendering conveys home/away context:
   - home uses `vs.`
-  - away uses `at`
-- [ ] Subject/body formatting remains readable for both single-game and multi-game notifications
-- [ ] Existing tests and fixtures that decode `SportsEvent` are updated with site values
+  - away uses `@`
+- [x] Subject/body formatting remains readable for both single-game and multi-game notifications
+- [x] Existing tests and fixtures that decode `SportsEvent` are updated with site values
 
 **Verify:**
 
@@ -36,6 +36,6 @@ prereqs:
 - Model this as event-level `site` context in `EventBase`, then override at `SportsEvent` for stronger validation
 - Prefer explicit string literals over a boolean (clearer payloads and easier future extension)
 - Include a same-PR data update for `packages/core/data/topics/*.json` so schema decoding does not break
-- For away games, avoid awkward wording like `at <opponent> at <time>` in body copy
+- User-facing away phrasing uses `@`; body list lines use comma-time formatting for readability
 - Keep venue/arena metadata out of scope for this item (no new `venue` object yet)
 - If neutral-site games become a requirement, extend the union with `neutral` in a follow-up item
