@@ -6,5 +6,13 @@
     "schedule": { "type": "fixed", "sendAtSecondsLocal": 6300 },
     "enabled": true,
     "lastSentAt": null
+  },
+  {
+    "id": "f4769816-bfce-5135-8cd9-10ad33ff49d9",
+    "userId": "3d3b8a9c-7f2d-4f5d-9b4f-4d8cfdd0f6c2",
+    "topicId": "11111111-2222-4333-8444-555555555555",
+    "schedule": { "type": "fixed", "sendAtSecondsLocal": 7800 },
+    "enabled": true,
+    "lastSentAt": null
   }
 ]
