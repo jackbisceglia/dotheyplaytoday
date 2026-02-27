@@ -1,0 +1,165 @@
+{
+  "events": [
+    {
+      "id": "af29c00b-c50c-52a3-bb98-e1e91736f844",
+      "startUtc": "2026-02-28T02:30:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Oklahoma City Thunder",
+      "site": "away"
+    },
+    {
+      "id": "2f3da609-35ae-5ab9-9379-b950eb9181ce",
+      "startUtc": "2026-03-01T20:30:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Minnesota Timberwolves",
+      "site": "home"
+    },
+    {
+      "id": "de3ac335-6468-5beb-a73c-8cda482c16bb",
+      "startUtc": "2026-03-03T02:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Utah Jazz",
+      "site": "away"
+    },
+    {
+      "id": "e962f9a1-5d4c-51bc-a0f4-bfb75f8b5a40",
+      "startUtc": "2026-03-06T03:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Los Angeles Lakers",
+      "site": "home"
+    },
+    {
+      "id": "308d347b-4020-5b9d-ad7f-7f630c36efe0",
+      "startUtc": "2026-03-07T02:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "New York Knicks",
+      "site": "home"
+    },
+    {
+      "id": "3c5e934f-6bdb-5ea8-ac29-de71574286eb",
+      "startUtc": "2026-03-09T23:30:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Oklahoma City Thunder",
+      "site": "away"
+    },
+    {
+      "id": "5ae04757-6253-52ab-8b88-b693cfb4b243",
+      "startUtc": "2026-03-12T02:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Houston Rockets",
+      "site": "home"
+    },
+    {
+      "id": "67550311-acb6-5071-9a4e-9645839efd40",
+      "startUtc": "2026-03-13T01:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "San Antonio Spurs",
+      "site": "away"
+    },
+    {
+      "id": "28ddb947-fccb-5d32-9eda-c0c97c63f6bf",
+      "startUtc": "2026-03-15T00:30:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Los Angeles Lakers",
+      "site": "away"
+    },
+    {
+      "id": "89496170-03a4-57c3-9eda-26979629de79",
+      "startUtc": "2026-03-18T01:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Philadelphia 76ers",
+      "site": "home"
+    },
+    {
+      "id": "a97cb69f-7d6f-50eb-80ff-8fc7cb62232a",
+      "startUtc": "2026-03-19T00:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Memphis Grizzlies",
+      "site": "away"
+    },
+    {
+      "id": "207c8c90-10ca-594e-870f-93b8dc2bce36",
+      "startUtc": "2026-03-21T01:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Toronto Raptors",
+      "site": "home"
+    },
+    {
+      "id": "7a35c32a-8741-5f71-9979-26b0f9f46201",
+      "startUtc": "2026-03-22T21:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Portland Trail Blazers",
+      "site": "home"
+    },
+    {
+      "id": "bf5914a3-c14a-53f6-a6af-369db9253e6b",
+      "startUtc": "2026-03-25T03:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Phoenix Suns",
+      "site": "away"
+    },
+    {
+      "id": "9ae3cee5-7a4f-59e3-8a30-0c8246b24627",
+      "startUtc": "2026-03-26T02:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Dallas Mavericks",
+      "site": "home"
+    },
+    {
+      "id": "3ff6f0fa-410d-5940-96e4-6f4825c3be04",
+      "startUtc": "2026-03-28T01:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Utah Jazz",
+      "site": "home"
+    },
+    {
+      "id": "c10de8ca-cec9-5e25-bc1f-c656d65ffa47",
+      "startUtc": "2026-03-30T02:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Golden State Warriors",
+      "site": "home"
+    },
+    {
+      "id": "a0c751fa-6e0e-5623-837d-2fc08e5814f0",
+      "startUtc": "2026-04-02T01:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Utah Jazz",
+      "site": "away"
+    },
+    {
+      "id": "6655d90d-6e72-5519-8c45-8139a4e112ab",
+      "startUtc": "2026-04-04T19:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "San Antonio Spurs",
+      "site": "home"
+    },
+    {
+      "id": "c09b33ad-3ab5-5fe4-be18-c9fa62e9bca5",
+      "startUtc": "2026-04-07T01:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Portland Trail Blazers",
+      "site": "home"
+    },
+    {
+      "id": "3e03a2db-d3f4-5b4e-b66c-b6af3f46bd3e",
+      "startUtc": "2026-04-09T01:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "d1a87c27-cda2-5dca-81db-f3104bb6e004",
+      "startUtc": "2026-04-11T01:00:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "Oklahoma City Thunder",
+      "site": "home"
+    },
+    {
+      "id": "efceaf48-3dc4-5530-a72c-9dbd68062074",
+      "startUtc": "2026-04-13T00:30:00Z",
+      "teamName": "Denver Nuggets",
+      "opponent": "San Antonio Spurs",
+      "site": "away"
+    }
+  ]
+}

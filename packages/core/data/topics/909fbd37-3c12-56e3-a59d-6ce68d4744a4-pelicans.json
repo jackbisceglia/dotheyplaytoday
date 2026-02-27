@@ -1,0 +1,165 @@
+{
+  "events": [
+    {
+      "id": "5b5ff265-d66d-5174-84c8-16a9b1fbac77",
+      "startUtc": "2026-02-27T02:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Utah Jazz",
+      "site": "away"
+    },
+    {
+      "id": "18afb2cb-da7c-5d5e-9d83-b2768f19c009",
+      "startUtc": "2026-03-01T02:30:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Utah Jazz",
+      "site": "away"
+    },
+    {
+      "id": "38818db9-1942-5010-a1a4-2ca23c52b3fa",
+      "startUtc": "2026-03-02T02:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "37590f74-5afd-581e-9568-2d3d850ef7da",
+      "startUtc": "2026-03-04T03:30:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Los Angeles Lakers",
+      "site": "away"
+    },
+    {
+      "id": "a58c75b1-8f0a-5e5c-a7fa-6a6aebb701f6",
+      "startUtc": "2026-03-06T03:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Sacramento Kings",
+      "site": "away"
+    },
+    {
+      "id": "99b47ec4-a20b-5c87-8a8c-9d002184307a",
+      "startUtc": "2026-03-07T02:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Phoenix Suns",
+      "site": "away"
+    },
+    {
+      "id": "c7666260-c26a-5d41-a683-82ddca8a88ca",
+      "startUtc": "2026-03-08T23:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Washington Wizards",
+      "site": "home"
+    },
+    {
+      "id": "a25a80fa-c829-538e-b811-25c735846e0b",
+      "startUtc": "2026-03-12T00:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Toronto Raptors",
+      "site": "home"
+    },
+    {
+      "id": "0a1021b2-4266-5a21-bb92-4a584dc521dd",
+      "startUtc": "2026-03-14T00:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Houston Rockets",
+      "site": "away"
+    },
+    {
+      "id": "19f16066-55b0-5e27-bace-d8d1020676fe",
+      "startUtc": "2026-03-17T00:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Dallas Mavericks",
+      "site": "home"
+    },
+    {
+      "id": "bd09039a-1456-52bf-a5a0-0e1184f45be0",
+      "startUtc": "2026-03-19T00:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "LA Clippers",
+      "site": "home"
+    },
+    {
+      "id": "c7eeca06-04d0-5431-b283-23e6acb4b96f",
+      "startUtc": "2026-03-20T00:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "LA Clippers",
+      "site": "home"
+    },
+    {
+      "id": "7859cdc8-2cff-52e2-808f-f855aa1ab49d",
+      "startUtc": "2026-03-21T23:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Cleveland Cavaliers",
+      "site": "home"
+    },
+    {
+      "id": "c260f3ce-7703-52cf-a695-1bc628747be1",
+      "startUtc": "2026-03-24T23:30:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "New York Knicks",
+      "site": "away"
+    },
+    {
+      "id": "bbe7f900-5358-5271-9d48-30d54c563182",
+      "startUtc": "2026-03-26T23:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Detroit Pistons",
+      "site": "away"
+    },
+    {
+      "id": "baec5e99-8c01-5cbd-9839-6b5761e8a2d3",
+      "startUtc": "2026-03-28T00:30:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Toronto Raptors",
+      "site": "away"
+    },
+    {
+      "id": "5ac7ae50-7913-55c7-8fcc-281b6c432985",
+      "startUtc": "2026-03-29T23:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Houston Rockets",
+      "site": "home"
+    },
+    {
+      "id": "0742a233-dfa2-5742-86f7-a1544cd5d6d5",
+      "startUtc": "2026-04-03T02:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Portland Trail Blazers",
+      "site": "away"
+    },
+    {
+      "id": "4bc31128-de6b-5a22-8e6b-f6520a97fe36",
+      "startUtc": "2026-04-04T02:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Sacramento Kings",
+      "site": "away"
+    },
+    {
+      "id": "9c3a4491-f435-5521-bea1-617d5a9ba95d",
+      "startUtc": "2026-04-05T23:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Orlando Magic",
+      "site": "home"
+    },
+    {
+      "id": "56fef0d5-2339-5938-a393-fbb4252a795a",
+      "startUtc": "2026-04-08T00:00:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Utah Jazz",
+      "site": "home"
+    },
+    {
+      "id": "559b5516-d5db-5acd-a83f-baef0254dac9",
+      "startUtc": "2026-04-10T23:30:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "d611bae6-039c-5806-853f-ad1cdd962b0d",
+      "startUtc": "2026-04-13T00:30:00Z",
+      "teamName": "New Orleans Pelicans",
+      "opponent": "Minnesota Timberwolves",
+      "site": "away"
+    }
+  ]
+}

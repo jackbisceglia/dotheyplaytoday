@@ -1,0 +1,158 @@
+{
+  "events": [
+    {
+      "id": "0f9349f1-509f-5390-b6a1-432553afb15e",
+      "startUtc": "2026-02-28T02:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Denver Nuggets",
+      "site": "home"
+    },
+    {
+      "id": "434f8539-80f6-53cf-980c-fa704aeaee1c",
+      "startUtc": "2026-03-02T01:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Dallas Mavericks",
+      "site": "away"
+    },
+    {
+      "id": "76b351ec-bb2d-5e03-ae8d-c5240812528b",
+      "startUtc": "2026-03-04T01:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Chicago Bulls",
+      "site": "away"
+    },
+    {
+      "id": "5524b757-8572-5dd0-a31c-e316645893bb",
+      "startUtc": "2026-03-05T00:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "New York Knicks",
+      "site": "away"
+    },
+    {
+      "id": "79cfe6f5-d206-515f-8961-894ac7b5f39c",
+      "startUtc": "2026-03-08T01:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Golden State Warriors",
+      "site": "home"
+    },
+    {
+      "id": "a11caeb9-22af-5687-bdb2-ae49ae207027",
+      "startUtc": "2026-03-09T23:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Denver Nuggets",
+      "site": "home"
+    },
+    {
+      "id": "6e499ff3-85d2-55cd-9417-8dc035743795",
+      "startUtc": "2026-03-13T01:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Boston Celtics",
+      "site": "home"
+    },
+    {
+      "id": "f916bb1d-753a-54c1-a349-3a1e9e67053e",
+      "startUtc": "2026-03-15T17:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Minnesota Timberwolves",
+      "site": "home"
+    },
+    {
+      "id": "3ebfe152-3121-5e2b-9e5f-5ca657ace00f",
+      "startUtc": "2026-03-17T23:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Orlando Magic",
+      "site": "away"
+    },
+    {
+      "id": "ccd50a7a-e05d-57bc-ab52-cea2cbb8f297",
+      "startUtc": "2026-03-18T23:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Brooklyn Nets",
+      "site": "away"
+    },
+    {
+      "id": "f35927dd-9094-5cb9-bfe7-d35323a0ac8c",
+      "startUtc": "2026-03-21T21:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "41d9feff-f9e7-5600-a5b7-4b1e278b430a",
+      "startUtc": "2026-03-23T23:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Philadelphia 76ers",
+      "site": "away"
+    },
+    {
+      "id": "79fc55f2-af1a-5a45-a88c-aacc1b85caa6",
+      "startUtc": "2026-03-25T23:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "5e1f5e15-7f56-5172-9ff2-536fbcb3d41e",
+      "startUtc": "2026-03-28T00:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Chicago Bulls",
+      "site": "home"
+    },
+    {
+      "id": "a5e6251b-7a9c-5ace-a39e-ca52bf871e78",
+      "startUtc": "2026-03-29T23:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "New York Knicks",
+      "site": "home"
+    },
+    {
+      "id": "cb377320-a731-5895-869f-d770f452a936",
+      "startUtc": "2026-03-31T01:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Detroit Pistons",
+      "site": "home"
+    },
+    {
+      "id": "061daec8-a5db-575a-bbb0-7f8362a9885b",
+      "startUtc": "2026-04-03T01:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Los Angeles Lakers",
+      "site": "home"
+    },
+    {
+      "id": "8230d8fe-8260-5c68-b5e5-15574cbe2e77",
+      "startUtc": "2026-04-05T23:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Utah Jazz",
+      "site": "home"
+    },
+    {
+      "id": "1b32082a-805c-5fa9-85bd-4d01ce141f0a",
+      "startUtc": "2026-04-08T02:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Los Angeles Lakers",
+      "site": "away"
+    },
+    {
+      "id": "927c5633-92a1-52f3-bd96-e0b0996f2584",
+      "startUtc": "2026-04-09T02:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "c24f19ce-47f2-533e-80d1-fdad40b1857c",
+      "startUtc": "2026-04-11T01:00:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Denver Nuggets",
+      "site": "away"
+    },
+    {
+      "id": "ec5e8c61-6bfe-54f5-b9b5-def8b3c1d406",
+      "startUtc": "2026-04-13T00:30:00Z",
+      "teamName": "Oklahoma City Thunder",
+      "opponent": "Phoenix Suns",
+      "site": "home"
+    }
+  ]
+}

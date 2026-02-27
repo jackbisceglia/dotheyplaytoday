@@ -1,0 +1,179 @@
+{
+  "events": [
+    {
+      "id": "ee8cd9c9-a1a9-5ca4-9e47-e8654742126e",
+      "startUtc": "2026-02-27T00:30:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Atlanta Hawks",
+      "site": "away"
+    },
+    {
+      "id": "842add22-5f00-586e-b103-4d8d8d6b60fd",
+      "startUtc": "2026-03-01T00:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Toronto Raptors",
+      "site": "home"
+    },
+    {
+      "id": "a9d59fac-1bd4-507d-877b-eb381a816371",
+      "startUtc": "2026-03-03T00:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Houston Rockets",
+      "site": "home"
+    },
+    {
+      "id": "b99f6c47-9bc0-5412-b024-8f2cf3ddfb1a",
+      "startUtc": "2026-03-04T00:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Orlando Magic",
+      "site": "away"
+    },
+    {
+      "id": "fc9990b3-724e-53ee-b970-7ba4e006f32a",
+      "startUtc": "2026-03-06T00:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Utah Jazz",
+      "site": "home"
+    },
+    {
+      "id": "806282d5-f6f1-5c99-9cf7-672b315e0950",
+      "startUtc": "2026-03-08T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "New Orleans Pelicans",
+      "site": "away"
+    },
+    {
+      "id": "447d36b4-c5c9-5452-b6ae-b479de29851e",
+      "startUtc": "2026-03-10T23:30:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Miami Heat",
+      "site": "away"
+    },
+    {
+      "id": "5155293e-0367-546b-99f1-7114b35de3f8",
+      "startUtc": "2026-03-12T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Orlando Magic",
+      "site": "away"
+    },
+    {
+      "id": "bcf956a9-a04f-549a-8b39-efee9532bb38",
+      "startUtc": "2026-03-14T22:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "35ee542f-9e2d-5964-bf92-1cd155f9be90",
+      "startUtc": "2026-03-16T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Golden State Warriors",
+      "site": "home"
+    },
+    {
+      "id": "1b996fa6-a7a8-549b-a826-cfcbbee30a5d",
+      "startUtc": "2026-03-17T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Detroit Pistons",
+      "site": "home"
+    },
+    {
+      "id": "435dae3f-e474-555c-b746-7dd9f4170bcc",
+      "startUtc": "2026-03-19T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Detroit Pistons",
+      "site": "home"
+    },
+    {
+      "id": "e5adf253-eaf5-5e8d-bc0f-076fa40535e1",
+      "startUtc": "2026-03-21T21:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Oklahoma City Thunder",
+      "site": "home"
+    },
+    {
+      "id": "d5c54739-656c-5839-af27-47fb9abf4bf9",
+      "startUtc": "2026-03-22T23:30:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "New York Knicks",
+      "site": "away"
+    },
+    {
+      "id": "dc79de87-a4c4-5f98-a85e-94bd0f9f6532",
+      "startUtc": "2026-03-26T01:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Utah Jazz",
+      "site": "away"
+    },
+    {
+      "id": "949d92ea-6147-543e-af33-d3b243508c34",
+      "startUtc": "2026-03-28T02:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Golden State Warriors",
+      "site": "away"
+    },
+    {
+      "id": "456f13d1-16a1-5b67-97d5-de76b987c757",
+      "startUtc": "2026-03-29T22:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Portland Trail Blazers",
+      "site": "away"
+    },
+    {
+      "id": "f168f427-e0a8-5fbc-9d92-666c54c1e5e1",
+      "startUtc": "2026-03-31T02:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Los Angeles Lakers",
+      "site": "away"
+    },
+    {
+      "id": "d07a4598-5e07-57ef-a52c-2722325c22a4",
+      "startUtc": "2026-04-01T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Philadelphia 76ers",
+      "site": "home"
+    },
+    {
+      "id": "5e7d43fa-3d9a-5ae9-a22a-f6154bf0e5dd",
+      "startUtc": "2026-04-04T19:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Miami Heat",
+      "site": "away"
+    },
+    {
+      "id": "b98a4ac3-9d1f-521c-b0b7-a6630e33587c",
+      "startUtc": "2026-04-05T19:30:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Brooklyn Nets",
+      "site": "away"
+    },
+    {
+      "id": "99e615ce-46a0-577b-96a0-1cab6f6f8c78",
+      "startUtc": "2026-04-07T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Chicago Bulls",
+      "site": "home"
+    },
+    {
+      "id": "3ecbf6ce-da1b-5012-84da-e98afd823cbb",
+      "startUtc": "2026-04-09T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Chicago Bulls",
+      "site": "home"
+    },
+    {
+      "id": "d95223e5-b82d-53c9-a26b-828954e97f6c",
+      "startUtc": "2026-04-10T23:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Miami Heat",
+      "site": "home"
+    },
+    {
+      "id": "579fed9a-03ab-5a18-94c7-ea593492b7a5",
+      "startUtc": "2026-04-12T22:00:00Z",
+      "teamName": "Washington Wizards",
+      "opponent": "Cleveland Cavaliers",
+      "site": "away"
+    }
+  ]
+}
