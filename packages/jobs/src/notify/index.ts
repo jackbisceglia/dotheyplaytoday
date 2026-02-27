@@ -1,5 +1,7 @@
 import { pathToFileURL } from "node:url";
+import { join } from "node:path";
 
+import { KeyValueStore } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Database } from "@dtpt/core/modules/database/service";
 import type {
@@ -289,6 +291,11 @@ function main() {
     Database.Default,
     Subscriptions.Default,
   ).pipe(
+    Layer.provideMerge(
+      KeyValueStore.layerFileSystem(
+        join(import.meta.dirname, "..", "..", "..", "core", "data", "kv"),
+      ),
+    ),
     Layer.provide(DotEnvConfigProvider),
     Layer.provideMerge(NodeContext.layer),
   );
