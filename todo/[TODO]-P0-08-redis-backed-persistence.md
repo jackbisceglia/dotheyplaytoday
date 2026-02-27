@@ -38,3 +38,8 @@ prereqs:
 - Document recommended Redis durability settings for this service (`appendonly yes`, `appendfsync everysec`) and expected trade-offs.
 - Keep backend-specific code isolated so a future Effect KV backend swap is localized.
 - Out of scope: changing notification business logic, schedule semantics, or domain schema shapes.
+- Implementation uses `@effect/platform/KeyValueStore` as the single database dependency; backend selection now happens at the job layer.
+- Runtime backend selection supports `NODE_ENV`, `DATABASE_BACKEND`, and CLI overrides (`--database-backend=`, `--use-redis`, `--use-filesystem`).
+- Redis and filesystem keys intentionally omit `.json` (`users`, `subscriptions`, `topics/<topicId>-<slug>`).
+- Topic lookup by id is implemented with a `topics/index` key that maps `topicId` to the stored topic key.
+- Seed import command is `pnpm @jobs start:migrate -- --use-redis` (or `--use-filesystem` for local KV filesystem bootstrapping).
