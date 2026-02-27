@@ -1,0 +1,179 @@
+{
+  "events": [
+    {
+      "id": "ffcd9cd1-80fd-5408-9a2c-827fb058f458",
+      "startUtc": "2026-02-28T01:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "New York Knicks",
+      "site": "home"
+    },
+    {
+      "id": "61f69c9e-fb22-562d-92e4-c71ae7f3db55",
+      "startUtc": "2026-03-01T20:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Chicago Bulls",
+      "site": "away"
+    },
+    {
+      "id": "1af9d539-cb78-5b10-b741-60cfbf300d30",
+      "startUtc": "2026-03-03T00:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Boston Celtics",
+      "site": "home"
+    },
+    {
+      "id": "2a9c4529-44ab-5665-8d3b-da0f1b496378",
+      "startUtc": "2026-03-05T02:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Atlanta Hawks",
+      "site": "home"
+    },
+    {
+      "id": "f2f26092-5333-5b81-8e5f-c6f9bbe5e0b6",
+      "startUtc": "2026-03-08T01:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Utah Jazz",
+      "site": "home"
+    },
+    {
+      "id": "2e4738ad-78b3-506f-96bb-8c46f7a5efdb",
+      "startUtc": "2026-03-09T00:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Orlando Magic",
+      "site": "home"
+    },
+    {
+      "id": "e37d48d8-d166-57f7-b2fe-1824b22dadb1",
+      "startUtc": "2026-03-11T00:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Phoenix Suns",
+      "site": "home"
+    },
+    {
+      "id": "a7b6e942-e102-55ec-a139-9fea910e13e0",
+      "startUtc": "2026-03-12T23:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Miami Heat",
+      "site": "away"
+    },
+    {
+      "id": "2575d1da-41fe-5b52-95ff-ef1280f8d1a0",
+      "startUtc": "2026-03-14T19:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Atlanta Hawks",
+      "site": "away"
+    },
+    {
+      "id": "88167023-3501-5304-a349-8212bfab0bc9",
+      "startUtc": "2026-03-15T19:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Indiana Pacers",
+      "site": "home"
+    },
+    {
+      "id": "abf2cfbf-6d99-50cd-ada5-ba325cac3686",
+      "startUtc": "2026-03-18T00:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Cleveland Cavaliers",
+      "site": "home"
+    },
+    {
+      "id": "276f096b-30d0-5e8e-aefa-3ae9563efb8b",
+      "startUtc": "2026-03-20T01:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Utah Jazz",
+      "site": "away"
+    },
+    {
+      "id": "6cb1d855-afbd-521e-9421-cdc54cbe9bc4",
+      "startUtc": "2026-03-22T02:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Phoenix Suns",
+      "site": "away"
+    },
+    {
+      "id": "b3816b39-4dfb-5cbd-9904-f582f599179d",
+      "startUtc": "2026-03-24T02:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "1147a593-8ad3-5c6e-aeed-4bda2f491584",
+      "startUtc": "2026-03-26T02:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Portland Trail Blazers",
+      "site": "away"
+    },
+    {
+      "id": "fd4d564e-af93-5832-8fa8-9776d3ab9a1c",
+      "startUtc": "2026-03-28T19:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "San Antonio Spurs",
+      "site": "home"
+    },
+    {
+      "id": "43aa8ec9-9574-5f8d-a752-245fbaeb4a05",
+      "startUtc": "2026-03-29T19:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "LA Clippers",
+      "site": "home"
+    },
+    {
+      "id": "00610207-6039-5716-b4c1-c3d16a51ea8a",
+      "startUtc": "2026-04-01T00:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Dallas Mavericks",
+      "site": "home"
+    },
+    {
+      "id": "cc2be83b-2fc4-5b0a-81e2-b5ef4a733da6",
+      "startUtc": "2026-04-02T00:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Houston Rockets",
+      "site": "away"
+    },
+    {
+      "id": "1fda6f4f-6a89-5242-8990-aa82df381728",
+      "startUtc": "2026-04-04T00:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Boston Celtics",
+      "site": "home"
+    },
+    {
+      "id": "427a24ef-a1b6-5e90-8914-2c91a2ffbd35",
+      "startUtc": "2026-04-05T19:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "11063989-bf73-5fdc-9161-957420286e19",
+      "startUtc": "2026-04-07T23:30:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Brooklyn Nets",
+      "site": "away"
+    },
+    {
+      "id": "e03b8f95-5be6-5c3c-abb9-18514b5d89cd",
+      "startUtc": "2026-04-08T23:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Detroit Pistons",
+      "site": "away"
+    },
+    {
+      "id": "444694a4-de70-5a45-b016-f62c8ba7fceb",
+      "startUtc": "2026-04-11T00:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Brooklyn Nets",
+      "site": "home"
+    },
+    {
+      "id": "7023a85e-6e7a-541f-a65b-f3d9f285e31c",
+      "startUtc": "2026-04-12T22:00:00Z",
+      "teamName": "Milwaukee Bucks",
+      "opponent": "Philadelphia 76ers",
+      "site": "away"
+    }
+  ]
+}

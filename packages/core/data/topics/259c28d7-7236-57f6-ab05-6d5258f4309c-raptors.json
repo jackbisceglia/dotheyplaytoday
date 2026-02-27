@@ -1,0 +1,165 @@
+{
+  "events": [
+    {
+      "id": "0206a7e3-93b5-5be8-9e83-b08e49afb872",
+      "startUtc": "2026-03-01T00:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "372aaa4f-b773-52de-958e-fbe20ec7635b",
+      "startUtc": "2026-03-04T00:30:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "New York Knicks",
+      "site": "home"
+    },
+    {
+      "id": "8953f45a-195c-5ecb-8fd4-7e6df59ca0f5",
+      "startUtc": "2026-03-06T01:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Minnesota Timberwolves",
+      "site": "away"
+    },
+    {
+      "id": "eede43cf-c13d-5cd6-b3b5-b1d8c92894c4",
+      "startUtc": "2026-03-08T22:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Dallas Mavericks",
+      "site": "home"
+    },
+    {
+      "id": "5eed3075-ef22-5eff-8bf9-7af850005ef2",
+      "startUtc": "2026-03-11T00:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Houston Rockets",
+      "site": "away"
+    },
+    {
+      "id": "af81c360-d87c-5365-925e-2bb03b307137",
+      "startUtc": "2026-03-12T00:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "New Orleans Pelicans",
+      "site": "away"
+    },
+    {
+      "id": "5c7d46d3-084a-5c63-9a9c-01c1490375f8",
+      "startUtc": "2026-03-13T23:30:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Phoenix Suns",
+      "site": "home"
+    },
+    {
+      "id": "b6d7c5ce-3c6c-55ef-978b-836efaff9e23",
+      "startUtc": "2026-03-15T19:30:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Detroit Pistons",
+      "site": "home"
+    },
+    {
+      "id": "ffd2edf7-ff84-5e65-aeda-55a1d9893330",
+      "startUtc": "2026-03-19T00:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Chicago Bulls",
+      "site": "away"
+    },
+    {
+      "id": "c85117e4-539e-5baf-927a-cbb83062d930",
+      "startUtc": "2026-03-21T01:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Denver Nuggets",
+      "site": "away"
+    },
+    {
+      "id": "cd659822-bb33-5fd3-ae06-ce398da50ffe",
+      "startUtc": "2026-03-23T01:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Phoenix Suns",
+      "site": "away"
+    },
+    {
+      "id": "bade6ee9-57fa-51a8-b712-217d7ce4e764",
+      "startUtc": "2026-03-24T01:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Utah Jazz",
+      "site": "away"
+    },
+    {
+      "id": "bba062eb-25e3-5e67-9b26-213402ae8114",
+      "startUtc": "2026-03-26T02:30:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "521a9d7d-9ad5-5b4c-b9ca-fac9118c7c3f",
+      "startUtc": "2026-03-28T00:30:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "New Orleans Pelicans",
+      "site": "home"
+    },
+    {
+      "id": "83cb740b-5c59-582d-96bd-5f260881aab6",
+      "startUtc": "2026-03-29T22:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Orlando Magic",
+      "site": "home"
+    },
+    {
+      "id": "7d72aad8-b704-5ec7-9909-09b165559f3d",
+      "startUtc": "2026-04-01T00:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Detroit Pistons",
+      "site": "away"
+    },
+    {
+      "id": "0c587627-f7bf-504e-98f8-2278e30b542f",
+      "startUtc": "2026-04-02T00:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Sacramento Kings",
+      "site": "home"
+    },
+    {
+      "id": "0bf47a87-68ef-5992-aba3-9617c857ada2",
+      "startUtc": "2026-04-04T00:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Memphis Grizzlies",
+      "site": "away"
+    },
+    {
+      "id": "4a73fc07-1121-510a-be9e-106a4665e970",
+      "startUtc": "2026-04-05T19:30:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "a89c277b-43be-5eb8-9f32-03dc0bec150e",
+      "startUtc": "2026-04-07T23:30:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Miami Heat",
+      "site": "home"
+    },
+    {
+      "id": "60754abe-1cc8-53d1-94c5-fa4f8aae85fa",
+      "startUtc": "2026-04-09T23:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Miami Heat",
+      "site": "home"
+    },
+    {
+      "id": "827a4802-fa2a-54bc-9d4d-3c2e4e99b806",
+      "startUtc": "2026-04-10T23:30:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "New York Knicks",
+      "site": "away"
+    },
+    {
+      "id": "ee44b115-1d6a-5069-b4fb-59c5d7e96dde",
+      "startUtc": "2026-04-12T22:00:00Z",
+      "teamName": "Toronto Raptors",
+      "opponent": "Brooklyn Nets",
+      "site": "home"
+    }
+  ]
+}

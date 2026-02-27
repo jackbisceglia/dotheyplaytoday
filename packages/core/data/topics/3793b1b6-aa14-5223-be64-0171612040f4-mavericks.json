@@ -1,0 +1,179 @@
+{
+  "events": [
+    {
+      "id": "1dde4747-1583-534d-a7aa-64a5b4ae6dad",
+      "startUtc": "2026-02-27T01:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Sacramento Kings",
+      "site": "home"
+    },
+    {
+      "id": "bfb839f0-c4cf-5a6f-b39a-8d132aa2459a",
+      "startUtc": "2026-02-28T01:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "3265b73b-4b08-5130-9106-4067e5bed2f2",
+      "startUtc": "2026-03-02T01:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Oklahoma City Thunder",
+      "site": "home"
+    },
+    {
+      "id": "c8f3f496-46e1-51c8-84c4-fd7abb063d47",
+      "startUtc": "2026-03-04T00:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Charlotte Hornets",
+      "site": "away"
+    },
+    {
+      "id": "ee97457c-7055-5e35-837e-c3d9973fccab",
+      "startUtc": "2026-03-06T00:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Orlando Magic",
+      "site": "away"
+    },
+    {
+      "id": "7ffeb33d-4c6c-5f0b-8fcc-32c038dc0059",
+      "startUtc": "2026-03-07T00:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "c31798f3-071e-5391-9d0d-a35e0308315f",
+      "startUtc": "2026-03-08T22:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Toronto Raptors",
+      "site": "away"
+    },
+    {
+      "id": "b42ee2fa-e344-5add-ac21-381f9883ac69",
+      "startUtc": "2026-03-10T23:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Atlanta Hawks",
+      "site": "away"
+    },
+    {
+      "id": "bc1d6a99-54cf-5fe9-a3b2-9aa05ba6d069",
+      "startUtc": "2026-03-13T00:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Memphis Grizzlies",
+      "site": "away"
+    },
+    {
+      "id": "e5901de6-105d-5f63-b1e8-c107e4b61586",
+      "startUtc": "2026-03-13T23:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Cleveland Cavaliers",
+      "site": "home"
+    },
+    {
+      "id": "e7373faa-b32f-5f86-8dd3-f7402bf97ae2",
+      "startUtc": "2026-03-15T19:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Cleveland Cavaliers",
+      "site": "away"
+    },
+    {
+      "id": "0921d5fb-debf-5b21-af04-c2c5e79f7981",
+      "startUtc": "2026-03-17T00:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "New Orleans Pelicans",
+      "site": "away"
+    },
+    {
+      "id": "c75f5d89-7863-5725-b16d-d54f5f7f402f",
+      "startUtc": "2026-03-19T00:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Atlanta Hawks",
+      "site": "home"
+    },
+    {
+      "id": "b1801384-3749-5c85-894e-af27b95bec17",
+      "startUtc": "2026-03-22T00:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "LA Clippers",
+      "site": "home"
+    },
+    {
+      "id": "764866d7-c04c-5721-a31f-841729cc2789",
+      "startUtc": "2026-03-24T01:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Golden State Warriors",
+      "site": "home"
+    },
+    {
+      "id": "867a8fd6-62aa-5345-8ccc-1a96dfc94b15",
+      "startUtc": "2026-03-26T02:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Denver Nuggets",
+      "site": "away"
+    },
+    {
+      "id": "ebafea0d-d683-569e-8166-e7fa489057e5",
+      "startUtc": "2026-03-28T02:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Portland Trail Blazers",
+      "site": "away"
+    },
+    {
+      "id": "8789f139-aa77-5174-8f84-035716d41f69",
+      "startUtc": "2026-03-31T00:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Minnesota Timberwolves",
+      "site": "home"
+    },
+    {
+      "id": "38ac7fc9-3fca-5458-9e80-ea6f84fd0096",
+      "startUtc": "2026-04-01T00:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Milwaukee Bucks",
+      "site": "away"
+    },
+    {
+      "id": "99e58dbf-9be4-5d2e-b496-67e1f2cc307b",
+      "startUtc": "2026-04-04T00:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Orlando Magic",
+      "site": "home"
+    },
+    {
+      "id": "5bee460c-d3fd-502d-87bc-cc192004aa84",
+      "startUtc": "2026-04-05T23:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Los Angeles Lakers",
+      "site": "home"
+    },
+    {
+      "id": "dd9c1897-273d-549a-8642-f5260489212e",
+      "startUtc": "2026-04-08T02:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "ec88493e-de99-54b4-b458-d26c85b2cc36",
+      "startUtc": "2026-04-09T02:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Phoenix Suns",
+      "site": "away"
+    },
+    {
+      "id": "f0e2afa9-004f-5110-a52b-86c496c28728",
+      "startUtc": "2026-04-11T00:00:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "San Antonio Spurs",
+      "site": "away"
+    },
+    {
+      "id": "1499c65e-2385-5a4e-9b2d-2174f2a6119f",
+      "startUtc": "2026-04-13T00:30:00Z",
+      "teamName": "Dallas Mavericks",
+      "opponent": "Chicago Bulls",
+      "site": "home"
+    }
+  ]
+}

@@ -1,0 +1,179 @@
+{
+  "events": [
+    {
+      "id": "be25ff24-3eda-529f-9454-9615cff39949",
+      "startUtc": "2026-02-28T00:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Cleveland Cavaliers",
+      "site": "home"
+    },
+    {
+      "id": "27c3f084-9eb4-571b-bbfb-a33426b6a96b",
+      "startUtc": "2026-03-01T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Orlando Magic",
+      "site": "away"
+    },
+    {
+      "id": "59080d17-a93c-5b6b-a709-9cb2e2e76cf9",
+      "startUtc": "2026-03-04T00:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Cleveland Cavaliers",
+      "site": "away"
+    },
+    {
+      "id": "57633a7e-8ee2-5c91-95c8-aec5a1c792e5",
+      "startUtc": "2026-03-06T01:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "San Antonio Spurs",
+      "site": "away"
+    },
+    {
+      "id": "05fe6664-4b85-5111-9b6a-18dc5ba57dee",
+      "startUtc": "2026-03-07T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Brooklyn Nets",
+      "site": "home"
+    },
+    {
+      "id": "5d11b0ea-6b4a-539f-981b-da304a785869",
+      "startUtc": "2026-03-08T22:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Miami Heat",
+      "site": "away"
+    },
+    {
+      "id": "3e85539a-c045-56e4-8fe4-eef6128b7f2b",
+      "startUtc": "2026-03-10T23:30:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Brooklyn Nets",
+      "site": "away"
+    },
+    {
+      "id": "d5631ecf-7185-55ec-86f6-8906dc9ff632",
+      "startUtc": "2026-03-12T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Philadelphia 76ers",
+      "site": "home"
+    },
+    {
+      "id": "2200f8e3-7b17-5823-a95d-bdd20664e25b",
+      "startUtc": "2026-03-13T23:30:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "21a6b98b-21a3-5c57-bfda-7b1cdaed5996",
+      "startUtc": "2026-03-15T19:30:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Toronto Raptors",
+      "site": "away"
+    },
+    {
+      "id": "1ed23e41-52ee-506f-bb2b-9e86d2532d28",
+      "startUtc": "2026-03-17T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "12b308c3-3d81-5c15-bcc6-d93df1fa9553",
+      "startUtc": "2026-03-19T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "a147b7ac-3f01-5319-8e1e-bcf45ac91df6",
+      "startUtc": "2026-03-20T23:30:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Golden State Warriors",
+      "site": "home"
+    },
+    {
+      "id": "7cf0d429-058d-5ca7-88d3-a1c1c9a3b32b",
+      "startUtc": "2026-03-23T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Los Angeles Lakers",
+      "site": "home"
+    },
+    {
+      "id": "1023830e-947a-5586-906d-eb2683f805ed",
+      "startUtc": "2026-03-25T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Atlanta Hawks",
+      "site": "home"
+    },
+    {
+      "id": "c2903f3d-9ba5-5cec-9944-34a0c91a4b67",
+      "startUtc": "2026-03-26T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "New Orleans Pelicans",
+      "site": "home"
+    },
+    {
+      "id": "e123f91b-d462-528f-a3d3-bebeeee91a3a",
+      "startUtc": "2026-03-28T21:30:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Minnesota Timberwolves",
+      "site": "away"
+    },
+    {
+      "id": "c7bccf89-d592-53ec-afdc-59124f580613",
+      "startUtc": "2026-03-31T01:30:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Oklahoma City Thunder",
+      "site": "away"
+    },
+    {
+      "id": "23925d88-303e-5f49-b4be-a79b4df0faca",
+      "startUtc": "2026-04-01T00:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Toronto Raptors",
+      "site": "home"
+    },
+    {
+      "id": "c9dd7f26-20a1-5b98-be87-c212f3306625",
+      "startUtc": "2026-04-02T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Minnesota Timberwolves",
+      "site": "home"
+    },
+    {
+      "id": "bd86e140-c3c6-58f5-baa0-51825ae77324",
+      "startUtc": "2026-04-04T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Philadelphia 76ers",
+      "site": "away"
+    },
+    {
+      "id": "8afa62e0-0b5a-5a82-bb91-d2c1506fe2a7",
+      "startUtc": "2026-04-06T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Orlando Magic",
+      "site": "away"
+    },
+    {
+      "id": "7d6bef5b-c5d4-510a-b363-d10995992feb",
+      "startUtc": "2026-04-08T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Milwaukee Bucks",
+      "site": "home"
+    },
+    {
+      "id": "080ae7f6-ee9b-54c9-864c-ada189ce6fb7",
+      "startUtc": "2026-04-10T23:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Charlotte Hornets",
+      "site": "away"
+    },
+    {
+      "id": "95fe4b0e-b119-5c20-bac4-180e27b345ad",
+      "startUtc": "2026-04-12T22:00:00Z",
+      "teamName": "Detroit Pistons",
+      "opponent": "Indiana Pacers",
+      "site": "away"
+    }
+  ]
+}
