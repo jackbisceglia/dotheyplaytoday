@@ -1,0 +1,165 @@
+{
+  "events": [
+    {
+      "id": "40023ba2-b7e8-5072-96b0-a35cb8e20c4a",
+      "startUtc": "2026-02-27T01:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Portland Trail Blazers",
+      "site": "home"
+    },
+    {
+      "id": "f0192c84-d5ae-564f-a7fd-3969364af59b",
+      "startUtc": "2026-03-01T20:30:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Milwaukee Bucks",
+      "site": "home"
+    },
+    {
+      "id": "4a5019e3-6de1-55ef-b0f2-5400ff418eec",
+      "startUtc": "2026-03-04T01:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Oklahoma City Thunder",
+      "site": "home"
+    },
+    {
+      "id": "95ac655f-9841-5e0b-9dad-3a9a33aed196",
+      "startUtc": "2026-03-06T02:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Phoenix Suns",
+      "site": "away"
+    },
+    {
+      "id": "1d25bb0f-56b6-5925-b1a5-c9a3f0b189a6",
+      "startUtc": "2026-03-09T01:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Sacramento Kings",
+      "site": "away"
+    },
+    {
+      "id": "8927f08c-5a47-5958-9992-2935d87cf76f",
+      "startUtc": "2026-03-11T02:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Golden State Warriors",
+      "site": "away"
+    },
+    {
+      "id": "2f7c7dc6-bb31-5871-accf-b5b671425c27",
+      "startUtc": "2026-03-13T02:30:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Los Angeles Lakers",
+      "site": "away"
+    },
+    {
+      "id": "b2b01eee-e2f8-5d08-af23-dc710ca809bd",
+      "startUtc": "2026-03-14T02:30:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "20697aeb-2666-5329-b087-6a7e25c1dfac",
+      "startUtc": "2026-03-17T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "cfdd608f-636e-52fc-adc1-b95cb32335ee",
+      "startUtc": "2026-03-19T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Toronto Raptors",
+      "site": "home"
+    },
+    {
+      "id": "83dd460a-7ab7-5b64-938a-dcaa995fb23a",
+      "startUtc": "2026-03-20T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Cleveland Cavaliers",
+      "site": "home"
+    },
+    {
+      "id": "8bb0a07c-9aeb-57f9-8dd7-7a0e8cbcf077",
+      "startUtc": "2026-03-24T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Houston Rockets",
+      "site": "home"
+    },
+    {
+      "id": "57016972-d252-543d-9fe6-40f78f2a7535",
+      "startUtc": "2026-03-25T23:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Philadelphia 76ers",
+      "site": "away"
+    },
+    {
+      "id": "a19b1563-4ed2-5f70-935b-5e19f198180e",
+      "startUtc": "2026-03-28T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Oklahoma City Thunder",
+      "site": "away"
+    },
+    {
+      "id": "d36c1f2b-04eb-5188-9637-864bf5cc21c3",
+      "startUtc": "2026-03-29T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Memphis Grizzlies",
+      "site": "away"
+    },
+    {
+      "id": "ba9cad0c-03ea-5365-88a5-edacabccedfa",
+      "startUtc": "2026-03-31T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "San Antonio Spurs",
+      "site": "away"
+    },
+    {
+      "id": "e34c8ce6-76f4-52a5-a532-c046ff08d6c6",
+      "startUtc": "2026-04-02T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Indiana Pacers",
+      "site": "home"
+    },
+    {
+      "id": "93bc1cd1-db3e-5c82-860c-171b2c6f88da",
+      "startUtc": "2026-04-03T23:30:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "New York Knicks",
+      "site": "away"
+    },
+    {
+      "id": "d4c34b8e-0b77-5323-8c3a-f18cb0971527",
+      "startUtc": "2026-04-05T19:30:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Phoenix Suns",
+      "site": "home"
+    },
+    {
+      "id": "2e23fd8f-af7d-5da2-91d4-b056241de249",
+      "startUtc": "2026-04-07T23:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "efbe07bb-13b8-5754-9710-4e44c4c2533e",
+      "startUtc": "2026-04-09T23:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "c0009ab9-f02b-549b-9eb4-a728bb7b0350",
+      "startUtc": "2026-04-11T00:00:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Orlando Magic",
+      "site": "home"
+    },
+    {
+      "id": "50b5b00c-5105-50ed-87e0-11c232d00942",
+      "startUtc": "2026-04-13T00:30:00Z",
+      "teamName": "Chicago Bulls",
+      "opponent": "Dallas Mavericks",
+      "site": "away"
+    }
+  ]
+}

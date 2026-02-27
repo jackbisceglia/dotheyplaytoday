@@ -1,0 +1,165 @@
+{
+  "events": [
+    {
+      "id": "93a4c4f4-7b89-5689-9675-812a5226902b",
+      "startUtc": "2026-02-27T00:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Indiana Pacers",
+      "site": "away"
+    },
+    {
+      "id": "6151c838-7025-5480-90a8-8c167a9b7cfe",
+      "startUtc": "2026-02-28T18:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Portland Trail Blazers",
+      "site": "home"
+    },
+    {
+      "id": "f6108225-f0eb-556c-850d-318e12793d0e",
+      "startUtc": "2026-03-04T00:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Dallas Mavericks",
+      "site": "home"
+    },
+    {
+      "id": "6d52e69b-f429-5dff-84c7-287074421bf1",
+      "startUtc": "2026-03-05T00:30:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "e346c9bb-fa83-543d-a5d8-a052c38af5a7",
+      "startUtc": "2026-03-07T00:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Miami Heat",
+      "site": "home"
+    },
+    {
+      "id": "dd09fd94-e423-5370-9066-c67dbdafd0a9",
+      "startUtc": "2026-03-09T02:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Phoenix Suns",
+      "site": "away"
+    },
+    {
+      "id": "f22da641-d158-539e-8413-4fe0725da5d1",
+      "startUtc": "2026-03-11T02:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Portland Trail Blazers",
+      "site": "away"
+    },
+    {
+      "id": "15f1ec9e-a10a-5076-95b1-98828a08edc4",
+      "startUtc": "2026-03-12T02:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Sacramento Kings",
+      "site": "away"
+    },
+    {
+      "id": "6eb4cc88-2f12-5849-8b7d-a4ff59b4eeb0",
+      "startUtc": "2026-03-14T19:30:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "San Antonio Spurs",
+      "site": "away"
+    },
+    {
+      "id": "5db14cf8-94c4-537f-8f7b-ffa7aba3383a",
+      "startUtc": "2026-03-17T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Miami Heat",
+      "site": "home"
+    },
+    {
+      "id": "99d9d24f-5a1f-5376-ac44-7a90d65530fd",
+      "startUtc": "2026-03-19T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Orlando Magic",
+      "site": "home"
+    },
+    {
+      "id": "ed8991ea-ba92-5868-925d-3a87c9fd657e",
+      "startUtc": "2026-03-21T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "3d5efba1-0b38-5926-89a8-b7855bd3b705",
+      "startUtc": "2026-03-24T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Sacramento Kings",
+      "site": "home"
+    },
+    {
+      "id": "ac5204c7-1289-5742-8306-7fe94007dbd7",
+      "startUtc": "2026-03-26T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "New York Knicks",
+      "site": "home"
+    },
+    {
+      "id": "5b13a09c-29b7-58d6-bd97-af5e989edb12",
+      "startUtc": "2026-03-28T22:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Philadelphia 76ers",
+      "site": "home"
+    },
+    {
+      "id": "940979a3-551d-511b-9470-8c8bab1138c6",
+      "startUtc": "2026-03-29T22:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Boston Celtics",
+      "site": "home"
+    },
+    {
+      "id": "3712b6b3-f74e-5c7f-b97c-3831dc435c46",
+      "startUtc": "2026-03-31T23:30:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Brooklyn Nets",
+      "site": "away"
+    },
+    {
+      "id": "87294795-c25f-5383-89f4-2c6bb1568968",
+      "startUtc": "2026-04-02T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Phoenix Suns",
+      "site": "home"
+    },
+    {
+      "id": "569c7d50-470c-50bb-b530-d57bce94e2cc",
+      "startUtc": "2026-04-03T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Indiana Pacers",
+      "site": "home"
+    },
+    {
+      "id": "c1bc8827-a69c-57c2-942f-fb4583e91c79",
+      "startUtc": "2026-04-05T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Minnesota Timberwolves",
+      "site": "away"
+    },
+    {
+      "id": "aaeb821f-61e4-515f-877d-aab3ec82ad9d",
+      "startUtc": "2026-04-07T23:30:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "2c87329d-c9ea-52ae-9f83-cfadc12ecf00",
+      "startUtc": "2026-04-10T23:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "Detroit Pistons",
+      "site": "home"
+    },
+    {
+      "id": "832857d1-8a91-5903-9c30-8fd40f1341f8",
+      "startUtc": "2026-04-12T22:00:00Z",
+      "teamName": "Charlotte Hornets",
+      "opponent": "New York Knicks",
+      "site": "away"
+    }
+  ]
+}

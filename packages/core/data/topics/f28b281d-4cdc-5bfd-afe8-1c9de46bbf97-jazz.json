@@ -1,0 +1,172 @@
+{
+  "events": [
+    {
+      "id": "e0ce7c00-715a-5360-9907-0425ecce7d9f",
+      "startUtc": "2026-02-27T02:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "New Orleans Pelicans",
+      "site": "home"
+    },
+    {
+      "id": "0b9ab832-c2ef-5df9-bf92-237bdd517e2a",
+      "startUtc": "2026-03-01T02:30:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "New Orleans Pelicans",
+      "site": "home"
+    },
+    {
+      "id": "99cf593d-44a2-59e3-a361-e48ec41f3bff",
+      "startUtc": "2026-03-03T02:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Denver Nuggets",
+      "site": "home"
+    },
+    {
+      "id": "55604f40-8984-529d-a35e-40f46ff2806d",
+      "startUtc": "2026-03-05T00:30:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Philadelphia 76ers",
+      "site": "away"
+    },
+    {
+      "id": "e82cd1ac-3577-5525-85fe-68153d6ac2d4",
+      "startUtc": "2026-03-06T00:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "6398b302-e401-5e0f-89ff-6172507cb669",
+      "startUtc": "2026-03-08T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Milwaukee Bucks",
+      "site": "away"
+    },
+    {
+      "id": "2b8b562f-db42-5c34-8557-b3ddad47e53c",
+      "startUtc": "2026-03-10T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Golden State Warriors",
+      "site": "home"
+    },
+    {
+      "id": "0f5ec0c2-1f1e-5f0d-a3d5-e738582a0170",
+      "startUtc": "2026-03-12T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "New York Knicks",
+      "site": "home"
+    },
+    {
+      "id": "3540c710-59a9-5a32-b567-04c20ccb409e",
+      "startUtc": "2026-03-14T02:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Portland Trail Blazers",
+      "site": "away"
+    },
+    {
+      "id": "5a6349a4-4b19-5c58-9eb5-eb4fee2968a4",
+      "startUtc": "2026-03-16T02:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Sacramento Kings",
+      "site": "away"
+    },
+    {
+      "id": "08cb9a15-08e9-586c-9637-cc485658e387",
+      "startUtc": "2026-03-19T00:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Minnesota Timberwolves",
+      "site": "away"
+    },
+    {
+      "id": "79379aad-194b-5e40-9d2c-006c53caab82",
+      "startUtc": "2026-03-20T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Milwaukee Bucks",
+      "site": "home"
+    },
+    {
+      "id": "24e69844-0654-52e2-98ea-387bd7ac6875",
+      "startUtc": "2026-03-22T01:30:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Philadelphia 76ers",
+      "site": "home"
+    },
+    {
+      "id": "c65f858b-dab6-5574-b14a-22ac50c04fae",
+      "startUtc": "2026-03-24T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Toronto Raptors",
+      "site": "home"
+    },
+    {
+      "id": "97eeed0d-bf9d-5ed9-9ce3-075c30832928",
+      "startUtc": "2026-03-26T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Washington Wizards",
+      "site": "home"
+    },
+    {
+      "id": "6d26d8e1-bbb8-5319-819a-76435dc4dd7c",
+      "startUtc": "2026-03-28T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Denver Nuggets",
+      "site": "away"
+    },
+    {
+      "id": "02faeb74-ef50-5c17-822c-c6d8dbce7d17",
+      "startUtc": "2026-03-29T02:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Phoenix Suns",
+      "site": "away"
+    },
+    {
+      "id": "dc105f3b-1f62-5616-ad31-af58f8017c4d",
+      "startUtc": "2026-03-31T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Cleveland Cavaliers",
+      "site": "home"
+    },
+    {
+      "id": "7a3faf04-ed33-5516-80d8-44328ea6bbf8",
+      "startUtc": "2026-04-02T01:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Denver Nuggets",
+      "site": "home"
+    },
+    {
+      "id": "eb36f202-90a6-52b3-8db5-37db3beb530e",
+      "startUtc": "2026-04-04T00:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Houston Rockets",
+      "site": "away"
+    },
+    {
+      "id": "7c633aa5-009b-58fe-b908-25c2981482a9",
+      "startUtc": "2026-04-05T23:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Oklahoma City Thunder",
+      "site": "away"
+    },
+    {
+      "id": "1c557373-7e0d-5ddd-bb2b-977188172880",
+      "startUtc": "2026-04-08T00:00:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "New Orleans Pelicans",
+      "site": "away"
+    },
+    {
+      "id": "2f917697-c9b2-5643-8a1f-c18eb9cac84c",
+      "startUtc": "2026-04-11T01:30:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "69cd08ee-ebf0-550e-a29e-fce015e34d97",
+      "startUtc": "2026-04-13T00:30:00Z",
+      "teamName": "Utah Jazz",
+      "opponent": "Los Angeles Lakers",
+      "site": "away"
+    }
+  ]
+}

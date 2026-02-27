@@ -1,0 +1,158 @@
+{
+  "events": [
+    {
+      "id": "754b9577-2860-530c-b087-57219571424f",
+      "startUtc": "2026-02-27T01:30:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Dallas Mavericks",
+      "site": "away"
+    },
+    {
+      "id": "f7b61996-2791-54c9-93d3-20e311f46cde",
+      "startUtc": "2026-03-02T02:30:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Los Angeles Lakers",
+      "site": "away"
+    },
+    {
+      "id": "9d9a6bca-3add-5a50-86a8-0d94084f33b9",
+      "startUtc": "2026-03-04T04:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Phoenix Suns",
+      "site": "home"
+    },
+    {
+      "id": "c25bd19b-921d-5ce5-b92b-781df21f9afd",
+      "startUtc": "2026-03-06T03:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "New Orleans Pelicans",
+      "site": "home"
+    },
+    {
+      "id": "846e2836-c5d7-50be-9db2-7013bc956976",
+      "startUtc": "2026-03-09T01:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Chicago Bulls",
+      "site": "home"
+    },
+    {
+      "id": "f3251aa6-24ea-5e0f-9bde-8e010374f02f",
+      "startUtc": "2026-03-11T02:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Indiana Pacers",
+      "site": "home"
+    },
+    {
+      "id": "92d4410a-aa5c-538a-a103-510b10f708d1",
+      "startUtc": "2026-03-12T02:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Charlotte Hornets",
+      "site": "home"
+    },
+    {
+      "id": "47666401-fd47-5425-93e2-31a82e6fb401",
+      "startUtc": "2026-03-15T02:30:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "41ad18af-6706-591c-8924-907fcc0a1a71",
+      "startUtc": "2026-03-16T02:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Utah Jazz",
+      "site": "home"
+    },
+    {
+      "id": "1f263f0f-554e-5460-87a1-74b82bcbcf82",
+      "startUtc": "2026-03-18T03:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "San Antonio Spurs",
+      "site": "home"
+    },
+    {
+      "id": "b1fce447-224c-5c95-9619-bcdff8940e6a",
+      "startUtc": "2026-03-20T02:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Philadelphia 76ers",
+      "site": "home"
+    },
+    {
+      "id": "170d6882-c2ab-527e-8a7f-8804918e89c0",
+      "startUtc": "2026-03-22T22:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Brooklyn Nets",
+      "site": "home"
+    },
+    {
+      "id": "29513556-1bb3-5d03-a1d0-0d5ddba6bbc6",
+      "startUtc": "2026-03-24T23:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Charlotte Hornets",
+      "site": "away"
+    },
+    {
+      "id": "857d3247-7497-5e38-ac23-5b7ea9479f40",
+      "startUtc": "2026-03-26T23:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Orlando Magic",
+      "site": "away"
+    },
+    {
+      "id": "7467f939-8045-5a1d-a970-e1712c46aba7",
+      "startUtc": "2026-03-28T23:30:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Atlanta Hawks",
+      "site": "away"
+    },
+    {
+      "id": "243c3b32-b5b6-57dc-8e88-d37ef9311d11",
+      "startUtc": "2026-03-29T22:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Brooklyn Nets",
+      "site": "away"
+    },
+    {
+      "id": "6fa78fc7-ae56-591b-a9d2-20229cda732c",
+      "startUtc": "2026-04-02T00:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Toronto Raptors",
+      "site": "away"
+    },
+    {
+      "id": "8cab80d0-92ff-5422-99b3-e16fa9fbc66c",
+      "startUtc": "2026-04-04T02:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "New Orleans Pelicans",
+      "site": "home"
+    },
+    {
+      "id": "8879e578-5e9e-5506-bd2a-4cd3c59a9f96",
+      "startUtc": "2026-04-06T01:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "LA Clippers",
+      "site": "home"
+    },
+    {
+      "id": "e0b29ac1-a112-56c6-b6da-d1a1120ea310",
+      "startUtc": "2026-04-08T02:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Golden State Warriors",
+      "site": "away"
+    },
+    {
+      "id": "421330d8-2757-54f2-9594-92d35bf293ec",
+      "startUtc": "2026-04-11T02:00:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Golden State Warriors",
+      "site": "home"
+    },
+    {
+      "id": "11428e93-9ef0-5975-9615-b5be93dd5fbd",
+      "startUtc": "2026-04-13T00:30:00Z",
+      "teamName": "Sacramento Kings",
+      "opponent": "Portland Trail Blazers",
+      "site": "away"
+    }
+  ]
+}

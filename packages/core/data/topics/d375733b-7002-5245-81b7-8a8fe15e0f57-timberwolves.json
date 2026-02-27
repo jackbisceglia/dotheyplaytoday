@@ -1,0 +1,165 @@
+{
+  "events": [
+    {
+      "id": "446271d7-30e0-52a2-ad19-f84cd437757c",
+      "startUtc": "2026-02-27T03:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "f87bebba-3f3f-585b-890b-01bf55f031e2",
+      "startUtc": "2026-03-01T20:30:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Denver Nuggets",
+      "site": "away"
+    },
+    {
+      "id": "c52ec423-7244-5b65-a7f1-418ded7fe52b",
+      "startUtc": "2026-03-04T01:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "055f7835-03bf-5ff1-a1c2-9739d279677d",
+      "startUtc": "2026-03-06T01:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Toronto Raptors",
+      "site": "home"
+    },
+    {
+      "id": "47f2a55d-fce3-5b14-86c3-a22fa778ac6e",
+      "startUtc": "2026-03-07T20:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Orlando Magic",
+      "site": "home"
+    },
+    {
+      "id": "c4a0e96c-7ec6-5445-845a-63648fab00c6",
+      "startUtc": "2026-03-11T03:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Los Angeles Lakers",
+      "site": "away"
+    },
+    {
+      "id": "aa2dad23-9959-5483-aa8c-ba5782349733",
+      "startUtc": "2026-03-12T02:30:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "LA Clippers",
+      "site": "away"
+    },
+    {
+      "id": "01b45229-fa78-5bab-a87a-4b967aeccea6",
+      "startUtc": "2026-03-14T02:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Golden State Warriors",
+      "site": "away"
+    },
+    {
+      "id": "f6c98075-909d-5245-9b87-d714ce157f4e",
+      "startUtc": "2026-03-15T17:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Oklahoma City Thunder",
+      "site": "away"
+    },
+    {
+      "id": "0732cb77-5036-5b18-ad71-9843bf7637ca",
+      "startUtc": "2026-03-18T00:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Phoenix Suns",
+      "site": "home"
+    },
+    {
+      "id": "1e3cbfb7-fa9d-509f-afb4-34d217d9255e",
+      "startUtc": "2026-03-19T00:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Utah Jazz",
+      "site": "home"
+    },
+    {
+      "id": "f7ec5b77-a343-5cae-a2e7-a5d8a2a0031b",
+      "startUtc": "2026-03-21T00:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Portland Trail Blazers",
+      "site": "home"
+    },
+    {
+      "id": "e8d7e926-08ca-5041-9295-5ba8029fc8e6",
+      "startUtc": "2026-03-23T00:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "05fd357f-24c6-58f2-9675-1cdd60186424",
+      "startUtc": "2026-03-26T01:30:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Houston Rockets",
+      "site": "home"
+    },
+    {
+      "id": "40adb79a-33b7-57af-9821-b7154ecf9213",
+      "startUtc": "2026-03-28T21:30:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Detroit Pistons",
+      "site": "home"
+    },
+    {
+      "id": "40c721fd-d394-50ce-93ac-c53b9ed96ecd",
+      "startUtc": "2026-03-31T00:30:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Dallas Mavericks",
+      "site": "away"
+    },
+    {
+      "id": "9174b16a-e250-5e75-b9ea-040fe09c32a0",
+      "startUtc": "2026-04-02T23:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Detroit Pistons",
+      "site": "away"
+    },
+    {
+      "id": "8c979ad5-4e4c-594c-b021-67ecb801f31a",
+      "startUtc": "2026-04-03T23:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Philadelphia 76ers",
+      "site": "away"
+    },
+    {
+      "id": "f9b196bd-9568-5a96-bb36-92ecdd04d0d8",
+      "startUtc": "2026-04-05T23:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Charlotte Hornets",
+      "site": "home"
+    },
+    {
+      "id": "358d3d80-b54a-5a72-bf09-57e9df0dd44c",
+      "startUtc": "2026-04-08T00:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Indiana Pacers",
+      "site": "away"
+    },
+    {
+      "id": "b50ac940-32d0-50d7-8b95-07e67e2eaa3c",
+      "startUtc": "2026-04-08T23:00:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Orlando Magic",
+      "site": "away"
+    },
+    {
+      "id": "7107dd3f-4abe-5002-a876-4db1aee26584",
+      "startUtc": "2026-04-11T01:30:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "Houston Rockets",
+      "site": "away"
+    },
+    {
+      "id": "3e6bbea5-6669-51c4-8f24-5dc6124b2741",
+      "startUtc": "2026-04-13T00:30:00Z",
+      "teamName": "Minnesota Timberwolves",
+      "opponent": "New Orleans Pelicans",
+      "site": "home"
+    }
+  ]
+}

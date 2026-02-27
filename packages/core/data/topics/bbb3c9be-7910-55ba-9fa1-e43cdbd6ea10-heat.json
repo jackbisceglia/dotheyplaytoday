@@ -1,0 +1,165 @@
+{
+  "events": [
+    {
+      "id": "c17bbd54-0cd1-5f5c-87bb-c26a22051931",
+      "startUtc": "2026-02-27T00:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Philadelphia 76ers",
+      "site": "away"
+    },
+    {
+      "id": "8afa5c28-52d3-54ec-9e34-cc3f8f21622a",
+      "startUtc": "2026-02-28T20:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Houston Rockets",
+      "site": "home"
+    },
+    {
+      "id": "67d45b86-3c5d-50c6-bf43-a9bd0e5b7fb4",
+      "startUtc": "2026-03-04T00:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Brooklyn Nets",
+      "site": "home"
+    },
+    {
+      "id": "a00b87cb-fbb8-5f00-978e-0409ec5da946",
+      "startUtc": "2026-03-06T00:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Brooklyn Nets",
+      "site": "home"
+    },
+    {
+      "id": "c46e87d3-91c9-5899-b11c-04a6df2a4ca3",
+      "startUtc": "2026-03-07T00:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Charlotte Hornets",
+      "site": "away"
+    },
+    {
+      "id": "e9128475-d3e5-5322-ad84-613723c34755",
+      "startUtc": "2026-03-08T22:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Detroit Pistons",
+      "site": "home"
+    },
+    {
+      "id": "4c6a1fd8-96d7-5a7d-8afb-850f373a31be",
+      "startUtc": "2026-03-10T23:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Washington Wizards",
+      "site": "home"
+    },
+    {
+      "id": "097c804c-4a27-5aed-b260-732dbca99083",
+      "startUtc": "2026-03-12T23:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Milwaukee Bucks",
+      "site": "home"
+    },
+    {
+      "id": "38331787-a27a-52ff-afe7-d6ff156c85ce",
+      "startUtc": "2026-03-15T00:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Orlando Magic",
+      "site": "home"
+    },
+    {
+      "id": "8233afd1-b1b0-5f00-8dc4-f963965e44cb",
+      "startUtc": "2026-03-17T23:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Charlotte Hornets",
+      "site": "away"
+    },
+    {
+      "id": "b3e29523-1547-591b-8eff-c0e6a9d1702f",
+      "startUtc": "2026-03-20T00:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Los Angeles Lakers",
+      "site": "home"
+    },
+    {
+      "id": "b2b5ca8e-1fc4-5fb8-9afc-01c9c916319b",
+      "startUtc": "2026-03-22T00:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Houston Rockets",
+      "site": "away"
+    },
+    {
+      "id": "c55c82d2-b9ee-510d-92b3-31ad7195e628",
+      "startUtc": "2026-03-23T23:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "San Antonio Spurs",
+      "site": "home"
+    },
+    {
+      "id": "2b7e922d-c407-524b-ae15-5e7c1d6d0bd2",
+      "startUtc": "2026-03-25T23:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Cleveland Cavaliers",
+      "site": "away"
+    },
+    {
+      "id": "3ba51748-68de-5637-bdd7-622a4ac04b5f",
+      "startUtc": "2026-03-27T23:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Cleveland Cavaliers",
+      "site": "away"
+    },
+    {
+      "id": "ff6dac96-6bd0-5029-96e7-1e90f3689daf",
+      "startUtc": "2026-03-29T21:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Indiana Pacers",
+      "site": "away"
+    },
+    {
+      "id": "c76dfc71-e1eb-51a0-911a-77ae19a8ce87",
+      "startUtc": "2026-03-30T23:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Philadelphia 76ers",
+      "site": "home"
+    },
+    {
+      "id": "0b97eeb8-6789-5d07-8d7b-e1ea9786a0c9",
+      "startUtc": "2026-04-01T23:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Boston Celtics",
+      "site": "home"
+    },
+    {
+      "id": "6289a57f-f210-5dd4-b390-193bf5dd60f5",
+      "startUtc": "2026-04-04T19:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Washington Wizards",
+      "site": "home"
+    },
+    {
+      "id": "d85a6ed2-3508-50b0-9c7d-9989763386e5",
+      "startUtc": "2026-04-07T23:30:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Toronto Raptors",
+      "site": "away"
+    },
+    {
+      "id": "90f97db7-54db-56d0-ad51-d20adb582b8a",
+      "startUtc": "2026-04-09T23:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Toronto Raptors",
+      "site": "away"
+    },
+    {
+      "id": "4b1be308-004c-5899-a765-b44acab98471",
+      "startUtc": "2026-04-10T23:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "d796956f-80a2-520f-91bb-e309d070c5ec",
+      "startUtc": "2026-04-12T22:00:00Z",
+      "teamName": "Miami Heat",
+      "opponent": "Atlanta Hawks",
+      "site": "home"
+    }
+  ]
+}

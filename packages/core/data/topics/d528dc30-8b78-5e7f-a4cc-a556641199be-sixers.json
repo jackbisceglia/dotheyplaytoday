@@ -1,0 +1,172 @@
+{
+  "events": [
+    {
+      "id": "a4c09846-9b4d-55e2-95c0-5097b0cf81cd",
+      "startUtc": "2026-02-27T00:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Miami Heat",
+      "site": "home"
+    },
+    {
+      "id": "d3e4900e-6c3d-546c-9462-2490286a0061",
+      "startUtc": "2026-03-02T01:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Boston Celtics",
+      "site": "away"
+    },
+    {
+      "id": "ad51a347-392e-567c-b7c7-4ba35aa17983",
+      "startUtc": "2026-03-04T01:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "San Antonio Spurs",
+      "site": "home"
+    },
+    {
+      "id": "60162561-dea9-5c98-89ba-ec54c1b09436",
+      "startUtc": "2026-03-05T00:30:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Utah Jazz",
+      "site": "home"
+    },
+    {
+      "id": "f10b3d31-43a0-58cd-8bff-9371764f3861",
+      "startUtc": "2026-03-07T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Atlanta Hawks",
+      "site": "away"
+    },
+    {
+      "id": "1df8ce03-8fc6-5a5e-b1c9-75707180dd53",
+      "startUtc": "2026-03-09T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Cleveland Cavaliers",
+      "site": "away"
+    },
+    {
+      "id": "f7194b21-e8e3-5af8-b056-959c52d70002",
+      "startUtc": "2026-03-10T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Memphis Grizzlies",
+      "site": "home"
+    },
+    {
+      "id": "d890f861-9b70-51cd-b570-3a8dbc8d8b4b",
+      "startUtc": "2026-03-12T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Detroit Pistons",
+      "site": "away"
+    },
+    {
+      "id": "6e53f6a8-c18a-5269-a489-7f9a309cbac7",
+      "startUtc": "2026-03-14T17:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Brooklyn Nets",
+      "site": "home"
+    },
+    {
+      "id": "a559b07c-0447-5f95-bc64-0c7b61cb5b9f",
+      "startUtc": "2026-03-15T22:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Portland Trail Blazers",
+      "site": "home"
+    },
+    {
+      "id": "2f3f0260-2b5a-5c95-a41b-3bdb7e028bca",
+      "startUtc": "2026-03-18T01:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Denver Nuggets",
+      "site": "away"
+    },
+    {
+      "id": "ef965928-b2d0-5393-a670-db0952eac038",
+      "startUtc": "2026-03-20T02:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Sacramento Kings",
+      "site": "away"
+    },
+    {
+      "id": "9f752625-fe2b-5049-b756-671935f5cdce",
+      "startUtc": "2026-03-22T01:30:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Utah Jazz",
+      "site": "away"
+    },
+    {
+      "id": "d0a723f9-2807-5d3c-ae45-7fe58c69ddf2",
+      "startUtc": "2026-03-23T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Oklahoma City Thunder",
+      "site": "home"
+    },
+    {
+      "id": "1fa049fe-7b5f-5a38-97d2-270273d3c201",
+      "startUtc": "2026-03-25T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Chicago Bulls",
+      "site": "home"
+    },
+    {
+      "id": "37706f01-c71e-527b-a273-022298bab60c",
+      "startUtc": "2026-03-28T22:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Charlotte Hornets",
+      "site": "away"
+    },
+    {
+      "id": "fac9afe2-d073-5477-8940-0fa61766e50a",
+      "startUtc": "2026-03-30T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Miami Heat",
+      "site": "away"
+    },
+    {
+      "id": "e8ca167e-1ff6-5bc7-929a-f09688924c5f",
+      "startUtc": "2026-04-01T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Washington Wizards",
+      "site": "away"
+    },
+    {
+      "id": "975908f2-41d2-57a0-b2a6-73dda727350e",
+      "startUtc": "2026-04-03T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Minnesota Timberwolves",
+      "site": "home"
+    },
+    {
+      "id": "fcd2ccb9-16b4-5a01-b45f-543563f46752",
+      "startUtc": "2026-04-04T23:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Detroit Pistons",
+      "site": "home"
+    },
+    {
+      "id": "b1b3d62f-79b5-5477-9e80-2ab5b105d86e",
+      "startUtc": "2026-04-07T00:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "San Antonio Spurs",
+      "site": "away"
+    },
+    {
+      "id": "46b0224b-961a-5999-9cdb-4d15cf51afcd",
+      "startUtc": "2026-04-10T00:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Houston Rockets",
+      "site": "away"
+    },
+    {
+      "id": "8e8ea577-d59c-5e4e-8371-d8646d7d84f5",
+      "startUtc": "2026-04-10T23:30:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Indiana Pacers",
+      "site": "away"
+    },
+    {
+      "id": "c8a5d466-7808-5a4f-a100-9f3bda9f4ec4",
+      "startUtc": "2026-04-12T22:00:00Z",
+      "teamName": "Philadelphia 76ers",
+      "opponent": "Milwaukee Bucks",
+      "site": "home"
+    }
+  ]
+}
