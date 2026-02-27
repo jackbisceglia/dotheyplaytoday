@@ -2,7 +2,7 @@
 id: "06"
 title: Seed data and documentation
 description: Create sample JSON data for local testing and update README with setup/run instructions
-status: TODO
+status: DONE
 priority: P0
 prereqs:
   - 05-notify-command.md
