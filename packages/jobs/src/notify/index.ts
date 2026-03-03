@@ -1,7 +1,13 @@
-import { pathToFileURL } from "node:url";
-
+import { Command, HelpDoc, Options, ValidationError } from "@effect/cli";
+import { KeyValueStore, Path } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Database } from "@dtpt/core/modules/database/service";
+import { RedisClientIoredis } from "@dtpt/core/modules/kvs/providers/redis/client.ioredis";
+import {
+  RedisClientIoredisConfig,
+  RedisKeyValueStoreConfig,
+} from "@dtpt/core/modules/kvs/providers/redis/config";
+import { KeyValueStoreRedis } from "@dtpt/core/modules/kvs/providers/redis/service";
 import type {
   NotifierRequestError,
   NotifierResponseError,
@@ -11,8 +17,17 @@ import { ResendProvider } from "@dtpt/core/modules/notifier/providers/resend/ser
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
 import { localDateFromUtc } from "@dtpt/core/modules/subscriptions/time";
-import { User } from "@dtpt/core/modules/users/schema";
-import { Array, DateTime, Effect, Layer, Schema } from "effect";
+import { EmailAddress, User } from "@dtpt/core/modules/users/schema";
+import {
+  Array,
+  Config,
+  DateTime,
+  Effect,
+  Layer,
+  Match,
+  Option,
+  Schema,
+} from "effect";
 
 import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/effect/config";
 
@@ -20,6 +35,7 @@ export type NotifyOptions = {
   dryRun: boolean;
   ignoreAlreadySent?: boolean;
   ignoreSubscriptionTiming?: boolean;
+  devUserEmail?: string;
   now?: DateTime.Utc;
 };
 
@@ -81,6 +97,57 @@ class NotifyNoEvents extends Schema.TaggedError<NotifyNoEvents>()(
   },
 ) {}
 
+const getNotifierLayer = (dryRun: boolean) => {
+  const NotifierLive = () =>
+    Notifier.Default.pipe(Layer.provide(ResendProvider.Default));
+
+  const NotifierDryRun = () =>
+    Layer.succeed(Notifier, Notifier.make({ send: () => Effect.void }));
+
+  return dryRun ? NotifierDryRun() : NotifierLive();
+};
+
+const getKvsLayer = (kvsOverride?: string) => {
+  const layers = {
+    redis: () =>
+      KeyValueStoreRedis.layerConfig(RedisKeyValueStoreConfig).pipe(
+        Layer.provide(RedisClientIoredis.layerConfig(RedisClientIoredisConfig)),
+      ),
+    fs: () =>
+      Layer.unwrapEffect(
+        Effect.gen(function* () {
+          const path = yield* Path.Path;
+
+          return KeyValueStore.layerFileSystem(
+            path.join(
+              import.meta.dirname,
+              "..",
+              "..",
+              "..",
+              "core",
+              "data",
+              "kv",
+            ),
+          );
+        }),
+      ),
+  };
+
+  return Match.value<[string | undefined, string | undefined]>([
+    process.env.NODE_ENV,
+    kvsOverride,
+  ]).pipe(
+    Match.when([Match.any, "fs"], layers.fs),
+    Match.whenOr(
+      [Match.any, "redis"],
+      ["production", Match.any],
+      ["prod", Match.any],
+      layers.redis,
+    ),
+    Match.orElse(layers.fs),
+  );
+};
+
 const logs = {
   features: {
     relativeUnimplemented: (error: NotifyRelativeUnimplemented) =>
@@ -117,6 +184,10 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   const now = opts.now ?? (yield* DateTime.now);
   const ignoreAlreadySent = opts.ignoreAlreadySent ?? false;
   const ignoreSubscriptionTiming = opts.ignoreSubscriptionTiming ?? false;
+  const devUserEmail = Option.fromNullable(opts.devUserEmail).pipe(
+    Option.map((email) => email.trim().toLowerCase()),
+    Option.filter((email) => email.length > 0),
+  );
 
   yield* Effect.logInfo(
     `notify: start dryRun=${String(opts.dryRun)} ignoreAlreadySent=${String(ignoreAlreadySent)} ignoreSubscriptionTiming=${String(ignoreSubscriptionTiming)} now=${DateTime.formatIso(now)}`,
@@ -129,12 +200,20 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
 
   const usersById = new Map(allUsers.map((user) => [user.id, user]));
 
+  let subscriptionsToProcess = allSubscriptions;
+  if (Option.isSome(devUserEmail)) {
+    subscriptionsToProcess = allSubscriptions.filter((subscription) => {
+      const user = usersById.get(subscription.userId);
+      return user?.email.toLowerCase() === devUserEmail.value;
+    });
+  }
+
   yield* Effect.logInfo(
     `notify: loaded users=${allUsers.length.toString()} subscriptions=${allSubscriptions.length.toString()}`,
   );
 
   yield* Effect.forEach(
-    allSubscriptions,
+    subscriptionsToProcess,
     Effect.fn(
       function* (subscription) {
         const subscriptionId = subscription.id;
@@ -255,59 +334,106 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   );
 
   yield* Effect.logInfo(
-    `notify: done processed=${allSubscriptions.length.toString()}`,
+    `notify: done processed=${subscriptionsToProcess.length.toString()}`,
   );
 });
 
-export const runNotifyJob = notify;
-
-const getNotifierLayer = (dryRun: boolean) => {
-  const NotifierLive = Notifier.Default.pipe(
-    Layer.provide(ResendProvider.Default),
-  );
-
-  const NotifierDryRun = Layer.succeed(
-    Notifier,
-    Notifier.make({ send: () => Effect.void }),
-  );
-
-  return dryRun ? NotifierDryRun : NotifierLive;
-};
-
 const DotEnvConfigProvider = createConfigProviderFromDotEnv("../../.env");
 
+const devUserEnvError = ValidationError.invalidValue(
+  HelpDoc.p(
+    "--use-dev-user env requires USER_EMAIL to be set to a valid email",
+  ),
+);
+
+const DevEnvUserConfig = Config.string("USER_EMAIL").pipe(
+  Effect.mapError(() => devUserEnvError),
+  Effect.flatMap((email) =>
+    Schema.decodeUnknown(EmailAddress)(email).pipe(
+      Effect.mapError(() => devUserEnvError),
+    ),
+  ),
+);
+
+const useDevUserOption = Options.text("use-dev-user").pipe(
+  Options.withSchema(Schema.Union(EmailAddress, Schema.Literal("env"))),
+  Options.optional,
+  Options.mapEffect((value) =>
+    Option.match(value, {
+      onNone: () => Effect.succeed(Option.none<string>()),
+      onSome: (input) =>
+        Match.value(input).pipe(
+          Match.when("env", () =>
+            DevEnvUserConfig.pipe(Effect.map((email) => Option.some(email))),
+          ),
+          Match.orElse((email) => Effect.succeed(Option.some(email))),
+        ),
+    }),
+  ),
+  Options.withDescription(
+    "Limit notifications to one user (email or 'env' to use USER_EMAIL)",
+  ),
+);
+
+const NotifyCommand = Command.make(
+  "notify",
+  {
+    dryRun: Options.boolean("dry-run"),
+    ignoreAlreadySent: Options.boolean("ignore-already-sent"),
+    ignoreSubscriptionTiming: Options.boolean("ignore-subscription-timing"),
+    kvs: Options.choice("kvs", ["redis", "fs"]).pipe(Options.optional),
+    useDevUser: useDevUserOption,
+  },
+  (opts) =>
+    Effect.gen(function* () {
+      const kvsOverride = Option.getOrUndefined(opts.kvs);
+      const kvsLayer: Layer.Layer<
+        KeyValueStore.KeyValueStore,
+        unknown,
+        NodeContext.NodeContext
+      > = getKvsLayer(kvsOverride);
+      const notifyOptions: NotifyOptions = {
+        dryRun: opts.dryRun,
+        ignoreAlreadySent: opts.ignoreAlreadySent,
+        ignoreSubscriptionTiming: opts.ignoreSubscriptionTiming,
+        ...(Option.isSome(opts.useDevUser)
+          ? { devUserEmail: opts.useDevUser.value }
+          : {}),
+      };
+
+      const ProgramLayer = Layer.mergeAll(
+        getNotifierLayer(opts.dryRun),
+        Database.Default,
+        Subscriptions.Default,
+      ).pipe(
+        Layer.provideMerge(kvsLayer),
+        Layer.provideMerge(NodeContext.layer),
+      );
+
+      yield* Effect.logInfo(
+        `notify: using kvs nodeEnv=${process.env.NODE_ENV ?? "undefined"} override=${kvsOverride ?? "none"}`,
+      );
+
+      return yield* notify(notifyOptions).pipe(Effect.provide(ProgramLayer));
+    }),
+);
+
+const Notify = Command.run(NotifyCommand, {
+  name: "jobs:notify",
+  version: "0.0.0",
+});
+
 function main() {
-  const opts = process.argv.slice(2);
-  const dryRun = opts.includes("--dry-run");
-  const ignoreAlreadySent = opts.includes("--ignore-already-sent");
-  const ignoreSubscriptionTiming = opts.includes(
-    "--ignore-subscription-timing",
+  Notify(process.argv).pipe(
+    Effect.provide(
+      DotEnvConfigProvider.pipe(Layer.provideMerge(NodeContext.layer)),
+    ),
+    NodeRuntime.runMain,
   );
+}
 
-  const ProgramLayer = Layer.mergeAll(
-    getNotifierLayer(dryRun),
-    Database.Default,
-    Subscriptions.Default,
-  ).pipe(
-    Layer.provide(DotEnvConfigProvider),
-    Layer.provideMerge(NodeContext.layer),
-  );
-
-  NodeRuntime.runMain(
-    notify({
-      dryRun,
-      ignoreAlreadySent,
-      ignoreSubscriptionTiming,
-    }).pipe(Effect.provide(ProgramLayer)),
-  );
+if (import.meta.main) {
+  main();
 }
 
 export default main;
-
-const isMain =
-  typeof process.argv[1] === "string" &&
-  import.meta.url === pathToFileURL(process.argv[1]).href;
-
-if (isMain) {
-  main();
-}

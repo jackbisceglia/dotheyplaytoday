@@ -83,7 +83,7 @@ const DatabaseLayerTest = Layer.succeed(
     loadUsers: () => Effect.succeed([]),
     loadSubscriptions: () => Effect.succeed([]),
     loadTopic: () => Effect.succeed(topic),
-    updateSubscription: () => Effect.void,
+    updateSubscription: () => Effect.void.pipe(Effect.as(undefined)),
   }),
 );
 
@@ -165,7 +165,7 @@ describe("Subscriptions", () => {
         loadUsers: () => Effect.succeed([]),
         loadSubscriptions: () => Effect.succeed([]),
         loadTopic: () => Effect.fail(loadTopicError),
-        updateSubscription: () => Effect.void,
+        updateSubscription: () => Effect.void.pipe(Effect.as(undefined)),
       }),
     );
 

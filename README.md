@@ -102,7 +102,7 @@ Notes:
 - Notification matchup phrasing uses:
   - home: `vs.`
   - away: `@`
-- Repository seed data includes Celtics, Red Sox smoke data, and upcoming regular-season topic files for all NBA teams
+- Repository seed data includes upcoming regular-season topic files for all NBA teams
 
 ## Scheduling Expectations
 

@@ -1,5 +1,6 @@
-import { FileSystem, Path } from "@effect/platform";
-import { Effect, Match, ParseResult, Schema } from "effect";
+import { KeyValueStore } from "@effect/platform";
+import type * as PlatformError from "@effect/platform/Error";
+import { Effect, Either, Match, Option, ParseResult, Schema } from "effect";
 
 import { Subscription } from "../subscriptions/schema.js";
 import { Topic } from "../topics/schema.js";
@@ -39,148 +40,146 @@ const formatParseError = (error: ParseResult.ParseError) => ({
   issues: ParseResult.ArrayFormatter.formatErrorSync(error),
 });
 
+const makeValidationError = (key: string, error: ParseResult.ParseError) => {
+  const parsed = formatParseError(error);
+
+  return DataValidationError.make({
+    path: key,
+    message: parsed.message,
+    issues: parsed.issues,
+  });
+};
+
+type WithDecodeOptions<A, I> = {
+  key: string;
+  schema: Schema.Schema<A, I>;
+  run: () => Effect.Effect<Option.Option<string>, PlatformError.PlatformError>;
+};
+
 export class Database extends Effect.Service<Database>()("@dtpt/Database", {
   effect: Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem;
-    const path = yield* Path.Path;
-    const dataRoot = path.join(import.meta.dirname, "..", "..", "..", "data");
-    const usersPath = path.join(dataRoot, "users.json");
-    const subscriptionsPath = path.join(dataRoot, "subscriptions.json");
-    const topicsPath = path.join(dataRoot, "topics");
+    const kv = yield* KeyValueStore.KeyValueStore;
+    const keys = {
+      users: "users",
+      subscriptions: "subscriptions",
+      topic: (topicId: string) => `topics/${topicId}`,
+    };
 
-    const readJsonSchema = Effect.fn("readJsonSchema")(
-      function* <A, I>(schema: Schema.Schema<A, I>, filePath: string) {
-        const content = yield* fs.readFileString(filePath, "utf8");
-        const fromJson = Schema.parseJson(schema);
-
-        return yield* Schema.decodeUnknown(fromJson)(content).pipe(
-          Effect.mapError((e) => {
-            const parsed = formatParseError(e);
-            return DataValidationError.make({
-              path: filePath,
-              message: parsed.message,
-              issues: parsed.issues,
-            });
-          }),
+    const withDecode = Effect.fn("Database.withDecode")(function* <A, I>(
+      opts: WithDecodeOptions<A, I>,
+    ) {
+      const content = yield* opts
+        .run()
+        .pipe(
+          Effect.mapError((error) =>
+            DataReadError.make({ path: opts.key, message: error.message }),
+          ),
         );
-      },
-      Effect.catchTags({
-        SystemError: (e) => {
-          const errorPath =
-            typeof e.pathOrDescriptor === "string"
-              ? e.pathOrDescriptor
-              : String(e.pathOrDescriptor ?? "");
-          return Effect.fail(
-            e.reason === "NotFound"
-              ? DataFileNotFound.make({ path: errorPath })
-              : DataReadError.make({ path: errorPath, message: e.message }),
-          );
-        },
-        BadArgument: (e) =>
-          Effect.fail(DataReadError.make({ path: "", message: e.message })),
-      }),
-    );
 
-    const writeJsonSchema = Effect.fn("Database.writeJsonSchema")(
-      function* <A, I>(
-        schema: Schema.Schema<A, I>,
-        filePath: string,
-        value: A,
-      ) {
-        const fromJson = Schema.parseJson(schema);
+      if (Option.isNone(content)) {
+        return yield* DataFileNotFound.make({ path: opts.key });
+      }
 
-        const content = yield* Schema.encodeUnknown(fromJson)(value);
+      const fromJson = Schema.parseJson(opts.schema);
 
-        return yield* fs.writeFileString(filePath, `${content}\n`);
-      },
-      (effect, _, filePath) =>
-        Effect.catchTags(effect, {
-          ParseError: (e) =>
-            Effect.fail(
-              DataValidationError.make({
-                path: filePath,
-                message: formatParseError(e).message,
-                issues: formatParseError(e).issues,
-              }),
-            ),
-          SystemError: (e) =>
-            Effect.fail(
-              DataWriteError.make({ path: filePath, message: e.message }),
-            ),
-          BadArgument: (e) =>
-            Effect.fail(
-              DataWriteError.make({ path: "unknown", message: e.message }),
-            ),
-        }),
-    );
+      return yield* Schema.decodeUnknown(fromJson)(content.value).pipe(
+        Effect.mapError((error) => makeValidationError(opts.key, error)),
+      );
+    });
 
-    const loadUsers = () => readJsonSchema(Schema.Array(User), usersPath);
+    const loadUsers = () =>
+      withDecode({
+        key: keys.users,
+        schema: Schema.Array(User),
+        run: () => kv.get(keys.users),
+      });
 
     const loadSubscriptions = () =>
-      readJsonSchema(Schema.Array(Subscription), subscriptionsPath);
+      withDecode({
+        key: keys.subscriptions,
+        schema: Schema.Array(Subscription),
+        run: () => kv.get(keys.subscriptions),
+      });
 
     const Events = Topic.pick("events");
 
-    const loadTopic = Effect.fn("Database.loadTopic")(
-      function* (topicId: string) {
-        const asPath = (fileName: string) => path.join(topicsPath, fileName);
-        const isTopicFile = (fileName: string) =>
-          fileName.startsWith(`${topicId}-`) && fileName.endsWith(".json");
+    const loadTopic = Effect.fn("Database.loadTopic")(function* (
+      topicId: string,
+    ) {
+      const key = keys.topic(topicId);
+      const json = yield* withDecode({
+        key,
+        schema: Events,
+        run: () => kv.get(key),
+      });
 
-        const entries = yield* fs.readDirectory(topicsPath);
-        const fileName = entries.find(isTopicFile);
-
-        if (!fileName) {
-          return yield* DataFileNotFound.make({
-            path: asPath(`${topicId}-*.json`),
-          });
-        }
-
-        const json = yield* readJsonSchema(Events, asPath(fileName));
-
-        return { id: topicId, events: json.events };
-      },
-      Effect.catchTags({
-        SystemError: (e) =>
-          Effect.fail(
-            e.reason === "NotFound"
-              ? DataFileNotFound.make({ path: topicsPath })
-              : DataReadError.make({ path: topicsPath, message: e.message }),
-          ),
-        BadArgument: (e) =>
-          Effect.fail(
-            DataReadError.make({ path: topicsPath, message: e.message }),
-          ),
-      }),
-    );
+      return { id: topicId, events: json.events };
+    });
 
     const updateSubscription = Effect.fn("Database.updateSubscription")(
       function* (subscription: Subscription) {
         const Subscriptions = Schema.Array(Subscription);
+        const fromJson = Schema.parseJson(Subscriptions);
+        const decodeUnknownEither = Schema.decodeUnknownEither(fromJson);
+        const encodeUnknownEither = Schema.encodeUnknownEither(fromJson);
+        let validationError: DataValidationError | undefined;
 
-        const subscriptions = yield* readJsonSchema(
-          Subscriptions,
-          subscriptionsPath,
-        );
+        const updated = yield* kv
+          .modify(keys.subscriptions, (encodedSubscriptions) => {
+            const decoded = decodeUnknownEither(encodedSubscriptions);
 
-        const index = subscriptions.findIndex((e) => e.id === subscription.id);
+            if (Either.isLeft(decoded)) {
+              validationError = makeValidationError(
+                keys.subscriptions,
+                decoded.left,
+              );
+              return encodedSubscriptions;
+            }
 
-        const nextSubscriptions = Match.value(index).pipe(
-          Match.when(-1, () => [...subscriptions, subscription]),
-          Match.orElse((index) =>
-            subscriptions.map((e, eIndex) => {
-              if (eIndex === index) return subscription;
+            const subscriptions = decoded.right;
+            const index = subscriptions.findIndex(
+              (e) => e.id === subscription.id,
+            );
 
-              return e;
-            }),
-          ),
-        );
+            const nextSubscriptions = Match.value(index).pipe(
+              Match.when(-1, () => [...subscriptions, subscription]),
+              Match.orElse((index) =>
+                subscriptions.map((e, eIndex) => {
+                  if (eIndex === index) return subscription;
 
-        return yield* writeJsonSchema(
-          Subscriptions,
-          subscriptionsPath,
-          nextSubscriptions,
-        );
+                  return e;
+                }),
+              ),
+            );
+
+            const encoded = encodeUnknownEither(nextSubscriptions);
+
+            if (Either.isLeft(encoded)) {
+              validationError = makeValidationError(
+                keys.subscriptions,
+                encoded.left,
+              );
+              return encodedSubscriptions;
+            }
+
+            return encoded.right;
+          })
+          .pipe(
+            Effect.mapError((error) =>
+              DataWriteError.make({
+                path: keys.subscriptions,
+                message: error.message,
+              }),
+            ),
+          );
+
+        if (validationError) {
+          return yield* validationError;
+        }
+
+        if (Option.isNone(updated)) {
+          return yield* DataFileNotFound.make({ path: keys.subscriptions });
+        }
       },
     );
 
