@@ -152,4 +152,36 @@ describe("Database", () => {
       }),
     ),
   );
+
+  it.effect(
+    "returns DataFileNotFound when updating with missing subscriptions key",
+    () =>
+      runWithSeed(
+        { users: usersSeed },
+        Effect.gen(function* () {
+          const database = yield* Database;
+          const subscription = decode(Subscription)(subscriptionsSeed[0]);
+          const result = yield* Effect.either(
+            database.updateSubscription(subscription),
+          );
+
+          Either.match(result, {
+            onLeft: (error) => {
+              switch (error._tag) {
+                case "DataFileNotFound": {
+                  expect(error.path).toBe("subscriptions");
+                  break;
+                }
+                default:
+                  expect.fail(`Expected DataFileNotFound, got ${error._tag}`);
+              }
+            },
+            onRight: () =>
+              expect.fail(
+                "Expected updateSubscription to fail on missing data",
+              ),
+          });
+        }),
+      ),
+  );
 });

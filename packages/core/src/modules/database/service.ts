@@ -56,13 +56,6 @@ type WithDecodeOptions<A, I> = {
   run: () => Effect.Effect<Option.Option<string>, PlatformError.PlatformError>;
 };
 
-type WithEncodeOptions<A, I, B> = {
-  key: string;
-  schema: Schema.Schema<A, I>;
-  value: A;
-  run: (encoded: string) => Effect.Effect<B, PlatformError.PlatformError>;
-};
-
 export class Database extends Effect.Service<Database>()("@dtpt/Database", {
   effect: Effect.gen(function* () {
     const kv = yield* KeyValueStore.KeyValueStore;
@@ -92,24 +85,6 @@ export class Database extends Effect.Service<Database>()("@dtpt/Database", {
       return yield* Schema.decodeUnknown(fromJson)(content.value).pipe(
         Effect.mapError((error) => makeValidationError(opts.key, error)),
       );
-    });
-
-    const withEncode = Effect.fn("Database.withEncode")(function* <A, I, B>(
-      opts: WithEncodeOptions<A, I, B>,
-    ) {
-      const fromJson = Schema.parseJson(opts.schema);
-
-      const encoded = yield* Schema.encodeUnknown(fromJson)(opts.value).pipe(
-        Effect.mapError((error) => makeValidationError(opts.key, error)),
-      );
-
-      return yield* opts
-        .run(encoded)
-        .pipe(
-          Effect.mapError((error) =>
-            DataWriteError.make({ path: opts.key, message: error.message }),
-          ),
-        );
     });
 
     const loadUsers = () =>
@@ -203,12 +178,7 @@ export class Database extends Effect.Service<Database>()("@dtpt/Database", {
         }
 
         if (Option.isNone(updated)) {
-          return yield* withEncode({
-            key: keys.subscriptions,
-            schema: Subscriptions,
-            value: [subscription],
-            run: (encoded) => kv.set(keys.subscriptions, encoded),
-          });
+          return yield* DataFileNotFound.make({ path: keys.subscriptions });
         }
       },
     );

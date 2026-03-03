@@ -407,7 +407,6 @@ const NotifyCommand = Command.make(
         Subscriptions.Default,
       ).pipe(
         Layer.provideMerge(kvsLayer),
-        Layer.provide(DotEnvConfigProvider),
         Layer.provideMerge(NodeContext.layer),
       );
 
@@ -426,7 +425,9 @@ const Notify = Command.run(NotifyCommand, {
 
 function main() {
   Notify(process.argv).pipe(
-    Effect.provide(NodeContext.layer),
+    Effect.provide(
+      DotEnvConfigProvider.pipe(Layer.provideMerge(NodeContext.layer)),
+    ),
     NodeRuntime.runMain,
   );
 }

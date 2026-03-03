@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "start:migrate": "node dist/migrate/index.js",
     "start:notify": "node dist/notify/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
