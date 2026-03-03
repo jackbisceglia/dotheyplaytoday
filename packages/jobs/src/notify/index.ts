@@ -107,7 +107,7 @@ const getNotifierLayer = (dryRun: boolean) => {
   return dryRun ? NotifierDryRun() : NotifierLive();
 };
 
-const getKvsLayer = (kvsOverride?: string) => {
+const getKvsLayer = (env: string | undefined, kvsOverride?: string) => {
   const layers = {
     redis: () =>
       KeyValueStoreRedis.layerConfig(RedisKeyValueStoreConfig).pipe(
@@ -133,19 +133,28 @@ const getKvsLayer = (kvsOverride?: string) => {
       ),
   };
 
-  return Match.value<[string | undefined, string | undefined]>([
-    process.env.NODE_ENV,
-    kvsOverride,
-  ]).pipe(
-    Match.when([Match.any, "fs"], layers.fs),
+  const selection: "redis" | "fs" = Match.value<
+    [string | undefined, string | undefined]
+  >([env, kvsOverride]).pipe(
+    Match.when([Match.any, "fs"], () => "fs" as const),
+    Match.whenOr(
+      ["development", Match.any],
+      ["dev", Match.any],
+      () => "fs" as const,
+    ),
     Match.whenOr(
       [Match.any, "redis"],
       ["production", Match.any],
       ["prod", Match.any],
-      layers.redis,
+      () => "redis" as const,
     ),
-    Match.orElse(layers.fs),
+    Match.orElse(() => "fs" as const),
   );
+
+  return {
+    layer: layers[selection](),
+    selection,
+  };
 };
 
 const logs = {
@@ -387,11 +396,16 @@ const NotifyCommand = Command.make(
   (opts) =>
     Effect.gen(function* () {
       const kvsOverride = Option.getOrUndefined(opts.kvs);
+      const nodeEnv = process.env.NODE_ENV;
+      const railwayEnv = process.env.RAILWAY_ENVIRONMENT_NAME;
+      const env = railwayEnv === "" ? nodeEnv : (railwayEnv ?? nodeEnv);
+      const kvsConfig = getKvsLayer(env, kvsOverride);
       const kvsLayer: Layer.Layer<
         KeyValueStore.KeyValueStore,
         unknown,
         NodeContext.NodeContext
-      > = getKvsLayer(kvsOverride);
+      > = kvsConfig.layer;
+      const kvsSelection = kvsConfig.selection;
       const notifyOptions: NotifyOptions = {
         dryRun: opts.dryRun,
         ignoreAlreadySent: opts.ignoreAlreadySent,
@@ -411,7 +425,7 @@ const NotifyCommand = Command.make(
       );
 
       yield* Effect.logInfo(
-        `notify: using kvs nodeEnv=${process.env.NODE_ENV ?? "undefined"} override=${kvsOverride ?? "none"}`,
+        `notify: kvs selection NODE_ENV=${nodeEnv ?? "undefined"} RAILWAY_ENVIRONMENT_NAME=${railwayEnv ?? "undefined"} env=${env ?? "undefined"} override=${kvsOverride ?? "none"} selected=${kvsSelection}`,
       );
 
       return yield* notify(notifyOptions).pipe(Effect.provide(ProgramLayer));
