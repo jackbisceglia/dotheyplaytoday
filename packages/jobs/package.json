@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@dtpt/core": "workspace:*",
+    "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-node": "catalog:",
     "effect": "catalog:"

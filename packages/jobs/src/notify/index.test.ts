@@ -16,7 +16,7 @@ import { Topic } from "@dtpt/core/modules/topics/schema";
 import { User } from "@dtpt/core/modules/users/schema";
 import { DateTime, Effect, Either, Layer, Schema } from "effect";
 
-import { runNotifyJob } from "./index.js";
+import { notify as runNotifyJob } from "./index.js";
 
 const decode = Schema.decodeUnknownSync;
 
@@ -222,6 +222,47 @@ describe("notify orchestration", () => {
       });
     },
   );
+
+  it.effect("should only process subscriptions for the dev user", () => {
+    const userA = makeUser({
+      id: sampleIds.userA,
+      email: "target@example.com",
+    });
+    const userB = makeUser({
+      id: sampleIds.userB,
+      email: "other@example.com",
+    });
+    const subscriptionA = makeFixedSubscription({
+      id: sampleIds.subscriptionA,
+      userId: sampleIds.userA,
+      topicId: sampleIds.topicA,
+    });
+    const subscriptionB = makeFixedSubscription({
+      id: sampleIds.subscriptionB,
+      userId: sampleIds.userB,
+      topicId: sampleIds.topicB,
+    });
+    const event = makeEvent();
+
+    const harness = makeHarness({
+      users: [userA, userB],
+      subscriptions: [subscriptionA, subscriptionB],
+      getDueEvents: () => Effect.succeed([event]),
+    });
+
+    return Effect.gen(function* () {
+      yield* runNotifyJob({
+        dryRun: false,
+        now,
+        devUserEmail: userA.email,
+      }).pipe(Effect.provide(harness.layer));
+
+      expect(harness.checks).toHaveLength(1);
+      expect(harness.sends).toHaveLength(1);
+      expect(harness.updates).toHaveLength(1);
+      expect(harness.updates[0]?.id).toBe(subscriptionA.id);
+    });
+  });
 
   it.effect("should skip non-due subscriptions", () => {
     const user = makeUser();
