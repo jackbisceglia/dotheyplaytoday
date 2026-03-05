@@ -1,13 +1,6 @@
 import { Command, HelpDoc, Options, ValidationError } from "@effect/cli";
-import { KeyValueStore, Path } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Database } from "@dtpt/core/modules/database/service";
-import { RedisClientIoredis } from "@dtpt/core/modules/kvs/providers/redis/client.ioredis";
-import {
-  RedisClientIoredisConfig,
-  RedisKeyValueStoreConfig,
-} from "@dtpt/core/modules/kvs/providers/redis/config";
-import { KeyValueStoreRedis } from "@dtpt/core/modules/kvs/providers/redis/service";
 import type {
   NotifierRequestError,
   NotifierResponseError,
@@ -29,7 +22,8 @@ import {
   Schema,
 } from "effect";
 
-import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/effect/config";
+import { DotEnvConfigProvider } from "../lib/env.js";
+import { selectKvsLayer } from "../lib/kvs.js";
 
 export type NotifyOptions = {
   dryRun: boolean;
@@ -105,56 +99,6 @@ const getNotifierLayer = (dryRun: boolean) => {
     Layer.succeed(Notifier, Notifier.make({ send: () => Effect.void }));
 
   return dryRun ? NotifierDryRun() : NotifierLive();
-};
-
-const getKvsLayer = (env: string | undefined, kvsOverride?: string) => {
-  const layers = {
-    redis: () =>
-      KeyValueStoreRedis.layerConfig(RedisKeyValueStoreConfig).pipe(
-        Layer.provide(RedisClientIoredis.layerConfig(RedisClientIoredisConfig)),
-      ),
-    fs: () =>
-      Layer.unwrapEffect(
-        Effect.gen(function* () {
-          const path = yield* Path.Path;
-
-          return KeyValueStore.layerFileSystem(
-            path.join(
-              import.meta.dirname,
-              "..",
-              "..",
-              "..",
-              "core",
-              "data",
-              "kv",
-            ),
-          );
-        }),
-      ),
-  };
-
-  const selection: "redis" | "fs" = Match.value<
-    [string | undefined, string | undefined]
-  >([env, kvsOverride]).pipe(
-    Match.when([Match.any, "fs"], () => "fs" as const),
-    Match.whenOr(
-      ["development", Match.any],
-      ["dev", Match.any],
-      () => "fs" as const,
-    ),
-    Match.whenOr(
-      [Match.any, "redis"],
-      ["production", Match.any],
-      ["prod", Match.any],
-      () => "redis" as const,
-    ),
-    Match.orElse(() => "fs" as const),
-  );
-
-  return {
-    layer: layers[selection](),
-    selection,
-  };
 };
 
 const logs = {
@@ -347,8 +291,6 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   );
 });
 
-const DotEnvConfigProvider = createConfigProviderFromDotEnv("../../.env");
-
 const devUserEnvError = ValidationError.invalidValue(
   HelpDoc.p(
     "--use-dev-user env requires USER_EMAIL to be set to a valid email",
@@ -399,12 +341,7 @@ const NotifyCommand = Command.make(
       const nodeEnv = process.env.NODE_ENV;
       const railwayEnv = process.env.RAILWAY_ENVIRONMENT_NAME;
       const env = railwayEnv === "" ? nodeEnv : (railwayEnv ?? nodeEnv);
-      const kvsConfig = getKvsLayer(env, kvsOverride);
-      const kvsLayer: Layer.Layer<
-        KeyValueStore.KeyValueStore,
-        unknown,
-        NodeContext.NodeContext
-      > = kvsConfig.layer;
+      const kvsConfig = selectKvsLayer(env, kvsOverride);
       const kvsSelection = kvsConfig.selection;
       const notifyOptions: NotifyOptions = {
         dryRun: opts.dryRun,
@@ -420,7 +357,7 @@ const NotifyCommand = Command.make(
         Database.Default,
         Subscriptions.Default,
       ).pipe(
-        Layer.provideMerge(kvsLayer),
+        Layer.provideMerge(kvsConfig.layer),
         Layer.provideMerge(NodeContext.layer),
       );
 
