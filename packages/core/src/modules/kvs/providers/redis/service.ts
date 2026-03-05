@@ -5,8 +5,6 @@ import { Config, Effect, Layer, Option } from "effect";
 import { RedisClient } from "./client.js";
 import { RedisKeyValueStoreConfig } from "./config.js";
 
-const defaultPrefix = "dtpt";
-
 const makeSystemError = (args: {
   method: string;
   pathOrDescriptor: string;
@@ -50,13 +48,14 @@ const scanPrefixedKeys = Effect.fn("KeyValueStoreRedis.scanPrefixedKeys")(
 );
 
 export const KeyValueStoreRedis = {
-  layer: (keyPrefix = defaultPrefix) =>
+  layer: (keyPrefix?: string) =>
     Layer.effect(
       KeyValueStore.KeyValueStore,
       Effect.gen(function* () {
         const redis = yield* RedisClient;
         const prefixed = (key: string) =>
-          [keyPrefix, key].filter((part) => part.length > 0).join(":");
+          [keyPrefix, key].filter((part) => (part ?? "").length > 0).join(":");
+
         const scanKeys = () =>
           scanPrefixedKeys({ redis, pattern: prefixed("*") });
 
@@ -118,6 +117,9 @@ export const KeyValueStoreRedis = {
   layerConfig: (config: typeof RedisKeyValueStoreConfig) =>
     Layer.unwrapEffect(
       Config.unwrap(config).pipe(
+        Effect.tap((resolved) =>
+          Effect.logInfo(`kvs: redis config keyPrefix='${resolved.keyPrefix}'`),
+        ),
         Effect.map((resolved) => KeyValueStoreRedis.layer(resolved.keyPrefix)),
       ),
     ),

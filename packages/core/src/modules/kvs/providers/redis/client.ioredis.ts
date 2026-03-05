@@ -24,6 +24,11 @@ export const RedisClientIoredis = {
   layerConfig: (config: typeof RedisClientIoredisConfig) =>
     Layer.unwrapEffect(
       Config.unwrap(config).pipe(
+        Effect.tap((resolved) =>
+          Effect.logInfo(
+            `kvs: redis client url='${Redacted.value(resolved.url)}'`,
+          ),
+        ),
         Effect.map((resolved) =>
           RedisClientIoredis.layer(Redacted.value(resolved.url)),
         ),
