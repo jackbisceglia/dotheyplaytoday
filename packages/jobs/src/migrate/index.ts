@@ -2,7 +2,6 @@ import { Command, Options } from "@effect/cli";
 import * as Prompt from "@effect/cli/Prompt";
 import { FileSystem, KeyValueStore, Path } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/effect/config";
 import { RedisClient } from "@dtpt/core/modules/kvs/providers/redis/client";
 import { RedisClientIoredis } from "@dtpt/core/modules/kvs/providers/redis/client.ioredis";
 import {
@@ -11,6 +10,8 @@ import {
 } from "@dtpt/core/modules/kvs/providers/redis/config";
 import { KeyValueStoreRedis } from "@dtpt/core/modules/kvs/providers/redis/service";
 import { Config, Effect, Layer, Option, Redacted, Schema } from "effect";
+
+import { DotEnvConfigProvider } from "../lib/env.js";
 
 export type MigrateOptions = {
   dynamic: boolean;
@@ -303,8 +304,6 @@ export const migrate = Effect.fn("migrate")(function* (opts: MigrateOptions) {
 
   return result;
 });
-
-const DotEnvConfigProvider = createConfigProviderFromDotEnv("../../.env");
 
 const MigrateCommand = Command.make(
   "migrate",
