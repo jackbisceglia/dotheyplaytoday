@@ -1,0 +1,419 @@
+// AI Gen'd, minorly reviewed for code quality
+import { Command, Options } from "@effect/cli";
+import { NodeContext } from "@effect/platform-node";
+import { Database } from "@dtpt/core/modules/database/service";
+import type { Subscription } from "@dtpt/core/modules/subscriptions/schema";
+import type { User } from "@dtpt/core/modules/users/schema";
+import {
+  Console,
+  DateTime,
+  Duration,
+  Effect,
+  Either,
+  Layer,
+  Option,
+  Schema,
+} from "effect";
+
+import { getKvsLayer, type KvsSelection } from "../lib/kvs.js";
+
+const placeholders = {
+  unknownUser: "(unknown user)",
+  unknownTimezone: "-",
+  unknownTopic: "(unknown topic)",
+  noSendAtLocal: "-",
+} as const;
+
+export type InspectOptions = {
+  kvs: KvsSelection;
+  format: "table" | "json";
+  verbose: boolean;
+  user?: string;
+};
+
+export type InspectRow = {
+  subscriptionId: Subscription["id"];
+  userId: Subscription["userId"];
+  email: User["email"];
+  timezone: User["timezone"]["id"];
+  topicId: Subscription["topicId"];
+  teamName: string;
+  schedule: string;
+  sendAtLocal: string;
+  enabled: Subscription["enabled"];
+  lastSentAt: string | null;
+};
+
+const encodeJson = Schema.encodeUnknownSync(Schema.parseJson(Schema.Unknown));
+
+const formatJsonPretty = (raw: string) => {
+  let depth = 0;
+  let inString = false;
+  let escaping = false;
+  let result = "";
+
+  for (let index = 0; index < raw.length; index += 1) {
+    const char = raw[index];
+    if (char === undefined) {
+      continue;
+    }
+
+    if (inString) {
+      result += char;
+
+      if (escaping) {
+        escaping = false;
+        continue;
+      }
+
+      if (char === "\\") {
+        escaping = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      result += char;
+      continue;
+    }
+
+    if (char === "{" || char === "[") {
+      const closing = char === "{" ? "}" : "]";
+      const next = raw[index + 1];
+
+      if (next === closing) {
+        result += char;
+        continue;
+      }
+
+      depth += 1;
+      result += `${char}\n${"  ".repeat(depth)}`;
+      continue;
+    }
+
+    if (char === "}" || char === "]") {
+      const opening = char === "}" ? "{" : "[";
+      const prev = raw[index - 1];
+
+      if (prev === opening) {
+        result += char;
+        continue;
+      }
+
+      depth -= 1;
+      result += `\n${"  ".repeat(depth)}${char}`;
+      continue;
+    }
+
+    if (char === ",") {
+      result += `,\n${"  ".repeat(depth)}`;
+      continue;
+    }
+
+    if (char === ":") {
+      result += ": ";
+      continue;
+    }
+
+    if (char === " " || char === "\n" || char === "\r" || char === "\t") {
+      continue;
+    }
+
+    result += char;
+  }
+
+  return result;
+};
+
+const toScheduleDisplay = (subscription: Subscription) => {
+  if (subscription.schedule.type === "fixed") {
+    const parts = Duration.parts(
+      Duration.seconds(subscription.schedule.sendAtSecondsLocal),
+    );
+    const sendAtLocal = `${parts.hours.toString().padStart(2, "0")}:${parts.minutes.toString().padStart(2, "0")}`;
+
+    return {
+      schedule: `fixed(${sendAtLocal})`,
+      sendAtLocal,
+    };
+  }
+
+  return {
+    schedule: `relative(${subscription.schedule.timeOffsetSeconds.toString()})`,
+    sendAtLocal: placeholders.noSendAtLocal,
+  };
+};
+
+const sendAtSortKey = (row: InspectRow) =>
+  row.sendAtLocal === placeholders.noSendAtLocal ? "99:99" : row.sendAtLocal;
+
+export const buildInspectRows = (opts: {
+  users: readonly User[];
+  subscriptions: readonly Subscription[];
+  teamByTopicId: ReadonlyMap<Subscription["topicId"], string>;
+}): readonly InspectRow[] => {
+  const usersById = new Map(opts.users.map((user) => [user.id, user]));
+
+  return opts.subscriptions.map((subscription) => {
+    const user = usersById.get(subscription.userId);
+    const schedule = toScheduleDisplay(subscription);
+
+    return {
+      subscriptionId: subscription.id,
+      userId: subscription.userId,
+      email: user?.email ?? placeholders.unknownUser,
+      timezone: user?.timezone.id ?? placeholders.unknownTimezone,
+      topicId: subscription.topicId,
+      teamName:
+        opts.teamByTopicId.get(subscription.topicId) ??
+        placeholders.unknownTopic,
+      schedule: schedule.schedule,
+      sendAtLocal: schedule.sendAtLocal,
+      enabled: subscription.enabled,
+      lastSentAt: subscription.lastSentAt
+        ? DateTime.formatIso(subscription.lastSentAt)
+        : null,
+    };
+  });
+};
+
+export const applyUserFilter = (
+  rows: readonly InspectRow[],
+  user: string | undefined,
+) => {
+  if (user === undefined) return rows;
+
+  return rows.filter((row) => row.userId === user || row.email === user);
+};
+
+export const sortInspectRows = (rows: readonly InspectRow[]) =>
+  [...rows].sort(
+    (a, b) =>
+      a.email.localeCompare(b.email) ||
+      sendAtSortKey(a).localeCompare(sendAtSortKey(b)) ||
+      a.teamName.localeCompare(b.teamName),
+  );
+
+type InspectOutputRow = {
+  index?: number;
+  email: InspectRow["email"];
+  teamName: InspectRow["teamName"];
+  schedule: InspectRow["schedule"];
+  sendAtLocal: InspectRow["sendAtLocal"];
+  lastSentAt: InspectRow["lastSentAt"];
+  enabled?: InspectRow["enabled"];
+  timezone?: InspectRow["timezone"];
+  topicId?: InspectRow["topicId"];
+  subscriptionId?: InspectRow["subscriptionId"];
+  userId?: InspectRow["userId"];
+};
+
+const toOutputRows = (rows: readonly InspectRow[], verbose: boolean) =>
+  rows.map((row, index): InspectOutputRow => {
+    const base = {
+      email: row.email,
+      teamName: row.teamName,
+      schedule: row.schedule,
+      sendAtLocal: row.sendAtLocal,
+      lastSentAt: row.lastSentAt,
+    };
+
+    if (!verbose) {
+      return base;
+    }
+
+    return {
+      ...base,
+      index,
+      enabled: row.enabled,
+      timezone: row.timezone,
+      topicId: row.topicId,
+      subscriptionId: row.subscriptionId,
+      userId: row.userId,
+    };
+  });
+
+const toTableCell = (value: InspectOutputRow[keyof InspectOutputRow]) => {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+
+  return value.toString();
+};
+
+const renderTable = (rows: readonly InspectOutputRow[]) => {
+  const defaultColumns = [
+    "email",
+    "teamName",
+    "schedule",
+    "sendAtLocal",
+    "lastSentAt",
+  ] as const;
+
+  const columns: readonly (keyof InspectOutputRow)[] = (() => {
+    const firstRow = rows[0];
+
+    if (!firstRow) {
+      return defaultColumns;
+    }
+
+    return Object.keys(firstRow) as (keyof InspectOutputRow)[];
+  })();
+
+  const widths = columns.map((column) => {
+    const headerWidth = column.length;
+    const maxValueWidth = rows.reduce((maxWidth, row) => {
+      const width = toTableCell(row[column]).length;
+      return Math.max(maxWidth, width);
+    }, 0);
+
+    return Math.max(headerWidth, maxValueWidth);
+  });
+
+  const header = columns
+    .map((column, index) => column.padEnd(widths[index] ?? column.length))
+    .join(" | ");
+
+  const separator = widths.map((width) => "-".repeat(width)).join("-+-");
+
+  const body: string[] = [];
+  let previousEmail: string | undefined;
+
+  for (const row of rows) {
+    if (previousEmail !== undefined && row.email !== previousEmail) {
+      body.push(separator);
+    }
+
+    body.push(
+      columns
+        .map((column, index) =>
+          toTableCell(row[column]).padEnd(widths[index] ?? column.length),
+        )
+        .join(" | "),
+    );
+
+    previousEmail = row.email;
+  }
+
+  return [header, separator, ...body].join("\n");
+};
+
+export type InspectResult = {
+  userCount: number;
+  subscriptionCount: number;
+  rowCount: number;
+  topicsMissing: number;
+};
+
+export const inspect = Effect.fn("tools.inspect")(function* (
+  opts: InspectOptions,
+) {
+  const database = yield* Database;
+
+  const [users, subscriptions] = yield* Effect.all([
+    database.loadUsers(),
+    database.loadSubscriptions(),
+  ]);
+
+  const topicIds = [
+    ...new Set(subscriptions.map((subscription) => subscription.topicId)),
+  ];
+  const topicLookup = yield* Effect.forEach(topicIds, (topicId) =>
+    Effect.either(database.loadTopic(topicId)).pipe(
+      Effect.map((result) => ({ topicId, result })),
+    ),
+  );
+
+  const teamByTopicId = new Map<Subscription["topicId"], string>();
+  let topicsMissing = 0;
+
+  for (const topic of topicLookup) {
+    if (Either.isLeft(topic.result)) {
+      topicsMissing += 1;
+      continue;
+    }
+
+    teamByTopicId.set(
+      topic.topicId,
+      topic.result.right.events[0]?.teamName ?? placeholders.unknownTopic,
+    );
+  }
+
+  const rows = sortInspectRows(
+    applyUserFilter(
+      buildInspectRows({ users, subscriptions, teamByTopicId }),
+      opts.user,
+    ),
+  );
+
+  const outputRows = toOutputRows(rows, opts.verbose);
+
+  if (opts.format === "json") {
+    yield* Console.log(formatJsonPretty(encodeJson(outputRows)));
+  }
+
+  if (opts.format === "table") {
+    yield* Console.log("");
+    yield* Console.log(renderTable(outputRows));
+    yield* Console.log("");
+    yield* Console.log(
+      `inspect: users=${users.length.toString()} subscriptions=${subscriptions.length.toString()} rows=${rows.length.toString()} topicsMissing=${topicsMissing.toString()}`,
+    );
+    yield* Console.log("");
+  }
+
+  return {
+    userCount: users.length,
+    subscriptionCount: subscriptions.length,
+    rowCount: rows.length,
+    topicsMissing,
+  } satisfies InspectResult;
+});
+
+export const InspectCommand = Command.make(
+  "inspect",
+  {
+    kvs: Options.choice("kvs", ["redis", "fs"] as const).pipe(
+      Options.withDefault("redis"),
+      Options.withDescription("Key-value backend to inspect"),
+    ),
+    format: Options.choice("format", ["table", "json"] as const).pipe(
+      Options.withDefault("table"),
+      Options.withDescription("Output format"),
+    ),
+    verbose: Options.boolean("verbose").pipe(
+      Options.withDescription(
+        "Include internal columns (index, enabled, timezone, ids)",
+      ),
+    ),
+    user: Options.text("user").pipe(
+      Options.optional,
+      Options.withDescription("Filter by user email or user id"),
+    ),
+  },
+  (opts) => {
+    const user = Option.getOrUndefined(opts.user);
+    const ProgramLayer = Layer.mergeAll(Database.Default).pipe(
+      Layer.provideMerge(getKvsLayer(opts.kvs)),
+      Layer.provideMerge(NodeContext.layer),
+    );
+
+    return inspect({
+      kvs: opts.kvs,
+      format: opts.format,
+      verbose: opts.verbose,
+      ...(user === undefined ? {} : { user }),
+    }).pipe(Effect.provide(ProgramLayer));
+  },
+);

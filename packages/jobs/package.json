@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start:migrate": "node dist/migrate/index.js",
     "start:notify": "node dist/notify/index.js",
+    "start:tools": "node dist/tools/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
