@@ -78,6 +78,9 @@ const makeRelativeSubscription = (opts: MakeRelativeSubscriptionOptions = {}) =>
 
 const baseInspectUser = makeUser();
 const baseInspectSubscription = makeFixedSubscription();
+const inspectNow = Schema.decodeUnknownSync(Schema.DateTimeUtc)(
+  "2026-02-10T14:00:00Z",
+);
 
 const makeRow = (overrides: Partial<InspectRow>): InspectRow => ({
   subscriptionId: baseInspectSubscription.id,
@@ -87,7 +90,7 @@ const makeRow = (overrides: Partial<InspectRow>): InspectRow => ({
   topicId: baseInspectSubscription.topicId,
   teamName: "Boston Celtics",
   schedule: "fixed(09:00)",
-  sendAtLocal: "09:00",
+  sendAtLocal: "9:00 AM EST",
   enabled: true,
   lastSentAt: null,
   ...overrides,
@@ -104,6 +107,7 @@ describe("inspect", () => {
       users: [user],
       subscriptions: [subscription],
       teamByTopicId: new Map([[subscription.topicId, "Boston Celtics"]]),
+      now: inspectNow,
     });
 
     expect(rows).toHaveLength(1);
@@ -116,7 +120,7 @@ describe("inspect", () => {
     expect(row.teamName).toBe("Boston Celtics");
     expect(row.timezone).toBe("America/New_York");
     expect(row.schedule).toBe("fixed(13:00)");
-    expect(row.sendAtLocal).toBe("13:00");
+    expect(row.sendAtLocal).toMatch(/\s?1:00\sPM\s\S+/);
     expect(row.enabled).toBe(true);
     expect(row.lastSentAt).toBe("2026-03-03T13:58:07.169Z");
   });
@@ -128,6 +132,7 @@ describe("inspect", () => {
       users: [],
       subscriptions: [subscription],
       teamByTopicId: new Map(),
+      now: inspectNow,
     });
 
     expect(rows).toHaveLength(1);
@@ -163,6 +168,7 @@ describe("inspect", () => {
         [subscriptionA.topicId, "Boston Celtics"],
         [subscriptionB.topicId, "New York Knicks"],
       ]),
+      now: inspectNow,
     });
 
     expect(applyUserFilter(rows, sampleIds.userA)).toHaveLength(1);
@@ -171,43 +177,48 @@ describe("inspect", () => {
     expect(applyUserFilter(rows, "   ")).toHaveLength(0);
   });
 
-  it("sorts by email, sendAtLocal, then teamName", () => {
+  it("sorts by email, fixed schedule time, then teamName", () => {
     const rows = sortInspectRows([
       makeRow({
         email: "b@example.com",
-        sendAtLocal: "09:00",
+        schedule: "fixed(09:00)",
+        sendAtLocal: "9:00 AM EST",
         teamName: "Boston Celtics",
       }),
       makeRow({
         email: "a@example.com",
-        sendAtLocal: "10:00",
+        schedule: "fixed(10:00)",
+        sendAtLocal: "10:00 AM EST",
         teamName: "Chicago Bulls",
       }),
       makeRow({
         email: "a@example.com",
-        sendAtLocal: "09:00",
+        schedule: "fixed(09:00)",
+        sendAtLocal: "9:00 AM EST",
         teamName: "Miami Heat",
       }),
       makeRow({
         email: "a@example.com",
-        sendAtLocal: "09:00",
+        schedule: "fixed(09:00)",
+        sendAtLocal: "9:00 AM EST",
         teamName: "Atlanta Hawks",
       }),
       makeRow({
         email: "a@example.com",
+        schedule: "relative(-1800)",
         sendAtLocal: "-",
         teamName: "Denver Nuggets",
       }),
     ]);
 
     expect(
-      rows.map((row) => `${row.email}|${row.sendAtLocal}|${row.teamName}`),
+      rows.map((row) => `${row.email}|${row.schedule}|${row.teamName}`),
     ).toEqual([
-      "a@example.com|09:00|Atlanta Hawks",
-      "a@example.com|09:00|Miami Heat",
-      "a@example.com|10:00|Chicago Bulls",
-      "a@example.com|-|Denver Nuggets",
-      "b@example.com|09:00|Boston Celtics",
+      "a@example.com|fixed(09:00)|Atlanta Hawks",
+      "a@example.com|fixed(09:00)|Miami Heat",
+      "a@example.com|fixed(10:00)|Chicago Bulls",
+      "a@example.com|relative(-1800)|Denver Nuggets",
+      "b@example.com|fixed(09:00)|Boston Celtics",
     ]);
   });
 });

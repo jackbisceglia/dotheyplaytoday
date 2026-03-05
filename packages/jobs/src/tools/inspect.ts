@@ -3,6 +3,7 @@ import { Command, Options } from "@effect/cli";
 import { NodeContext } from "@effect/platform-node";
 import { Database } from "@dtpt/core/modules/database/service";
 import type { Subscription } from "@dtpt/core/modules/subscriptions/schema";
+import { getScheduledSend } from "@dtpt/core/modules/subscriptions/time";
 import type { User } from "@dtpt/core/modules/users/schema";
 import {
   Console,
@@ -132,38 +133,82 @@ const formatJsonPretty = (raw: string) => {
   return result;
 };
 
-const toScheduleDisplay = (subscription: Subscription) => {
-  if (subscription.schedule.type === "fixed") {
+const padMeridiemSpacing = (value: string) => {
+  const match = /^(\d{1,2}:\d{2})\s(AM|PM)\s(.+)$/.exec(value);
+  if (!match) return value;
+
+  const [, time, meridiem, timezone] = match;
+  if (!time || !meridiem || !timezone) return value;
+
+  return `${time.padStart(5, " ")} ${meridiem} ${timezone}`;
+};
+
+const toScheduleDisplay = (opts: {
+  subscription: Subscription;
+  timezone: User["timezone"] | undefined;
+  now: DateTime.Utc;
+}) => {
+  if (opts.subscription.schedule.type === "fixed") {
     const parts = Duration.parts(
-      Duration.seconds(subscription.schedule.sendAtSecondsLocal),
+      Duration.seconds(opts.subscription.schedule.sendAtSecondsLocal),
     );
-    const sendAtLocal = `${parts.hours.toString().padStart(2, "0")}:${parts.minutes.toString().padStart(2, "0")}`;
+    const fixedLocalTime = `${parts.hours.toString().padStart(2, "0")}:${parts.minutes.toString().padStart(2, "0")}`;
+
+    if (opts.timezone === undefined) {
+      return {
+        schedule: `fixed(${fixedLocalTime})`,
+        sendAtLocal: fixedLocalTime,
+      };
+    }
+
+    const scheduled = getScheduledSend({
+      sendAtSecondsLocal: opts.subscription.schedule.sendAtSecondsLocal,
+      tz: opts.timezone,
+      now: opts.now,
+    });
+
+    const sendAtLocal = padMeridiemSpacing(
+      DateTime.format(scheduled, {
+        locale: "en-US",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZoneName: "short",
+      }),
+    );
 
     return {
-      schedule: `fixed(${sendAtLocal})`,
+      schedule: `fixed(${fixedLocalTime})`,
       sendAtLocal,
     };
   }
 
   return {
-    schedule: `relative(${subscription.schedule.timeOffsetSeconds.toString()})`,
+    schedule: `relative(${opts.subscription.schedule.timeOffsetSeconds.toString()})`,
     sendAtLocal: placeholders.noSendAtLocal,
   };
 };
 
-const sendAtSortKey = (row: InspectRow) =>
-  row.sendAtLocal === placeholders.noSendAtLocal ? "99:99" : row.sendAtLocal;
+const sendAtSortKey = (row: InspectRow) => {
+  const fixedSchedule = /^fixed\((\d{2}:\d{2})\)$/.exec(row.schedule);
+  return fixedSchedule?.[1] ?? "99:99";
+};
 
 export const buildInspectRows = (opts: {
   users: readonly User[];
   subscriptions: readonly Subscription[];
   teamByTopicId: ReadonlyMap<Subscription["topicId"], string>;
+  now: DateTime.Utc;
 }): readonly InspectRow[] => {
   const usersById = new Map(opts.users.map((user) => [user.id, user]));
 
   return opts.subscriptions.map((subscription) => {
     const user = usersById.get(subscription.userId);
-    const schedule = toScheduleDisplay(subscription);
+    const schedule = toScheduleDisplay({
+      subscription,
+      timezone: user?.timezone,
+      now: opts.now,
+    });
 
     return {
       subscriptionId: subscription.id,
@@ -320,6 +365,7 @@ export const inspect = Effect.fn("tools.inspect")(function* (
   opts: InspectOptions,
 ) {
   const database = yield* Database;
+  const now = yield* DateTime.now;
 
   const [users, subscriptions] = yield* Effect.all([
     database.loadUsers(),
@@ -352,7 +398,7 @@ export const inspect = Effect.fn("tools.inspect")(function* (
 
   const rows = sortInspectRows(
     applyUserFilter(
-      buildInspectRows({ users, subscriptions, teamByTopicId }),
+      buildInspectRows({ users, subscriptions, teamByTopicId, now }),
       opts.user,
     ),
   );
