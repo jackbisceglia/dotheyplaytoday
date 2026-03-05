@@ -385,7 +385,7 @@ export const InspectCommand = Command.make(
   "inspect",
   {
     kvs: Options.choice("kvs", ["redis", "fs"] as const).pipe(
-      Options.withDefault("redis"),
+      Options.withDefault("fs"),
       Options.withDescription("Key-value backend to inspect"),
     ),
     format: Options.choice("format", ["table", "json"] as const).pipe(
