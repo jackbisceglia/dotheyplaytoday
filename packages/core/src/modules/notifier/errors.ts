@@ -5,10 +5,10 @@ export type NotifierChannel = Schema.Schema.Type<typeof NotifierChannel>;
 
 const providerErrorBase = { channel: NotifierChannel, message: Schema.String };
 
-export type NotifierTransportError =
+export type NotifierProviderError =
   | NotifierRequestError
   | NotifierResponseError;
-export type NotifierError = NotifierChannelUnavailable | NotifierTransportError;
+export type NotifierError = NotifierChannelUnavailable | NotifierProviderError;
 
 export class NotifierChannelUnavailable extends Schema.TaggedError<NotifierChannelUnavailable>()(
   "NotifierChannelUnavailable",

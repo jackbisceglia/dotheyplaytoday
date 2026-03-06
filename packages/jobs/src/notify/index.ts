@@ -19,7 +19,9 @@ import {
   Effect,
   Layer,
   Match,
+  Number,
   Option,
+  Order,
   Schema,
 } from "effect";
 
@@ -230,17 +232,12 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           });
         }
 
-        const sortedEvents = events.toSorted(
-          (a, b) =>
-            DateTime.toEpochMillis(a.startUtc) -
-            DateTime.toEpochMillis(b.startUtc),
+        const sortedEvents = Array.sort(
+          events,
+          Order.mapInput(Number.Order, (event: (typeof events)[number]) =>
+            DateTime.toEpochMillis(event.startUtc),
+          ),
         );
-
-        if (!Array.isNonEmptyArray(sortedEvents)) {
-          return yield* Effect.dieMessage(
-            "Expected non-empty events after sorting",
-          );
-        }
 
         const headline = `${sortedEvents[0].teamName} ${sortedEvents[0].site === "home" ? "vs." : "@"} ${sortedEvents[0].opponent}`;
 

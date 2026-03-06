@@ -1,6 +1,6 @@
 import { Context, Effect } from "effect";
 
-import type { NotifierTransportError } from "../errors.js";
+import type { NotifierProviderError } from "../errors.js";
 
 export type EmailMessage = {
   readonly to: string;
@@ -16,6 +16,6 @@ export class EmailProvider extends Context.Tag(
   {
     readonly send: (
       message: EmailMessage,
-    ) => Effect.Effect<void, NotifierTransportError>;
+    ) => Effect.Effect<void, NotifierProviderError>;
   }
 >() {}

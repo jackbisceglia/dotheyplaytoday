@@ -3,7 +3,7 @@ import { Effect, Layer, Match, Schedule } from "effect";
 import {
   NotifierRequestError,
   NotifierResponseError,
-  type NotifierTransportError,
+  type NotifierProviderError,
 } from "../../errors.js";
 import { EmailProvider, type EmailMessage } from "../providers.js";
 import { ResendClientService } from "./client.js";
@@ -15,7 +15,7 @@ const retryPolicy = Schedule.exponential("250 millis").pipe(
   Schedule.intersect(Schedule.recurs(constraints.retry.max)),
 );
 
-const isRetriableError = (error: NotifierTransportError) =>
+const isRetriableError = (error: NotifierProviderError) =>
   Match.value(error).pipe(
     Match.tag("NotifierRequestError", () => true),
     Match.tag("NotifierResponseError", (responseError) =>
