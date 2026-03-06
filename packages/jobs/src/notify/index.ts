@@ -4,9 +4,10 @@ import { Database } from "@dtpt/core/modules/database/service";
 import type {
   NotifierRequestError,
   NotifierResponseError,
-} from "@dtpt/core/modules/notifier/providers/service";
-import { Notifier } from "@dtpt/core/modules/notifier/service";
-import { ResendProvider } from "@dtpt/core/modules/notifier/providers/resend/service";
+} from "@dtpt/core/modules/notifier/errors";
+import { Notifier } from "@dtpt/core/modules/notifier";
+import { NotifierLayerEmail } from "@dtpt/core/modules/notifier/email/index";
+import { EmailProviderLayerResend } from "@dtpt/core/modules/notifier/email/resend/index";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
 import { localDateFromUtc } from "@dtpt/core/modules/subscriptions/time";
@@ -18,7 +19,9 @@ import {
   Effect,
   Layer,
   Match,
+  Number,
   Option,
+  Order,
   Schema,
 } from "effect";
 
@@ -93,10 +96,10 @@ class NotifyNoEvents extends Schema.TaggedError<NotifyNoEvents>()(
 
 const getNotifierLayer = (dryRun: boolean) => {
   const NotifierLive = () =>
-    Notifier.Default.pipe(Layer.provide(ResendProvider.Default));
+    NotifierLayerEmail.pipe(Layer.provide(EmailProviderLayerResend.layer));
 
   const NotifierDryRun = () =>
-    Layer.succeed(Notifier, Notifier.make({ send: () => Effect.void }));
+    Layer.succeed(Notifier, Notifier.of({ send: () => Effect.void }));
 
   return dryRun ? NotifierDryRun() : NotifierLive();
 };
@@ -229,7 +232,14 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           });
         }
 
-        const headline = `${events[0].teamName} ${events[0].site === "home" ? "vs." : "@"} ${events[0].opponent}`;
+        const sortedEvents = Array.sort(
+          events,
+          Order.mapInput(Number.Order, (event: (typeof events)[number]) =>
+            DateTime.toEpochMillis(event.startUtc),
+          ),
+        );
+
+        const headline = `${sortedEvents[0].teamName} ${sortedEvents[0].site === "home" ? "vs." : "@"} ${sortedEvents[0].opponent}`;
 
         if (opts.dryRun) {
           return yield* new NotifyDryRun({
@@ -237,11 +247,11 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
             topicId: subscription.topicId,
             headline,
             target,
-            eventCount: events.length,
+            eventCount: sortedEvents.length,
           });
         }
 
-        yield* notifier.send(user, events).pipe(
+        yield* notifier.send(user, sortedEvents).pipe(
           Effect.zipRight(
             database.updateSubscription({
               ...subscription,
@@ -254,7 +264,7 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           subscriptionId,
           topicId: subscription.topicId,
           user,
-          eventCount: events.length,
+          eventCount: sortedEvents.length,
           headline,
         };
       },

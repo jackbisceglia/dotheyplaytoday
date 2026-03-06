@@ -1,11 +1,11 @@
 import { DateTime, Match } from "effect";
 
-import type { Event, NonEmptyEvents } from "../events/schema.js";
-import type { User } from "../users/schema.js";
+import type { Event, NonEmptyEvents } from "../../events/schema.js";
+import type { User } from "../../users/schema.js";
 
-type NotifierFormatOptions = {
-  events: NonEmptyEvents;
-  timezone: User["timezone"];
+type EmailFormatOptions = {
+  readonly events: NonEmptyEvents;
+  readonly timezone: User["timezone"];
 };
 
 const formatEventStart = (startUtc: Event["startUtc"], tz: User["timezone"]) =>
@@ -26,7 +26,7 @@ export const formatEventMatchup = (event: Event) =>
     Match.exhaustive,
   );
 
-export const formatEventSubject = (opts: NotifierFormatOptions) =>
+export const formatEventSubject = (opts: EmailFormatOptions) =>
   Match.value(opts.events).pipe(
     Match.when(
       (events) => events.length === 1,
@@ -48,7 +48,7 @@ export const formatEventSubject = (opts: NotifierFormatOptions) =>
     Match.orElseAbsurd,
   );
 
-export const formatBody = (opts: NotifierFormatOptions) =>
+export const formatBody = (opts: EmailFormatOptions) =>
   Match.value(opts.events[0]).pipe(
     Match.tag("sports", (event) => {
       return [

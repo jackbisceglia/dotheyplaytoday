@@ -1,11 +1,15 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Database } from "@dtpt/core/modules/database/service";
-import { SportsEvent } from "@dtpt/core/modules/events/schema";
-import { Notifier } from "@dtpt/core/modules/notifier/service";
+import {
+  type NonEmptyEvents,
+  SportsEvent,
+} from "@dtpt/core/modules/events/schema";
+import type { NotifierError } from "@dtpt/core/modules/notifier/errors";
+import { Notifier } from "@dtpt/core/modules/notifier";
 import {
   NotifierRequestError,
   NotifierResponseError,
-} from "@dtpt/core/modules/notifier/providers/service";
+} from "@dtpt/core/modules/notifier/errors";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
 import {
@@ -120,8 +124,8 @@ const makeEvent = (
 
 type GetDueEventsOptions = Parameters<Subscriptions["getDueEvents"]>[0];
 type GetDueEventsResult = ReturnType<Subscriptions["getDueEvents"]>;
-type SendOptions = Parameters<Notifier["send"]>;
-type SendResult = ReturnType<Notifier["send"]>;
+type SendOptions = [user: User, events: NonEmptyEvents];
+type SendResult = Effect.Effect<void, NotifierError>;
 
 type HarnessOptions = {
   users: readonly User[];
@@ -171,7 +175,7 @@ const makeHarness = (opts: HarnessOptions) => {
 
   const NotifierLayerTest = Layer.succeed(
     Notifier,
-    Notifier.make({
+    Notifier.of({
       send: (user, events) =>
         Effect.sync(() => {
           sends.push({ email: user.email, count: events.length });
@@ -222,6 +226,41 @@ describe("notify orchestration", () => {
       });
     },
   );
+
+  it.effect("should sort due events before invoking the notifier", () => {
+    const user = makeUser();
+    const subscription = makeFixedSubscription();
+    const earlyEvent = makeEvent({
+      id: sampleIds.eventA,
+      startUtc: "2026-02-10T00:30:00Z",
+      opponent: "Raptors",
+    });
+    const lateEvent = makeEvent({
+      id: sampleIds.eventB,
+      startUtc: "2026-02-10T03:30:00Z",
+      opponent: "Knicks",
+    });
+
+    const harness = makeHarness({
+      users: [user],
+      subscriptions: [subscription],
+      getDueEvents: () => Effect.succeed([lateEvent, earlyEvent]),
+      send: (_user, events) =>
+        Effect.sync(() => {
+          expect(events[0].id).toBe(earlyEvent.id);
+          expect(events[1]?.id).toBe(lateEvent.id);
+        }),
+    });
+
+    return Effect.gen(function* () {
+      yield* runNotifyJob({ dryRun: false, now }).pipe(
+        Effect.provide(harness.layer),
+      );
+
+      expect(harness.sends).toHaveLength(1);
+      expect(harness.updates).toHaveLength(1);
+    });
+  });
 
   it.effect("should only process subscriptions for the dev user", () => {
     const userA = makeUser({

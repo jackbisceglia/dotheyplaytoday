@@ -3,20 +3,19 @@ import { ConfigProvider, Effect, Either, Layer, Ref } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 
 import {
-  NotifierContext,
-  type NotifierMessage,
-} from "../modules/notifier/providers/service.js";
+  EmailProvider,
+  type EmailMessage,
+} from "../modules/notifier/email/providers.js";
 import {
   ResendClientRequestError,
   ResendClientService,
-} from "../modules/notifier/providers/resend/client.js";
-import { ResendProvider } from "../modules/notifier/providers/resend/service.js";
+} from "../modules/notifier/email/resend/client.js";
+import { EmailProviderLayerResend } from "../modules/notifier/email/resend/index.js";
 
-const message: NotifierMessage = {
-  channel: "email",
+const message: EmailMessage = {
   to: "fan@example.com",
-  title: "Celtics vs. Raptors, 7:30 PM EST",
-  body: "Celtics play today.",
+  subject: "Celtics vs. Raptors, 7:30 PM EST",
+  text: "Celtics play today.",
 };
 
 const successResponse: CreateEmailResponse = {
@@ -54,7 +53,7 @@ const ResendConfigLayerTest = Layer.setConfigProvider(
   ),
 );
 
-const makeResendProviderLayerTest = (
+const makeEmailProviderLayerResendTest = (
   sendEmail: (
     payload: CreateEmailOptions,
   ) => Effect.Effect<CreateEmailResponse, ResendClientRequestError>,
@@ -64,41 +63,42 @@ const makeResendProviderLayerTest = (
     ResendClientService.make({ sendEmail }),
   );
 
-  const ResendProviderLayerTest =
-    ResendProvider.DefaultWithoutDependencies.pipe(
+  const EmailProviderLayerResendTest =
+    EmailProviderLayerResend.layerWithoutDependencies.pipe(
       Layer.provideMerge(ResendClientLayerTest),
       Layer.provideMerge(ResendConfigLayerTest),
     );
 
-  return ResendProviderLayerTest;
+  return EmailProviderLayerResendTest;
 };
 
 const sendMessageEither = () =>
-  NotifierContext.pipe(
-    Effect.flatMap((provider) => provider.send(message)),
+  EmailProvider.pipe(
+    Effect.flatMap((emailProvider) => emailProvider.send(message)),
     Effect.either,
   );
 
-describe("ResendProvider", () => {
+describe("EmailProviderLayerResend", () => {
   it.effect("should map resend API errors to response errors", () => {
     return Effect.gen(function* () {
-      const ResendProviderLayerTest = makeResendProviderLayerTest((payload) =>
-        Effect.sync(() => {
-          expect(payload.from).toBe("sender@example.com");
-          expect(payload.to).toBe(message.to);
-          expect(payload.subject).toBe(message.title);
-          expect(payload.text).toBe(message.body);
+      const EmailProviderLayerResendTest = makeEmailProviderLayerResendTest(
+        (payload) =>
+          Effect.sync(() => {
+            expect(payload.from).toBe("sender@example.com");
+            expect(payload.to).toBe(message.to);
+            expect(payload.subject).toBe(message.subject);
+            expect(payload.text).toBe(message.text);
 
-          return makeErrorResponse({
-            code: "validation_error",
-            statusCode: 422,
-            message: "Invalid recipient",
-          });
-        }),
+            return makeErrorResponse({
+              code: "validation_error",
+              statusCode: 422,
+              message: "Invalid recipient",
+            });
+          }),
       );
 
       const result = yield* sendMessageEither().pipe(
-        Effect.provide(ResendProviderLayerTest),
+        Effect.provide(EmailProviderLayerResendTest),
       );
 
       Either.match(result, {
@@ -126,7 +126,7 @@ describe("ResendProvider", () => {
       Effect.gen(function* () {
         const attemptsRef = yield* Ref.make(0);
 
-        const ResendProviderLayerTest = makeResendProviderLayerTest(
+        const EmailProviderLayerResendTest = makeEmailProviderLayerResendTest(
           (_payload) =>
             Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
               Effect.map((attempt) =>
@@ -142,7 +142,7 @@ describe("ResendProvider", () => {
         );
 
         const result = yield* sendMessageEither().pipe(
-          Effect.provide(ResendProviderLayerTest),
+          Effect.provide(EmailProviderLayerResendTest),
         );
 
         Either.match(result, {
@@ -160,18 +160,19 @@ describe("ResendProvider", () => {
     Effect.gen(function* () {
       const attemptsRef = yield* Ref.make(0);
 
-      const ResendProviderLayerTest = makeResendProviderLayerTest((_payload) =>
-        Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
-          Effect.flatMap((attempt) =>
-            attempt < 3
-              ? ResendClientRequestError.make({ cause: new Error("network") })
-              : Effect.succeed(successResponse),
+      const EmailProviderLayerResendTest = makeEmailProviderLayerResendTest(
+        (_payload) =>
+          Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
+            Effect.flatMap((attempt) =>
+              attempt < 3
+                ? ResendClientRequestError.make({ cause: new Error("network") })
+                : Effect.succeed(successResponse),
+            ),
           ),
-        ),
       );
 
       const result = yield* sendMessageEither().pipe(
-        Effect.provide(ResendProviderLayerTest),
+        Effect.provide(EmailProviderLayerResendTest),
       );
 
       Either.match(result, {
@@ -191,7 +192,7 @@ describe("ResendProvider", () => {
       Effect.gen(function* () {
         const attemptsRef = yield* Ref.make(0);
 
-        const ResendProviderLayerTest = makeResendProviderLayerTest(
+        const EmailProviderLayerResendTest = makeEmailProviderLayerResendTest(
           (_payload) =>
             Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
               Effect.as(
@@ -205,7 +206,7 @@ describe("ResendProvider", () => {
         );
 
         const result = yield* sendMessageEither().pipe(
-          Effect.provide(ResendProviderLayerTest),
+          Effect.provide(EmailProviderLayerResendTest),
         );
 
         Either.match(result, {
@@ -236,16 +237,17 @@ describe("ResendProvider", () => {
     Effect.gen(function* () {
       const attemptsRef = yield* Ref.make(0);
 
-      const ResendProviderLayerTest = makeResendProviderLayerTest((_payload) =>
-        Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
-          Effect.zipRight(
-            ResendClientRequestError.make({ cause: new Error("network") }),
+      const EmailProviderLayerResendTest = makeEmailProviderLayerResendTest(
+        (_payload) =>
+          Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
+            Effect.zipRight(
+              ResendClientRequestError.make({ cause: new Error("network") }),
+            ),
           ),
-        ),
       );
 
       const result = yield* sendMessageEither().pipe(
-        Effect.provide(ResendProviderLayerTest),
+        Effect.provide(EmailProviderLayerResendTest),
       );
 
       Either.match(result, {
@@ -273,20 +275,21 @@ describe("ResendProvider", () => {
     Effect.gen(function* () {
       const attemptsRef = yield* Ref.make(0);
 
-      const ResendProviderLayerTest = makeResendProviderLayerTest((_payload) =>
-        Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
-          Effect.as(
-            makeErrorResponse({
-              code: "validation_error",
-              statusCode: 422,
-              message: "Bad request",
-            }),
+      const EmailProviderLayerResendTest = makeEmailProviderLayerResendTest(
+        (_payload) =>
+          Ref.updateAndGet(attemptsRef, (value) => value + 1).pipe(
+            Effect.as(
+              makeErrorResponse({
+                code: "validation_error",
+                statusCode: 422,
+                message: "Bad request",
+              }),
+            ),
           ),
-        ),
       );
 
       const result = yield* sendMessageEither().pipe(
-        Effect.provide(ResendProviderLayerTest),
+        Effect.provide(EmailProviderLayerResendTest),
       );
 
       Either.match(result, {

@@ -8,6 +8,10 @@
       "types": "./src/index.ts",
       "default": "./dist/index.js"
     },
+    "./modules/notifier": {
+      "types": "./src/modules/notifier/index.ts",
+      "default": "./dist/modules/notifier/index.js"
+    },
     "./*": {
       "types": "./src/*.ts",
       "default": "./dist/*.js"

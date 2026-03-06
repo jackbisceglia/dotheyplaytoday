@@ -1,11 +1,11 @@
 import { Effect, Layer, Match, Schedule } from "effect";
+
 import {
-  NotifierContext,
   NotifierRequestError,
   NotifierResponseError,
-  type NotifierError,
-  type NotifierMessage,
-} from "../service.js";
+  type NotifierProviderError,
+} from "../../errors.js";
+import { EmailProvider, type EmailMessage } from "../providers.js";
 import { ResendClientService } from "./client.js";
 import { ResendConfig } from "./config.js";
 
@@ -15,7 +15,7 @@ const retryPolicy = Schedule.exponential("250 millis").pipe(
   Schedule.intersect(Schedule.recurs(constraints.retry.max)),
 );
 
-const isRetriableError = (error: NotifierError) =>
+const isRetriableError = (error: NotifierProviderError) =>
   Match.value(error).pipe(
     Match.tag("NotifierRequestError", () => true),
     Match.tag("NotifierResponseError", (responseError) =>
@@ -29,7 +29,6 @@ const isRetriableError = (error: NotifierError) =>
           { code: "rate_limit_exceeded" },
           { code: "application_error" },
           { code: "internal_server_error" },
-
           () => true,
         ),
         Match.orElse(() => false),
@@ -38,24 +37,25 @@ const isRetriableError = (error: NotifierError) =>
     Match.exhaustive,
   );
 
-const ResendProviderInternal = Effect.gen(function* () {
+const EmailProviderLayerResendInternal = Effect.gen(function* () {
   const resendClient = yield* ResendClientService;
   const config = yield* ResendConfig;
 
-  const send = Effect.fn("ResendProvider.send")(
-    (message: NotifierMessage) =>
+  const send = Effect.fn("EmailProvider.send")(
+    (message: EmailMessage) =>
       Effect.suspend(() =>
         resendClient
           .sendEmail({
             from: config.from,
             to: message.to,
-            subject: message.title,
-            text: message.body,
+            subject: message.subject,
+            text: message.text,
+            ...(message.html ? { html: message.html } : {}),
           })
           .pipe(
             Effect.mapError((error) =>
               NotifierRequestError.make({
-                channel: message.channel,
+                channel: "email",
                 message: "Failed to reach Resend API",
                 cause: error.cause,
               }),
@@ -64,7 +64,7 @@ const ResendProviderInternal = Effect.gen(function* () {
               response.error
                 ? Effect.fail(
                     NotifierResponseError.make({
-                      channel: message.channel,
+                      channel: "email",
                       message: response.error.message,
                       code: response.error.name,
                       statusCode: response.error.statusCode,
@@ -80,12 +80,12 @@ const ResendProviderInternal = Effect.gen(function* () {
   return { send };
 });
 
-export const ResendProvider = {
-  DefaultWithoutDependencies: ResendProviderInternal.pipe(
-    Layer.effect(NotifierContext),
+export const EmailProviderLayerResend = {
+  layerWithoutDependencies: EmailProviderLayerResendInternal.pipe(
+    Layer.effect(EmailProvider),
   ),
-  Default: ResendProviderInternal.pipe(
-    Layer.effect(NotifierContext),
+  layer: EmailProviderLayerResendInternal.pipe(
+    Layer.effect(EmailProvider),
     Layer.provide(ResendClientService.Default),
   ),
 };
