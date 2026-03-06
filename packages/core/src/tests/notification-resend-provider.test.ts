@@ -16,6 +16,13 @@ const message: EmailMessage = {
   to: "fan@example.com",
   subject: "Celtics vs. Raptors, 7:30 PM EST",
   text: "Celtics play today.",
+  html: "<html><body><strong>Celtics play today.</strong></body></html>",
+};
+
+const textOnlyMessage: EmailMessage = {
+  to: "fan@example.com",
+  subject: "Celtics vs. Raptors, 7:30 PM EST",
+  text: "Celtics play today.",
 };
 
 const successResponse: CreateEmailResponse = {
@@ -78,6 +85,12 @@ const sendMessageEither = () =>
     Effect.either,
   );
 
+const sendTextOnlyMessageEither = () =>
+  EmailProvider.pipe(
+    Effect.flatMap((emailProvider) => emailProvider.send(textOnlyMessage)),
+    Effect.either,
+  );
+
 describe("EmailProviderLayerResend", () => {
   it.effect("should map resend API errors to response errors", () => {
     return Effect.gen(function* () {
@@ -88,6 +101,7 @@ describe("EmailProviderLayerResend", () => {
             expect(payload.to).toBe(message.to);
             expect(payload.subject).toBe(message.subject);
             expect(payload.text).toBe(message.text);
+            expect(payload.html).toBe(message.html);
 
             return makeErrorResponse({
               code: "validation_error",
@@ -302,5 +316,66 @@ describe("EmailProviderLayerResend", () => {
       const attempts = yield* Ref.get(attemptsRef);
       expect(attempts).toBe(1);
     }),
+  );
+
+  it.effect("should pass rendered html through to resend", () => {
+    return Effect.gen(function* () {
+      const EmailProviderLayerResendTest = makeEmailProviderLayerResendTest(
+        (payload) =>
+          Effect.sync(() => {
+            expect(payload).toMatchObject({
+              from: "sender@example.com",
+              to: message.to,
+              subject: message.subject,
+              text: message.text,
+              html: message.html,
+            });
+
+            return successResponse;
+          }),
+      );
+
+      const result = yield* sendMessageEither().pipe(
+        Effect.provide(EmailProviderLayerResendTest),
+      );
+
+      Either.match(result, {
+        onLeft: (error) =>
+          expect.fail(`Expected provider send to succeed, got ${error._tag}`),
+        onRight: () => undefined,
+      });
+    });
+  });
+
+  it.effect(
+    "should omit html when the rendered message does not include it",
+    () => {
+      return Effect.gen(function* () {
+        const EmailProviderLayerResendTest = makeEmailProviderLayerResendTest(
+          (payload) =>
+            Effect.sync(() => {
+              expect(payload).toMatchObject({
+                from: "sender@example.com",
+                to: textOnlyMessage.to,
+                subject: textOnlyMessage.subject,
+                text: textOnlyMessage.text,
+              });
+              expect(payload.html).toBeUndefined();
+
+              return successResponse;
+            }),
+        );
+
+        const result = yield* sendTextOnlyMessageEither().pipe(
+          Effect.provide(EmailProviderLayerResendTest),
+        );
+
+        Either.match(result, {
+          onLeft: (error) =>
+            expect.fail(`Expected provider send to succeed, got ${error._tag}`),
+          onRight: () => undefined,
+        });
+      });
+    },
   );
 });
