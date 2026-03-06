@@ -57,12 +57,14 @@ const makeNotifierLayerTest = (opts: {
   const emailProvider = {
     send: (message: EmailMessage) => {
       if (opts.fail) {
-        return NotifierResponseError.make({
-          channel: "email",
-          message: "provider failure",
-          code: "application_error",
-          statusCode: 500,
-        });
+        return Effect.fail(
+          NotifierResponseError.make({
+            channel: "email",
+            message: "provider failure",
+            code: "application_error",
+            statusCode: 500,
+          }),
+        );
       }
 
       return Effect.sync(() => {
@@ -100,9 +102,14 @@ describe("Notifier", () => {
 
       expect(sent).toHaveLength(1);
       const [message] = sent;
-      expect(message?.subject).toBe(`Celtics vs. Raptors, ${expectedTime}`);
-      expect(message?.text).toContain("Raptors");
-      expect(message?.text).toContain(expectedTime);
+      expect(message?.subject).toBe(
+        `Celtics vs. Raptors today at ${expectedTime}`,
+      );
+      expect(message?.text).toBe(`Celtics vs. Raptors\n${expectedTime}`);
+      expect(message?.text).not.toContain("Also today");
+      expect(message?.html).toContain("Celtics vs. Raptors");
+      expect(message?.html).toContain(expectedTime);
+      expect(message?.html).not.toContain("Also today");
     }).pipe(Effect.provide(makeNotifierLayerTest({ sent })));
   });
 
@@ -136,9 +143,18 @@ describe("Notifier", () => {
 
         expect(sent).toHaveLength(1);
         const [message] = sent;
-        expect(message?.subject).toBe("Celtics play today, 2 games");
-        expect(message?.text).toContain(`Celtics @ Raptors, ${expectedEarly}`);
-        expect(message?.text).toContain(`Celtics vs. Knicks, ${expectedLate}`);
+        expect(message?.subject).toBe(
+          "Celtics @ Raptors first today, plus 1 more",
+        );
+        expect(message?.text).toContain(`Celtics @ Raptors\n${expectedEarly}`);
+        expect(message?.text).toContain("Also today:");
+        expect(message?.text).toContain(
+          `- Celtics vs. Knicks, ${expectedLate}`,
+        );
+        expect(message?.html).toContain("Also today");
+        expect(message?.html).toContain("Celtics @ Raptors");
+        expect(message?.html).toContain(expectedEarly);
+        expect(message?.html).toContain("Celtics vs. Knicks");
 
         const body = message?.text ?? "";
         expect(body.indexOf("Raptors")).toBeLessThan(body.indexOf("Knicks"));
@@ -169,5 +185,33 @@ describe("Notifier", () => {
       });
       expect(sent).toHaveLength(0);
     }).pipe(Effect.provide(makeNotifierLayerTest({ sent, fail: true })));
+  });
+
+  it.effect("should escape dynamic values in html output", () => {
+    const sent: EmailMessage[] = [];
+
+    const event = makeEvent({
+      id: sampleIds.eventIdA,
+      startUtc: "2026-02-10T00:30:00Z",
+      site: "home",
+      teamName: 'Celtics <script>alert("x")</script>',
+      opponent: "Raptors & Knicks",
+    });
+
+    return Effect.gen(function* () {
+      const notifier = yield* Notifier;
+      yield* notifier.send(user, [event]);
+
+      expect(sent).toHaveLength(1);
+      const [message] = sent;
+
+      expect(message?.html).toContain(
+        "Celtics &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; vs. Raptors &amp; Knicks",
+      );
+      expect(message?.html).not.toContain("<script>alert");
+      expect(message?.text).toContain(
+        'Celtics <script>alert("x")</script> vs. Raptors & Knicks',
+      );
+    }).pipe(Effect.provide(makeNotifierLayerTest({ sent })));
   });
 });
