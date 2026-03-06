@@ -1,4 +1,5 @@
 import { Config, Schema } from "effect";
+
 import { EmailAddress } from "../../../users/schema.js";
 
 export const ResendConfig = Config.all({

@@ -2,12 +2,13 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Either, Layer, Schema } from "effect";
 
 import { SportsEvent } from "../modules/events/schema.js";
-import { Notifier } from "../modules/notifier/service.js";
+import { NotifierLayerEmail } from "../modules/notifier/email/index.js";
+import { NotifierResponseError } from "../modules/notifier/errors.js";
+import { Notifier } from "../modules/notifier/index.js";
 import {
-  type NotifierMessage,
-  NotifierContext,
-  NotifierResponseError,
-} from "../modules/notifier/providers/service.js";
+  EmailProvider,
+  type EmailMessage,
+} from "../modules/notifier/email/providers.js";
 import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -50,14 +51,14 @@ const formatStartTime = (utc: DateTime.Utc, timezone: User["timezone"]) =>
   });
 
 const makeNotifierLayerTest = (opts: {
-  sent: NotifierMessage[];
+  sent: EmailMessage[];
   fail?: boolean;
 }) => {
-  const provider = {
-    send: (message: NotifierMessage) => {
+  const emailProvider = {
+    send: (message: EmailMessage) => {
       if (opts.fail) {
         return NotifierResponseError.make({
-          channel: message.channel,
+          channel: "email",
           message: "provider failure",
           code: "application_error",
           statusCode: 500,
@@ -70,10 +71,10 @@ const makeNotifierLayerTest = (opts: {
     },
   };
 
-  const NotifierContextLayerTest = Layer.succeed(NotifierContext, provider);
+  const EmailProviderLayerTest = Layer.succeed(EmailProvider, emailProvider);
 
-  const NotifierLayer = Notifier.Default.pipe(
-    Layer.provide(NotifierContextLayerTest),
+  const NotifierLayer = NotifierLayerEmail.pipe(
+    Layer.provide(EmailProviderLayerTest),
   );
 
   return NotifierLayer;
@@ -81,7 +82,7 @@ const makeNotifierLayerTest = (opts: {
 
 describe("Notifier", () => {
   it.effect("should render single-game subject with local tipoff time", () => {
-    const sent: NotifierMessage[] = [];
+    const sent: EmailMessage[] = [];
 
     const event = makeEvent({
       id: sampleIds.eventIdA,
@@ -99,52 +100,54 @@ describe("Notifier", () => {
 
       expect(sent).toHaveLength(1);
       const [message] = sent;
-      expect(message?.channel).toBe("email");
-      expect(message?.title).toBe(`Celtics vs. Raptors, ${expectedTime}`);
-      expect(message?.body).toContain("Raptors");
-      expect(message?.body).toContain(expectedTime);
+      expect(message?.subject).toBe(`Celtics vs. Raptors, ${expectedTime}`);
+      expect(message?.text).toContain("Raptors");
+      expect(message?.text).toContain(expectedTime);
     }).pipe(Effect.provide(makeNotifierLayerTest({ sent })));
   });
 
-  it.effect("should render multi-game subject and include all matchups", () => {
-    const sent: NotifierMessage[] = [];
+  it.effect(
+    "should render multi-game subject and include all matchups for sorted events",
+    () => {
+      const sent: EmailMessage[] = [];
 
-    const earlyEvent = makeEvent({
-      id: sampleIds.eventIdA,
-      startUtc: "2026-02-10T00:30:00Z",
-      site: "away",
-      teamName: "Celtics",
-      opponent: "Raptors",
-    });
+      const earlyEvent = makeEvent({
+        id: sampleIds.eventIdA,
+        startUtc: "2026-02-10T00:30:00Z",
+        site: "away",
+        teamName: "Celtics",
+        opponent: "Raptors",
+      });
 
-    const lateEvent = makeEvent({
-      id: sampleIds.eventIdB,
-      startUtc: "2026-02-10T03:30:00Z",
-      site: "home",
-      teamName: "Celtics",
-      opponent: "Knicks",
-    });
+      const lateEvent = makeEvent({
+        id: sampleIds.eventIdB,
+        startUtc: "2026-02-10T03:30:00Z",
+        site: "home",
+        teamName: "Celtics",
+        opponent: "Knicks",
+      });
 
-    const expectedEarly = formatStartTime(earlyEvent.startUtc, user.timezone);
-    const expectedLate = formatStartTime(lateEvent.startUtc, user.timezone);
+      const expectedEarly = formatStartTime(earlyEvent.startUtc, user.timezone);
+      const expectedLate = formatStartTime(lateEvent.startUtc, user.timezone);
 
-    return Effect.gen(function* () {
-      const notifier = yield* Notifier;
-      yield* notifier.send(user, [lateEvent, earlyEvent]);
+      return Effect.gen(function* () {
+        const notifier = yield* Notifier;
+        yield* notifier.send(user, [earlyEvent, lateEvent]);
 
-      expect(sent).toHaveLength(1);
-      const [message] = sent;
-      expect(message?.title).toBe("Celtics play today, 2 games");
-      expect(message?.body).toContain(`Celtics @ Raptors, ${expectedEarly}`);
-      expect(message?.body).toContain(`Celtics vs. Knicks, ${expectedLate}`);
+        expect(sent).toHaveLength(1);
+        const [message] = sent;
+        expect(message?.subject).toBe("Celtics play today, 2 games");
+        expect(message?.text).toContain(`Celtics @ Raptors, ${expectedEarly}`);
+        expect(message?.text).toContain(`Celtics vs. Knicks, ${expectedLate}`);
 
-      const body = message?.body ?? "";
-      expect(body.indexOf("Raptors")).toBeLessThan(body.indexOf("Knicks"));
-    }).pipe(Effect.provide(makeNotifierLayerTest({ sent })));
-  });
+        const body = message?.text ?? "";
+        expect(body.indexOf("Raptors")).toBeLessThan(body.indexOf("Knicks"));
+      }).pipe(Effect.provide(makeNotifierLayerTest({ sent })));
+    },
+  );
 
   it.effect("should return provider failures to caller", () => {
-    const sent: NotifierMessage[] = [];
+    const sent: EmailMessage[] = [];
 
     const event = makeEvent({
       id: sampleIds.eventIdA,

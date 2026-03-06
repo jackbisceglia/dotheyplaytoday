@@ -1,6 +1,7 @@
 import { Effect, Redacted, Schema } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 import { Resend } from "resend";
+
 import { ResendConfig } from "./config.js";
 
 export class ResendClientInstantiationError extends Schema.TaggedError<ResendClientInstantiationError>()(
@@ -14,7 +15,7 @@ export class ResendClientRequestError extends Schema.TaggedError<ResendClientReq
 ) {}
 
 export class ResendClientService extends Effect.Service<ResendClientService>()(
-  "@dtpt/notifier/providers/resend/ResendClientService",
+  "@dtpt/notifier/email/resend/ResendClientService",
   {
     effect: Effect.gen(function* () {
       const config = yield* ResendConfig;
