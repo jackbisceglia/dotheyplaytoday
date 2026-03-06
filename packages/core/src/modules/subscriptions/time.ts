@@ -23,8 +23,11 @@ export type IsAlreadySentTodayOptions = {
   now: DateTime.Utc;
 };
 
-const constants = {
-  dueToleranceMs: Duration.toMillis("60000 millis"),
+export const constants = {
+  tolerance: {
+    earlyMs: Duration.toMillis("1 minute"),
+    lateMs: Duration.toMillis("5 minutes"),
+  },
 };
 
 export const localDateFromUtc = (utc: DateTime.Utc, tz: User["timezone"]) =>
@@ -51,9 +54,12 @@ export const isDue = (opts: IsDueOptions) => {
     }),
   );
 
-  return Duration.lessThanOrEqualTo(
-    DateTime.distanceDuration(opts.now, sendAtUtc),
-    constants.dueToleranceMs,
+  const driftMs =
+    DateTime.toEpochMillis(opts.now) - DateTime.toEpochMillis(sendAtUtc);
+
+  return (
+    driftMs >= -constants.tolerance.earlyMs &&
+    driftMs <= constants.tolerance.lateMs
   );
 };
 

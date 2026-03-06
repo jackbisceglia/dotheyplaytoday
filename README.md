@@ -107,4 +107,4 @@ Notes:
 ## Scheduling Expectations
 
 - Run `pnpm @jobs start:notify` every 15 minutes via external cron
-- Due checks use a +/-60 second window around the configured fixed send time
+- Due checks allow up to 60 seconds early and up to 5 minutes late around the configured fixed send time
