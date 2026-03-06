@@ -4,6 +4,7 @@ import { DateTime, Schema } from "effect";
 import { Subscription } from "../modules/subscriptions/schema.js";
 import {
   getScheduledSend,
+  constants,
   isAlreadySentToday,
   isDue,
   localDateFromUtc,
@@ -59,14 +60,40 @@ describe("subscription time utilities", () => {
     expect(DateTime.formatIso(sendAtUtc)).toBe("2026-03-08T13:00:00.000Z");
   });
 
-  it("should return false when current time is more than 60 seconds from scheduled send", () => {
+  it("should allow a small early window before scheduled send", () => {
     const user = makeUser("America/New_York");
     const subscription = makeSubscription(3600);
     const onTime = decodeUtc("2026-02-10T06:00:00Z");
-    const late = decodeUtc("2026-02-10T06:01:01Z");
+    const slightlyEarly = DateTime.mapEpochMillis(
+      onTime,
+      (ms) => ms - (constants.tolerance.earlyMs - 1000),
+    );
+    const tooEarly = DateTime.mapEpochMillis(
+      onTime,
+      (ms) => ms - (constants.tolerance.earlyMs + 1000),
+    );
 
     expect(isDue({ subscription, user, now: onTime })).toBe(true);
-    expect(isDue({ subscription, user, now: late })).toBe(false);
+    expect(isDue({ subscription, user, now: slightlyEarly })).toBe(true);
+    expect(isDue({ subscription, user, now: tooEarly })).toBe(false);
+  });
+
+  it("should allow a broader late window after scheduled send", () => {
+    const user = makeUser("America/New_York");
+    const subscription = makeSubscription(3600);
+    const onTime = decodeUtc("2026-02-10T06:00:00Z");
+    const slightlyLate = DateTime.mapEpochMillis(
+      onTime,
+      (ms) => ms + (constants.tolerance.lateMs - 1000),
+    );
+    const tooLate = DateTime.mapEpochMillis(
+      onTime,
+      (ms) => ms + (constants.tolerance.lateMs + 1000),
+    );
+
+    expect(isDue({ subscription, user, now: onTime })).toBe(true);
+    expect(isDue({ subscription, user, now: slightlyLate })).toBe(true);
+    expect(isDue({ subscription, user, now: tooLate })).toBe(false);
   });
 
   it("should convert UTC to next local day when timezone leads UTC", () => {
