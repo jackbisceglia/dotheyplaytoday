@@ -1,2 +1,1 @@
-# any files that shouldn't be formatted (codegen, build, etc.)
 dist/
