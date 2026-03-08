@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev:web": "pnpm @web dev",
+    "dev:api": "pnpm @api dev",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
     "lint": "pnpm -r run lint",
@@ -11,6 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "@core": "pnpm -F @dtpt/core",
+    "@web": "pnpm -F @dtpt/web",
+    "@api": "pnpm -F @dtpt/api",
     "@jobs": "pnpm -F @dtpt/jobs",
     "prepare": "pnpm exec effect-language-service patch"
   },

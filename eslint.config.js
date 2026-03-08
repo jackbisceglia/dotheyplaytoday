@@ -13,7 +13,7 @@ export default defineConfig(
   {
     // if we need to lint the config, then we need a dedicated eslint tsconfig
     // otherwise there's a circular dependency of the tsconfig and the eslint config
-    ignores: ["**/eslint.config.js", "**/dist/**"],
+    ignores: ["**/eslint.config.js", "**/dist/**", "**/.output/**"],
   },
   {
     languageOptions: {
