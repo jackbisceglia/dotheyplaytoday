@@ -13,7 +13,7 @@ export const ApiUrl = pipe(
   Effect.map((config) => buildUrl(config.url, config.port)),
 );
 
-export const DefaultServerPort = pipe(
+export const ServerBoundPort = pipe(
   ApiConfig,
   Effect.orDie,
   Effect.map((config) => config.port ?? 8080),

@@ -1,6 +1,6 @@
 import { HttpApiBuilder, HttpServer } from "@effect/platform";
 import { NodeHttpServer } from "@effect/platform-node";
-import { ApiUrl, DefaultServerPort } from "@dtpt/core/lib/config/api";
+import { ApiUrl, ServerBoundPort } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 import { Api } from "@dtpt/core/lib/contracts/api";
 import { Effect, Layer, pipe } from "effect";
@@ -12,7 +12,7 @@ import { RuntimeServer } from "./platform.js";
 const ApiLayer = HttpApiBuilder.api(Api).pipe(Layer.provide(PingGroupLayer));
 
 const NodeHttpLayer = pipe(
-  DefaultServerPort,
+  ServerBoundPort,
   Effect.map((port) => NodeHttpServer.layer(createServer, { port })),
   Layer.unwrapEffect,
 );
