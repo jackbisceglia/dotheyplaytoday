@@ -1,71 +1,77 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, onMount } from "solid-js";
+import { A } from "@solidjs/router";
 
-import { pingApi } from "~/lib/api-client";
+type Scorebug = {
+  shift: "a" | "b" | "c" | "d";
+  state: "off" | "today";
+  team: string;
+  marker?: "vs" | "@";
+  opponent?: string;
+};
 
-type ApiStatus = "checking" | "ok" | "error";
+const scorebugs: readonly Scorebug[] = [
+  { shift: "a", state: "off", team: "LAL" },
+  { shift: "c", state: "today", team: "CHI", marker: "vs", opponent: "MIL" },
+  { shift: "b", state: "today", team: "BOS", marker: "@", opponent: "BKN" },
+  { shift: "d", state: "off", team: "DAL" },
+  { shift: "a", state: "off", team: "NYK" },
+  { shift: "c", state: "today", team: "ATL", marker: "@", opponent: "ORL" },
+  { shift: "b", state: "off", team: "PHX" },
+  { shift: "d", state: "off", team: "SAS" },
+  { shift: "a", state: "today", team: "MIN", marker: "vs", opponent: "SAC" },
+  { shift: "c", state: "off", team: "MIA" },
+];
 
 export default function Home() {
-  const [status, setStatus] = createSignal<ApiStatus>("checking");
-  const [message, setMessage] = createSignal("Checking the API scaffold...");
-
-  const checkApi = async () => {
-    setStatus("checking");
-    setMessage("Checking the API scaffold...");
-
-    try {
-      const response = await pingApi();
-      setStatus("ok");
-      setMessage(`${response.service} responded with a typed ping.`);
-    } catch (error) {
-      setStatus("error");
-      setMessage(
-        error instanceof Error ? error.message : "Could not reach the API.",
-      );
-    }
-  };
-
-  onMount(() => {
-    void checkApi();
-  });
-
   return (
     <main class="page">
       <Title>Do They Play Today</Title>
 
-      <section class="panel">
-        <p class="eyebrow">Public signup scaffold</p>
-        <h1 class="title">Do They Play Today?</h1>
-        <p class="body">
-          Follow your team and get notified on game days. This page stays
-          intentionally small for the scaffold PR; the richer landing page
-          design is stashed separately.
-        </p>
+      <header class="site-header">
+        <A class="logo" href="/" aria-label="Do They Play Today home">
+          DTPT
+        </A>
+      </header>
 
-        <div class="ping">
-          <p class="ping-label">API status</p>
+      <section class="hero">
+        <div class="hero-top">
+          <h1 class="hero-headline">
+            Do They
+            <br />
+            <em>Play</em>
+            <br />
+            Today?
+          </h1>
 
-          <div class="status-row">
-            <div class="status-pill" data-state={status()}>
-              <span class="status-dot" />
-              {status() === "checking"
-                ? "Checking"
-                : status() === "ok"
-                  ? "Online"
-                  : "Offline"}
+          <div class="hero-scorebugs" aria-hidden="true">
+            <div class="scorebug-track">
+              {[...scorebugs, ...scorebugs].map((scorebug) => (
+                <div
+                  class={`scorebug is-shift-${scorebug.shift}`}
+                  data-state={scorebug.state}
+                >
+                  <div class="scorebug-copy">
+                    <span class="scorebug-team">{scorebug.team}</span>
+                    {scorebug.state === "today" ? (
+                      <span class="scorebug-matchup">
+                        {scorebug.marker} {scorebug.opponent}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
             </div>
-            <p class="status-message">{message()}</p>
           </div>
+        </div>
 
-          <div class="actions">
-            <button
-              class="button"
-              onClick={() => void checkApi()}
-              disabled={status() === "checking"}
-            >
-              {status() === "checking" ? "Checking..." : "Ping API"}
-            </button>
-          </div>
+        <div class="hero-details">
+          <p class="hero-body">
+            Pick your team. Pick your schedule. We'll ping you on game days.
+          </p>
+
+          <button class="btn-primary" type="button">
+            Get notified
+          </button>
         </div>
       </section>
     </main>
