@@ -1,9 +1,5 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, onMount } from "solid-js";
-
-import { pingApi } from "~/lib/api-client";
-
-type ApiStatus = "checking" | "ok" | "error";
+import { A } from "@solidjs/router";
 
 type Scorebug = {
   shift: "a" | "b" | "c" | "d";
@@ -27,115 +23,57 @@ const scorebugs: readonly Scorebug[] = [
 ];
 
 export default function Home() {
-  const [status, setStatus] = createSignal<ApiStatus>("checking");
-  const [message, setMessage] = createSignal("");
-
-  const checkApi = async () => {
-    setStatus("checking");
-    setMessage("");
-
-    try {
-      const response = await pingApi();
-      setStatus("ok");
-      setMessage(`${response.service} is live`);
-    } catch (error) {
-      setStatus("error");
-      setMessage(
-        error instanceof Error ? error.message : "Could not reach the API.",
-      );
-    }
-  };
-
-  onMount(() => {
-    void checkApi();
-  });
-
-  const scrollToSignup = () => {
-    document
-      .getElementById("signup")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <main class="page">
       <Title>Do They Play Today</Title>
 
       <header class="site-header">
-        <span class="logo">Do They Play Today</span>
-        <span class="tagline">Game day alerts, zero noise</span>
+        <A class="logo" href="/" aria-label="Do They Play Today home">
+          DTPT
+        </A>
       </header>
 
       <section class="hero">
-        <h1 class="hero-headline">
-          Do They
-          <br />
-          <em>Play</em>
-          <br />
-          Today?
-        </h1>
+        <div class="hero-top">
+          <h1 class="hero-headline">
+            Do They
+            <br />
+            <em>Play</em>
+            <br />
+            Today?
+          </h1>
 
-        <div class="hero-right">
+          <div class="hero-scorebugs" aria-hidden="true">
+            <div class="scorebug-track">
+              {[...scorebugs, ...scorebugs].map((scorebug) => (
+                <div
+                  class={`scorebug is-shift-${scorebug.shift}`}
+                  data-state={scorebug.state}
+                >
+                  <div class="scorebug-copy">
+                    <span class="scorebug-team">{scorebug.team}</span>
+                    {scorebug.state === "today" ? (
+                      <span class="scorebug-matchup">
+                        {scorebug.marker} {scorebug.opponent}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-details">
           <p class="hero-body">
-            Find out if your team has a game today - and get an email when they
-            do. No noise on off days.
+            Pick your team. Pick your schedule. We'll ping you on game days.
           </p>
 
-          <button class="btn-primary" onClick={scrollToSignup}>
+          <button class="btn-primary" type="button">
             Get notified
           </button>
         </div>
-
-        <div class="hero-scorebugs" aria-hidden="true">
-          <div class="scorebug-track">
-            {[...scorebugs, ...scorebugs].map((scorebug) => (
-              <div
-                class={`scorebug is-shift-${scorebug.shift}`}
-                data-state={scorebug.state}
-              >
-                <div class="scorebug-copy">
-                  <span class="scorebug-team">{scorebug.team}</span>
-                  {scorebug.state === "today" ? (
-                    <span class="scorebug-matchup">
-                      {scorebug.marker} {scorebug.opponent}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
-
-      <section class="signup-section" id="signup">
-        <p class="section-label">API Status</p>
-
-        <div class="status-row">
-          <div class="status-pill" data-state={status()}>
-            <span class="status-dot" />
-            {status() === "checking"
-              ? "Checking"
-              : status() === "ok"
-                ? "Online"
-                : "Offline"}
-          </div>
-          {message() && <p class="status-message">{message()}</p>}
-        </div>
-
-        <div class="signup-actions">
-          <button
-            class="btn-ghost"
-            onClick={() => void checkApi()}
-            disabled={status() === "checking"}
-          >
-            {status() === "checking" ? "Checking..." : "Ping API"}
-          </button>
-        </div>
-      </section>
-
-      <footer class="site-footer">
-        <p>Built for the days that matter.</p>
-        <p>Celtics first. Any recurring schedule next.</p>
-      </footer>
     </main>
   );
 }
