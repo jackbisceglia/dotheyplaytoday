@@ -67,6 +67,10 @@ Topics: quick-start, project-setup, tsconfig, basics, services-and-layers, data-
 
 Never guess at Effect patterns - check the guide first.
 
+- Prefer `Effect.fn` for effectful functions that take arguments. Avoid the older pattern of wrapping `Effect.gen(...)` inside a callback like `const foo = (a) => Effect.gen(function* () { ... })`; write `const foo = Effect.fn(function* (a) { ... })` instead.
+- `Effect.fn` does not need a named function unless the name materially helps tracing, stack traces, or readability. Anonymous generator functions are fine when the name is not important.
+- If you need to apply additional operators after the generator runs, prefer passing them as extra arguments to `Effect.fn` instead of wrapping `Effect.gen(...)` in a callback and piping afterward.
+
 ### Local Source References
 
 The `reference/` directory contains cloned source repositories for reference.
