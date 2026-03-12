@@ -10,12 +10,7 @@ import {
   NotifierRequestError,
   NotifierResponseError,
 } from "@dtpt/core/modules/notifier/errors";
-import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
-import {
-  isAlreadySentToday,
-  isDue as isSubscriptionDue,
-} from "@dtpt/core/modules/subscriptions/time";
 import { Topic } from "@dtpt/core/modules/topics/schema";
 import { User } from "@dtpt/core/modules/users/schema";
 import { DateTime, Effect, Either, Layer, Schema } from "effect";
@@ -116,33 +111,35 @@ const makeEvent = (
   decode(SportsEvent)({
     id: opts.id ?? sampleIds.eventA,
     _tag: "sports",
-    startUtc: opts.startUtc ?? "2026-02-10T00:30:00Z",
+    startUtc: opts.startUtc ?? "2026-02-10T19:30:00Z",
     site: opts.site ?? "home",
     teamName: opts.teamName ?? "Celtics",
     opponent: opts.opponent ?? "Raptors",
   });
 
-type GetDueEventsOptions = Parameters<Subscriptions["getDueEvents"]>[0];
-type GetDueEventsResult = ReturnType<Subscriptions["getDueEvents"]>;
 type SendOptions = [user: User, events: NonEmptyEvents];
 type SendResult = Effect.Effect<void, NotifierError>;
+type LoadTopicResult = Effect.Effect<Topic, DataReadError>;
 
 type HarnessOptions = {
   users: readonly User[];
   subscriptions: readonly Subscription[];
-  getDueEvents: (options: GetDueEventsOptions) => GetDueEventsResult;
+  loadTopic: (topicId: Subscription["topicId"]) => LoadTopicResult;
   send?: (...options: SendOptions) => SendResult;
 };
 
-const placeholderTopic = decode(Topic)({
-  id: sampleIds.topicA,
-  events: [],
-});
+const makeTopic = (
+  topicId: Subscription["topicId"],
+  events: readonly SportsEvent[] = [],
+) =>
+  Topic.make({
+    id: topicId,
+    events,
+  });
 
 const makeHarness = (opts: HarnessOptions) => {
   const checks: {
-    subscriptionId: Subscription["id"];
-    target: string;
+    topicId: Subscription["topicId"];
   }[] = [];
   const updates: Subscription[] = [];
   const sends: { email: string; count: number }[] = [];
@@ -152,24 +149,14 @@ const makeHarness = (opts: HarnessOptions) => {
     Database.make({
       loadUsers: () => Effect.succeed([...opts.users]),
       loadSubscriptions: () => Effect.succeed([...opts.subscriptions]),
-      loadTopic: () => Effect.succeed(placeholderTopic),
+      loadTopic: (topicId) =>
+        Effect.sync(() => {
+          checks.push({ topicId: topicId as Subscription["topicId"] });
+        }).pipe(
+          Effect.zipRight(opts.loadTopic(topicId as Subscription["topicId"])),
+        ),
       updateSubscription: (subscription) =>
         Effect.sync(() => void updates.push(subscription)),
-    }),
-  );
-
-  const SubscriptionsLayerTest = Layer.succeed(
-    Subscriptions,
-    Subscriptions.make({
-      isDue: isSubscriptionDue,
-      isAlreadySentToday,
-      getDueEvents: (checkOptions) =>
-        Effect.sync(() => {
-          checks.push({
-            subscriptionId: checkOptions.subscription.id,
-            target: checkOptions.target,
-          });
-        }).pipe(Effect.zipRight(opts.getDueEvents(checkOptions))),
     }),
   );
 
@@ -187,7 +174,6 @@ const makeHarness = (opts: HarnessOptions) => {
 
   const NotifyJobLayerTest = Layer.mergeAll(
     DatabaseLayerTest,
-    SubscriptionsLayerTest,
     NotifierLayerTest,
   );
 
@@ -205,7 +191,7 @@ describe("notify orchestration", () => {
       const harness = makeHarness({
         users: [user],
         subscriptions: [subscription],
-        getDueEvents: () => Effect.succeed([event]),
+        loadTopic: (topicId) => Effect.succeed(makeTopic(topicId, [event])),
       });
 
       return Effect.gen(function* () {
@@ -232,19 +218,20 @@ describe("notify orchestration", () => {
     const subscription = makeFixedSubscription();
     const earlyEvent = makeEvent({
       id: sampleIds.eventA,
-      startUtc: "2026-02-10T00:30:00Z",
+      startUtc: "2026-02-10T19:30:00Z",
       opponent: "Raptors",
     });
     const lateEvent = makeEvent({
       id: sampleIds.eventB,
-      startUtc: "2026-02-10T03:30:00Z",
+      startUtc: "2026-02-10T22:30:00Z",
       opponent: "Knicks",
     });
 
     const harness = makeHarness({
       users: [user],
       subscriptions: [subscription],
-      getDueEvents: () => Effect.succeed([lateEvent, earlyEvent]),
+      loadTopic: (topicId) =>
+        Effect.succeed(makeTopic(topicId, [lateEvent, earlyEvent])),
       send: (_user, events) =>
         Effect.sync(() => {
           expect(events[0].id).toBe(earlyEvent.id);
@@ -286,7 +273,7 @@ describe("notify orchestration", () => {
     const harness = makeHarness({
       users: [userA, userB],
       subscriptions: [subscriptionA, subscriptionB],
-      getDueEvents: () => Effect.succeed([event]),
+      loadTopic: (topicId) => Effect.succeed(makeTopic(topicId, [event])),
     });
 
     return Effect.gen(function* () {
@@ -312,7 +299,7 @@ describe("notify orchestration", () => {
     const harness = makeHarness({
       users: [user],
       subscriptions: [subscription],
-      getDueEvents: () => Effect.succeed([]),
+      loadTopic: (topicId) => Effect.succeed(makeTopic(topicId)),
     });
 
     return Effect.gen(function* () {
@@ -338,7 +325,7 @@ describe("notify orchestration", () => {
       const harness = makeHarness({
         users: [user],
         subscriptions: [subscription],
-        getDueEvents: () => Effect.succeed([event]),
+        loadTopic: (topicId) => Effect.succeed(makeTopic(topicId, [event])),
       });
 
       return Effect.gen(function* () {
@@ -362,7 +349,7 @@ describe("notify orchestration", () => {
     const harness = makeHarness({
       users: [user],
       subscriptions: [subscription],
-      getDueEvents: () => Effect.succeed([]),
+      loadTopic: (topicId) => Effect.succeed(makeTopic(topicId)),
     });
 
     return Effect.gen(function* () {
@@ -387,7 +374,7 @@ describe("notify orchestration", () => {
       const harness = makeHarness({
         users: [user],
         subscriptions: [subscription],
-        getDueEvents: () => Effect.succeed([]),
+        loadTopic: (topicId) => Effect.succeed(makeTopic(topicId)),
       });
 
       return Effect.gen(function* () {
@@ -412,7 +399,7 @@ describe("notify orchestration", () => {
     const harness = makeHarness({
       users: [user],
       subscriptions: [subscription],
-      getDueEvents: () => Effect.succeed([event]),
+      loadTopic: (topicId) => Effect.succeed(makeTopic(topicId, [event])),
     });
 
     return Effect.gen(function* () {
@@ -435,7 +422,7 @@ describe("notify orchestration", () => {
     const harness = makeHarness({
       users: [user],
       subscriptions: [subscription],
-      getDueEvents: () => Effect.succeed([]),
+      loadTopic: (topicId) => Effect.succeed(makeTopic(topicId)),
     });
 
     return Effect.gen(function* () {
@@ -456,7 +443,7 @@ describe("notify orchestration", () => {
     const harness = makeHarness({
       users: [user],
       subscriptions: [subscription],
-      getDueEvents: () => Effect.succeed([]),
+      loadTopic: (topicId) => Effect.succeed(makeTopic(topicId)),
     });
 
     return Effect.gen(function* () {
@@ -478,7 +465,7 @@ describe("notify orchestration", () => {
     const harness = makeHarness({
       users: [user],
       subscriptions: [subscription],
-      getDueEvents: () => Effect.succeed([event]),
+      loadTopic: (topicId) => Effect.succeed(makeTopic(topicId, [event])),
     });
 
     return Effect.gen(function* () {
@@ -505,14 +492,16 @@ describe("notify orchestration", () => {
       const eventB = makeEvent({
         id: sampleIds.eventB,
         opponent: "Knicks",
-        startUtc: "2026-02-10T03:30:00Z",
+        startUtc: "2026-02-10T22:30:00Z",
       });
 
       const harness = makeHarness({
         users: [user],
         subscriptions: [first, second],
-        getDueEvents: ({ subscription }) =>
-          Effect.succeed(subscription.id === first.id ? [eventA] : [eventB]),
+        loadTopic: (topicId) =>
+          Effect.succeed(
+            makeTopic(topicId, topicId === first.topicId ? [eventA] : [eventB]),
+          ),
         send: (_user, events) => {
           if (events[0].id === eventA.id) {
             return Effect.fail(
@@ -556,14 +545,16 @@ describe("notify orchestration", () => {
       const eventB = makeEvent({
         id: sampleIds.eventB,
         opponent: "Knicks",
-        startUtc: "2026-02-10T03:30:00Z",
+        startUtc: "2026-02-10T22:30:00Z",
       });
 
       const harness = makeHarness({
         users: [user],
         subscriptions: [first, second],
-        getDueEvents: ({ subscription }) =>
-          Effect.succeed(subscription.id === first.id ? [eventA] : [eventB]),
+        loadTopic: (topicId) =>
+          Effect.succeed(
+            makeTopic(topicId, topicId === first.topicId ? [eventA] : [eventB]),
+          ),
         send: (_user, events) => {
           if (events[0].id === eventA.id) {
             return Effect.fail(
@@ -601,7 +592,7 @@ describe("notify orchestration", () => {
       const harness = makeHarness({
         users: [],
         subscriptions: [subscription],
-        getDueEvents: () => Effect.succeed([]),
+        loadTopic: (topicId) => Effect.succeed(makeTopic(topicId)),
       });
 
       return Effect.gen(function* () {
@@ -631,7 +622,7 @@ describe("notify orchestration", () => {
       topicId: sampleIds.topicB,
     });
 
-    const getDueEventsError = DataReadError.make({
+    const loadTopicError = DataReadError.make({
       path: "topic",
       message: "topic missing",
     });
@@ -639,12 +630,12 @@ describe("notify orchestration", () => {
     const harness = makeHarness({
       users: [user],
       subscriptions: [first, second],
-      getDueEvents: ({ subscription }: GetDueEventsOptions) => {
-        if (subscription.id === first.id) {
-          return Effect.fail(getDueEventsError);
+      loadTopic: (topicId) => {
+        if (topicId === first.topicId) {
+          return Effect.fail(loadTopicError);
         }
 
-        return Effect.succeed([]);
+        return Effect.succeed(makeTopic(topicId));
       },
     });
 

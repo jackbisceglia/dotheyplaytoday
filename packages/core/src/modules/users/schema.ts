@@ -3,6 +3,8 @@ import { Schema } from "effect";
 const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export const EmailAddress = Schema.String.pipe(
+  Schema.compose(Schema.Trim),
+  Schema.compose(Schema.Lowercase),
   Schema.pattern(emailRegex, {
     identifier: "EmailAddress",
     description: "an email address",

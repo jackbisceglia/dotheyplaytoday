@@ -1,5 +1,10 @@
 import { Command, HelpDoc, Options, ValidationError } from "@effect/cli";
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
+import {
+  NodeContext,
+  NodeFileSystem,
+  NodeRuntime,
+} from "@effect/platform-node";
+import { isSameLocalDate, localDateFromUtc } from "@dtpt/core/lib/datetime";
 import { Database } from "@dtpt/core/modules/database/service";
 import type {
   NotifierRequestError,
@@ -8,9 +13,8 @@ import type {
 import { Notifier } from "@dtpt/core/modules/notifier";
 import { NotifierLayerEmail } from "@dtpt/core/modules/notifier/email/index";
 import { EmailProviderLayerResend } from "@dtpt/core/modules/notifier/email/resend/index";
-import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
+import { Delivery } from "@dtpt/core/modules/subscriptions/delivery";
 import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
-import { localDateFromUtc } from "@dtpt/core/modules/subscriptions/time";
 import { EmailAddress, User } from "@dtpt/core/modules/users/schema";
 import {
   Array,
@@ -26,7 +30,7 @@ import {
 } from "effect";
 
 import { DotEnvConfigProvider } from "../lib/env.js";
-import { selectKvsLayer } from "../lib/kvs.js";
+import { getConfiguredKvs } from "../lib/kvs.js";
 
 export type NotifyOptions = {
   dryRun: boolean;
@@ -135,15 +139,11 @@ const logs = {
 
 export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   const database = yield* Database;
-  const subscriptions = yield* Subscriptions;
   const notifier = yield* Notifier;
   const now = opts.now ?? (yield* DateTime.now);
   const ignoreAlreadySent = opts.ignoreAlreadySent ?? false;
   const ignoreSubscriptionTiming = opts.ignoreSubscriptionTiming ?? false;
-  const devUserEmail = Option.fromNullable(opts.devUserEmail).pipe(
-    Option.map((email) => email.trim().toLowerCase()),
-    Option.filter((email) => email.length > 0),
-  );
+  const devUserEmail = Option.fromNullable(opts.devUserEmail);
 
   yield* Effect.logInfo(
     `notify: start dryRun=${String(opts.dryRun)} ignoreAlreadySent=${String(ignoreAlreadySent)} ignoreSubscriptionTiming=${String(ignoreSubscriptionTiming)} now=${DateTime.formatIso(now)}`,
@@ -160,7 +160,7 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   if (Option.isSome(devUserEmail)) {
     subscriptionsToProcess = allSubscriptions.filter((subscription) => {
       const user = usersById.get(subscription.userId);
-      return user?.email.toLowerCase() === devUserEmail.value;
+      return user?.email === devUserEmail.value;
     });
   }
 
@@ -197,20 +197,21 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           });
         }
 
-        const isDue = subscriptions.isDue({ subscription, user, now });
-        if (!isDue && !ignoreSubscriptionTiming) {
+        if (
+          !Delivery.isDue({ subscription, user, now }) &&
+          !ignoreSubscriptionTiming
+        ) {
           return yield* new NotifySubscriptionNotDue({
             subscriptionId,
             topicId: subscription.topicId,
           });
         }
 
-        const isAlreadySentToday = subscriptions.isAlreadySentToday({
-          lastSentAt: subscription.lastSentAt,
-          tz: user.timezone,
-          now,
-        });
-        if (isAlreadySentToday && !ignoreAlreadySent) {
+        if (
+          subscription.lastSentAt !== null &&
+          isSameLocalDate(subscription.lastSentAt, now, user.timezone) &&
+          !ignoreAlreadySent
+        ) {
           return yield* new NotifySubscriptionAlreadySent({
             subscriptionId,
             topicId: subscription.topicId,
@@ -218,11 +219,12 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
         }
 
         const target = localDateFromUtc(now, user.timezone);
-        const events = yield* subscriptions.getDueEvents({
-          user,
-          subscription,
+        const topic = yield* database.loadTopic(subscription.topicId);
+        const events = Delivery.getEventsForLocalDate(
+          topic.events,
+          user.timezone,
           target,
-        });
+        );
 
         if (!Array.isNonEmptyArray(events)) {
           return yield* new NotifyNoEvents({
@@ -348,11 +350,7 @@ const NotifyCommand = Command.make(
   (opts) =>
     Effect.gen(function* () {
       const kvsOverride = Option.getOrUndefined(opts.kvs);
-      const nodeEnv = process.env.NODE_ENV;
-      const railwayEnv = process.env.RAILWAY_ENVIRONMENT_NAME;
-      const env = railwayEnv === "" ? nodeEnv : (railwayEnv ?? nodeEnv);
-      const kvsConfig = selectKvsLayer(env, kvsOverride);
-      const kvsSelection = kvsConfig.selection;
+      const kvsConfig = yield* getConfiguredKvs(kvsOverride);
       const notifyOptions: NotifyOptions = {
         dryRun: opts.dryRun,
         ignoreAlreadySent: opts.ignoreAlreadySent,
@@ -365,14 +363,14 @@ const NotifyCommand = Command.make(
       const ProgramLayer = Layer.mergeAll(
         getNotifierLayer(opts.dryRun),
         Database.Default,
-        Subscriptions.Default,
       ).pipe(
         Layer.provideMerge(kvsConfig.layer),
         Layer.provideMerge(NodeContext.layer),
+        Layer.provideMerge(NodeFileSystem.layer),
       );
 
       yield* Effect.logInfo(
-        `notify: kvs selection NODE_ENV=${nodeEnv ?? "undefined"} RAILWAY_ENVIRONMENT_NAME=${railwayEnv ?? "undefined"} env=${env ?? "undefined"} override=${kvsOverride ?? "none"} selected=${kvsSelection}`,
+        `notify: kvs selection runtime=${String(kvsConfig.runtime)} override=${kvsConfig.override ?? "none"} selected=${kvsConfig.selection}`,
       );
 
       return yield* notify(notifyOptions).pipe(Effect.provide(ProgramLayer));
@@ -387,7 +385,10 @@ const Notify = Command.run(NotifyCommand, {
 function main() {
   Notify(process.argv).pipe(
     Effect.provide(
-      DotEnvConfigProvider.pipe(Layer.provideMerge(NodeContext.layer)),
+      DotEnvConfigProvider.pipe(
+        Layer.provideMerge(NodeContext.layer),
+        Layer.provideMerge(NodeFileSystem.layer),
+      ),
     ),
     NodeRuntime.runMain,
   );

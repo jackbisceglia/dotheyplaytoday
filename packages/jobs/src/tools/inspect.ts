@@ -2,8 +2,9 @@
 import { Command, Options } from "@effect/cli";
 import { NodeContext } from "@effect/platform-node";
 import { Database } from "@dtpt/core/modules/database/service";
+import { makeKvsLayer } from "@dtpt/core/modules/kvs/service";
+import { Delivery } from "@dtpt/core/modules/subscriptions/delivery";
 import type { Subscription } from "@dtpt/core/modules/subscriptions/schema";
-import { getScheduledSend } from "@dtpt/core/modules/subscriptions/time";
 import type { User } from "@dtpt/core/modules/users/schema";
 import {
   Console,
@@ -16,7 +17,7 @@ import {
   Schema,
 } from "effect";
 
-import { getKvsLayer, type KvsSelection } from "../lib/kvs.js";
+import type { KvsOption } from "../lib/kvs.js";
 
 const placeholders = {
   unknownUser: "(unknown user)",
@@ -26,7 +27,7 @@ const placeholders = {
 } as const;
 
 export type InspectOptions = {
-  kvs: KvsSelection;
+  kvs: KvsOption;
   format: "table" | "json";
   verbose: boolean;
   user?: string;
@@ -161,9 +162,9 @@ const toScheduleDisplay = (opts: {
       };
     }
 
-    const scheduled = getScheduledSend({
+    const scheduled = Delivery.getScheduledSend({
       sendAtSecondsLocal: opts.subscription.schedule.sendAtSecondsLocal,
-      tz: opts.timezone,
+      timezone: opts.timezone,
       now: opts.now,
     });
 
@@ -450,8 +451,11 @@ export const InspectCommand = Command.make(
   },
   (opts) => {
     const user = Option.getOrUndefined(opts.user);
+    const relative = "../../../core/data/kv".split("/");
     const ProgramLayer = Layer.mergeAll(Database.Default).pipe(
-      Layer.provideMerge(getKvsLayer(opts.kvs)),
+      Layer.provideMerge(
+        makeKvsLayer(opts.kvs, import.meta.dirname, ...relative),
+      ),
       Layer.provideMerge(NodeContext.layer),
     );
 

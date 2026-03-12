@@ -1,14 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Schema } from "effect";
 
+import { Delivery } from "../modules/subscriptions/delivery.js";
 import { Subscription } from "../modules/subscriptions/schema.js";
-import {
-  getScheduledSend,
-  constants,
-  isAlreadySentToday,
-  isDue,
-  localDateFromUtc,
-} from "../modules/subscriptions/time.js";
 import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -38,21 +32,14 @@ const makeSubscription = (sendAtSecondsLocal: number) =>
 
 const decodeUtc = (value: string) => decode(Schema.DateTimeUtc)(value);
 
-describe("subscription time utilities", () => {
-  it("should convert UTC to prior local day when timezone lags UTC", () => {
-    const user = makeUser("America/New_York");
-    const utc = decodeUtc("2026-02-10T00:30:00Z");
-
-    expect(localDateFromUtc(utc, user.timezone)).toBe("2026-02-09");
-  });
-
+describe("subscription schedule", () => {
   it("should convert fixed local send time to UTC across DST change", () => {
     const user = makeUser("America/New_York");
     const now = decodeUtc("2026-03-08T05:00:00Z");
     const sendAtUtc = DateTime.toUtc(
-      getScheduledSend({
+      Delivery.getScheduledSend({
         sendAtSecondsLocal: 9 * 3600,
-        tz: user.timezone,
+        timezone: user.timezone,
         now,
       }),
     );
@@ -66,16 +53,18 @@ describe("subscription time utilities", () => {
     const onTime = decodeUtc("2026-02-10T06:00:00Z");
     const slightlyEarly = DateTime.mapEpochMillis(
       onTime,
-      (ms) => ms - (constants.tolerance.earlyMs - 1000),
+      (ms) => ms - (Delivery.constants.tolerance.earlyMs - 1000),
     );
     const tooEarly = DateTime.mapEpochMillis(
       onTime,
-      (ms) => ms - (constants.tolerance.earlyMs + 1000),
+      (ms) => ms - (Delivery.constants.tolerance.earlyMs + 1000),
     );
 
-    expect(isDue({ subscription, user, now: onTime })).toBe(true);
-    expect(isDue({ subscription, user, now: slightlyEarly })).toBe(true);
-    expect(isDue({ subscription, user, now: tooEarly })).toBe(false);
+    expect(Delivery.isDue({ subscription, user, now: onTime })).toBe(true);
+    expect(Delivery.isDue({ subscription, user, now: slightlyEarly })).toBe(
+      true,
+    );
+    expect(Delivery.isDue({ subscription, user, now: tooEarly })).toBe(false);
   });
 
   it("should allow a broader late window after scheduled send", () => {
@@ -84,23 +73,18 @@ describe("subscription time utilities", () => {
     const onTime = decodeUtc("2026-02-10T06:00:00Z");
     const slightlyLate = DateTime.mapEpochMillis(
       onTime,
-      (ms) => ms + (constants.tolerance.lateMs - 1000),
+      (ms) => ms + (Delivery.constants.tolerance.lateMs - 1000),
     );
     const tooLate = DateTime.mapEpochMillis(
       onTime,
-      (ms) => ms + (constants.tolerance.lateMs + 1000),
+      (ms) => ms + (Delivery.constants.tolerance.lateMs + 1000),
     );
 
-    expect(isDue({ subscription, user, now: onTime })).toBe(true);
-    expect(isDue({ subscription, user, now: slightlyLate })).toBe(true);
-    expect(isDue({ subscription, user, now: tooLate })).toBe(false);
-  });
-
-  it("should convert UTC to next local day when timezone leads UTC", () => {
-    const user = makeUser("Asia/Tokyo");
-    const utc = decodeUtc("2026-02-10T18:30:00Z");
-
-    expect(localDateFromUtc(utc, user.timezone)).toBe("2026-02-11");
+    expect(Delivery.isDue({ subscription, user, now: onTime })).toBe(true);
+    expect(Delivery.isDue({ subscription, user, now: slightlyLate })).toBe(
+      true,
+    );
+    expect(Delivery.isDue({ subscription, user, now: tooLate })).toBe(false);
   });
 
   it("should return false when schedule is relative", () => {
@@ -115,41 +99,10 @@ describe("subscription time utilities", () => {
     });
     const now = decodeUtc("2026-02-10T06:00:00Z");
 
-    expect(isDue({ subscription: relativeSubscription, user, now })).toBe(
-      false,
-    );
-  });
-
-  it("should compare sent and current local dates for dedupe", () => {
-    const user = makeUser("America/New_York");
-    const lastSentAt = decodeUtc("2026-02-10T01:00:00Z");
-    const sameLocalDate = decodeUtc("2026-02-10T04:00:00Z");
-    const nextLocalDate = decodeUtc("2026-02-10T15:00:00Z");
-
     expect(
-      isAlreadySentToday({
-        lastSentAt,
-        tz: user.timezone,
-        now: sameLocalDate,
-      }),
-    ).toBe(true);
-    expect(
-      isAlreadySentToday({
-        lastSentAt,
-        tz: user.timezone,
-        now: nextLocalDate,
-      }),
-    ).toBe(false);
-  });
-
-  it("should return false for dedupe when lastSentAt is null", () => {
-    const user = makeUser("America/New_York");
-    const now = decodeUtc("2026-02-10T04:00:00Z");
-
-    expect(
-      isAlreadySentToday({
-        lastSentAt: null,
-        tz: user.timezone,
+      Delivery.isDue({
+        subscription: relativeSubscription,
+        user,
         now,
       }),
     ).toBe(false);

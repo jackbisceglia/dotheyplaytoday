@@ -1,4 +1,5 @@
 import { describe, it } from "@effect/vitest";
+import { Schema } from "effect";
 
 import { SportsEvent } from "../modules/events/schema.js";
 import {
@@ -34,6 +35,18 @@ describe("domain model schemas", () => {
         email: "test@example.com",
         timezone: "America/New_York",
       });
+    });
+
+    it("normalizes email casing and whitespace", () => {
+      const user = Schema.decodeUnknownSync(User)({
+        id: sampleIds.userId,
+        email: "  Test@Example.Com ",
+        timezone: "America/New_York",
+      });
+
+      if (user.email !== "test@example.com") {
+        throw new Error(`Expected normalized email, received ${user.email}`);
+      }
     });
 
     it("rejects invalid email", () => {
@@ -114,6 +127,13 @@ describe("domain model schemas", () => {
       expectFailure(FixedSchedule, {
         type: "fixed",
         sendAtSecondsLocal: 901,
+      });
+    });
+
+    it("rejects 5-minute aligned but non-15-minute send time", () => {
+      expectFailure(FixedSchedule, {
+        type: "fixed",
+        sendAtSecondsLocal: 300,
       });
     });
 
