@@ -13,12 +13,12 @@ type ReplaceForUserOptions = {
   schedule: Extract<Subscription["schedule"], { type: "fixed" }>;
 };
 
-class SubscriptionTopicNotFound extends Schema.TaggedError<SubscriptionTopicNotFound>()(
+export class SubscriptionTopicNotFound extends Schema.TaggedError<SubscriptionTopicNotFound>()(
   "SubscriptionTopicNotFound",
   { topicId: Schema.String },
 ) {}
 
-class SubscriptionTopicLimitExceeded extends Schema.TaggedError<SubscriptionTopicLimitExceeded>()(
+export class SubscriptionTopicLimitExceeded extends Schema.TaggedError<SubscriptionTopicLimitExceeded>()(
   "SubscriptionTopicLimitExceeded",
   { limit: Schema.Int, count: Schema.Int },
 ) {}
@@ -76,16 +76,40 @@ export class Subscriptions extends Effect.Service<Subscriptions>()(
         },
       );
 
-      const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(
-        function* (opts: ReplaceForUserOptions) {
-          const topicIds = Array.dedupe(opts.topicIds);
+      const validateTopicIds = Effect.fn("Subscriptions.validateTopicIds")(
+        function* (topicIds: readonly Subscription["topicId"][]) {
+          const dedupedTopicIds = Array.dedupe(topicIds);
 
-          if (!isTopicCountAllowedByTier("free", topicIds.length)) {
+          if (!isTopicCountAllowedByTier("free", dedupedTopicIds.length)) {
             return yield* SubscriptionTopicLimitExceeded.make({
               limit: topicCapByTier.free,
-              count: topicIds.length,
+              count: dedupedTopicIds.length,
             });
           }
+
+          yield* Effect.forEach(
+            dedupedTopicIds,
+            (topicId) =>
+              database
+                .getWithSchema({
+                  query: database.queries.topic(topicId),
+                  schema: TopicEvents,
+                })
+                .pipe(
+                  Effect.catchTag("DataFileNotFound", () =>
+                    SubscriptionTopicNotFound.make({ topicId }),
+                  ),
+                ),
+            { discard: true, concurrency: "unbounded" },
+          );
+
+          return dedupedTopicIds;
+        },
+      );
+
+      const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(
+        function* (opts: ReplaceForUserOptions) {
+          const topicIds = yield* validateTopicIds(opts.topicIds);
 
           const subscriptions = yield* loadSubscriptions();
           const nextUserSubscriptions = yield* Effect.forEach(
@@ -140,6 +164,7 @@ export class Subscriptions extends Effect.Service<Subscriptions>()(
         getAllByUserId,
         replaceForUser,
         removeAllByUserId,
+        validateTopicIds,
       };
     }),
   },

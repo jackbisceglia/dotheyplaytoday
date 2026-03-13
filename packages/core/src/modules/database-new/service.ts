@@ -14,22 +14,22 @@ const KvsValidationErrorPayload = {
   issues: Schema.Array(Schema.ArrayFormatterIssue),
 };
 
-class DataFileNotFound extends Schema.TaggedError<DataFileNotFound>()(
+export class DataFileNotFound extends Schema.TaggedError<DataFileNotFound>()(
   "DataFileNotFound",
   KvsPathErrorPayload,
 ) {}
 
-class DataReadError extends Schema.TaggedError<DataReadError>()(
+export class DataReadError extends Schema.TaggedError<DataReadError>()(
   "DataReadError",
   KvsErrorPayload.fields,
 ) {}
 
-class DataValidationError extends Schema.TaggedError<DataValidationError>()(
+export class DataValidationError extends Schema.TaggedError<DataValidationError>()(
   "DataValidationError",
   KvsValidationErrorPayload,
 ) {}
 
-class DataWriteError extends Schema.TaggedError<DataWriteError>()(
+export class DataWriteError extends Schema.TaggedError<DataWriteError>()(
   "DataWriteError",
   KvsErrorPayload.fields,
 ) {}

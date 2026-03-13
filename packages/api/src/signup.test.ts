@@ -16,7 +16,7 @@ import {
 import { DatabaseNew } from "@dtpt/core/modules/database-new/service";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Layer, Ref, Schema } from "effect";
+import { Effect, Layer, Option, Ref, Schema } from "effect";
 
 import { PingGroupLayer } from "./group.ping.js";
 import { SignupGroupLayer } from "./group.signup.js";
@@ -60,18 +60,12 @@ const makeHttpLayer = (rateLimiterLayer = SignupWriteRateLimiter.Default) => {
   const ApiLayerTest = HttpApiBuilder.api(Api).pipe(
     Layer.provide(Layer.mergeAll(PingGroupLayer, SignupGroupLayer)),
   );
-  const PersistenceLayer = DatabaseNewLayerTest.pipe(
-    Layer.provideMerge(KeyValueStoreLayerTest),
-  );
-  const DomainLayer = Layer.mergeAll(
+  const AppLayer = Layer.mergeAll(
+    DatabaseNewLayerTest,
     UsersLayerTest,
     SubscriptionsLayerTest,
-  ).pipe(Layer.provideMerge(PersistenceLayer));
-  const AppLayer = Layer.mergeAll(
-    PersistenceLayer,
-    DomainLayer,
     rateLimiterLayer,
-  );
+  ).pipe(Layer.provideMerge(KeyValueStoreLayerTest));
   const ServerLayer = HttpApiBuilder.serve(
     HttpMiddleware.xForwardedHeaders,
   ).pipe(
@@ -80,13 +74,13 @@ const makeHttpLayer = (rateLimiterLayer = SignupWriteRateLimiter.Default) => {
     Layer.provideMerge(NodeHttpServer.layerTest),
   );
 
-  return Layer.mergeAll(KeyValueStoreLayerTest, ServerLayer);
+  return Layer.mergeAll(AppLayer, ServerLayer);
 };
 
 describe("signup api", () => {
   it.effect("accepts signup submissions", () =>
     Effect.gen(function* () {
-      const keyValueStore = yield* KeyValueStore.KeyValueStore;
+      const database = yield* DatabaseNew;
       const payload = yield* Schema.decodeUnknown(SignupRequest)({
         email: "fan@example.com",
         timezone: "America/New_York",
@@ -94,7 +88,7 @@ describe("signup api", () => {
         topicIds: ["b0c826c3-fc93-541f-a68d-de4d98e5a7e5"],
       }).pipe(Effect.orDie);
 
-      yield* keyValueStore.set(
+      yield* database.client.set(
         "topics/b0c826c3-fc93-541f-a68d-de4d98e5a7e5",
         encodeJson({ events: [] }),
       );
@@ -129,7 +123,7 @@ describe("signup api", () => {
 
   it.effect("returns rate-limit failures", () =>
     Effect.gen(function* () {
-      const keyValueStore = yield* KeyValueStore.KeyValueStore;
+      const database = yield* DatabaseNew;
       const payload = yield* Schema.decodeUnknown(SignupRequest)({
         email: "fan@example.com",
         timezone: "America/New_York",
@@ -137,7 +131,7 @@ describe("signup api", () => {
         topicIds: ["b0c826c3-fc93-541f-a68d-de4d98e5a7e5"],
       }).pipe(Effect.orDie);
 
-      yield* keyValueStore.set(
+      yield* database.client.set(
         "topics/b0c826c3-fc93-541f-a68d-de4d98e5a7e5",
         encodeJson({ events: [] }),
       );
@@ -153,5 +147,37 @@ describe("signup api", () => {
 
       expect(error._tag).toBe("SignupRateLimited");
     }).pipe(Effect.provide(makeHttpLayer(makeRateLimiterLayer(1)))),
+  );
+
+  it.effect("does not persist a user when topic validation fails", () =>
+    Effect.gen(function* () {
+      const database = yield* DatabaseNew;
+      const payload = yield* Schema.decodeUnknown(SignupRequest)({
+        email: "fan@example.com",
+        timezone: "America/New_York",
+        sendAtSecondsLocal: 9 * 3600,
+        topicIds: [
+          "b0c826c3-fc93-541f-a68d-de4d98e5a7e5",
+          "40fd6996-e273-51d3-b12e-865da5d11543",
+        ],
+      }).pipe(Effect.orDie);
+
+      yield* database.client.set(
+        "topics/b0c826c3-fc93-541f-a68d-de4d98e5a7e5",
+        encodeJson({ events: [] }),
+      );
+      yield* database.client.set(
+        "topics/40fd6996-e273-51d3-b12e-865da5d11543",
+        encodeJson({ events: [] }),
+      );
+
+      const client = yield* HttpApiClient.make(Api);
+
+      yield* Effect.flip(client.signup.submit({ payload }));
+
+      const users = yield* database.client.get("users");
+
+      expect(Option.isNone(users)).toBe(true);
+    }).pipe(Effect.provide(makeHttpLayer())),
   );
 });
