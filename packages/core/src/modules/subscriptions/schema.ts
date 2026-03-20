@@ -1,5 +1,6 @@
 import { Schema } from "effect";
 
+import { defineDocument, toDocumentKey } from "../database-new/document.js";
 import { Topic } from "../topics/schema.js";
 import { User } from "../users/schema.js";
 
@@ -29,4 +30,15 @@ export const Subscription = Schema.Struct({
   schedule: Schedule,
   enabled: Schema.Boolean,
   lastSentAt: Schema.NullOr(Schema.DateTimeUtc),
+});
+
+export const SubscriptionDocument = defineDocument({
+  name: "subscriptions",
+  key: (id: Subscription["id"]) => toDocumentKey("subscription", id),
+  indexes: {
+    byUserId: {
+      key: (userId: Subscription["userId"]) =>
+        toDocumentKey("index", "subscriptionsByUserId", userId),
+    },
+  },
 });

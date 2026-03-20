@@ -1,6 +1,6 @@
 import { Command, HelpDoc, Options, ValidationError } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Database } from "@dtpt/core/modules/database/service";
+import { DatabaseOld } from "@dtpt/core/modules/database/service[old]";
 import type {
   NotifierRequestError,
   NotifierResponseError,
@@ -134,7 +134,7 @@ const logs = {
 };
 
 export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
-  const database = yield* Database;
+  const database = yield* DatabaseOld;
   const subscriptions = yield* Subscriptions;
   const notifier = yield* Notifier;
   const now = opts.now ?? (yield* DateTime.now);
@@ -364,7 +364,7 @@ const NotifyCommand = Command.make(
 
       const ProgramLayer = Layer.mergeAll(
         getNotifierLayer(opts.dryRun),
-        Database.Default,
+        DatabaseOld.Default,
         Subscriptions.Default,
       ).pipe(
         Layer.provideMerge(kvsConfig.layer),

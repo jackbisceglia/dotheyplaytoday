@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Either, Layer, Schema } from "effect";
 
-import { Database } from "../modules/database/service.js";
+import { DatabaseOld } from "../modules/database/service[old].js";
 import { Subscriptions } from "../modules/subscriptions/service.js";
 import { Subscription } from "../modules/subscriptions/schema.js";
 import { localDateFromUtc } from "../modules/subscriptions/time.js";
@@ -78,8 +78,8 @@ const topic = decode(Topic)({
 });
 
 const DatabaseLayerTest = Layer.succeed(
-  Database,
-  Database.make({
+  DatabaseOld,
+  DatabaseOld.make({
     loadUsers: () => Effect.succeed([]),
     loadSubscriptions: () => Effect.succeed([]),
     loadTopic: () => Effect.succeed(topic),
@@ -160,8 +160,8 @@ describe("Subscriptions", () => {
     });
 
     const DatabaseLayerTestFails = Layer.succeed(
-      Database,
-      Database.make({
+      DatabaseOld,
+      DatabaseOld.make({
         loadUsers: () => Effect.succeed([]),
         loadSubscriptions: () => Effect.succeed([]),
         loadTopic: () => Effect.fail(loadTopicError),

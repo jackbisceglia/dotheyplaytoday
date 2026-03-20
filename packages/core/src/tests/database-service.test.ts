@@ -2,7 +2,7 @@ import { KeyValueStore } from "@effect/platform";
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Either, Layer, Schema } from "effect";
 
-import { Database } from "../modules/database/service.js";
+import { DatabaseOld } from "../modules/database/service[old].js";
 import { Subscription } from "../modules/subscriptions/schema.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -48,14 +48,14 @@ const topicSeed = {
 
 const KeyValueStoreLayerTest = KeyValueStore.layerMemory;
 
-const DatabaseLayerTest = Layer.mergeAll(
+const DatabaseOldLayerTest = Layer.mergeAll(
   KeyValueStoreLayerTest,
-  Database.Default.pipe(Layer.provide(KeyValueStoreLayerTest)),
+  DatabaseOld.Default.pipe(Layer.provide(KeyValueStoreLayerTest)),
 );
 
 const runWithSeed = <A, E>(
   seed: Record<string, unknown>,
-  effect: Effect.Effect<A, E, Database>,
+  effect: Effect.Effect<A, E, DatabaseOld>,
 ) =>
   Effect.gen(function* () {
     const keyValueStore = yield* KeyValueStore.KeyValueStore;
@@ -65,9 +65,9 @@ const runWithSeed = <A, E>(
     }
 
     return yield* effect;
-  }).pipe(Effect.provide(DatabaseLayerTest));
+  }).pipe(Effect.provide(DatabaseOldLayerTest));
 
-describe("Database", () => {
+describe("DatabaseOld", () => {
   it.effect("loads users, subscriptions, and topic from KeyValueStore", () =>
     runWithSeed(
       {
@@ -76,7 +76,7 @@ describe("Database", () => {
         [`topics/${sampleIds.topicId}`]: topicSeed,
       },
       Effect.gen(function* () {
-        const database = yield* Database;
+        const database = yield* DatabaseOld;
 
         const [users, subscriptions, topic] = yield* Effect.all([
           database.loadUsers(),
@@ -101,7 +101,7 @@ describe("Database", () => {
     runWithSeed(
       { users: usersSeed, subscriptions: subscriptionsSeed },
       Effect.gen(function* () {
-        const database = yield* Database;
+        const database = yield* DatabaseOld;
         const result = yield* Effect.either(
           database.loadTopic(sampleIds.topicIdMissing),
         );
@@ -130,7 +130,7 @@ describe("Database", () => {
         subscriptions: subscriptionsSeed,
       },
       Effect.gen(function* () {
-        const database = yield* Database;
+        const database = yield* DatabaseOld;
         const nextSentAtIso = "2026-02-11T15:00:00.000Z";
 
         const nextSubscription = decode(Subscription)({
@@ -159,7 +159,7 @@ describe("Database", () => {
       runWithSeed(
         { users: usersSeed },
         Effect.gen(function* () {
-          const database = yield* Database;
+          const database = yield* DatabaseOld;
           const subscription = decode(Subscription)(subscriptionsSeed[0]);
           const result = yield* Effect.either(
             database.updateSubscription(subscription),

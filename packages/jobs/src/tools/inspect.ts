@@ -1,7 +1,7 @@
 // AI Gen'd, minorly reviewed for code quality
 import { Command, Options } from "@effect/cli";
 import { NodeContext } from "@effect/platform-node";
-import { Database } from "@dtpt/core/modules/database/service";
+import { DatabaseOld } from "@dtpt/core/modules/database/service[old]";
 import type { Subscription } from "@dtpt/core/modules/subscriptions/schema";
 import { getScheduledSend } from "@dtpt/core/modules/subscriptions/time";
 import type { User } from "@dtpt/core/modules/users/schema";
@@ -364,7 +364,7 @@ export type InspectResult = {
 export const inspect = Effect.fn("tools.inspect")(function* (
   opts: InspectOptions,
 ) {
-  const database = yield* Database;
+  const database = yield* DatabaseOld;
   const now = yield* DateTime.now;
 
   const [users, subscriptions] = yield* Effect.all([
@@ -450,7 +450,7 @@ export const InspectCommand = Command.make(
   },
   (opts) => {
     const user = Option.getOrUndefined(opts.user);
-    const ProgramLayer = Layer.mergeAll(Database.Default).pipe(
+    const ProgramLayer = Layer.mergeAll(DatabaseOld.Default).pipe(
       Layer.provideMerge(getKvsLayer(opts.kvs)),
       Layer.provideMerge(NodeContext.layer),
     );

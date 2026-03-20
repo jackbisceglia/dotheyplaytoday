@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Database } from "@dtpt/core/modules/database/service";
+import { DatabaseOld } from "@dtpt/core/modules/database/service[old]";
 import {
   type NonEmptyEvents,
   SportsEvent,
@@ -148,8 +148,8 @@ const makeHarness = (opts: HarnessOptions) => {
   const sends: { email: string; count: number }[] = [];
 
   const DatabaseLayerTest = Layer.succeed(
-    Database,
-    Database.make({
+    DatabaseOld,
+    DatabaseOld.make({
       loadUsers: () => Effect.succeed([...opts.users]),
       loadSubscriptions: () => Effect.succeed([...opts.subscriptions]),
       loadTopic: () => Effect.succeed(placeholderTopic),

@@ -1,188 +1,105 @@
 import { KeyValueStore } from "@effect/platform";
-import type * as PlatformError from "@effect/platform/Error";
-import { Effect, Either, Match, Option, ParseResult, Schema } from "effect";
+import { Effect, Option, ParseResult, Schema } from "effect";
 
-import { Subscription } from "../subscriptions/schema.js";
-import { Topic } from "../topics/schema.js";
-import { User } from "../users/schema.js";
+import {
+  createDatabaseRegistry,
+  type RegistrySelectors,
+} from "../database-new/registry.js";
 
-const FsErrorPath = Schema.String;
-const FsErrorMessage = Schema.String;
+const KeyPath = Schema.String;
+const ErrorMessage = Schema.String;
 
-const fsErrorPayload = { path: FsErrorPath, message: FsErrorMessage };
-const validationErrorPayload = {
-  ...fsErrorPayload,
-  issues: Schema.Array(Schema.ArrayFormatterIssue),
+const ioErrorPayload = {
+  path: KeyPath,
+  message: ErrorMessage,
 };
 
-class DataFileNotFound extends Schema.TaggedError<DataFileNotFound>()(
+export class DataFileNotFound extends Schema.TaggedError<DataFileNotFound>()(
   "DataFileNotFound",
-  { path: FsErrorPath },
+  { path: KeyPath },
 ) {}
 
-class DataReadError extends Schema.TaggedError<DataReadError>()(
+export class DataReadError extends Schema.TaggedError<DataReadError>()(
   "DataReadError",
-  fsErrorPayload,
+  ioErrorPayload,
 ) {}
 
-class DataValidationError extends Schema.TaggedError<DataValidationError>()(
+export class DataValidationError extends Schema.TaggedError<DataValidationError>()(
   "DataValidationError",
-  validationErrorPayload,
+  {
+    ...ioErrorPayload,
+    issues: Schema.Array(Schema.ArrayFormatterIssue),
+  },
 ) {}
 
-class DataWriteError extends Schema.TaggedError<DataWriteError>()(
+export class DataWriteError extends Schema.TaggedError<DataWriteError>()(
   "DataWriteError",
-  fsErrorPayload,
+  ioErrorPayload,
 ) {}
 
-const formatParseError = (error: ParseResult.ParseError) => ({
-  message: ParseResult.TreeFormatter.formatErrorSync(error),
-  issues: ParseResult.ArrayFormatter.formatErrorSync(error),
-});
-
-const makeValidationError = (key: string, error: ParseResult.ParseError) => {
-  const parsed = formatParseError(error);
-
-  return DataValidationError.make({
-    path: key,
-    message: parsed.message,
-    issues: parsed.issues,
+export const makeDataValidationError = (
+  path: string,
+  error: ParseResult.ParseError,
+) =>
+  DataValidationError.make({
+    path,
+    message: ParseResult.TreeFormatter.formatErrorSync(error),
+    issues: ParseResult.ArrayFormatter.formatErrorSync(error),
   });
-};
-
-type WithDecodeOptions<A, I> = {
-  key: string;
-  schema: Schema.Schema<A, I>;
-  run: () => Effect.Effect<Option.Option<string>, PlatformError.PlatformError>;
-};
 
 export class Database extends Effect.Service<Database>()("@dtpt/Database", {
   effect: Effect.gen(function* () {
-    const kv = yield* KeyValueStore.KeyValueStore;
-    const keys = {
-      users: "users",
-      subscriptions: "subscriptions",
-      topic: (topicId: string) => `topics/${topicId}`,
-    };
+    const client = yield* KeyValueStore.KeyValueStore;
+    const registry = createDatabaseRegistry();
 
-    const withDecode = Effect.fn("Database.withDecode")(function* <A, I>(
-      opts: WithDecodeOptions<A, I>,
+    type GetKeyFunction = (
+      selectors: RegistrySelectors,
+    ) => ReturnType<RegistrySelectors[keyof RegistrySelectors]>;
+
+    const getWithSchema = Effect.fn("Database.getWithSchema")(function* <A, I>(
+      getKey: GetKeyFunction,
+      schema: Schema.Schema<A, I>,
     ) {
-      const content = yield* opts
-        .run()
+      const key = getKey(registry.selectors);
+      const content = yield* client
+        .get(key)
         .pipe(
           Effect.mapError((error) =>
-            DataReadError.make({ path: opts.key, message: error.message }),
+            DataReadError.make({ path: key, message: error.message }),
           ),
         );
 
       if (Option.isNone(content)) {
-        return yield* DataFileNotFound.make({ path: opts.key });
+        return yield* DataFileNotFound.make({ path: key });
       }
 
-      const fromJson = Schema.parseJson(opts.schema);
+      const fromJson = Schema.parseJson(schema);
 
       return yield* Schema.decodeUnknown(fromJson)(content.value).pipe(
-        Effect.mapError((error) => makeValidationError(opts.key, error)),
+        Effect.mapError((error) => makeDataValidationError(key, error)),
       );
     });
 
-    const loadUsers = () =>
-      withDecode({
-        key: keys.users,
-        schema: Schema.Array(User),
-        run: () => kv.get(keys.users),
-      });
-
-    const loadSubscriptions = () =>
-      withDecode({
-        key: keys.subscriptions,
-        schema: Schema.Array(Subscription),
-        run: () => kv.get(keys.subscriptions),
-      });
-
-    const Events = Topic.pick("events");
-
-    const loadTopic = Effect.fn("Database.loadTopic")(function* (
-      topicId: string,
+    const setWithSchema = Effect.fn("Database.setWithSchema")(function* <A, I>(
+      getKey: GetKeyFunction,
+      schema: Schema.Schema<A, I>,
+      value: A,
     ) {
-      const key = keys.topic(topicId);
-      const json = yield* withDecode({
-        key,
-        schema: Events,
-        run: () => kv.get(key),
-      });
+      const key = getKey(registry.selectors);
+      const fromJson = Schema.parseJson(schema);
+      const encoded = yield* Schema.encode(fromJson)(value).pipe(
+        Effect.mapError((error) => makeDataValidationError(key, error)),
+      );
 
-      return { id: topicId, events: json.events };
+      return yield* client
+        .set(key, encoded)
+        .pipe(
+          Effect.mapError((error) =>
+            DataWriteError.make({ path: key, message: error.message }),
+          ),
+        );
     });
 
-    const updateSubscription = Effect.fn("Database.updateSubscription")(
-      function* (subscription: Subscription) {
-        const Subscriptions = Schema.Array(Subscription);
-        const fromJson = Schema.parseJson(Subscriptions);
-        const decodeUnknownEither = Schema.decodeUnknownEither(fromJson);
-        const encodeUnknownEither = Schema.encodeUnknownEither(fromJson);
-        let validationError: DataValidationError | undefined;
-
-        const updated = yield* kv
-          .modify(keys.subscriptions, (encodedSubscriptions) => {
-            const decoded = decodeUnknownEither(encodedSubscriptions);
-
-            if (Either.isLeft(decoded)) {
-              validationError = makeValidationError(
-                keys.subscriptions,
-                decoded.left,
-              );
-              return encodedSubscriptions;
-            }
-
-            const subscriptions = decoded.right;
-            const index = subscriptions.findIndex(
-              (e) => e.id === subscription.id,
-            );
-
-            const nextSubscriptions = Match.value(index).pipe(
-              Match.when(-1, () => [...subscriptions, subscription]),
-              Match.orElse((index) =>
-                subscriptions.map((e, eIndex) => {
-                  if (eIndex === index) return subscription;
-
-                  return e;
-                }),
-              ),
-            );
-
-            const encoded = encodeUnknownEither(nextSubscriptions);
-
-            if (Either.isLeft(encoded)) {
-              validationError = makeValidationError(
-                keys.subscriptions,
-                encoded.left,
-              );
-              return encodedSubscriptions;
-            }
-
-            return encoded.right;
-          })
-          .pipe(
-            Effect.mapError((error) =>
-              DataWriteError.make({
-                path: keys.subscriptions,
-                message: error.message,
-              }),
-            ),
-          );
-
-        if (validationError) {
-          return yield* validationError;
-        }
-
-        if (Option.isNone(updated)) {
-          return yield* DataFileNotFound.make({ path: keys.subscriptions });
-        }
-      },
-    );
-
-    return { loadUsers, loadSubscriptions, loadTopic, updateSubscription };
+    return { client, getWithSchema, setWithSchema };
   }),
 }) {}
