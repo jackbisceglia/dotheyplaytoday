@@ -1,6 +1,6 @@
 import { DateTime, Effect } from "effect";
 
-import { Database } from "../database/service.js";
+import { DatabaseOld } from "../database/service-old.js";
 import type { User } from "../users/schema.js";
 import type { Subscription } from "./schema.js";
 import type { LocalDate } from "./time.js";
@@ -19,9 +19,9 @@ type GetDueEventsOptions = {
 export class Subscriptions extends Effect.Service<Subscriptions>()(
   "@dtpt/Subscriptions",
   {
-    dependencies: [Database.Default],
+    dependencies: [DatabaseOld.Default],
     effect: Effect.gen(function* () {
-      const database = yield* Database;
+      const database = yield* DatabaseOld;
 
       const getDueEvents = Effect.fn("getDueEvents")(function* (
         opts: GetDueEventsOptions,

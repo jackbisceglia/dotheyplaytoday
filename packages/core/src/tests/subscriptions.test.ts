@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Either, Layer, Schema } from "effect";
 
-import { Database } from "../modules/database/service.js";
+import { DatabaseOld } from "../modules/database/service-old.js";
 import { Subscriptions } from "../modules/subscriptions/service.js";
 import { Subscription } from "../modules/subscriptions/schema.js";
 import { localDateFromUtc } from "../modules/subscriptions/time.js";
@@ -10,10 +10,10 @@ import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
 
-class DataReadError extends Schema.TaggedError<DataReadError>()(
-  "DataReadError",
+class DatabaseQueryError extends Schema.TaggedError<DatabaseQueryError>()(
+  "DatabaseQueryError",
   {
-    path: Schema.String,
+    operation: Schema.String,
     message: Schema.String,
   },
 ) {}
@@ -78,8 +78,8 @@ const topic = decode(Topic)({
 });
 
 const DatabaseLayerTest = Layer.succeed(
-  Database,
-  Database.make({
+  DatabaseOld,
+  DatabaseOld.make({
     loadUsers: () => Effect.succeed([]),
     loadSubscriptions: () => Effect.succeed([]),
     loadTopic: () => Effect.succeed(topic),
@@ -154,14 +154,14 @@ describe("Subscriptions", () => {
   );
 
   it.effect("should propagate loadTopic failures", () => {
-    const loadTopicError = DataReadError.make({
-      path: "data/topics",
+    const loadTopicError = DatabaseQueryError.make({
+      operation: "DatabaseOld.loadTopic",
       message: "topic read failed",
     });
 
     const DatabaseLayerTestFails = Layer.succeed(
-      Database,
-      Database.make({
+      DatabaseOld,
+      DatabaseOld.make({
         loadUsers: () => Effect.succeed([]),
         loadSubscriptions: () => Effect.succeed([]),
         loadTopic: () => Effect.fail(loadTopicError),
@@ -187,13 +187,13 @@ describe("Subscriptions", () => {
       Either.match(result, {
         onLeft: (error) => {
           switch (error._tag) {
-            case "DataReadError": {
-              expect(error.path).toBe(loadTopicError.path);
+            case "DatabaseQueryError": {
+              expect(error.operation).toBe(loadTopicError.operation);
               expect(error.message).toBe(loadTopicError.message);
               break;
             }
             default:
-              expect.fail(`Expected DataReadError, got ${error._tag}`);
+              expect.fail(`Expected DatabaseQueryError, got ${error._tag}`);
           }
         },
         onRight: () => expect.fail("Expected getDueEvents to fail"),

@@ -19,8 +19,8 @@
     "prepare": "pnpm exec effect-language-service patch"
   },
   "devDependencies": {
-    "@effect/vitest": "^0.27.0",
-    "@effect/language-service": "^0.72.0",
+    "@effect/vitest": "^0.29.0",
+    "@effect/language-service": "^0.81.0",
     "@eslint/js": "^9.36.0",
     "@tsconfig/bun": "^1.0.7",
     "@tsconfig/strictest": "^2.0.6",
@@ -31,6 +31,12 @@
     "vitest": "^3.2.4",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
   },
   "packageManager": "pnpm@10.11.0"
 }
