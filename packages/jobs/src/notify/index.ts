@@ -1,6 +1,10 @@
 import { Command, HelpDoc, Options, ValidationError } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Database } from "@dtpt/core/modules/database/service";
+import {
+  createDatabaseLayer,
+  DatabaseLayer as DatabaseLayerDefault,
+} from "@dtpt/core/modules/database/service";
+import { DatabaseOld } from "@dtpt/core/modules/database/service-old";
 import type {
   NotifierRequestError,
   NotifierResponseError,
@@ -26,7 +30,6 @@ import {
 } from "effect";
 
 import { DotEnvConfigProvider } from "../lib/env.js";
-import { selectKvsLayer } from "../lib/kvs.js";
 
 export type NotifyOptions = {
   dryRun: boolean;
@@ -134,7 +137,7 @@ const logs = {
 };
 
 export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
-  const database = yield* Database;
+  const database = yield* DatabaseOld;
   const subscriptions = yield* Subscriptions;
   const notifier = yield* Notifier;
   const now = opts.now ?? (yield* DateTime.now);
@@ -342,17 +345,25 @@ const NotifyCommand = Command.make(
     dryRun: Options.boolean("dry-run"),
     ignoreAlreadySent: Options.boolean("ignore-already-sent"),
     ignoreSubscriptionTiming: Options.boolean("ignore-subscription-timing"),
-    kvs: Options.choice("kvs", ["redis", "fs"]).pipe(Options.optional),
+    dbUrl: Options.text("db-url").pipe(
+      Options.optional,
+      Options.withDescription(
+        "Override sqlite database file path or URL for this run",
+      ),
+    ),
     useDevUser: useDevUserOption,
   },
   (opts) =>
     Effect.gen(function* () {
-      const kvsOverride = Option.getOrUndefined(opts.kvs);
+      const dbUrl = Option.getOrUndefined(opts.dbUrl);
       const nodeEnv = process.env.NODE_ENV;
       const railwayEnv = process.env.RAILWAY_ENVIRONMENT_NAME;
       const env = railwayEnv === "" ? nodeEnv : (railwayEnv ?? nodeEnv);
-      const kvsConfig = selectKvsLayer(env, kvsOverride);
-      const kvsSelection = kvsConfig.selection;
+
+      const DatabaseLayer = dbUrl
+        ? createDatabaseLayer(dbUrl)
+        : DatabaseLayerDefault;
+
       const notifyOptions: NotifyOptions = {
         dryRun: opts.dryRun,
         ignoreAlreadySent: opts.ignoreAlreadySent,
@@ -364,15 +375,15 @@ const NotifyCommand = Command.make(
 
       const ProgramLayer = Layer.mergeAll(
         getNotifierLayer(opts.dryRun),
-        Database.Default,
+        DatabaseOld.Default,
         Subscriptions.Default,
       ).pipe(
-        Layer.provideMerge(kvsConfig.layer),
+        Layer.provideMerge(DatabaseLayer),
         Layer.provideMerge(NodeContext.layer),
       );
 
       yield* Effect.logInfo(
-        `notify: kvs selection NODE_ENV=${nodeEnv ?? "undefined"} RAILWAY_ENVIRONMENT_NAME=${railwayEnv ?? "undefined"} env=${env ?? "undefined"} override=${kvsOverride ?? "none"} selected=${kvsSelection}`,
+        `notify: sqlite selection NODE_ENV=${nodeEnv ?? "undefined"} RAILWAY_ENVIRONMENT_NAME=${railwayEnv ?? "undefined"} env=${env ?? "undefined"} dbUrl=${dbUrl ?? "none"}`,
       );
 
       return yield* notify(notifyOptions).pipe(Effect.provide(ProgramLayer));
