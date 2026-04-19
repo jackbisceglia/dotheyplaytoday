@@ -11,6 +11,8 @@ prereqs:
 
 **Acceptance:**
 
+- [ ] Superseded by `15-sqlite-migration-with-drizzle.md`; keep this item as historical context only.
+
 - [ ] `Database` service API remains compatible for existing callers (`loadUsers`, `loadSubscriptions`, `loadTopic`, `updateSubscription`)
 - [ ] Redis-backed KeyValueStore implementation is added under `packages/core/src/modules/kvs/` and can be composed into `Database.Default`
 - [ ] Data layout in Redis preserves the current filesystem shape:

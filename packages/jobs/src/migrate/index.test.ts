@@ -3,7 +3,7 @@ import { NodeContext } from "@effect/platform-node";
 import { describe, expect, it } from "@effect/vitest";
 import { RedisClient } from "@dtpt/core/modules/kvs/providers/redis/client";
 import { KeyValueStoreRedis } from "@dtpt/core/modules/kvs/providers/redis/service";
-import { Effect, Either, Layer, Option, Schema } from "effect";
+import { ConfigProvider, Effect, Either, Layer, Option, Schema } from "effect";
 
 import { migrate } from "./index.js";
 
@@ -61,11 +61,22 @@ const makeProgramLayer = (client: typeof RedisClient.Service) => {
   const KeyValueStoreLayerTest = KeyValueStoreRedis.layer("dtpt").pipe(
     Layer.provide(RedisClientLayerTest),
   );
+  const ConfigProviderLayerTest = Layer.setConfigProvider(
+    ConfigProvider.fromMap(
+      new Map([
+        // migrate still targets Redis, so these values satisfy the Redis config
+        // reads used by RedisClientIoredisConfig / RedisKeyValueStoreConfig.
+        ["REDIS_URL", "redis://localhost:6379"],
+        ["REDIS_KEY_PREFIX", "dtpt"],
+      ]),
+    ),
+  );
 
   return Layer.mergeAll(
     RedisClientLayerTest,
     KeyValueStoreLayerTest,
     NodeContext.layer,
+    ConfigProviderLayerTest,
   );
 };
 

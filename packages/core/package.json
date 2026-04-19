@@ -12,6 +12,10 @@
       "types": "./src/modules/notifier/index.ts",
       "default": "./dist/modules/notifier/index.js"
     },
+    "./modules/database/service-old": {
+      "types": "./src/modules/database/service-old.ts",
+      "default": "./dist/modules/database/service-old.js"
+    },
     "./*": {
       "types": "./src/*.ts",
       "default": "./dist/*.js"
@@ -19,14 +23,24 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "db": "drizzle-kit --config=drizzle.config.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
     "@effect/platform": "catalog:",
+    "@effect/sql": "^0.51.0",
+    "@effect/sql-drizzle": "^0.50.0",
+    "@effect/sql-sqlite-node": "^0.52.0",
+    "better-sqlite3": "^12.4.1",
+    "drizzle-orm": "1.0.0-beta.18-7eb39f0",
     "effect": "catalog:",
     "ioredis": "catalog:",
     "resend": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/platform-node": "catalog:",
+    "drizzle-kit": "1.0.0-beta.9-e89174b"
   }
 }

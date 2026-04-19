@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Database } from "@dtpt/core/modules/database/service";
+import { DatabaseOld } from "@dtpt/core/modules/database/service-old";
 import {
   type NonEmptyEvents,
   SportsEvent,
@@ -24,10 +24,10 @@ import { notify as runNotifyJob } from "./index.js";
 
 const decode = Schema.decodeUnknownSync;
 
-class DataReadError extends Schema.TaggedError<DataReadError>()(
-  "DataReadError",
+class DatabaseQueryError extends Schema.TaggedError<DatabaseQueryError>()(
+  "DatabaseQueryError",
   {
-    path: Schema.String,
+    operation: Schema.String,
     message: Schema.String,
   },
 ) {}
@@ -148,8 +148,8 @@ const makeHarness = (opts: HarnessOptions) => {
   const sends: { email: string; count: number }[] = [];
 
   const DatabaseLayerTest = Layer.succeed(
-    Database,
-    Database.make({
+    DatabaseOld,
+    DatabaseOld.make({
       loadUsers: () => Effect.succeed([...opts.users]),
       loadSubscriptions: () => Effect.succeed([...opts.subscriptions]),
       loadTopic: () => Effect.succeed(placeholderTopic),
@@ -631,8 +631,8 @@ describe("notify orchestration", () => {
       topicId: sampleIds.topicB,
     });
 
-    const getDueEventsError = DataReadError.make({
-      path: "topic",
+    const getDueEventsError = DatabaseQueryError.make({
+      operation: "DatabaseOld.loadTopic",
       message: "topic missing",
     });
 
@@ -657,7 +657,7 @@ describe("notify orchestration", () => {
 
       Either.match(result, {
         onLeft: (error) => {
-          expect(error._tag).toBe("DataReadError");
+          expect(error._tag).toBe("DatabaseQueryError");
         },
         onRight: () => expect.fail("Expected notify to abort on check failure"),
       });

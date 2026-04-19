@@ -1,3 +1,4 @@
+import { sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { Schema } from "effect";
 
 const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -15,3 +16,13 @@ export const User = Schema.Struct({
   email: EmailAddress,
   timezone: Schema.TimeZoneNamed,
 });
+
+export const usersTable = sqliteTable(
+  "users",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    timezone: text("timezone").notNull(),
+  },
+  (table) => [uniqueIndex("email_index").on(table.email)],
+);
