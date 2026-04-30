@@ -1,5 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
-import { DatabaseOld } from "@dtpt/core/modules/database/service-old";
+import {
+  DatabaseOld,
+  type TopicWithEvents,
+} from "@dtpt/core/modules/database/service-old";
 import {
   type NonEmptyEvents,
   SportsEvent,
@@ -34,16 +37,20 @@ class DatabaseQueryError extends Schema.TaggedError<DatabaseQueryError>()(
 
 const decodeUtc = (value: string) => decode(Schema.DateTimeUtc)(value);
 const toIso = DateTime.formatIso;
+const userId = decode(User.fields.id);
+const topicId = decode(Topic.fields.id);
+const subscriptionId = decode(Subscription.fields.id);
+const eventId = decode(SportsEvent.fields.id);
 
 const sampleIds = {
-  userA: "00000000-0000-0000-0000-000000000301",
-  userB: "00000000-0000-0000-0000-000000000302",
-  topicA: "00000000-0000-0000-0000-000000000303",
-  topicB: "00000000-0000-0000-0000-000000000304",
-  subscriptionA: "00000000-0000-0000-0000-000000000305",
-  subscriptionB: "00000000-0000-0000-0000-000000000306",
-  eventA: "00000000-0000-0000-0000-000000000307",
-  eventB: "00000000-0000-0000-0000-000000000308",
+  userA: userId("00000000-0000-0000-0000-000000000301"),
+  userB: userId("00000000-0000-0000-0000-000000000302"),
+  topicA: topicId("00000000-0000-0000-0000-000000000303"),
+  topicB: topicId("00000000-0000-0000-0000-000000000304"),
+  subscriptionA: subscriptionId("00000000-0000-0000-0000-000000000305"),
+  subscriptionB: subscriptionId("00000000-0000-0000-0000-000000000306"),
+  eventA: eventId("00000000-0000-0000-0000-000000000307"),
+  eventB: eventId("00000000-0000-0000-0000-000000000308"),
 };
 
 const now = decodeUtc("2026-02-10T14:00:00Z");
@@ -68,7 +75,7 @@ const makeFixedSubscription = (
     topicId?: string;
     sendAtSecondsLocal?: number;
     enabled?: boolean;
-    lastSentAt?: string | null;
+    lastSentAt?: Date | null;
   } = {},
 ) =>
   decode(Subscription)({
@@ -76,7 +83,7 @@ const makeFixedSubscription = (
     userId: opts.userId ?? sampleIds.userA,
     topicId: opts.topicId ?? sampleIds.topicA,
     schedule: {
-      type: "fixed",
+      _tag: "fixed",
       sendAtSecondsLocal: opts.sendAtSecondsLocal ?? 9 * 3600,
     },
     enabled: opts.enabled ?? true,
@@ -89,7 +96,7 @@ const makeRelativeSubscription = (
     userId?: string;
     topicId?: string;
     enabled?: boolean;
-    lastSentAt?: string | null;
+    lastSentAt?: Date | null;
   } = {},
 ) =>
   decode(Subscription)({
@@ -97,7 +104,7 @@ const makeRelativeSubscription = (
     userId: opts.userId ?? sampleIds.userA,
     topicId: opts.topicId ?? sampleIds.topicA,
     schedule: {
-      type: "relative",
+      _tag: "relative",
       timeOffsetSeconds: -1800,
     },
     enabled: opts.enabled ?? true,
@@ -134,10 +141,12 @@ type HarnessOptions = {
   send?: (...options: SendOptions) => SendResult;
 };
 
-const placeholderTopic = decode(Topic)({
+const placeholderTopic: TopicWithEvents = {
   id: sampleIds.topicA,
+  _tag: "sports",
+  title: "Celtics",
   events: [],
-});
+};
 
 const makeHarness = (opts: HarnessOptions) => {
   const checks: {
@@ -381,7 +390,7 @@ describe("notify orchestration", () => {
     () => {
       const user = makeUser();
       const subscription = makeFixedSubscription({
-        lastSentAt: "2026-02-10T12:00:00Z",
+        lastSentAt: new Date("2026-02-10T12:00:00Z"),
       });
 
       const harness = makeHarness({
@@ -405,7 +414,7 @@ describe("notify orchestration", () => {
   it.effect("should ignore already-sent guard when configured", () => {
     const user = makeUser();
     const subscription = makeFixedSubscription({
-      lastSentAt: "2026-02-10T12:00:00Z",
+      lastSentAt: new Date("2026-02-10T12:00:00Z"),
     });
     const event = makeEvent();
 

@@ -1,11 +1,13 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Either, Layer, Schema } from "effect";
 
-import { DatabaseOld } from "../modules/database/service-old.js";
+import {
+  DatabaseOld,
+  TopicWithEvents,
+} from "../modules/database/service-old.js";
 import { Subscriptions } from "../modules/subscriptions/service.js";
 import { Subscription } from "../modules/subscriptions/schema.js";
 import { localDateFromUtc } from "../modules/subscriptions/time.js";
-import { Topic } from "../modules/topics/schema.js";
 import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -38,13 +40,15 @@ const subscription = decode(Subscription)({
   id: sampleIds.subscriptionId,
   userId: sampleIds.userId,
   topicId: sampleIds.topicId,
-  schedule: { type: "fixed", sendAtSecondsLocal: 3600 },
+  schedule: { _tag: "fixed", sendAtSecondsLocal: 3600 },
   enabled: true,
   lastSentAt: null,
 });
 
-const topic = decode(Topic)({
+const topic = decode(TopicWithEvents)({
   id: sampleIds.topicId,
+  _tag: "sports",
+  title: "Celtics",
   events: [
     {
       id: sampleIds.eventIdA,

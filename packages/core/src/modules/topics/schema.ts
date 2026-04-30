@@ -1,28 +1,32 @@
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-orm/effect-schema";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { Schema } from "effect";
+import { Schema as S } from "effect";
 
-import { Event, type SportsEvent } from "../events/schema.js";
+const defaultTopicTag = "sports" as const satisfies TopicTag;
 
-const DEFAULT_TOPIC_TYPE = "sports";
-
-export type Topic = Schema.Schema.Type<typeof Topic>;
-export const Topic = Schema.Struct({
-  id: Schema.UUID.pipe(Schema.brand("TopicId")),
-  events: Schema.Array(Event),
-});
+export type TopicTag = (typeof topicTags)[keyof typeof topicTags];
+export const topicTags = {
+  sports: "sports",
+} as const;
 
 export const topicsTable = sqliteTable("topics", {
   id: text("id").primaryKey(),
-  type: text("type").notNull().default(DEFAULT_TOPIC_TYPE),
+  _tag: text("_tag").notNull().default(defaultTopicTag),
   title: text("title").notNull(),
 });
 
-export const eventsTable = sqliteTable("events", {
-  id: text("id").primaryKey(),
-  topicId: text("topic_id")
-    .notNull()
-    .references(() => topicsTable.id, { onDelete: "cascade" }),
-  // Temporary shape for MVP. In a follow-up we should model events as their own
-  // table(s) keyed by event type since the event domain is a discriminated union.
-  event: text("event", { mode: "json" }).notNull().$type<SportsEvent>(),
-});
+const rowRefinements = {
+  id: S.UUID.pipe(S.brand("TopicId")),
+  _tag: S.Literal(...Object.values(topicTags)),
+};
+
+export type Topic = S.Schema.Type<typeof Topic>;
+export const Topic = createSelectSchema(topicsTable, rowRefinements);
+
+export type TopicInsert = S.Schema.Type<typeof TopicInsert>;
+export const TopicInsert = createInsertSchema(topicsTable, rowRefinements);
+
+export const createTopicId = (id: string) => Topic.fields.id.make(id);

@@ -20,7 +20,9 @@ export const localDatabasePath = Effect.runSync(
 );
 
 export const DatabaseConfig = Config.all({
-  url: Config.string("DATABASE_URL").pipe(Config.withDefault(localDatabasePath)),
+  url: Config.string("DATABASE_URL").pipe(
+    Config.withDefault(localDatabasePath),
+  ),
 });
 
 export const DatabaseUrl = DatabaseConfig.pipe(Config.map((c) => c.url));

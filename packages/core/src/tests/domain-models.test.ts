@@ -63,17 +63,18 @@ describe("domain model schemas", () => {
 
   describe("Topic", () => {
     it("accepts valid topic", () => {
-      expectSuccess(Topic, { id: sampleIds.topicId, events: [] });
+      expectSuccess(Topic, {
+        id: sampleIds.topicId,
+        _tag: "sports",
+        title: "Celtics",
+      });
     });
 
     it("rejects invalid topic id", () => {
-      expectFailure(Topic, { id: "topic", events: [] });
-    });
-
-    it("rejects invalid event entry", () => {
       expectFailure(Topic, {
-        id: sampleIds.topicId,
-        events: [{ ...sportsEventInput, id: "not-a-uuid" }],
+        id: "topic",
+        _tag: "sports",
+        title: "Celtics",
       });
     });
   });
@@ -105,21 +106,21 @@ describe("domain model schemas", () => {
   describe("FixedSchedule", () => {
     it("accepts edge send times", () => {
       expectSuccess(FixedSchedule, {
-        type: "fixed",
+        _tag: "fixed",
         sendAtSecondsLocal: 85500,
       });
     });
 
     it("rejects unaligned send time", () => {
       expectFailure(FixedSchedule, {
-        type: "fixed",
+        _tag: "fixed",
         sendAtSecondsLocal: 901,
       });
     });
 
     it("rejects out-of-range send time", () => {
       expectFailure(FixedSchedule, {
-        type: "fixed",
+        _tag: "fixed",
         sendAtSecondsLocal: 86399,
       });
     });
@@ -128,14 +129,14 @@ describe("domain model schemas", () => {
   describe("RelativeSchedule", () => {
     it("accepts zero or negative offsets", () => {
       expectSuccess(RelativeSchedule, {
-        type: "relative",
+        _tag: "relative",
         timeOffsetSeconds: -900,
       });
     });
 
     it("rejects positive offset", () => {
       expectFailure(RelativeSchedule, {
-        type: "relative",
+        _tag: "relative",
         timeOffsetSeconds: 1,
       });
     });
@@ -144,7 +145,7 @@ describe("domain model schemas", () => {
   describe("Schedule", () => {
     it("accepts union variant", () => {
       expectSuccess(Schedule, {
-        type: "relative",
+        _tag: "relative",
         timeOffsetSeconds: 0,
       });
     });
@@ -157,7 +158,7 @@ describe("domain model schemas", () => {
 
     it("rejects invalid discriminator", () => {
       expectFailure(Schedule, {
-        type: "floating",
+        _tag: "floating",
         sendAtSecondsLocal: 3600,
       });
     });
@@ -169,9 +170,9 @@ describe("domain model schemas", () => {
         id: sampleIds.subscriptionId,
         userId: sampleIds.userId,
         topicId: sampleIds.topicId,
-        schedule: { type: "fixed", sendAtSecondsLocal: 3600 },
+        schedule: { _tag: "fixed", sendAtSecondsLocal: 3600 },
         enabled: true,
-        lastSentAt: "2026-01-24T19:30:00Z",
+        lastSentAt: new Date("2026-01-24T19:30:00Z"),
       });
     });
 
@@ -180,7 +181,7 @@ describe("domain model schemas", () => {
         id: sampleIds.subscriptionId,
         userId: sampleIds.userId,
         topicId: sampleIds.topicId,
-        schedule: { type: "fixed", sendAtSecondsLocal: 3600 },
+        schedule: { _tag: "fixed", sendAtSecondsLocal: 3600 },
         enabled: true,
         lastSentAt: "not-a-date",
       });

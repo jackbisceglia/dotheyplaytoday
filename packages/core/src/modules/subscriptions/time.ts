@@ -44,7 +44,7 @@ export const getScheduledSend = (opts: GetScheduledSendOptions) => {
 };
 
 export const isDue = (opts: IsDueOptions) => {
-  if (opts.subscription.schedule.type === "relative") return false;
+  if (opts.subscription.schedule._tag === "relative") return false;
 
   const sendAtUtc = DateTime.toUtc(
     getScheduledSend({
