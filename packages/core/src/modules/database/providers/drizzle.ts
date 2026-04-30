@@ -1,7 +1,8 @@
 import * as SqliteDrizzle from "@effect/sql-drizzle/Sqlite";
 
+import { eventsTable } from "../../events/schema.js";
 import { subscriptionsTable } from "../../subscriptions/schema.js";
-import { eventsTable, topicsTable } from "../../topics/schema.js";
+import { topicsTable } from "../../topics/schema.js";
 import { usersTable } from "../../users/schema.js";
 
 const schema = {

@@ -193,7 +193,7 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           });
         }
 
-        if (subscription.schedule.type === "relative") {
+        if (subscription.schedule._tag === "relative") {
           return yield* new NotifyRelativeUnimplemented({
             subscriptionId,
             topicId: subscription.topicId,

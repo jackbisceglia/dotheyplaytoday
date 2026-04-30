@@ -11,7 +11,10 @@ type EmailSection = {
   readonly startTime: string;
 };
 
-const formatEventStart = (startUtc: Event["startUtc"], tz: User["timezone"]) =>
+const formatEventStart = (
+  startUtc: Event["data"]["startUtc"],
+  tz: User["timezone"],
+) =>
   DateTime.format(DateTime.setZone(startUtc, tz), {
     locale: "en-US",
     hour: "numeric",
@@ -20,7 +23,7 @@ const formatEventStart = (startUtc: Event["startUtc"], tz: User["timezone"]) =>
     timeZoneName: "short",
   });
 
-const formatEventMatchup = (event: Event) =>
+const formatEventMatchup = (event: Event["data"]) =>
   Match.value(event).pipe(
     Match.tags({
       sports: (sportsEvent) =>

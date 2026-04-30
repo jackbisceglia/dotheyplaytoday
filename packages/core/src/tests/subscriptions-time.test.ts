@@ -31,7 +31,7 @@ const makeSubscription = (sendAtSecondsLocal: number) =>
     id: sampleIds.subscriptionId,
     userId: sampleIds.userId,
     topicId: sampleIds.topicId,
-    schedule: { type: "fixed", sendAtSecondsLocal },
+    schedule: { _tag: "fixed", sendAtSecondsLocal },
     enabled: true,
     lastSentAt: null,
   });
@@ -109,7 +109,7 @@ describe("subscription time utilities", () => {
       id: sampleIds.subscriptionId,
       userId: sampleIds.userId,
       topicId: sampleIds.topicId,
-      schedule: { type: "relative", timeOffsetSeconds: -1800 },
+      schedule: { _tag: "relative", timeOffsetSeconds: -1800 },
       enabled: true,
       lastSentAt: null,
     });

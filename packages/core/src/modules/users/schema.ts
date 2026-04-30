@@ -1,21 +1,18 @@
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-orm/effect-schema";
 import { sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
-import { Schema } from "effect";
+import { Schema as S } from "effect";
 
-const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const emailSanityPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-export const EmailAddress = Schema.String.pipe(
-  Schema.pattern(emailRegex, {
+export const EmailAddress = S.String.pipe(
+  S.pattern(emailSanityPattern, {
     identifier: "EmailAddress",
     description: "an email address",
   }),
 );
-
-export type User = Schema.Schema.Type<typeof User>;
-export const User = Schema.Struct({
-  id: Schema.UUID.pipe(Schema.brand("UserId")),
-  email: EmailAddress,
-  timezone: Schema.TimeZoneNamed,
-});
 
 export const usersTable = sqliteTable(
   "users",
@@ -26,3 +23,17 @@ export const usersTable = sqliteTable(
   },
   (table) => [uniqueIndex("email_index").on(table.email)],
 );
+
+const rowRefinements = {
+  id: S.UUID.pipe(S.brand("UserId")),
+  email: EmailAddress,
+  timezone: S.TimeZoneNamed,
+};
+
+export type User = S.Schema.Type<typeof User>;
+export const User = createSelectSchema(usersTable, rowRefinements);
+
+export type UserInsert = S.Schema.Type<typeof UserInsert>;
+export const UserInsert = createInsertSchema(usersTable, rowRefinements);
+
+export const createUserId = (id: string) => User.fields.id.make(id);

@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { DateTime, Effect, ParseResult, Schema } from "effect";
+import { Effect, ParseResult, Schema } from "effect";
 
-import { Event } from "../events/schema.js";
 import { Subscription, subscriptionsTable } from "../subscriptions/schema.js";
-import { eventsTable, Topic, topicsTable } from "../topics/schema.js";
+import { AllEvents, Event, eventsTable } from "../events/schema.js";
+import { Topic, topicsTable } from "../topics/schema.js";
 import { User, usersTable } from "../users/schema.js";
 import { Database } from "./service.js";
 
@@ -32,14 +32,6 @@ class DatabaseDecodeError extends Schema.TaggedError<DatabaseDecodeError>()(
   },
 ) {}
 
-class DatabaseInvariantError extends Schema.TaggedError<DatabaseInvariantError>()(
-  "DatabaseInvariantError",
-  {
-    operation: Schema.String,
-    message: Schema.String,
-  },
-) {}
-
 const formatParseError = (error: ParseResult.ParseError) => ({
   message: ParseResult.TreeFormatter.formatErrorSync(error),
   issues: ParseResult.ArrayFormatter.formatErrorSync(error),
@@ -62,87 +54,38 @@ const decodeOrFail = Effect.fn("DatabaseOld.decodeOrFail")(function* <A, I>(
   );
 });
 
-const toSubscriptionRow = (subscription: Subscription) => {
-  if (subscription.schedule.type === "fixed") {
-    return {
-      id: subscription.id,
-      userId: subscription.userId,
-      topicId: subscription.topicId,
-      scheduleType: "fixed" as const,
-      sendAtSecondsLocal: subscription.schedule.sendAtSecondsLocal,
-      timeOffsetSeconds: null,
-      enabled: subscription.enabled ? 1 : 0,
-      lastSentAt: subscription.lastSentAt
-        ? DateTime.formatIso(subscription.lastSentAt)
-        : null,
-    };
-  }
-
-  return {
-    id: subscription.id,
-    userId: subscription.userId,
-    topicId: subscription.topicId,
-    scheduleType: "relative" as const,
-    sendAtSecondsLocal: null,
-    timeOffsetSeconds: subscription.schedule.timeOffsetSeconds,
-    enabled: subscription.enabled ? 1 : 0,
-    lastSentAt: subscription.lastSentAt
-      ? DateTime.formatIso(subscription.lastSentAt)
-      : null,
-  };
-};
-
-const fromSubscriptionRow = Effect.fn("DatabaseOld.fromSubscriptionRow")(
-  function* (row: typeof subscriptionsTable.$inferSelect) {
-    if (row.scheduleType === "fixed") {
-      if (row.sendAtSecondsLocal === null) {
-        return yield* DatabaseInvariantError.make({
-          operation: "DatabaseOld.fromSubscriptionRow",
-          message: `fixed schedule missing sendAtSecondsLocal subscriptionId=${row.id}`,
-        });
-      }
-
-      return yield* decodeOrFail(
-        "DatabaseOld.fromSubscriptionRow.fixed",
-        Subscription,
-        {
-          id: row.id,
-          userId: row.userId,
-          topicId: row.topicId,
-          schedule: {
-            type: "fixed",
-            sendAtSecondsLocal: row.sendAtSecondsLocal,
-          },
-          enabled: row.enabled === 1,
-          lastSentAt: row.lastSentAt,
-        },
-      );
-    }
-
-    if (row.timeOffsetSeconds === null) {
-      return yield* DatabaseInvariantError.make({
-        operation: "DatabaseOld.fromSubscriptionRow",
-        message: `relative schedule missing timeOffsetSeconds subscriptionId=${row.id}`,
+const encodeOrFail = Effect.fn("DatabaseOld.encodeOrFail")(function* <A, I>(
+  operation: string,
+  schema: Schema.Schema<A, I>,
+  value: A,
+) {
+  return yield* Schema.encode(schema)(value).pipe(
+    Effect.mapError((error) => {
+      const formatted = formatParseError(error);
+      return DatabaseDecodeError.make({
+        operation,
+        message: formatted.message,
+        issues: formatted.issues,
       });
-    }
+    }),
+  );
+});
 
-    return yield* decodeOrFail(
-      "DatabaseOld.fromSubscriptionRow.relative",
+const encodeSubscription = Effect.fn("DatabaseOld.encodeSubscription")(
+  function* (subscription: Subscription) {
+    return yield* encodeOrFail(
+      "DatabaseOld.encodeSubscription",
       Subscription,
-      {
-        id: row.id,
-        userId: row.userId,
-        topicId: row.topicId,
-        schedule: {
-          type: "relative",
-          timeOffsetSeconds: row.timeOffsetSeconds,
-        },
-        enabled: row.enabled === 1,
-        lastSentAt: row.lastSentAt,
-      },
+      subscription,
     );
   },
 );
+
+export type TopicWithEvents = Schema.Schema.Type<typeof TopicWithEvents>;
+export const TopicWithEvents = Schema.Struct({
+  ...Topic.fields,
+  events: Schema.Array(AllEvents),
+});
 
 export class DatabaseOld extends Effect.Service<DatabaseOld>()(
   "@dtpt/DatabaseOld",
@@ -186,7 +129,11 @@ export class DatabaseOld extends Effect.Service<DatabaseOld>()(
               ),
             );
 
-          return yield* Effect.forEach(rows, fromSubscriptionRow);
+          return yield* decodeOrFail(
+            "DatabaseOld.loadSubscriptions",
+            Schema.Array(Subscription),
+            rows,
+          );
         },
       );
 
@@ -229,19 +176,29 @@ export class DatabaseOld extends Effect.Service<DatabaseOld>()(
             ),
           );
 
-        const events = yield* Effect.forEach(eventRows, (row) =>
-          decodeOrFail("DatabaseOld.loadTopic.event", Event, row.event),
+        const decodedTopic = yield* decodeOrFail(
+          "DatabaseOld.loadTopic.topic",
+          Topic,
+          topic,
         );
 
-        return yield* decodeOrFail("DatabaseOld.loadTopic", Topic, {
-          id: topic.id,
-          events,
+        const decodedEventRows = yield* decodeOrFail(
+          "DatabaseOld.loadTopic.eventRows",
+          Schema.Array(Event),
+          eventRows,
+        );
+
+        return yield* decodeOrFail("DatabaseOld.loadTopic", TopicWithEvents, {
+          id: decodedTopic.id,
+          _tag: decodedTopic._tag,
+          title: decodedTopic.title,
+          events: decodedEventRows.map((row) => row.data),
         });
       });
 
       const updateSubscription = Effect.fn("DatabaseOld.updateSubscription")(
         function* (subscription: Subscription) {
-          const row = toSubscriptionRow(subscription);
+          const row = yield* encodeSubscription(subscription);
 
           yield* db
             .insert(subscriptionsTable)

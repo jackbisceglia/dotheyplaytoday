@@ -1,9 +1,11 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
-import { DatabaseOld } from "../modules/database/service-old.js";
+import {
+  DatabaseOld,
+  TopicWithEvents,
+} from "../modules/database/service-old.js";
 import { Subscription } from "../modules/subscriptions/schema.js";
-import { Topic } from "../modules/topics/schema.js";
 import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -21,8 +23,10 @@ const user = decode(User)({
   timezone: "America/New_York",
 });
 
-const topic = decode(Topic)({
+const topic = decode(TopicWithEvents)({
   id: sampleIds.topicId,
+  _tag: "sports",
+  title: "Celtics",
   events: [
     {
       id: sampleIds.eventId,
@@ -38,14 +42,14 @@ const baseSubscription = decode(Subscription)({
   id: sampleIds.subscriptionId,
   userId: sampleIds.userId,
   topicId: sampleIds.topicId,
-  schedule: { type: "fixed", sendAtSecondsLocal: 9 * 3600 },
+  schedule: { _tag: "fixed", sendAtSecondsLocal: 9 * 3600 },
   enabled: true,
   lastSentAt: null,
 });
 
 type InMemoryState = {
   users: readonly User[];
-  topics: ReadonlyMap<string, Topic>;
+  topics: ReadonlyMap<string, TopicWithEvents>;
   subscriptions: readonly Subscription[];
 };
 

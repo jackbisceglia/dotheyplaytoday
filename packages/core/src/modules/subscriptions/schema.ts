@@ -1,65 +1,51 @@
-import { sql } from "drizzle-orm";
-import { check, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { Schema } from "effect";
+import {
+  createInsertSchema,
+  createSelectSchema,
+} from "drizzle-orm/effect-schema";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { Schema as S } from "effect";
 
+import { Schedule } from "./schedules/schema.js";
 import { Topic, topicsTable } from "../topics/schema.js";
 import { User, usersTable } from "../users/schema.js";
+export {
+  FixedSchedule,
+  RelativeSchedule,
+  Schedule,
+} from "./schedules/schema.js";
 
-export type FixedSchedule = Schema.Schema.Type<typeof FixedSchedule>;
-export const FixedSchedule = Schema.Struct({
-  type: Schema.Literal("fixed"),
-  sendAtSecondsLocal: Schema.Int.pipe(
-    Schema.between(0, 86399),
-    Schema.multipleOf(300),
-  ),
+export const subscriptionsTable = sqliteTable("subscriptions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => usersTable.id, { onDelete: "cascade" }),
+  topicId: text("topic_id")
+    .notNull()
+    .references(() => topicsTable.id, { onDelete: "cascade" }),
+  schedule: text("schedule_json", { mode: "json" }).notNull().$type<Schedule>(),
+  enabled: integer("enabled", { mode: "boolean" }).notNull(),
+  lastSentAt: integer("last_sent_at", { mode: "timestamp" }),
 });
 
-export type RelativeSchedule = Schema.Schema.Type<typeof RelativeSchedule>;
-export const RelativeSchedule = Schema.Struct({
-  type: Schema.Literal("relative"),
-  timeOffsetSeconds: Schema.Int.pipe(Schema.lessThanOrEqualTo(0)),
-});
-
-export type Schedule = Schema.Schema.Type<typeof Schedule>;
-export const Schedule = Schema.Union(FixedSchedule, RelativeSchedule);
-
-export type Subscription = Schema.Schema.Type<typeof Subscription>;
-export const Subscription = Schema.Struct({
-  id: Schema.UUID.pipe(Schema.brand("SubscriptionId")),
+const rowRefinements = {
+  id: S.UUID.pipe(S.brand("SubscriptionId")),
   userId: User.fields.id,
   topicId: Topic.fields.id,
   schedule: Schedule,
-  enabled: Schema.Boolean,
-  lastSentAt: Schema.NullOr(Schema.DateTimeUtc),
-});
+  lastSentAt: S.NullOr(S.DateTimeUtcFromDate),
+};
 
-export const subscriptionsTable = sqliteTable(
-  "subscriptions",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => usersTable.id, { onDelete: "cascade" }),
-    topicId: text("topic_id")
-      .notNull()
-      .references(() => topicsTable.id, { onDelete: "cascade" }),
-    scheduleType: text("schedule_type", {
-      enum: ["fixed", "relative"],
-    }).notNull(),
-    sendAtSecondsLocal: integer("send_at_seconds_local"),
-    timeOffsetSeconds: integer("time_offset_seconds"),
-    enabled: integer("enabled").notNull(),
-    lastSentAt: text("last_sent_at"),
-  },
-  (table) => {
-    const fixedScheduleCheck = sql`(${table.scheduleType} = 'fixed' AND ${table.sendAtSecondsLocal} IS NOT NULL AND ${table.timeOffsetSeconds} IS NULL)`;
-    const relativeScheduleCheck = sql`(${table.scheduleType} = 'relative' AND ${table.timeOffsetSeconds} IS NOT NULL AND ${table.sendAtSecondsLocal} IS NULL)`;
-
-    return [
-      check(
-        "subscriptions_schedule_shape_check",
-        sql`(${fixedScheduleCheck} OR ${relativeScheduleCheck})`,
-      ),
-    ];
-  },
+export type Subscription = S.Schema.Type<typeof Subscription>;
+export const Subscription = createSelectSchema(
+  subscriptionsTable,
+  rowRefinements,
 );
+
+export type SubscriptionInsert = S.Schema.Type<typeof SubscriptionInsert>;
+export const SubscriptionInsert = createInsertSchema(
+  subscriptionsTable,
+  rowRefinements,
+);
+
+export const createSubscriptionId = (id: string) =>
+  Subscription.fields.id.make(id);
