@@ -12,10 +12,6 @@
       "types": "./src/modules/notifier/index.ts",
       "default": "./dist/modules/notifier/index.js"
     },
-    "./modules/database/service-old": {
-      "types": "./src/modules/database/service-old.ts",
-      "default": "./dist/modules/database/service-old.js"
-    },
     "./*": {
       "types": "./src/*.ts",
       "default": "./dist/*.js"
