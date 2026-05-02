@@ -2,7 +2,7 @@
 id: "15"
 title: SQLite migration with Drizzle + Effect SQL
 description: Replace KVS-backed persistence with SQLite using Drizzle ORM while preserving current job behavior and CLI ergonomics
-status: DONE
+status: WIP
 priority: P0
 prereqs:
   - 02-json-data-access.md
