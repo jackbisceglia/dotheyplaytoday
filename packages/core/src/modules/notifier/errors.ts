@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 
+export type NotifierChannel = typeof NotifierChannel.Type;
 export const NotifierChannel = Schema.Literal("email", "sms");
-export type NotifierChannel = Schema.Schema.Type<typeof NotifierChannel>;
 
 const providerErrorBase = { channel: NotifierChannel, message: Schema.String };
 
