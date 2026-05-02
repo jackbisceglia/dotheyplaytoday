@@ -242,6 +242,8 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           ),
         );
 
+        // TODO: Direct field access breaks when AllEvents union grows. Extract a formatEventHeadline(event: AllEvents) => string
+        // into events/schema.ts using Match.tags + Match.exhaustive, matching the pattern in notifier/email/index.ts.
         const headline = `${sortedEvents[0].teamName} ${sortedEvents[0].site === "home" ? "vs." : "@"} ${sortedEvents[0].opponent}`;
 
         if (opts.dryRun) {
