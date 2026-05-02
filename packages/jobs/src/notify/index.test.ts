@@ -1,8 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import {
-  DatabaseOld,
-  type TopicWithEvents,
-} from "@dtpt/core/modules/database/service-old";
+import { DatabaseReadError } from "@dtpt/core/modules/database/errors";
 import {
   type NonEmptyEvents,
   SportsEvent,
@@ -21,19 +18,12 @@ import {
 } from "@dtpt/core/modules/subscriptions/time";
 import { Topic } from "@dtpt/core/modules/topics/schema";
 import { User } from "@dtpt/core/modules/users/schema";
+import { Users } from "@dtpt/core/modules/users/service";
 import { DateTime, Effect, Either, Layer, Schema } from "effect";
 
 import { notify as runNotifyJob } from "./index.js";
 
 const decode = Schema.decodeUnknownSync;
-
-class DatabaseQueryError extends Schema.TaggedError<DatabaseQueryError>()(
-  "DatabaseQueryError",
-  {
-    operation: Schema.String,
-    message: Schema.String,
-  },
-) {}
 
 const decodeUtc = (value: string) => decode(Schema.DateTimeUtc)(value);
 const toIso = DateTime.formatIso;
@@ -141,13 +131,6 @@ type HarnessOptions = {
   send?: (...options: SendOptions) => SendResult;
 };
 
-const placeholderTopic: TopicWithEvents = {
-  id: sampleIds.topicA,
-  _tag: "sports",
-  title: "Celtics",
-  events: [],
-};
-
 const makeHarness = (opts: HarnessOptions) => {
   const checks: {
     subscriptionId: Subscription["id"];
@@ -156,20 +139,19 @@ const makeHarness = (opts: HarnessOptions) => {
   const updates: Subscription[] = [];
   const sends: { email: string; count: number }[] = [];
 
-  const DatabaseLayerTest = Layer.succeed(
-    DatabaseOld,
-    DatabaseOld.make({
-      loadUsers: () => Effect.succeed([...opts.users]),
-      loadSubscriptions: () => Effect.succeed([...opts.subscriptions]),
-      loadTopic: () => Effect.succeed(placeholderTopic),
-      updateSubscription: (subscription) =>
-        Effect.sync(() => void updates.push(subscription)),
+  const UsersLayerTest = Layer.succeed(
+    Users,
+    Users.make({
+      getAll: () => Effect.succeed([...opts.users]),
     }),
   );
 
   const SubscriptionsLayerTest = Layer.succeed(
     Subscriptions,
     Subscriptions.make({
+      getAll: () => Effect.succeed([...opts.subscriptions]),
+      update: (subscription) =>
+        Effect.sync(() => void updates.push(subscription)),
       isDue: isSubscriptionDue,
       isAlreadySentToday,
       getDueEvents: (checkOptions) =>
@@ -195,7 +177,7 @@ const makeHarness = (opts: HarnessOptions) => {
   );
 
   const NotifyJobLayerTest = Layer.mergeAll(
-    DatabaseLayerTest,
+    UsersLayerTest,
     SubscriptionsLayerTest,
     NotifierLayerTest,
   );
@@ -640,8 +622,8 @@ describe("notify orchestration", () => {
       topicId: sampleIds.topicB,
     });
 
-    const getDueEventsError = DatabaseQueryError.make({
-      operation: "DatabaseOld.loadTopic",
+    const getDueEventsError = DatabaseReadError.make({
+      operation: "Topics.getAllEventsByTopicId",
       message: "topic missing",
     });
 
@@ -666,7 +648,7 @@ describe("notify orchestration", () => {
 
       Either.match(result, {
         onLeft: (error) => {
-          expect(error._tag).toBe("DatabaseQueryError");
+          expect(error._tag).toBe("DatabaseReadError");
         },
         onRight: () => expect.fail("Expected notify to abort on check failure"),
       });

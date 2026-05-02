@@ -1,24 +1,16 @@
+import * as SqlClient from "@effect/sql/SqlClient";
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Either, Layer, Schema } from "effect";
 
-import {
-  DatabaseOld,
-  TopicWithEvents,
-} from "../modules/database/service-old.js";
+import { DatabaseReadError } from "../modules/database/errors.js";
+import type { Event } from "../modules/events/schema.js";
 import { Subscriptions } from "../modules/subscriptions/service.js";
 import { Subscription } from "../modules/subscriptions/schema.js";
 import { localDateFromUtc } from "../modules/subscriptions/time.js";
+import { Topics } from "../modules/topics/service.js";
 import { User } from "../modules/users/schema.js";
 
 const decode = Schema.decodeUnknownSync;
-
-class DatabaseQueryError extends Schema.TaggedError<DatabaseQueryError>()(
-  "DatabaseQueryError",
-  {
-    operation: Schema.String,
-    message: Schema.String,
-  },
-) {}
 
 const sampleIds = {
   userId: "00000000-0000-0000-0000-000000000021",
@@ -45,54 +37,76 @@ const subscription = decode(Subscription)({
   lastSentAt: null,
 });
 
-const topic = decode(TopicWithEvents)({
-  id: sampleIds.topicId,
-  _tag: "sports",
-  title: "Celtics",
-  events: [
-    {
-      id: sampleIds.eventIdA,
-      startUtc: "2026-02-10T03:30:00Z",
+const topicEvents: Event[] = [
+  {
+    id: decode(Schema.UUID.pipe(Schema.brand("EventId")))(sampleIds.eventIdA),
+    topicId: decode(Schema.UUID.pipe(Schema.brand("TopicId")))(
+      sampleIds.topicId,
+    ),
+    data: {
+      _tag: "sports",
+      startUtc: decode(Schema.DateTimeUtc)("2026-02-10T03:30:00Z"),
       site: "home",
       teamName: "Celtics",
       opponent: "Raptors",
     },
-    {
-      id: sampleIds.eventIdB,
-      startUtc: "2026-02-10T00:30:00Z",
+  },
+  {
+    id: decode(Schema.UUID.pipe(Schema.brand("EventId")))(sampleIds.eventIdB),
+    topicId: decode(Schema.UUID.pipe(Schema.brand("TopicId")))(
+      sampleIds.topicId,
+    ),
+    data: {
+      _tag: "sports",
+      startUtc: decode(Schema.DateTimeUtc)("2026-02-10T00:30:00Z"),
       site: "away",
       teamName: "Celtics",
       opponent: "Knicks",
     },
-    {
-      id: sampleIds.eventIdC,
-      startUtc: "2026-02-12T00:30:00Z",
+  },
+  {
+    id: decode(Schema.UUID.pipe(Schema.brand("EventId")))(sampleIds.eventIdC),
+    topicId: decode(Schema.UUID.pipe(Schema.brand("TopicId")))(
+      sampleIds.topicId,
+    ),
+    data: {
+      _tag: "sports",
+      startUtc: decode(Schema.DateTimeUtc)("2026-02-12T00:30:00Z"),
       site: "home",
       teamName: "Celtics",
       opponent: "Heat",
     },
-    {
-      id: sampleIds.eventIdD,
-      startUtc: "2026-02-11T00:30:00Z",
+  },
+  {
+    id: decode(Schema.UUID.pipe(Schema.brand("EventId")))(sampleIds.eventIdD),
+    topicId: decode(Schema.UUID.pipe(Schema.brand("TopicId")))(
+      sampleIds.topicId,
+    ),
+    data: {
+      _tag: "sports",
+      startUtc: decode(Schema.DateTimeUtc)("2026-02-11T00:30:00Z"),
       site: "away",
       teamName: "Celtics",
       opponent: "Bulls",
     },
-  ],
-});
+  },
+];
 
-const DatabaseLayerTest = Layer.succeed(
-  DatabaseOld,
-  DatabaseOld.make({
-    loadUsers: () => Effect.succeed([]),
-    loadSubscriptions: () => Effect.succeed([]),
-    loadTopic: () => Effect.succeed(topic),
-    updateSubscription: () => Effect.void.pipe(Effect.as(undefined)),
+const TopicsLayerTest = Layer.succeed(
+  Topics,
+  Topics.make({
+    getAllEventsByTopicId: () => Effect.succeed(topicEvents),
   }),
 );
 
+const SqlClientLayerTest = Layer.succeed(
+  SqlClient.SqlClient,
+  {} as SqlClient.SqlClient,
+);
+
 const SubscriptionsLayerTest = Subscriptions.DefaultWithoutDependencies.pipe(
-  Layer.provide(DatabaseLayerTest),
+  Layer.provide(TopicsLayerTest),
+  Layer.provideMerge(SqlClientLayerTest),
 );
 
 describe("Subscriptions", () => {
@@ -157,25 +171,23 @@ describe("Subscriptions", () => {
       }).pipe(Effect.provide(SubscriptionsLayerTest)),
   );
 
-  it.effect("should propagate loadTopic failures", () => {
-    const loadTopicError = DatabaseQueryError.make({
-      operation: "DatabaseOld.loadTopic",
+  it.effect("should propagate topic loading failures", () => {
+    const getAllError = DatabaseReadError.make({
+      operation: "Topics.getAllEventsByTopicId",
       message: "topic read failed",
     });
 
-    const DatabaseLayerTestFails = Layer.succeed(
-      DatabaseOld,
-      DatabaseOld.make({
-        loadUsers: () => Effect.succeed([]),
-        loadSubscriptions: () => Effect.succeed([]),
-        loadTopic: () => Effect.fail(loadTopicError),
-        updateSubscription: () => Effect.void.pipe(Effect.as(undefined)),
+    const TopicsLayerTestFails = Layer.succeed(
+      Topics,
+      Topics.make({
+        getAllEventsByTopicId: () => Effect.fail(getAllError),
       }),
     );
 
     const SubscriptionsLayerTestFails =
       Subscriptions.DefaultWithoutDependencies.pipe(
-        Layer.provide(DatabaseLayerTestFails),
+        Layer.provide(TopicsLayerTestFails),
+        Layer.provideMerge(SqlClientLayerTest),
       );
 
     return Effect.gen(function* () {
@@ -190,15 +202,8 @@ describe("Subscriptions", () => {
 
       Either.match(result, {
         onLeft: (error) => {
-          switch (error._tag) {
-            case "DatabaseQueryError": {
-              expect(error.operation).toBe(loadTopicError.operation);
-              expect(error.message).toBe(loadTopicError.message);
-              break;
-            }
-            default:
-              expect.fail(`Expected DatabaseQueryError, got ${error._tag}`);
-          }
+          expect(error.operation).toBe(getAllError.operation);
+          expect(error.message).toBe(getAllError.message);
         },
         onRight: () => expect.fail("Expected getDueEvents to fail"),
       });

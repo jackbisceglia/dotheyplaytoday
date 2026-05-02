@@ -4,7 +4,6 @@ import {
   createDatabaseLayer,
   DatabaseLayer as DatabaseLayerDefault,
 } from "@dtpt/core/modules/database/service";
-import { DatabaseOld } from "@dtpt/core/modules/database/service-old";
 import type {
   NotifierRequestError,
   NotifierResponseError,
@@ -16,6 +15,7 @@ import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
 import { localDateFromUtc } from "@dtpt/core/modules/subscriptions/time";
 import { EmailAddress, User } from "@dtpt/core/modules/users/schema";
+import { Users } from "@dtpt/core/modules/users/service";
 import {
   Array,
   Config,
@@ -137,7 +137,7 @@ const logs = {
 };
 
 export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
-  const database = yield* DatabaseOld;
+  const users = yield* Users;
   const subscriptions = yield* Subscriptions;
   const notifier = yield* Notifier;
   const now = opts.now ?? (yield* DateTime.now);
@@ -153,8 +153,8 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
   );
 
   const [allUsers, allSubscriptions] = yield* Effect.all([
-    database.loadUsers(),
-    database.loadSubscriptions(),
+    users.getAll(),
+    subscriptions.getAll(),
   ]);
 
   const usersById = new Map(allUsers.map((user) => [user.id, user]));
@@ -242,6 +242,8 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
           ),
         );
 
+        // TODO: Direct field access breaks when AllEvents union grows. Extract a formatEventHeadline(event: AllEvents) => string
+        // into events/schema.ts using Match.tags + Match.exhaustive, matching the pattern in notifier/email/index.ts.
         const headline = `${sortedEvents[0].teamName} ${sortedEvents[0].site === "home" ? "vs." : "@"} ${sortedEvents[0].opponent}`;
 
         if (opts.dryRun) {
@@ -256,7 +258,7 @@ export const notify = Effect.fn("notify")(function* (opts: NotifyOptions) {
 
         yield* notifier.send(user, sortedEvents).pipe(
           Effect.zipRight(
-            database.updateSubscription({
+            subscriptions.update({
               ...subscription,
               lastSentAt: now,
             }),
@@ -375,7 +377,7 @@ const NotifyCommand = Command.make(
 
       const ProgramLayer = Layer.mergeAll(
         getNotifierLayer(opts.dryRun),
-        DatabaseOld.Default,
+        Users.Default,
         Subscriptions.Default,
       ).pipe(
         Layer.provideMerge(DatabaseLayer),

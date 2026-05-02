@@ -11,23 +11,23 @@ prereqs:
 
 **Acceptance:**
 
-- [ ] Persistence is SQLite-backed (no KVS dependency required for runtime job paths, including `notify`).
-- [ ] Back-compat path exists as `DatabaseOld` over SQLite for current callers (`loadUsers`, `loadSubscriptions`, `loadTopic`, `updateSubscription`); this is transitional only.
-- [ ] New north-star persistence layer is `database` (Effect SQL + Drizzle composition, planar-style), which future entity services build on.
-- [ ] Database wiring is layered via Effect and uses config-driven connection selection (local/prod), not separate persistence implementations.
-- [ ] Drizzle schema + migration files are introduced and runnable in local dev.
-- [ ] Runtime uses Effect SQL SQLite client + Effect Drizzle integration.
-- [ ] Topic storage approach is explicitly chosen and documented (including trade-offs).
-- [ ] Persistence validation schemas are generated from Drizzle table defs via `drizzle-orm/effect-schema` (single source of truth; no duplicate row schema definitions).
-- [ ] `notify` continues to work with equivalent behavior/logging.
-- [ ] `tools inspect` is retired from this path (Drizzle/SQL tooling becomes the inspection/debug path).
-- [ ] CLI selection is moved to `--sqlite` with (`local` | `remote`) semantics.
+- [x] Persistence is SQLite-backed (no KVS dependency required for runtime job paths, including `notify`).
+- [x] Transitional `DatabaseOld` compatibility is removed; surfaces call entity services and module services query SQLite directly.
+- [x] New north-star persistence layer is `database` (Effect SQL + Drizzle composition, planar-style), which future entity services build on.
+- [x] Database wiring is layered via Effect and uses config-driven connection selection (local/prod), not separate persistence implementations.
+- [x] Drizzle schema + migration files are introduced and runnable in local dev.
+- [x] Runtime uses Effect SQL SQLite client + Effect Drizzle integration.
+- [x] Topic storage approach is explicitly chosen and documented (including trade-offs).
+- [x] Persistence validation schemas are generated from Drizzle table defs via `drizzle-orm/effect-schema` (single source of truth; no duplicate row schema definitions).
+- [x] `notify` continues to work with equivalent behavior/logging.
+- [x] `tools inspect` is retired from this path (Drizzle/SQL tooling becomes the inspection/debug path).
+- [x] CLI selection is moved to `--sqlite` with (`local` | `remote`) semantics.
 
 **Verify:**
 
-- [ ] `pnpm typecheck`
-- [ ] `pnpm lint`
-- [ ] `pnpm format`
+- [x] `pnpm typecheck`
+- [x] `pnpm lint`
+- [x] `pnpm format`
 - [ ] `pnpm test`
 - [ ] `pnpm @jobs start:notify -- --dry-run`
 - [ ] Validate data with SQL tooling (for example Drizzle studio or targeted SQL query script)
@@ -38,7 +38,7 @@ prereqs:
 - Use Drizzle for schema and query authoring.
 - Use Effect SQL + Effect Drizzle layers for dependency wiring and lifecycle.
 - Keep domain APIs and caller behavior stable first; deeper domain refactors happen later.
-- Back-compat service file naming is fixed to `service[old].ts`.
+- Back-compat service paths are not carried forward once entity services cover current callers.
 - `tools inspect` is removed in this migration once SQLite runtime path is validated.
 
 **Data model proposal:**
@@ -110,9 +110,9 @@ SQLite note: SQLite supports JSON functions via JSON1; values are typically stor
   - typed Drizzle `Database` handle,
   - `SqliteLive` layer,
   - `DatabaseLive` layer (merged wiring).
-- Keep a transitional `DatabaseOld` compatibility service that depends on the new SQLite database layer.
-- Refactor core `modules/database/service.ts` toward the new SQL-backed direction; preserve caller-facing behavior where required for transition.
-- Jobs commands provide only one persistence layer (`DatabaseLive`), plus existing notifier/subscription layers.
+- Entity services depend on the new SQLite database layer where they own persistence operations.
+- Refactor core `modules/database/service.ts` toward the new SQL-backed direction; preserve caller-facing behavior through entity services rather than a database compatibility facade.
+- Jobs commands provide only one persistence layer (`DatabaseLive`), plus existing notifier/entity layers.
 
 **Migration plan:**
 
@@ -155,8 +155,8 @@ SQLite note: SQLite supports JSON functions via JSON1; values are typically stor
     - reason to keep wrapper: drizzle-kit config execution is sync-oriented and awkward with Effect runtime/config resolution; wrapper injects resolved env (`DATABASE_URL`) before running CLI actions.
   - `packages/core/src/modules/database/service.ts`
     - new SQL-backed north-star service (or direct re-export wrapper around typed database operations if service abstraction is intentionally thin).
-  - `packages/core/src/modules/database/service[old].ts`
-    - compatibility API (`DatabaseOld`) powered by SQLite queries.
+  - entity service files under `packages/core/src/modules/<entity>/service.ts`
+    - caller-facing CRUD/query APIs powered by SQLite queries.
   - `packages/core/src/lib/drizzle/*` (optional)
     - only for shared drizzle utility helpers that are not database-module-specific.
 
@@ -180,10 +180,10 @@ SQLite note: SQLite supports JSON functions via JSON1; values are typically stor
   - Jobs CLI flag (`--sqlite`) should select a profile, while actual URL/path resolution stays centralized in `DatabaseConfig`.
   - Prefer one runtime model (SQLite everywhere) and vary only config.
 
-- Database compatibility pattern:
-  - `DatabaseOld` keeps old call signatures (`loadUsers`, `loadSubscriptions`, `loadTopic`, `updateSubscription`) so existing flows do not break during transition.
-  - Implement `DatabaseOld` using SQL queries over new schema; do not reintroduce KVS semantics internally.
-  - New `database` module becomes the primitive persistence surface for upcoming entity services.
+- Entity service persistence pattern:
+  - Surfaces call entity services (`Users`, `Subscriptions`, `Topics`) instead of a database compatibility facade.
+  - Entity services implement needed CRUD/query operations with SQL queries over the new schema; do not reintroduce KVS semantics internally.
+  - New `database` module becomes the primitive persistence surface for entity services.
 
 - Schema/table alignment pattern:
   - Use `createSelectSchema`, `createInsertSchema`, and `createUpdateSchema` from `drizzle-orm/effect-schema` against table definitions.
