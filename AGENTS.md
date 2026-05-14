@@ -1,83 +1,70 @@
 # AGENTS.md
 
-This file contains guidelines for agentic coding agents working in this repository.
+This repository is now treated as a prototype plus rewrite-planning workspace. The current implementation is useful evidence, but it is not automatically the target architecture.
 
-## Project Overview
+## Canonical Docs
 
-A configurable notification service that checks if a sports team (starting with Boston Celtics) has a game today and sends notifications. Built with Effect, Node.js, and TypeScript in a monorepo structure.
+Read these before starting rewrite work:
 
-**Tech Stack:** Node.js, pnpm, Effect, TypeScript (strict), ESLint, Prettier
+- `docs/rewrite/spec.md` - product and domain spec extracted from the prototype
+- `docs/rewrite/prototype-lessons.md` - what worked, what got complicated, and what not to copy
+- `docs/rewrite/effect-v4-and-engineering-practices.md` - source-derived Effect v4 and project practices
+- `docs/rewrite/rebuild-plan.md` - concrete phased rebuild plan
 
-## Commands
+The old `.context/` PRD and todo-system agent instructions have been retired. Historical todo files may still be useful as prototype archaeology, but they are not canonical planning docs.
 
-```bash
-pnpm typecheck    # Type check all packages
-pnpm lint         # ESLint all packages
-pnpm format       # Prettier all packages
+## Reference Order
 
-pnpm @core <cmd>  # Run command in @dtpt/core package (e.g., pnpm @core typecheck)
-pnpm @jobs <cmd>  # Run command in @dtpt/jobs package (e.g., pnpm @jobs start:notify)
-```
+Use source references before secondary guidance:
 
-Run all three checks before considering work complete.
+1. Current implementation and working-tree diff in this repo.
+2. `reference/opencode/packages/opencode/AGENTS.md` and `reference/opencode/packages/opencode/specs/effect/migration.md` for Effect v4 service/module patterns.
+3. `reference/t3code/package.json` and `reference/t3code/packages/effect-*` for Effect v4 package pins, typed errors, protocols, and scoped fibers.
+4. `reference/effect/` for library source and tests.
+5. External docs or `effect-solutions` only as a last resort when source references do not answer the question.
 
-## Project Structure
+Do not cargo-cult reference repos. Copy the principle, then simplify for this product.
 
-```
-dotheyplaytoday/
-├── packages/
-│   ├── core/     # @dtpt/core - shared core logic
-│   └── jobs/     # @dtpt/jobs - runnable background jobs
-└── reference/   # Dependency source code for reference (e.g., effect/)
-```
-
-## Code Style
-
-- Import Effect utilities directly: `import { Effect, Schema } from "effect"`
-- Use `type` keyword (not `interface`) per ESLint rule
-- Prefix unused variables with `_`
-- Use pnpm `catalog:` for dependencies shared across packages
-
-## Local Standards (Project-Specific)
-
-- Domain modules live in `packages/core/src/modules/<domain>`.
-- Public API should flow through `package.json` exports and `src/index.ts`.
-- Avoid barrel files; prefer direct module imports (core `src/index.ts` stays empty unless required).
-- Favor minimal abstraction early; only extract helpers/types once there are 3+ callsites or clear immediate reuse.
-- Colocate schema primitives with their owning schema/module; do not create shared primitives until 3+ callsites.
-- IDs: embed ID schemas directly in the owning struct; callers can reference `Struct.fields.id` when needed.
-- Branding: prefer branding only IDs; do not brand other primitives unless a concrete need appears.
-- Schema annotations: skip `.annotations(...)` unless there is a clear, immediate use (docs, JSON schema, tooling).
-- Tests: each schema should have positive + negative cases plus edge cases; for simple decoding use `Schema.decodeUnknownEither`.
-- Test utilities: only extract to shared utils when reuse is certain; if so, place in `packages/core/src/tests/`.
-- Export order preference for schemas: `export type` before `export const`.
-- Prefer `Effect.Service` for services; export Tag/Layer only when needed.
-- Service naming: if a module represents a domain entity (whether or not it has a schema), use a plural service name (e.g. `Subscriptions`); otherwise use the clearest natural service name for the concern (e.g. `Database`, `Notifier`, `ResendClientService`). Keep schemas/types singular (e.g. `Subscription`, `User`, `Topic`).
-- Use Effect Config for environment parsing and validation.
-
-## Effect Best Practices
-
-**IMPORTANT:** Always consult effect-solutions before writing Effect code.
-
-1. Run `effect-solutions list` to see available guides
-2. Run `effect-solutions show <topic>...` for relevant patterns (supports multiple topics)
-3. Search `reference/effect/` for real implementations
-
-Topics: quick-start, project-setup, tsconfig, basics, services-and-layers, data-modeling, error-handling, config, testing, cli.
-
-Never guess at Effect patterns - check the guide first.
-
-### Local Source References
-
-The `reference/` directory contains cloned source repositories for reference.
-Use this to explore APIs, find usage examples, and understand implementation details when documentation isn't enough.
-
-### Effect Language Service
-
-This project uses the Effect Language Service for compile-time diagnostics. The plugin is configured in `tsconfig.base.json` and TypeScript has been patched to enable build-time checking.
-
-**If you reinstall dependencies, run:**
+## Current Commands
 
 ```bash
-pnpm exec effect-language-service patch
+pnpm typecheck
+pnpm lint
+pnpm format
+pnpm test
+
+pnpm @core <cmd>
+pnpm @jobs <cmd>
+pnpm @api <cmd>
+pnpm @web <cmd>
 ```
+
+Run relevant targeted checks while editing. Run all checks before considering implementation work complete.
+
+## Rewrite Defaults
+
+- Target Effect v4 from the first fresh implementation slice.
+- Prefer `Context.Service` plus explicit `Layer.effect` services unless source references show a better v4 pattern for the case.
+- Use `Schema.Class` for multi-field domain models and `Schema.TaggedErrorClass` for typed errors.
+- Keep SQLite + Drizzle as the first persistence backend. Do not reintroduce Redis/KVS compatibility layers.
+- Treat Drizzle table definitions as the persistence source of truth and derive persistence schemas from them.
+- Keep domain and persistence shapes identical unless there is a concrete aggregate/projection boundary.
+- Avoid broad barrels. Use explicit package subpath exports for public APIs.
+- Favor small vertical slices that prove runtime wiring, persistence, behavior, and tests together.
+
+## Current Prototype Shape
+
+- `packages/core`: shared schemas, database, notifier, subscription logic, seed/tooling scripts
+- `packages/jobs`: notify job orchestration
+- `packages/api`: Effect HttpApi server scaffold
+- `packages/web`: SolidStart landing scaffold
+- `reference/`: ignored local source references for Effect, opencode, t3code, planar, and related research
+
+## Local Standards
+
+- Keep changes minimal and specific.
+- Do not preserve backward compatibility unless there is persisted data, an external consumer, shipped behavior, or an explicit requirement.
+- Avoid extracting helpers until there are multiple callsites or an immediate clarity win.
+- Use Effect Platform services for effectful file, process, HTTP, path, config, and time work inside Effect code.
+- Keep environment/config parsing centralized and typed.
+- Tests should cover behavior, not implementation ceremony.
