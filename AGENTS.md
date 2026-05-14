@@ -1,83 +1,9 @@
 # AGENTS.md
 
-This file contains guidelines for agentic coding agents working in this repository.
+This repo is a prototype plus rewrite-planning workspace for dotheyplaytoday: a small app for subscribing to subjects, like NBA teams or campus groups, and getting notified when relevant events are happening today.
 
-## Project Overview
+The current implementation is useful evidence, but it is not automatically the target architecture. For rewrite work, read the canonical docs in `docs/rewrite/` first, especially `GLOSSARY.md`, `spec.md`, `prototype-lessons.md`, `effect-v4-and-engineering-practices.md`, and `rebuild-plan.md`.
 
-A configurable notification service that checks if a sports team (starting with Boston Celtics) has a game today and sends notifications. Built with Effect, Node.js, and TypeScript in a monorepo structure.
+When implementing, read reference code often for patterns before inventing new ones. Prefer source references in this order: current repo code and diff, `reference/opencode/`, `reference/t3code/`, then `reference/effect/`. Copy principles, not structure by default.
 
-**Tech Stack:** Node.js, pnpm, Effect, TypeScript (strict), ESLint, Prettier
-
-## Commands
-
-```bash
-pnpm typecheck    # Type check all packages
-pnpm lint         # ESLint all packages
-pnpm format       # Prettier all packages
-
-pnpm @core <cmd>  # Run command in @dtpt/core package (e.g., pnpm @core typecheck)
-pnpm @jobs <cmd>  # Run command in @dtpt/jobs package (e.g., pnpm @jobs start:notify)
-```
-
-Run all three checks before considering work complete.
-
-## Project Structure
-
-```
-dotheyplaytoday/
-├── packages/
-│   ├── core/     # @dtpt/core - shared core logic
-│   └── jobs/     # @dtpt/jobs - runnable background jobs
-└── reference/   # Dependency source code for reference (e.g., effect/)
-```
-
-## Code Style
-
-- Import Effect utilities directly: `import { Effect, Schema } from "effect"`
-- Use `type` keyword (not `interface`) per ESLint rule
-- Prefix unused variables with `_`
-- Use pnpm `catalog:` for dependencies shared across packages
-
-## Local Standards (Project-Specific)
-
-- Domain modules live in `packages/core/src/modules/<domain>`.
-- Public API should flow through `package.json` exports and `src/index.ts`.
-- Avoid barrel files; prefer direct module imports (core `src/index.ts` stays empty unless required).
-- Favor minimal abstraction early; only extract helpers/types once there are 3+ callsites or clear immediate reuse.
-- Colocate schema primitives with their owning schema/module; do not create shared primitives until 3+ callsites.
-- IDs: embed ID schemas directly in the owning struct; callers can reference `Struct.fields.id` when needed.
-- Branding: prefer branding only IDs; do not brand other primitives unless a concrete need appears.
-- Schema annotations: skip `.annotations(...)` unless there is a clear, immediate use (docs, JSON schema, tooling).
-- Tests: each schema should have positive + negative cases plus edge cases; for simple decoding use `Schema.decodeUnknownEither`.
-- Test utilities: only extract to shared utils when reuse is certain; if so, place in `packages/core/src/tests/`.
-- Export order preference for schemas: `export type` before `export const`.
-- Prefer `Effect.Service` for services; export Tag/Layer only when needed.
-- Service naming: if a module represents a domain entity (whether or not it has a schema), use a plural service name (e.g. `Subscriptions`); otherwise use the clearest natural service name for the concern (e.g. `Database`, `Notifier`, `ResendClientService`). Keep schemas/types singular (e.g. `Subscription`, `User`, `Topic`).
-- Use Effect Config for environment parsing and validation.
-
-## Effect Best Practices
-
-**IMPORTANT:** Always consult effect-solutions before writing Effect code.
-
-1. Run `effect-solutions list` to see available guides
-2. Run `effect-solutions show <topic>...` for relevant patterns (supports multiple topics)
-3. Search `reference/effect/` for real implementations
-
-Topics: quick-start, project-setup, tsconfig, basics, services-and-layers, data-modeling, error-handling, config, testing, cli.
-
-Never guess at Effect patterns - check the guide first.
-
-### Local Source References
-
-The `reference/` directory contains cloned source repositories for reference.
-Use this to explore APIs, find usage examples, and understand implementation details when documentation isn't enough.
-
-### Effect Language Service
-
-This project uses the Effect Language Service for compile-time diagnostics. The plugin is configured in `tsconfig.base.json` and TypeScript has been patched to enable build-time checking.
-
-**If you reinstall dependencies, run:**
-
-```bash
-pnpm exec effect-language-service patch
-```
+Keep changes small and specific. Run relevant checks while editing, then run `pnpm lint` and `pnpm typecheck` before calling implementation work done.
