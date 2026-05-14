@@ -1,110 +1,43 @@
 # dotheyplaytoday
 
-Configurable recurring notifications for event schedules. The current MVP is sports-first: if a subscribed team has a game on the target day, the job sends an email notification; otherwise it sends nothing.
+`dotheyplaytoday` answers a simple recurring question: does something I follow have an event today?
 
-## Project
+The current V1 rewrite target is sports-first. Users subscribe to teams, choose a local send time and timezone, and receive an email only when a selected team has a game on their local date.
 
-- Monorepo packages:
-  - `packages/core` (`@dtpt/core`): schemas, data access, subscription checks, notifier services
-  - `packages/jobs` (`@dtpt/jobs`): runnable notify job orchestration
-- Seed data lives under `packages/core/data/`
+## Tech Stack
 
-## Local Run
+- TypeScript
+- pnpm workspaces
+- Effect v4
+- SQLite + Drizzle
+- SolidStart web app
+- Effect HTTP API
+- Resend for email delivery
 
-1. Install dependencies:
+## Workspace
 
-   ```bash
-   pnpm install
-   ```
+- `packages/core`: domain, schemas, persistence, config, notifier, seed/import logic
+- `packages/api`: HTTP API runtime
+- `packages/web`: SolidStart frontend
+- `packages/jobs`: scheduled notify job runtime
+- `docs/rewrite`: canonical rewrite planning docs
+- `reference`: local source references for implementation patterns
 
-2. Build packages:
-
-   ```bash
-   pnpm build
-   ```
-
-3. Optional: configure live email delivery by creating `.env` and setting:
-   - `RESEND_API_KEY`
-   - `RESEND_FROM_EMAIL`
-
-4. Run notify job:
-
-   ```bash
-   pnpm @jobs start:notify
-   ```
-
-Useful local check without Resend credentials:
+## Commands
 
 ```bash
-pnpm @jobs start:notify -- --dry-run
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
-## Data Format
+Package helpers:
 
-### Users
-
-Path: `packages/core/data/users.json`
-
-```json
-[
-  {
-    "id": "<user-uuid>",
-    "email": "<email>",
-    "timezone": "America/New_York"
-  }
-]
+```bash
+pnpm @core <cmd>
+pnpm @api <cmd>
+pnpm @web <cmd>
+pnpm @jobs <cmd>
 ```
-
-### Subscriptions
-
-Path: `packages/core/data/subscriptions.json`
-
-```json
-[
-  {
-    "id": "<subscription-uuid>",
-    "userId": "<user-uuid>",
-    "topicId": "<topic-uuid>",
-    "schedule": { "type": "fixed", "sendAtSecondsLocal": 6300 },
-    "enabled": true,
-    "lastSentAt": null
-  }
-]
-```
-
-Notes:
-
-- `topicId` must match a topic file prefix in `packages/core/data/topics/`
-- `sendAtSecondsLocal` uses 15-minute alignment (`0, 900, ..., 85500`)
-- `relative` schedule shape exists but is currently skipped by the notify job in MVP
-
-### Topics
-
-Path pattern: `packages/core/data/topics/<topicId>-<slug>.json`
-
-```json
-{
-  "events": [
-    {
-      "id": "<event-uuid>",
-      "startUtc": "2026-03-07T00:00:00Z",
-      "teamName": "Boston Celtics",
-      "opponent": "Dallas Mavericks",
-      "site": "home"
-    }
-  ]
-}
-```
-
-Notes:
-
-- `site` is required for sports events and must be `"home"` or `"away"`
-- Notification matchup phrasing uses:
-  - home: `vs.`
-  - away: `@`
-- Repository seed data includes upcoming regular-season topic files for all NBA teams
-
-## Scheduling Expectations
-
-- Run `pnpm @jobs start:notify` every 15 minutes via external cron
-- Due checks allow up to 60 seconds early and up to 5 minutes late around the configured fixed send time

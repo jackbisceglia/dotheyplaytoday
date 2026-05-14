@@ -1,6 +1,6 @@
-# Do They Play Today
+# Rewrite Glossary
 
-This context describes a sports-league notification product designed with reusable recurring-notification scheduling concepts. It exists to keep the rewrite language precise while separating product scope from architecture shape.
+This glossary describes a sports-league notification product designed with reusable recurring-notification scheduling concepts. It exists to keep the rewrite language precise while separating product scope from architecture shape.
 
 ## Language
 
