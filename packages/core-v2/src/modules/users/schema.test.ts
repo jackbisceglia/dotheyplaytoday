@@ -4,11 +4,7 @@ import { Effect, Schema } from "effect";
 
 import { createTables, layerTest } from "../../lib/database/test-setup.js";
 import { Database } from "../../lib/database/service.js";
-import {
-  User,
-  UserInsert,
-  usersTable,
-} from "./schema.js";
+import { User, UserInsert, usersTable } from "./schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -49,27 +45,23 @@ describe("v2 User model", () => {
 
       const rows = yield* database.select().from(usersTable);
       const decodedRows = decode(Schema.Array(User))(rows);
-      const row = yield* Effect.promise(() =>
-        database
-          .select()
-          .from(usersTable)
-          .where(eq(usersTable.id, insert.id))
-          .get(),
-      );
+      const selectedRows = yield* database
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, insert.id))
+        .limit(1);
+      const row = selectedRows[0];
       const decodedRow = decode(User)(row);
-      const missingRow = yield* Effect.promise(() =>
-        database
-          .select()
-          .from(usersTable)
-          .where(eq(usersTable.id, "00000000-0000-4000-8000-000000009999"))
-          .get(),
-      );
+      const missingRows = yield* database
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, "00000000-0000-4000-8000-000000009999"))
+        .limit(1);
+      const missingRow = missingRows[0];
 
       expect(decodedRows).toHaveLength(1);
       expect(decodedRows[0]?.email).toBe(userInput.email);
-      expect(decodedRows[0]?.unsubscribeToken).toBe(
-        userInput.unsubscribeToken,
-      );
+      expect(decodedRows[0]?.unsubscribeToken).toBe(userInput.unsubscribeToken);
       expect(decodedRow.email).toBe(userInput.email);
       expect(decodedRow.unsubscribeToken).toBe(userInput.unsubscribeToken);
       expect(missingRow).toBeUndefined();
