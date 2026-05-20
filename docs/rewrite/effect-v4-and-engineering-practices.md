@@ -33,7 +33,7 @@ Use two service-definition styles intentionally:
 
 Layer naming follows v4 conventions:
 
-- Use `layer` for the primary/live layer.
+- Use `${Service}Layer` for exported concrete service layers that are imported beside the service tag, such as `UsersLayer`.
 - Use descriptive suffixes for variants such as `layerTest`, `layerConfig`, or `layerMemory`.
 - Do not use v3-style `Default`/`Live` names for new rewrite code.
 
@@ -67,6 +67,8 @@ When a table's selected row is the domain entity, name the `createSelectSchema` 
 
 Domain services treat the database as a persistence boundary: always decode reads before returning domain values and always encode schema-backed writes before passing values to Drizzle. This keeps app-level values such as `DateTimeUtc`, branded ids, and tagged JSON truthful end-to-end instead of relying on a field-by-field trust matrix.
 
+Domain services accept decoded domain values, not raw API payload strings. Route, job, seed, and importer boundaries decode and normalize untrusted input first, then pass domain values into services. For fields on the same entity, type service inputs from the domain entity, such as `User["id"]`, `User["email"]`, `User["timezone"]`, and `User["unsubscribeToken"]`; use standalone scalar types such as `SubjectId` or `EventSourceId` when the value belongs to another entity or shared concept.
+
 Rely on `drizzle-orm/effect-schema` helper typings to enforce refinement/override keys when calling `createSelectSchema`, `createInsertSchema`, or `createUpdateSchema` only after those helpers typecheck against Effect v4. Do not add a custom `satisfies` wrapper or helper unless the built-in type errors prove insufficient.
 
 Name the local Drizzle effect-schema refinement/override object `domainOverrides` by default. Define reusable scalar schemas first, then reference them directly in `domainOverrides`; this keeps primitive definitions readable and importable. Share `domainOverrides` between `createSelectSchema` and `createInsertSchema` when the domain refinement is the same for reads and writes.
@@ -85,7 +87,7 @@ Do not export `decodeX`, `decodeXs`, or `encodeXInsert` helpers by default. Use 
 
 Use schema `.make(...)` for trusted internal construction of decoded insert/domain objects. Use `.makeEffect(...)` when construction input is untrusted and validation failure should remain in the Effect error channel.
 
-Use `Random.nextUUIDv4` for UUID generation inside Effect code, then wrap the result with the branded id constructor. Do not use raw `crypto.randomUUID()` in Effect workflows by default.
+Use `Id.SchemaBranded("Brand")` for branded ids and `Id.createFromBrandedSchema(Entity.fields.id)` for effectful id generation. The ID module owns the UUID implementation detail so domain modules can speak in branded domain ids. Do not use raw `crypto.randomUUID()` in Effect workflows by default.
 
 `makeEffect` does not replace effectful field generation. Generate effectful fields first, then pass the completed object to `.make(...)` or `.makeEffect(...)`.
 
@@ -100,7 +102,7 @@ const inserts =
   yield *
   Effect.forEach(input.subjectIds, function* (subjectId) {
     return SubscriptionInsert.make({
-      id: SubscriptionId.make(yield* Random.nextUUIDv4),
+      id: yield* Id.createFromBrandedSchema(Subscription.fields.id),
       userId: input.userId,
       subjectId,
       scheduleJson: input.schedule,
@@ -114,10 +116,10 @@ Example:
 ```ts
 import { Schema } from "effect";
 
+import { Id } from "../../lib/domain/id.js";
+
 export type SubjectId = typeof SubjectId.Type;
-export const SubjectId = Schema.String.check(Schema.isUUID()).pipe(
-  Schema.brand("SubjectId"),
-);
+export const SubjectId = Id.SchemaBranded("SubjectId");
 
 export type LeagueId = typeof LeagueId.Type;
 export const LeagueId = Schema.Literal("nba").pipe(Schema.brand("LeagueId"));
@@ -264,7 +266,7 @@ const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(function* (
     input.subjectIds,
     function* (subjectId) {
       return SubscriptionInsert.make({
-        id: SubscriptionId.make(yield* Random.nextUUIDv4),
+        id: yield* Id.createFromBrandedSchema(Subscription.fields.id),
         userId: input.userId,
         subjectId,
         scheduleJson: input.schedule,

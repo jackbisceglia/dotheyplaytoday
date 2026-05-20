@@ -6,14 +6,22 @@ const fields = {
   metadata: Schema.optional(Schema.Record(Schema.String, Schema.Unknown)),
 };
 
-export class DatabaseReadError extends Schema.TaggedErrorClass<DatabaseReadError>(
+export class DatabaseReadError extends Schema.TaggedErrorClass<DatabaseReadError>()(
   "DatabaseReadError",
-)("DatabaseReadError", fields) {}
+  fields,
+) {}
 
-export class DatabaseWriteError extends Schema.TaggedErrorClass<DatabaseWriteError>(
+export class DatabaseWriteError extends Schema.TaggedErrorClass<DatabaseWriteError>()(
   "DatabaseWriteError",
-)("DatabaseWriteError", fields) {}
+  fields,
+) {}
 
-export class DatabaseTransactionError extends Schema.TaggedErrorClass<DatabaseTransactionError>(
+export class DatabaseDeleteError extends Schema.TaggedErrorClass<DatabaseDeleteError>()(
+  "DatabaseDeleteError",
+  fields,
+) {}
+
+export class DatabaseTransactionError extends Schema.TaggedErrorClass<DatabaseTransactionError>()(
   "DatabaseTransactionError",
-)("DatabaseTransactionError", fields) {}
+  fields,
+) {}

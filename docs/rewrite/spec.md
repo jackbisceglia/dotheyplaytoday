@@ -255,6 +255,9 @@ Naming rules:
 - `listByX(input)` reads many entities scoped by a foreign/domain key.
 - Domain projections use meaning-based names, such as `Subscriptions.recipients()`, instead of mechanical names like `getAllWithUsers()`.
 - Generic write names are allowed only when the operation is simple and invariant-light; V1 favors domain writes for invariant-bearing operations.
+- Prefer direct domain scalar arguments for small method surfaces. Use an input object when the parameters form a named payload or range, or when the operation naturally carries a multi-field command.
+
+Service methods accept decoded domain values, not raw API payload strings. Route, job, seed, and importer boundaries decode and normalize untrusted input first, then pass domain values such as `User["email"]`, `User["timezone"]`, `SubjectId`, or `EventSourceId` into services.
 
 V1 service surface:
 
@@ -263,7 +266,7 @@ Users.get(userId);
 Users.getByEmail(email);
 Users.getByUnsubscribeToken(token);
 Users.listByIds(userIds);
-Users.upsertForSignup(input);
+Users.upsertForSignup(email, timezone);
 Users.remove(userId);
 
 Subjects.get(subjectId);
@@ -279,7 +282,7 @@ Subscriptions.replaceForUser(input);
 Subscriptions.markSent(input);
 ```
 
-This follows the style seen in the local `reference/opencode` and `reference/console` repos: predictable read names, meaning-based projections, and domain write names when the operation carries business invariants.
+This follows the style seen in the local `reference/opencode` and `reference/t3code` repos: predictable read names, boundary-level decode, domain-value service inputs, meaning-based projections, and domain write names when the operation carries business invariants.
 
 `Subscriptions.recipients()` returns the notify input projection:
 
@@ -299,6 +302,7 @@ Use shared infrastructure errors for plain database failures:
 
 - `DatabaseReadError`
 - `DatabaseWriteError`
+- `DatabaseDeleteError`
 - `DatabaseTransactionError` when a transaction boundary needs distinct reporting
 
 Do not create service-specific read/write wrappers such as `UsersReadError` or `EventsWriteError` when the only meaning is that a database operation failed. Database errors carry operation/context metadata for logs and traces.

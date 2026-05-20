@@ -50,6 +50,8 @@ Scope:
 
 - Implement the `Users` service.
 - Keep decode DB reads / encode DB writes at service boundaries.
+- Keep service inputs as decoded domain values; raw API/input normalization belongs at route, job, seed, or importer boundaries.
+- Use the shared `Id.SchemaBranded` / `Id.createFromBrandedSchema(Entity.fields.id)` pattern for generated ids.
 - Implement `Users` methods needed by later flows: primary read, email read, unsubscribe-token read, signup upsert, and remove.
 - Generate `unsubscribeToken` for new users and preserve it on signup resubmission.
 - Map database failures to shared infrastructure errors with operation metadata.
@@ -59,7 +61,7 @@ Scope:
 Vertical slice check-in:
 
 - Implement the `Users` service against the completed user model/table.
-- Pause for review of `Context.Service` shape, Effect.fn style, transaction style, database errors, and service-level decode/encode before future service work.
+- Pause for review of `Context.Service` shape, `UsersLayer` naming, Effect.fn style, transaction style, database errors, domain-value inputs, id generation, and service-level decode/encode before future service work.
 - Land this branch after the user service pattern is accepted. Do not fan out to the other services in this branch.
 
 Verification:

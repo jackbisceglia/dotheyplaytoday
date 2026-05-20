@@ -10,19 +10,14 @@ import type {
   Check,
   TableSchemasMatch,
 } from "../../lib/database/type-contracts.js";
+import { Id } from "../../lib/domain/id.js";
 
 export type UserSchemasMatchTable = Check<
-  TableSchemasMatch<
-    typeof usersTable,
-    typeof User,
-    typeof UserInsert
-  >
+  TableSchemasMatch<typeof usersTable, typeof User, typeof UserInsert>
 >;
 
 export type UserId = typeof UserId.Type;
-export const UserId = Schema.String.check(Schema.isUUID()).pipe(
-  Schema.brand("UserId"),
-);
+export const UserId = Id.SchemaBranded("UserId");
 
 export type EmailAddress = typeof EmailAddress.Type;
 export const EmailAddress = Schema.String.check(
@@ -33,9 +28,7 @@ export const EmailAddress = Schema.String.check(
 ).pipe(Schema.brand("EmailAddress"));
 
 export type UnsubscribeToken = typeof UnsubscribeToken.Type;
-export const UnsubscribeToken = Schema.String.check(Schema.isUUID()).pipe(
-  Schema.brand("UnsubscribeToken"),
-);
+export const UnsubscribeToken = Id.SchemaBranded("UnsubscribeToken");
 
 const domainOverrides = {
   id: UserId,
