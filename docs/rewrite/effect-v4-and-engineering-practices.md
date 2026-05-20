@@ -14,7 +14,7 @@ Use external docs or `effect-solutions` only as a last resort when local source 
 
 ## Effect v4 Defaults
 
-- Pin all Effect packages to the same v4 beta train in the workspace catalog.
+- Pin all Effect v4 packages used by the rewrite to the same beta train. While the prototype packages still depend on the v3 workspace catalog, `@dtpt/core-v2` may direct-pin its v4 packages locally so the old code does not break. Move v4 pins into the workspace catalog only after the prototype packages no longer need the v3 catalog.
 - Prefer exact pins while Effect v4 is beta.
 - Start the fresh build on v4 instead of migrating a large v3 surface later.
 - Verify package APIs against local source references before writing code.
@@ -61,13 +61,21 @@ At route/job boundaries, prefer `Effect.catchTag` or `Effect.catchTags` for tagg
 
 Use `Schema.Class` for multi-field domain models. Use branded schemas for single-value ids and constrained scalar types.
 
-Use Drizzle-derived schemas for persistence rows. Do not maintain parallel schema definitions for the same row shape. Domain schemas may alias persistence schemas when shapes are identical.
+Use Drizzle-derived schemas for persistence rows when the installed helper is Effect v4-compatible. Until then, define the Effect row schemas next to the Drizzle tables and keep the field objects shared so the row/domain shape does not drift. Domain schemas may alias persistence schemas when shapes are identical.
+
+When a table's selected row is the domain entity, name the `createSelectSchema` result after the domain entity, such as `User`, instead of introducing a separate `UserRow` alias. Define a separate domain `Schema.Class` only when the domain shape intentionally differs from persistence.
 
 Domain services treat the database as a persistence boundary: always decode reads before returning domain values and always encode schema-backed writes before passing values to Drizzle. This keeps app-level values such as `DateTimeUtc`, branded ids, and tagged JSON truthful end-to-end instead of relying on a field-by-field trust matrix.
 
-Rely on `drizzle-orm/effect-schema` helper typings to enforce refinement/override keys when calling `createSelectSchema`, `createInsertSchema`, or `createUpdateSchema`. Do not add a custom `satisfies` wrapper or helper unless the built-in type errors prove insufficient.
+Rely on `drizzle-orm/effect-schema` helper typings to enforce refinement/override keys when calling `createSelectSchema`, `createInsertSchema`, or `createUpdateSchema` only after those helpers typecheck against Effect v4. Do not add a custom `satisfies` wrapper or helper unless the built-in type errors prove insufficient.
 
-Name the local Drizzle effect-schema refinement/override object `domainOverrides` by default. Keep JSON column TypeScript naming consistent within a module; prefer clarity over a global naming rule.
+Name the local Drizzle effect-schema refinement/override object `domainOverrides` by default. Define reusable scalar schemas first, then reference them directly in `domainOverrides`; this keeps primitive definitions readable and importable. Share `domainOverrides` between `createSelectSchema` and `createInsertSchema` when the domain refinement is the same for reads and writes.
+
+Every derived row/insert schema must include a single type-only table contract using `Check<TableSchemasMatch<...>>` from `lib/database/type-contracts`. Put this contract near the top of the module after imports so it reads like a file annotation, not as part of the domain/schema definition flow. This catches drift between the schema encoded types and Drizzle's inferred table models while still keeping the schema definition readable.
+
+Do not rely on callback overrides as a general optionality fix. In the current Drizzle Effect helper, callback overrides are useful for refining the derived base column schema, but refined insert fields with nullable/default table metadata can still infer as required. If a table contract fails for an optional/default refined field, split the insert overrides and encode that insert optionality explicitly with `Schema.optional(...)` / `Schema.UndefinedOr(...)` / `Schema.NullOr(...)`.
+
+Split into explicit select and insert override objects when the domain shape differs by operation, or when a table contract proves the helper typings around optional/default columns need separate treatment.
 
 Domain modules define both select and insert schemas for their tables because V1 services/tooling write each domain table. Do not define update schemas until a concrete update boundary exists.
 
@@ -107,7 +115,9 @@ Example:
 import { Schema } from "effect";
 
 export type SubjectId = typeof SubjectId.Type;
-export const SubjectId = Schema.UUID.pipe(Schema.brand("SubjectId"));
+export const SubjectId = Schema.String.check(Schema.isUUID()).pipe(
+  Schema.brand("SubjectId"),
+);
 
 export type LeagueId = typeof LeagueId.Type;
 export const LeagueId = Schema.Literal("nba").pipe(Schema.brand("LeagueId"));
@@ -225,8 +235,10 @@ Raw platform APIs belong only inside narrow adapter layers when no Effect servic
 
 - Keep SQLite and Drizzle as the first backend.
 - Use snake_case table and column names to avoid constant string remapping.
+- Define tables with the shared `sqliteTable` factory from `lib/database/drizzle` so snake_case configuration is applied consistently.
 - Keep Drizzle table definitions close to owning domain modules or in a focused database schema module. Pick one layout and keep it boring.
-- Generate insert/select/update schemas from Drizzle.
+- Generate insert/select/update schemas from Drizzle when the helper is Effect v4-compatible; otherwise define the row schemas beside the tables and share the same field object.
+- Until official Drizzle SQLite Effect support is available in the pinned Drizzle version, keep the temporary SQLite/Effect compatibility code quarantined in `lib/database/sqlite-drizzle.ts`. The public consumer shape should match the expected official Effect driver shape: query builders are yieldable Effects, the `Database` service is injected through the database layer, and domain modules do not import or know about the shim. When official SQLite Effect support lands, deleting that shim should remove the temporary implementation details.
 - Use JSON columns only for app-owned tagged payloads that do not need relational querying yet.
 - Add relational columns only when queries require them.
 - Keep query-critical generic event facts as columns, including `source_id`, `starts_at`, and `availability`.
@@ -437,7 +449,7 @@ A `service.ts` file may define either an abstract injectable service boundary or
 
 Keep table definitions in the owning domain module `schema.ts`. `lib/database/schema.ts` may re-export tables for Drizzle composition when needed.
 
-Preserve the existing database composition pattern unless a concrete rewrite need forces a change: a database schema module bulk-imports/re-exports table definitions, a relations module defines Drizzle relations in one place, and a database service module composes the SQLite client and Drizzle layer. Update names/locations and Effect v4 compatibility as needed, but do not redesign this layering by default.
+Preserve the existing database composition pattern unless a concrete rewrite need forces a change: a database schema module bulk-imports/re-exports table definitions, a relations module defines Drizzle relations in one place, and a database service module composes the SQLite client and Drizzle layer. Keep the existing database layer naming style, such as `createDatabaseLayer` and `DatabaseLayer`, unless there is a concrete reason to change it. Update names/locations and Effect v4 compatibility as needed, but do not redesign this layering by default.
 
 If `@effect/sql-drizzle` still needs a cast for relation-aware `.query` typing, isolate that cast inside `lib/database/service.ts` only. Domain services should consume the typed `Database` service without casts.
 

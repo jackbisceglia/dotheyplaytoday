@@ -4,48 +4,83 @@ This plan splits the rewrite into sequential reviewable tasks. Each task should 
 
 Before broad implementation in any task, complete one representative vertical slice and pause for a pattern check-in. The check-in should show schema shape, service boundaries, runtime/layer wiring, test style, naming conventions, and how the task's pieces compose. After the pattern is accepted, finish the rest of that same branch by following the approved shape.
 
-## Task 1 - Core Models And Database Schema
+Current execution order intentionally starts with one end-to-end domain path instead of defining every table before any service exists. First land the `User` model/database blueprint. Then implement the `Users` service against that blueprint. After the user path is proven through model, database, and service layers, fan out the same pattern across subjects, events, participants, subscriptions, and scheduling behavior.
 
-Goal: establish the core model and database substrate without implementing the business-style CRUD services yet.
+Implementation note: rewrite core work currently lives in `packages/core-v2` / `@dtpt/core-v2` so Effect v4 can move independently from the prototype `@dtpt/core` package. Older broad docs that say `packages/core` mean the rewrite core package boundary unless a task says otherwise.
+
+## Task 1 - User Model And Database Blueprint
+
+Goal: establish the rewrite package baseline, database substrate, and accepted model/table/schema pattern through the `User` slice only. Do not implement business-style CRUD services yet.
 
 Scope:
 
 - Pin/update Effect v4, Effect SQL, Drizzle, Vitest, lint, typecheck, and package export baseline as needed.
-- Establish `packages/core/src/modules` for domain capabilities and `packages/core/src/lib` for infrastructure.
-- Add typed database config under `packages/core/src/lib/database/config.ts`.
+- Establish `packages/core-v2/src/modules` for domain capabilities and `packages/core-v2/src/lib` for infrastructure.
+- Add typed database config under `packages/core-v2/src/lib/database/config.ts`.
 - Add the SQLite/Drizzle database layer and test database helper.
 - Add shared database infrastructure errors: `DatabaseReadError`, `DatabaseWriteError`, and `DatabaseTransactionError` if needed.
-- Define schemas and tables for `User`, `Subject`, `Event`, `EventParticipant`, `Subscription`, fixed local schedule, sports subject details, sports event details, and participant details.
-- Add `events.source_id` for stable import identity and `events.availability` with `active | cancelled`; keep past/future derived from `starts_at`.
-- Generate persisted row schemas from Drizzle and prove the row/domain encode/decode pattern with model-level helpers or test fixtures only.
-- Add migrations or database push setup needed to create all tables.
+- Define the `User` schema/table slice with `unsubscribeToken`.
+- Prove the row/domain encode/decode pattern with model-level tests and a SQLite roundtrip.
+- Add shared table/schema helpers, such as snake_case Drizzle table creation and type-only table/schema contracts.
+- Document any temporary database compatibility shim needed while waiting for official Drizzle SQLite Effect support.
 - Keep business-style domain services, import upserts, signup, notify, and unsubscribe orchestration out of this branch.
+- Keep `Subject`, `Event`, `EventParticipant`, `Subscription`, schedule, and details schemas out of this branch unless a tiny shared primitive is required by the accepted `User` pattern.
 
 Vertical slice check-in:
 
-- Implement the `User` model slice first: domain schema, table, row schema, row/domain encode/decode proof, database layer usage, test helper, and tests.
+- Implement the `User` model slice: domain schema, table, row schema, row/domain encode/decode proof, database layer usage, test helper, and tests.
 - Pause for review of file layout, schema naming, Drizzle table shape, row/schema derivation, database config/layer shape, and encode/decode pattern.
-- After the user model pattern is accepted, expand the same branch to subjects, events, participants, subscriptions, and schedule schemas.
+- Land this branch after the `User` model/database pattern is accepted. Do not fan out to the other models in this branch.
 
 Verification:
 
-- Schema boundary tests for all domain models and tagged details.
-- SQLite roundtrip tests for each table.
-- Database error tests prove operation/context metadata is preserved.
-- Migration or database push creates all tables.
-- Row/domain encode/decode tests cover JSON details, `kind`, `source_id`, `availability`, schedule JSON, and nullable `last_sent_at`.
+- User schema boundary tests.
+- User row/domain encode/decode tests.
+- User SQLite roundtrip through the database layer and test setup.
+- Type-only table/schema contract compiles.
+- Package build for `@dtpt/core-v2`.
 - `pnpm lint`
 - `pnpm typecheck`
 
-## Task 2 - Core Domain Services And Scheduling Behavior
+## Task 2 - Users Service End-To-End
 
-Goal: implement the domain services and business-style CRUD behavior on top of the completed model/database substrate.
+Goal: implement the first business-style domain service against the accepted user model/database blueprint, proving the service shape before expanding to the rest of the domain.
 
 Scope:
 
-- Implement `Users`, `Subjects`, `Events`, and `Subscriptions` services.
+- Implement the `Users` service.
 - Keep decode DB reads / encode DB writes at service boundaries.
 - Implement `Users` methods needed by later flows: primary read, email read, unsubscribe-token read, signup upsert, and remove.
+- Generate `unsubscribeToken` for new users and preserve it on signup resubmission.
+- Map database failures to shared infrastructure errors with operation metadata.
+- Use transaction boundaries where the user write semantics require them.
+- Keep `Subjects`, `Events`, `Subscriptions`, signup API, notify, and unsubscribe orchestration out of this branch except where tests need tiny local fixtures.
+
+Vertical slice check-in:
+
+- Implement the `Users` service against the completed user model/table.
+- Pause for review of `Context.Service` shape, Effect.fn style, transaction style, database errors, and service-level decode/encode before future service work.
+- Land this branch after the user service pattern is accepted. Do not fan out to the other services in this branch.
+
+Verification:
+
+- Users service tests for primary read, email read, unsubscribe-token read, signup upsert, token preservation, timezone overwrite, and remove.
+- Database error tests prove operation/context metadata is preserved at real query callsites.
+- Transaction tests for any multi-step user write behavior.
+- Service-level decode-read / encode-write behavior is covered.
+- `pnpm lint`
+- `pnpm typecheck`
+
+## Task 3 - Remaining Core Models, Services, And Scheduling
+
+Goal: apply the accepted model/database/service pattern across the rest of the core domain.
+
+Scope:
+
+- Define schemas and tables for `Subject`, `Event`, `EventParticipant`, `Subscription`, fixed local schedule, sports subject details, sports event details, and participant details.
+- Add `events.source_id` for stable import identity and `events.availability` with `active | cancelled`; keep past/future derived from `starts_at`.
+- Add migrations or database push setup needed to create all tables.
+- Implement `Subjects`, `Events`, and `Subscriptions` services.
 - Implement `Subjects.get` and `Subjects.list`.
 - Implement `Events.get`, `Events.listBySubject`, and `Events.upsertWithParticipants`.
 - Implement `Events.listBySubject` as the normal active-only event read, with explicit `includeCancelled` for tooling/debug reads.
@@ -56,13 +91,16 @@ Scope:
 
 Vertical slice check-in:
 
-- Implement the `Users` service first against the completed user model/table.
-- Pause for review of `Context.Service` shape, Effect.fn style, transaction style, database errors, and service-level decode/encode before implementing the remaining services.
-- After the user service pattern is accepted, expand the same branch to subjects, events, subscriptions, and scheduling behavior.
+- Start with the smallest remaining end-to-end slice that exercises a new shape, such as `Subject` model plus service.
+- Pause only if the accepted `User` model/service blueprint does not cover the new shape. JSON details, relation-shaped reads, and subscription scheduling are the likely places to check in.
+- After each new shape is accepted, fan out the same pattern across the remaining domain pieces.
 
 Verification:
 
-- Service tests for users, subjects, events, and subscriptions.
+- Schema boundary tests for all remaining domain models and tagged details.
+- SQLite roundtrip tests for each table.
+- Row/domain encode/decode tests cover JSON details, `kind`, `source_id`, `availability`, schedule JSON, and nullable `last_sent_at`.
+- Service tests for subjects, events, and subscriptions.
 - Event upsert tests prove repeated imports update one event instead of creating duplicates.
 - Event read tests prove cancelled events are excluded by default and included only when requested.
 - Deterministic ordering tests for subject-scoped event reads and subscription recipient projections.
@@ -72,7 +110,7 @@ Verification:
 - `pnpm lint`
 - `pnpm typecheck`
 
-## Task 3 - Data Package, Seed, And Import Runtime
+## Task 4 - Data Package, Seed, And Import Runtime
 
 Goal: make the completed domain/database model runnable with checked-in V1 data.
 
@@ -102,7 +140,7 @@ Verification:
 - `pnpm lint`
 - `pnpm typecheck`
 
-## Task 4 - Notifier And Notify Job
+## Task 5 - Notifier And Notify Job
 
 Goal: rebuild notification delivery and the scheduled job around the completed domain services.
 
@@ -131,7 +169,7 @@ Verification:
 - `pnpm lint`
 - `pnpm typecheck`
 
-## Task 5 - Signup API And Web Signup
+## Task 6 - Signup API And Web Signup
 
 Goal: expose the first public user-facing flow end to end.
 
@@ -151,13 +189,13 @@ Vertical slice check-in:
 Verification:
 
 - Handler tests for success, validation failure, cap rejection, invalid subject id, and rate limit.
-- Persistence tests prove same-email resubmission overwrites preferences and preserves `unsubscribeTokenId`.
+- Persistence tests prove same-email resubmission overwrites preferences and preserves `unsubscribeToken`.
 - Client validation tests for bad email and over-cap selection.
 - Manual local signup writes to SQLite.
 - `pnpm lint`
 - `pnpm typecheck`
 
-## Task 6 - Unsubscribe And Cutover Cleanup
+## Task 7 - Unsubscribe And Cutover Cleanup
 
 Goal: complete the V1 lifecycle and remove prototype-only active paths.
 
@@ -192,10 +230,11 @@ Verification:
 Suggested branch names:
 
 1. `refactor/v2-core-models-db`
-2. `refactor/v2-core-services`
-3. `refactor/v2-data-seed`
-4. `refactor/v2-notify`
-5. `refactor/v2-signup`
-6. `refactor/v2-unsubscribe-cutover`
+2. `refactor/v2-users-service`
+3. `refactor/v2-core-domain-slices`
+4. `refactor/v2-data-seed`
+5. `refactor/v2-notify`
+6. `refactor/v2-signup`
+7. `refactor/v2-unsubscribe-cutover`
 
 Each branch should start from updated `main` after the previous PR lands.

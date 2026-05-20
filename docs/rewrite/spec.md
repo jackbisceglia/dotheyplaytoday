@@ -21,7 +21,7 @@ Resubmitting with the same normalized email is the edit path for V1. The submitt
 Signup runs inside one transaction:
 
 1. Normalize email.
-2. Upsert user by normalized email; always overwrite `timezone`; generate `unsubscribeTokenId` only for a new user and preserve it on resubmission.
+2. Upsert user by normalized email; always overwrite `timezone`; generate `unsubscribeToken` only for a new user and preserve it on resubmission.
 3. Delete all existing subscriptions for the user.
 4. Insert one subscription per submitted `subjectId` with the submitted `schedule` and `lastSentAt = null`.
 
@@ -85,9 +85,9 @@ Re-signup after unsubscribe creates a new user row and a new unsubscribe token. 
 - `id`: UUID
 - `email`: normalized email address, unique
 - `timezone`: IANA timezone
-- `unsubscribe_token_id`: stable opaque identifier used inside unsubscribe links, unique
+- `unsubscribe_token`: opaque random bearer token used inside unsubscribe links, unique
 
-`unsubscribe_token_id` is generated when the user is first created and preserved when signup is resubmitted for the same normalized email. Store the raw token on the user row, enforce uniqueness, and do not store or put a token hash in the URL for V1. Public unsubscribe links must not expose `users.id` or `users.email`.
+`unsubscribe_token` is generated when the user is first created and preserved when signup is resubmitted for the same normalized email. Store the raw token on the user row, enforce uniqueness, and do not store or put a token hash in the URL for V1. Public unsubscribe links must not expose `users.id` or `users.email`.
 
 ### Subject
 
@@ -355,10 +355,12 @@ Tables:
 Rules:
 
 - Drizzle table definitions are the persistence source of truth.
+- Define tables with the shared SQLite table factory so snake_case configuration is centralized.
 - Add a unique constraint on `(kind, source_id)` for events.
 - Add `events.availability` with V1 values `active` and `cancelled`.
 - Generate Effect schemas from Drizzle definitions for persisted row shapes.
 - Domain schemas alias persistence schemas when the shapes are identical.
+- When the selected row shape is the domain entity, name the derived select schema after the domain entity. Define reusable scalar schemas first, then reference them directly in `domainOverrides`. Every derived row/insert schema must include a type-only table contract proving its encoded type matches Drizzle's inferred select/insert model. Split select and insert override objects only when the domain shape differs by operation, or when a table contract proves optional/default columns need explicit insert treatment.
 - Compose domain projections only at real aggregate boundaries, such as loading an event with participants or a subject schedule.
 - Use `details_json` for row-level variant details and `schedule_json` for nested schedule policy.
 - For row-level discriminated values, `kind` must equal `details_json._tag`; `kind` exists for SQL querying, while `details_json._tag` preserves TypeScript/Effect discriminated unions.
@@ -447,7 +449,7 @@ body: V1 signup inputs
 success: { ok: true }
 
 POST /api/unsubscribe
-body: { token: UnsubscribeTokenId }
+body: { token: UnsubscribeToken }
 success: { ok: true }
 ```
 
@@ -597,7 +599,7 @@ Provider-specific payload mapping belongs in the `NotifierChannelProvider` layer
 
 Keep `NotifierChannel.render` pure in V1. If rendering later needs real failure/effect cases, make the render boundary effectful in that slice.
 
-Email rendering builds unsubscribe links from channel/web config plus `notification.user.unsubscribeTokenId`. Notify orchestration does not construct public URLs. Extract a shared link helper only when multiple channels need the same link construction.
+Email rendering builds unsubscribe links from channel/web config plus `notification.user.unsubscribeToken`. Notify orchestration does not construct public URLs. Extract a shared link helper only when multiple channels need the same link construction.
 
 Email channel providers accept the app-level `EmailMessage` shape. Provider implementations map `EmailMessage` to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
 
