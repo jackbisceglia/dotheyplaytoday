@@ -62,13 +62,13 @@ Recommended contract shape, without locking exact I/O schema or error declaratio
 - The request carries the V1 signup inputs: email, timezone, fixed local schedule, and selected subject ids.
 - The success response remains `{ ok: true }`.
 - Public validation, cap, rate-limit, and unexpected-failure errors are declared in the contract at implementation time, based on the pinned Effect API and the web states being built.
-- Email normalization stays owned by `Users.upsertForSignup`; the request schema validates input shape, but the stored `EmailAddress` value comes from the shared domain normalization path.
+- Email normalization and timezone validation happen at the API/request boundary. The route passes decoded domain values into `Users.upsertForSignup(email, timezone)`.
 
 Recommended handler flow, without locking exact Effect syntax:
 
-- Decode through the shared `HttpApi` contract.
+- Decode through the shared `HttpApi` contract, then normalize/validate request scalars into domain values before calling core services.
 - Apply public write rate limiting before opening the database transaction.
-- In one transaction, call `Users.upsertForSignup`, then `Subscriptions.replaceForUser`.
+- In one transaction, call `Users.upsertForSignup(email, timezone)`, then `Subscriptions.replaceForUser`.
 - Return `{ ok: true }` after both writes succeed.
 - Map validation/cap errors to user-fixable public failures and infrastructure failures to generic unexpected failures.
 - Keep error mapping local to the route file until repetition justifies a shared helper.
