@@ -3,18 +3,16 @@ import type { SqliteRemoteDatabase } from "drizzle-orm/sqlite-proxy";
 import { Context, Effect, Layer } from "effect";
 
 import { DatabaseConfig } from "./config.js";
+import { relations } from "./relations.js";
 import * as schema from "./schema.js";
 import * as Drizzle from "./sqlite-drizzle.js";
 
-// todo: add relation inference
-export type Database = SqliteRemoteDatabase<typeof schema>;
+export type Database = SqliteRemoteDatabase<typeof schema, typeof relations>;
 export const Database = Context.Service<Database>("@dtpt/core-v2/Database");
 
 export const DatabaseClientLayer = Layer.effect(
   Database,
-  Drizzle.make({ schema }).pipe(
-    Effect.map((db) => db as Database),
-  ),
+  Drizzle.make({ schema, relations }).pipe(Effect.map((db) => db as Database)),
 );
 
 export const createDatabaseLayer = (path: string) => {

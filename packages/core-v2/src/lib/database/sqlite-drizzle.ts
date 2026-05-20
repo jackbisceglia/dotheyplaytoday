@@ -5,7 +5,7 @@ import { SqlError, UnknownError } from "effect/unstable/sql/SqlError";
 import * as Effectable from "effect/Effectable";
 import type { Context, Effect as EffectType } from "effect";
 import { Effect } from "effect";
-import type { DrizzleConfig } from "drizzle-orm";
+import type { AnyRelations, DrizzleConfig, EmptyRelations } from "drizzle-orm";
 import { QueryPromise } from "drizzle-orm/query-promise";
 import {
   SQLiteDeleteBase,
@@ -92,11 +92,7 @@ const makeRemoteCallback = Effect.gen(function* () {
   const sql = yield* SqlClient;
   const constructionContext = yield* Effect.context();
 
-  return (
-    statementSql: string,
-    params: unknown[],
-    method: RemoteMethod,
-  ) => {
+  return (statementSql: string, params: unknown[], method: RemoteMethod) => {
     const statement = sql.unsafe(statementSql, params);
 
     const effect: EffectType.Effect<{ rows: unknown[] }, SqlError> =
@@ -109,9 +105,9 @@ const makeRemoteCallback = Effect.gen(function* () {
                 // sqlite-proxy passes `rows` directly to mapGetResult; undefined is the miss sentinel.
                 Effect.map((rows) => ({ rows: rows[0] as unknown[] })),
               )
-          : statement.withoutTransform.pipe(
-              Effect.map((rows) => ({ rows: [...rows] })),
-            );
+            : statement.withoutTransform.pipe(
+                Effect.map((rows) => ({ rows: [...rows] })),
+              );
 
     return Effect.runPromiseWith(
       queryContextStorage.getStore() ?? constructionContext,
@@ -121,9 +117,14 @@ const makeRemoteCallback = Effect.gen(function* () {
 
 export const make = <
   TSchema extends Record<string, unknown> = Record<string, never>,
+  TRelations extends AnyRelations = EmptyRelations,
 >(
-  config?: Omit<DrizzleConfig<TSchema>, "logger">,
-): EffectType.Effect<SqliteRemoteDatabase<TSchema>, never, SqlClient> =>
+  config?: Omit<DrizzleConfig<TSchema, TRelations>, "logger">,
+): EffectType.Effect<
+  SqliteRemoteDatabase<TSchema, TRelations>,
+  never,
+  SqlClient
+> =>
   Effect.gen(function* () {
     const callback = yield* makeRemoteCallback;
 
