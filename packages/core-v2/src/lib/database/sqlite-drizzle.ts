@@ -107,13 +107,12 @@ const makeRemoteCallback = Effect.gen(function* () {
         ? statement.raw.pipe(Effect.map((header) => ({ rows: [header] })))
         : method === "all" || method === "values"
           ? statement.values.pipe(Effect.map((rows) => ({ rows: [...rows] })))
+          : method === "get"
+            ? statement.values.pipe(
+                Effect.map((rows) => ({ rows: rows[0] as unknown[] })),
+              )
           : statement.withoutTransform.pipe(
-              Effect.map((rows) => ({
-                rows:
-                  method === "get"
-                    ? ((rows[0] ?? []) as unknown[])
-                    : [...rows],
-              })),
+              Effect.map((rows) => ({ rows: [...rows] })),
             );
 
     return Effect.runPromiseWith(

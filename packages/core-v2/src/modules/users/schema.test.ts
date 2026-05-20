@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
+import { eq } from "drizzle-orm";
 import { Effect, Schema } from "effect";
 
 import { createTables, layerTest } from "../../lib/database/test-setup.js";
@@ -48,12 +49,22 @@ describe("v2 User model", () => {
 
       const rows = yield* database.select().from(usersTable);
       const decodedRows = decode(Schema.Array(User))(rows);
+      const row = yield* Effect.promise(() =>
+        database
+          .select()
+          .from(usersTable)
+          .where(eq(usersTable.id, insert.id))
+          .get(),
+      );
+      const decodedRow = decode(User)(row);
 
       expect(decodedRows).toHaveLength(1);
       expect(decodedRows[0]?.email).toBe(userInput.email);
       expect(decodedRows[0]?.unsubscribeToken).toBe(
         userInput.unsubscribeToken,
       );
+      expect(decodedRow.email).toBe(userInput.email);
+      expect(decodedRow.unsubscribeToken).toBe(userInput.unsubscribeToken);
     }).pipe(Effect.provide(layerTest)),
   );
 });
