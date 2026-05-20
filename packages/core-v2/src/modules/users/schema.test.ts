@@ -57,6 +57,13 @@ describe("v2 User model", () => {
           .get(),
       );
       const decodedRow = decode(User)(row);
+      const missingRow = yield* Effect.promise(() =>
+        database
+          .select()
+          .from(usersTable)
+          .where(eq(usersTable.id, "00000000-0000-4000-8000-000000009999"))
+          .get(),
+      );
 
       expect(decodedRows).toHaveLength(1);
       expect(decodedRows[0]?.email).toBe(userInput.email);
@@ -65,6 +72,7 @@ describe("v2 User model", () => {
       );
       expect(decodedRow.email).toBe(userInput.email);
       expect(decodedRow.unsubscribeToken).toBe(userInput.unsubscribeToken);
+      expect(missingRow).toBeUndefined();
     }).pipe(Effect.provide(layerTest)),
   );
 });

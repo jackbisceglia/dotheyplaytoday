@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from "node:async_hooks";
+
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { SqlError, UnknownError } from "effect/unstable/sql/SqlError";
 import * as Effectable from "effect/Effectable";
@@ -17,7 +19,7 @@ import { drizzle } from "drizzle-orm/sqlite-proxy";
 type RemoteMethod = "all" | "execute" | "get" | "run" | "values";
 const EffectTypeId = "~effect/Effect";
 
-let currentQueryContext: Context.Context<never> | undefined;
+const queryContextStorage = new AsyncLocalStorage<Context.Context<never>>();
 
 declare module "drizzle-orm/query-promise" {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type
@@ -60,14 +62,9 @@ const patch = (prototype: object) => {
         Effect.flatMap((context) =>
           Effect.tryPromise({
             try: async () => {
-              const previous = currentQueryContext;
-              currentQueryContext = context;
-
-              try {
-                return await this.execute();
-              } finally {
-                currentQueryContext = previous;
-              }
+              return await queryContextStorage.run(context, () =>
+                this.execute(),
+              );
             },
             catch: (cause) =>
               new SqlError({
@@ -109,6 +106,7 @@ const makeRemoteCallback = Effect.gen(function* () {
           ? statement.values.pipe(Effect.map((rows) => ({ rows: [...rows] })))
           : method === "get"
             ? statement.values.pipe(
+                // sqlite-proxy passes `rows` directly to mapGetResult; undefined is the miss sentinel.
                 Effect.map((rows) => ({ rows: rows[0] as unknown[] })),
               )
           : statement.withoutTransform.pipe(
@@ -116,7 +114,7 @@ const makeRemoteCallback = Effect.gen(function* () {
             );
 
     return Effect.runPromiseWith(
-      currentQueryContext ?? constructionContext,
+      queryContextStorage.getStore() ?? constructionContext,
     )(effect);
   };
 });
