@@ -6,12 +6,14 @@ Build the rewrite as vertical slices. Each slice should prove schema, persistenc
 
 Do not start by porting packages wholesale. Start with the smallest V1 path and pull forward only the parts that remain globally good.
 
+The operational task order starts with the `User` model/database blueprint, then the `Users` service, before fanning out the remaining core domain slices. This gives the rewrite one end-to-end domain path before mass implementation of the remaining tables and services.
+
 ## Phase 0 - Lock The Rewrite Baseline
 
 Deliverables:
 
 - Decide whether the rewrite happens in a new branch, new repo, or `packages/*` replacement path.
-- Pin Effect v4 beta package versions in the workspace catalog.
+- Pin Effect v4 beta package versions for the rewrite. While prototype packages still use the v3 workspace catalog, the rewrite core package may direct-pin v4 locally; move v4 pins into the catalog after the v3 prototype surface is retired.
 - Keep Node + pnpm for the first pass unless there is a separate decision to move to Bun.
 - Add a private `@dtpt/data` package for explicitly registered seed collections.
 - Configure TypeScript strictness, ESLint, Prettier, Vitest, and Effect Language Service.
@@ -32,7 +34,7 @@ Verification:
 
 Deliverables:
 
-- Define core schemas for `User` with `unsubscribeTokenId`, `Subject`, `Event` with `sourceId` and `availability`, `EventParticipant`, `Subscription`, fixed local schedule, and sports details payloads.
+- Define core schemas for `User` with `unsubscribeToken`, `Subject`, `Event` with `sourceId` and `availability`, `EventParticipant`, `Subscription`, fixed local schedule, and sports details payloads.
 - Define Drizzle tables: `users`, `subjects`, `events`, `event_participants`, `subscriptions`.
 - Add `events.availability` with initial values `active` and `cancelled`; past/future status remains derived from `starts_at`.
 - Generate Effect schemas from Drizzle for persisted rows.
@@ -74,7 +76,7 @@ Deliverables:
 - Ensure local-date event matching uses normal active-only event reads.
 - Implement `localDayUtcRange` shared time utility for querying events by a user's local day.
 - Implement already-sent local-date guard.
-- Implement subscription replacement for one user by selected subject set, preserving the user's `unsubscribeTokenId` while resetting recreated subscriptions' `last_sent_at`.
+- Implement subscription replacement for one user by selected subject set, preserving the user's `unsubscribeToken` while resetting recreated subscriptions' `last_sent_at`.
 - Add shared subscription policy for team cap and schedule increments.
 
 Key decisions:
@@ -140,7 +142,7 @@ Deliverables:
 - Add shared HttpApi contract for signup.
 - Add NBA sports subject catalog/seed data in `@dtpt/data`.
 - Add sports event seed/import path that requires stable event source ids and resolves teams to existing subjects.
-- Add signup domain flow: normalize email, upsert user, generate `unsubscribeTokenId` for new users, preserve it for existing users, and replace subscriptions.
+- Add signup domain flow: normalize email, upsert user, generate `unsubscribeToken` for new users, preserve it for existing users, and replace subscriptions.
 - Add public write rate limiter.
 - Add API route and error mapping.
 

@@ -45,12 +45,8 @@ A soft pause/resume flag for a subscription.
 _Avoid_: Modeling in V1 without a pause/resume workflow
 
 **Unsubscribe Token**:
-An opaque random bearer token that authorizes only the unsubscribe action.
-_Avoid_: Auth session, account access token
-
-**Unsubscribe Token Id**:
-A stable opaque identifier on the user row used to resolve unsubscribe requests without exposing the user's primary id or email address.
-_Avoid_: Public user id, email token
+An opaque random bearer token stored on the user row that authorizes only the unsubscribe action.
+_Avoid_: Auth session, account access token, public user id, email token
 
 **Schedule**:
 The executable timing policy for a subscription.
@@ -196,7 +192,7 @@ _Avoid_: Direct `process.env` reads in services
 - A **NotifierChannel** renders a **Notification** into a channel message and sends it through a **NotifierChannelProvider**.
 - An **Unsubscribe** removes one **User** and cascades to that user's **Subscriptions**.
 - An **Unsubscribe Token** authorizes one global **Unsubscribe** action.
-- An **Unsubscribe Token** resolves to one **User** through that user's **Unsubscribe Token Id**.
+- An **Unsubscribe Token** resolves to one **User** by matching the user's stored token.
 - A **Workflow Service** is deferred until a workflow has more than one callsite or a clear testability win.
 - A **Domain Projection** is named by meaning, not by SQL join mechanics.
 - An **Infrastructure Error** may be returned by any service that uses that dependency.
@@ -213,14 +209,14 @@ Subject <- Event Participant -> Event
 
 V1 sports-league notifications populate this model with team subjects and sports game events. Future subject families can use the same graph when they have subscribable subjects, scheduled events, and subject-event participation.
 
-**User** is persisted as recipient identity plus delivery timezone and unsubscribe token identity. Unsubscribe hard-deletes this row; re-signup creates a fresh user and unsubscribe token.
+**User** is persisted as recipient identity plus delivery timezone and unsubscribe token. Unsubscribe hard-deletes this row; re-signup creates a fresh user and unsubscribe token.
 
 ```ts
 type User = {
   readonly id: UserId;
   readonly email: EmailAddress;
   readonly timezone: TimeZone;
-  readonly unsubscribeTokenId: UnsubscribeTokenId;
+  readonly unsubscribeToken: UnsubscribeToken;
 };
 ```
 
@@ -390,7 +386,7 @@ The delivery design is generic, but V1 runtime wiring provides exactly one email
 
 Keep `NotifierChannel.render` pure in V1. If rendering later needs real failure/effect cases, make the render boundary effectful in that slice.
 
-Email rendering builds unsubscribe links from channel/web config plus `notification.user.unsubscribeTokenId`. Notify orchestration does not construct public URLs. Extract a shared link helper only when multiple channels need the same link construction.
+Email rendering builds unsubscribe links from channel/web config plus `notification.user.unsubscribeToken`. Notify orchestration does not construct public URLs. Extract a shared link helper only when multiple channels need the same link construction.
 
 Email channel providers accept the app-level `EmailMessage` shape. Provider implementations map `EmailMessage` to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
 
@@ -568,7 +564,9 @@ Shared `HttpApi` contracts belong under top-level `contracts/`, not `lib/contrac
 
 Checked-in seed data belongs in private `@dtpt/data`, not inside core source. Use explicit collection registration instead of filesystem scanning or dynamic import discovery. Collection folders use generic product-model filenames such as `subjects.ts` and `events.ts`; seed scripts import the registry directly and write through domain services.
 
-Preserve the existing database composition pattern during the rewrite: bulk table exports for Drizzle schema composition, one relations module, and one database service/layer module that composes SQLite plus Drizzle. Any relation-aware Drizzle type cast belongs inside the database service module, not domain services.
+Preserve the existing database composition pattern during the rewrite: bulk table exports for Drizzle schema composition, one relations module, and one database service/layer module that composes SQLite plus Drizzle. Keep existing database layer naming such as `createDatabaseLayer` and `DatabaseLayer` unless a concrete rewrite need forces a change. Any relation-aware Drizzle type cast belongs inside the database service module, not domain services.
+
+Until official Drizzle SQLite Effect support is available in the pinned Drizzle version, any temporary SQLite/Effect compatibility shim belongs under `lib/database` and must be invisible to domain modules. The desired consumer shape is the official-driver shape: query builders are yieldable Effects and callers depend on the injected `Database` service, not shim internals.
 
 Define Drizzle relations only for relation-shaped queries the product actually needs or natural hierarchical loads. Do not register every foreign key or automatically define bidirectional relations.
 
@@ -633,7 +631,7 @@ Submitted payload contains the V1 signup inputs: email, timezone, fixed local sc
 Server behavior, inside one transaction:
 
 1. Normalize email.
-2. Upsert user by normalized email; always overwrite `timezone`; generate `unsubscribeTokenId` only for a new user and preserve it on resubmission.
+2. Upsert user by normalized email; always overwrite `timezone`; generate `unsubscribeToken` only for a new user and preserve it on resubmission.
 3. Delete all subscriptions for the user.
 4. Insert one subscription per submitted `subjectId` with the submitted `schedule` and `lastSentAt = null`.
 
@@ -659,7 +657,7 @@ Rules:
 - The unsubscribe token has no embedded payload, timestamp, signature, or expiry in V1.
 - `GET /unsubscribe/:token` renders a confirmation page for token-shaped input, does not look up the token in the database, and does not mutate subscriptions.
 - The confirmation form posts the token to the unsubscribe endpoint without requiring email address re-entry in V1.
-- The unsubscribe endpoint resolves the user by `unsubscribeTokenId` and hard-deletes the user row; subscriptions cascade from the user delete.
+- The unsubscribe endpoint resolves the user by `unsubscribeToken` and hard-deletes the user row; subscriptions cascade from the user delete.
 - Repeated posts for a token whose user was already deleted return the same generic terminal result.
 - Unknown or malformed tokens map to a generic public failure result.
 
@@ -739,7 +737,7 @@ Rules:
 - Inconsistent event participant graphs are data-integrity failures and may abort the notify run.
 - Unsubscribe is safe enough before auth by using an opaque random bearer token that exposes no raw email or user id.
 - The unsubscribe token has no embedded payload, signature, timestamp, or expiry in V1.
-- Store the raw unsubscribe token in `users.unsubscribe_token_id` for V1; hashing does not fit the stable-token email model because future emails need the raw token.
+- Store the raw unsubscribe token in `users.unsubscribe_token` for V1; hashing does not fit the stable-token email model because future emails need the raw token.
 - Unsubscribe link GET requests do not look up tokens or mutate state; the confirmation POST performs the delete.
 - V1 unsubscribe confirmation does not require email address re-entry.
 - Re-signup after unsubscribe creates a new user row and a new unsubscribe token.
