@@ -26,4 +26,12 @@ export const createTables = Effect.gen(function* () {
     CREATE UNIQUE INDEX users_unsubscribe_token_idx
     ON users (unsubscribe_token)
   `;
+
+  yield* sql`
+    CREATE TABLE subjects (
+      id TEXT PRIMARY KEY NOT NULL,
+      _tag TEXT NOT NULL,
+      details TEXT NOT NULL
+    )
+  `;
 });

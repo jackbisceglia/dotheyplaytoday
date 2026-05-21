@@ -94,7 +94,7 @@ Re-signup after unsubscribe creates a new user row and a new unsubscribe token. 
 A subject is anything someone can subscribe to a feed of. V1 subjects are sports teams.
 
 - `id`: UUID
-- `kind`: query projection of `details._tag`
+- `_tag`: query projection of `details._tag`
 - `details`: tagged subject details JSON
 
 V1 subject details:
@@ -117,8 +117,8 @@ Do not add top-level sports columns such as `league_id` or `title` to `subjects`
 An event is a scheduled unit of one or more subject feeds. V1 events are sports games.
 
 - `id`: UUID
-- `kind`: query projection of `details._tag`
-- `source_id`: stable import identity, unique with `kind`
+- `_tag`: query projection of `details._tag`
+- `source_id`: stable import identity, unique with `_tag`
 - `starts_at`: UTC instant
 - `availability`: whether the event is active or cancelled
 - `details`: tagged event details JSON
@@ -156,7 +156,7 @@ An event participant is the edge between a subject and an event. It stores facts
 
 - `event_id`: owning event
 - `subject_id`: participating subject
-- `kind`: query projection of `details._tag`
+- `_tag`: query projection of `details._tag`
 - `details`: tagged participant details JSON
 
 V1 participant details:
@@ -360,15 +360,15 @@ Rules:
 
 - Drizzle table definitions are the persistence source of truth.
 - Define tables with the shared SQLite table factory so snake_case configuration is centralized.
-- Add a unique constraint on `(kind, source_id)` for events.
+- Add a unique constraint on `(_tag, source_id)` for events.
 - Add `events.availability` with V1 values `active` and `cancelled`.
 - Generate Effect schemas from Drizzle definitions for persisted row shapes.
 - Domain schemas alias persistence schemas when the shapes are identical.
 - When the selected row shape is the domain entity, name the derived select schema after the domain entity. Define reusable scalar schemas first, then reference them directly in `domainOverrides`. Every derived row/insert schema must include a type-only table contract proving its encoded type matches Drizzle's inferred select/insert model. Split select and insert override objects only when the domain shape differs by operation, or when a table contract proves optional/default columns need explicit insert treatment.
 - Compose domain projections only at real aggregate boundaries, such as loading an event with participants or a subject schedule.
-- Use `details_json` for row-level variant details and `schedule_json` for nested schedule policy.
-- For row-level discriminated values, `kind` must equal `details_json._tag`; `kind` exists for SQL querying, while `details_json._tag` preserves TypeScript/Effect discriminated unions.
-- Do not add a table-level `kind` for nested policies such as subscription schedules.
+- Use `details` for row-level variant details and `schedule` for nested schedule policy.
+- For row-level discriminated values, `_tag` must equal `details._tag`; `_tag` exists for SQL querying, while `details._tag` preserves TypeScript/Effect discriminated unions.
+- Do not add a table-level `_tag` for nested policies such as subscription schedules.
 - Do not reintroduce Redis/KVS compatibility layers.
 
 ## Import Contract
@@ -419,7 +419,7 @@ Subject <- EventParticipant -> Event
 
 Rules:
 
-- Event import upserts by `(kind, source_id)`.
+- Event import upserts by `(_tag, source_id)`.
 - NBA game seed records include explicit stable `source_id` values such as `sports_game:seed:<uuid>`.
 - Re-importing the same `source_id` updates mutable event facts such as `starts_at`, `availability`, and details, then replaces that event's participant edges.
 - Missing events in a seed collection are not deleted. Cancellation must be represented explicitly with `availability: "cancelled"`.

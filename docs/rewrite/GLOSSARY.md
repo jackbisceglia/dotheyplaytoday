@@ -225,7 +225,7 @@ type User = {
 ```ts
 type Subject = {
   readonly id: SubjectId;
-  readonly kind: SubjectDetails["_tag"];
+  readonly _tag: SubjectDetails["_tag"];
   readonly details: SubjectDetails;
 };
 
@@ -244,7 +244,7 @@ type SubjectDetails = {
 ```ts
 type Event = {
   readonly id: EventId;
-  readonly kind: EventDetails["_tag"];
+  readonly _tag: EventDetails["_tag"];
   readonly sourceId: EventSourceId;
   readonly startsAt: DateTimeUtc;
   readonly availability: EventAvailability;
@@ -263,7 +263,7 @@ type EventDetails = {
 type EventParticipant = {
   readonly eventId: EventId;
   readonly subjectId: SubjectId;
-  readonly kind: EventParticipantDetails["_tag"];
+  readonly _tag: EventParticipantDetails["_tag"];
   readonly details: EventParticipantDetails;
 };
 
@@ -298,9 +298,9 @@ Event `availability` values are source truth for active versus cancelled events.
 
 ## Persistence Rules
 
-- Row-level discriminated values use `kind` as a query/index projection and keep the real Effect discriminator in `details_json._tag`.
-- For row-level discriminated values, `kind` must equal `details_json._tag`.
-- Nested discriminated subconcerns such as `schedule_json` keep their own `_tag` and do not need a table-level `kind`.
+- Row-level discriminated values use top-level `_tag` as a query/index projection and keep the real Effect discriminator in `details._tag`.
+- For row-level discriminated values, top-level `_tag` must equal `details._tag`.
+- Nested discriminated subconcerns such as `schedule` keep their own `_tag` and do not need a table-level `_tag`.
 - Generic/query-critical facts stay as columns, such as `events.source_id`, `events.starts_at`, `events.availability`, `subscriptions.user_id`, and `subscriptions.subject_id`.
 - Type-specific facts stay in JSON details, such as sports team league/name fields, sports game league, and home/away participant role.
 
@@ -711,9 +711,9 @@ Rules:
 - Same-day event queries use a caller-computed **Local Day UTC Range**; event services accept UTC ranges only.
 - **Subject**, **Event**, and **Event Participant** use a **Row-Level Discriminator** because the whole row is the discriminated value.
 - **Schedule** uses a **Subconcern Discriminator** because it is a nested executable policy stored inside a subscription row.
-- Row-level tables use `kind` as a query/index projection of `details_json._tag` when the details tag represents the whole row.
-- When `details_json._tag` represents the whole row, `kind` must equal `details_json._tag`.
-- Nested subconcerns such as **Schedule** keep their own `_tag` inside JSON and do not require a row-level `kind` column.
+- Row-level tables use top-level `_tag` as a query/index projection of `details._tag` when the details tag represents the whole row.
+- When `details._tag` represents the whole row, top-level `_tag` must equal `details._tag`.
+- Nested subconcerns such as **Schedule** keep their own `_tag` inside JSON and do not require a row-level `_tag` column.
 - **Notifier** sends prepared **Notifications**; it does not decide which subscriptions are due.
 - The notifier method is `notify(notification)`; `send` is reserved for channel/provider delivery of rendered messages.
 - **NotifierChannel** owns pure render plus send for a delivery medium.
