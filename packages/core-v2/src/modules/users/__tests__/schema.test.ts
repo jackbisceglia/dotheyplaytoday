@@ -2,9 +2,9 @@ import { describe, expect, it } from "@effect/vitest";
 import { eq } from "drizzle-orm";
 import { Effect, Schema } from "effect";
 
-import { createTables, layerTest } from "../../lib/database/test-setup.js";
-import { Database } from "../../lib/database/service.js";
-import { User, UserInsert, usersTable } from "./schema.js";
+import { Database } from "../../../lib/database/service.js";
+import { createTables, layerTest } from "../../../lib/database/test-setup.js";
+import { User, UserInsert, usersTable } from "../schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;

@@ -7,17 +7,17 @@ import {
   DatabaseDeleteError,
   DatabaseReadError,
   DatabaseWriteError,
-} from "../../lib/database/errors.js";
-import { Database } from "../../lib/database/service.js";
-import { createTables, layerTest } from "../../lib/database/test-setup.js";
+} from "../../../lib/database/errors.js";
+import { Database } from "../../../lib/database/service.js";
+import { createTables, layerTest } from "../../../lib/database/test-setup.js";
 import {
   EmailAddress,
   User,
   UserId,
   UserInsert,
   usersTable,
-} from "./schema.js";
-import { UserNotFound, Users, UsersLayer } from "./service.js";
+} from "../schema.js";
+import { UserNotFound, Users, UsersLayer } from "../service.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
