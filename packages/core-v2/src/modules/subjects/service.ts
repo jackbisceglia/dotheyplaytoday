@@ -6,10 +6,7 @@ import { Subject } from "./schema.js";
 
 export class SubjectNotFound extends Schema.TaggedErrorClass<SubjectNotFound>()(
   "SubjectNotFound",
-  {
-    key: Schema.Literal("id"),
-    value: Schema.String,
-  },
+  { key: Schema.Literal("id"), value: Schema.String },
 ) {}
 
 export class Subjects extends Context.Service<
