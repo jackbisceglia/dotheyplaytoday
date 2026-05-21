@@ -124,8 +124,8 @@ export const SubjectId = Id.SchemaBranded("SubjectId");
 export type LeagueId = typeof LeagueId.Type;
 export const LeagueId = Schema.Literal("nba").pipe(Schema.brand("LeagueId"));
 
-export class SportsTeamDetails extends Schema.Class<SportsTeamDetails>(
-  "SportsTeamDetails",
+export class SportTeamSubject extends Schema.Class<SportTeamSubject>(
+  "SportTeamSubject",
 )({
   _tag: Schema.Literal("sports_team"),
   leagueId: LeagueId,
@@ -137,8 +137,8 @@ export class SportsTeamDetails extends Schema.Class<SportsTeamDetails>(
 
 export class Subject extends Schema.Class<Subject>("Subject")({
   id: SubjectId,
-  kind: Schema.Literal("sports_team"),
-  details: SportsTeamDetails,
+  _tag: Schema.Literal("sports_team"),
+  details: SportTeamSubject,
 }) {}
 ```
 
@@ -383,9 +383,16 @@ packages/core/src/
     users/
       schema.ts
       service.ts
+      __tests__/
+        schema.test.ts
+        service.test.ts
     subjects/
       schema.ts
       service.ts
+      sports.ts
+      __tests__/
+        schema.test.ts
+        service.test.ts
     events/
       schema.ts
       service.ts
@@ -423,6 +430,8 @@ packages/core/src/
 ```
 
 Infrastructure, framework glue, generic utilities, and config-provider helpers belong under `lib/`. Database implementation belongs under `lib/database`, not `modules/database`.
+
+Domain module tests live in module-local `__tests__/` folders so module roots stay focused on production schema, service, and supporting domain files. Library and infrastructure tests may stay colocated when that keeps the helper boundary easier to read.
 
 Shared `HttpApi` contracts belong under top-level `contracts/`, not `lib/contracts`, because they are public cross-package boundary definitions rather than infrastructure helpers.
 

@@ -86,7 +86,7 @@ Scope:
 - Implement `Subjects.get` and `Subjects.list`.
 - Implement `Events.get`, `Events.listBySubject`, and `Events.upsertWithParticipants`.
 - Implement `Events.listBySubject` as the normal active-only event read, with explicit `includeCancelled` for tooling/debug reads.
-- Implement `Events.upsertWithParticipants` using stable `(kind, source_id)` identity.
+- Implement `Events.upsertWithParticipants` using stable `(_tag, source_id)` identity.
 - Implement `Subscriptions.list`, `Subscriptions.recipients`, `Subscriptions.replaceForUser`, and `Subscriptions.markSent`.
 - Implement local send-time due calculation, local-day UTC range, event local-date matching helpers, already-sent guard, team cap policy, and 15-minute schedule increments.
 - Keep signup, notify, and unsubscribe orchestration out of this branch except where tests need minimal fixtures.
@@ -101,7 +101,7 @@ Verification:
 
 - Schema boundary tests for all remaining domain models and tagged details.
 - SQLite roundtrip tests for each table.
-- Row/domain encode/decode tests cover JSON details, `kind`, `source_id`, `availability`, schedule JSON, and nullable `last_sent_at`.
+- Row/domain encode/decode tests cover JSON details, `_tag`, `source_id`, `availability`, schedule JSON, and nullable `last_sent_at`.
 - Service tests for subjects, events, and subscriptions.
 - Event upsert tests prove repeated imports update one event instead of creating duplicates.
 - Event read tests prove cancelled events are excluded by default and included only when requested.
