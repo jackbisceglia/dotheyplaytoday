@@ -25,7 +25,7 @@ export {
   SubjectEvent,
   SubjectEventInsert,
   subjectEventsTable,
-} from "./modules/feed/schema.js";
+} from "./modules/subjects/feed/schema.js";
 export {
   Subject,
   SubjectDetails,

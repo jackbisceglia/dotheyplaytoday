@@ -22,7 +22,7 @@ import { Events, EventsLayer } from "../service.js";
 import {
   SubjectEventInsert,
   subjectEventsTable,
-} from "../../feed/schema.js";
+} from "../../subjects/feed/schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
