@@ -11,7 +11,7 @@
 - Email rendering belongs above the provider and below notify orchestration.
 - SolidStart plus Effect HttpApi is a reasonable public signup stack.
 - Drizzle plus SQLite is a better persistence baseline than JSON files or Redis/KVS for this product.
-- Relational event storage is useful; the rewrite sharpens this into events plus event participants so one real sports game can involve multiple subscribed subjects.
+- Relational event storage is useful; the rewrite sharpens this into events plus subject events and participants so one real sports game can involve multiple subscribed subjects.
 
 ## What Got Complicated
 
@@ -32,8 +32,8 @@
 - Product behavior around local dates, due windows, and duplicate suppression.
 - SQLite + Drizzle as the first durable backend.
 - Drizzle-derived persistence schemas.
-- `schedule_json` as the schedule storage shape for fixed schedules.
-- Event rows with participant edges, active/cancelled availability, and JSON details for type-specific facts.
+- `subscriptions.schedule` as the tagged schedule storage shape for fixed schedules.
+- Event rows with subject events, event-local participants, active/cancelled availability, and JSON details for type-specific facts.
 - Shared core contracts for API and web.
 - Shared sports subject catalog/seed data and shared subscription policy.
 - `NotifierChannel` / `NotifierChannelProvider` split for notifications.

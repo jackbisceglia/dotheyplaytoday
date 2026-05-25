@@ -469,7 +469,7 @@ Define Drizzle relations only when they are needed for actual relation-shaped qu
 Initial V1 relation set should support known queries only:
 
 - `subscriptions -> user` and `subscriptions -> subject` for `Subscriptions.recipients()`.
-- `events -> participants` and `eventParticipants -> subject` for `Events.listBySubject()` returning active `EventWithParticipants` by default.
+- `events -> subjectEvents` for filtering and `events -> participants` for `Events.listBySubject()` returning active `EventWithParticipants` projections by default.
 
 Do not initially define inverse user/subject relations unless a concrete query needs them. Adding a relation later is a small, acceptable change when implementing a CRUD-adjacent method or projection reveals the need.
 

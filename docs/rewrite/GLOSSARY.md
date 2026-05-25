@@ -24,12 +24,16 @@ _Avoid_: Game when speaking about the general model, telemetry event
 A stable source-provided event identity used for import upsert, formatted for readability as `<eventType>:<source>:<uuid>`.
 _Avoid_: Derived game key, start-time identity
 
-**Event Participant**:
-The relationship that says a subject participates in an event.
-_Avoid_: Opponent link, subject event
+**Subject Event**:
+The relationship that says an event belongs in a subject's feed.
+_Avoid_: Participant link, subject-owned event
 
-**Event Participant Details**:
-The type-specific facts about a subject's relationship to an event.
+**Participant**:
+An event-local participant record.
+_Avoid_: Subject-event junction, feed link
+
+**Participant Details**:
+The type-specific facts about a participant in an event.
 _Avoid_: Deriving relationship facts from subject or event details
 
 **Subscription**:
@@ -160,10 +164,12 @@ _Avoid_: Direct `process.env` reads in services
 
 - **Recurring Notification Scheduling** supports the **V1 Product Scope**.
 - A **User** subscribes to one or more **Subjects**.
-- A **Subject** participates in zero or more **Events** through **Event Participants**.
-- An **Event** has one or more **Event Participants**.
+- A **Subject** includes zero or more **Events** through **Subject Events**.
+- An **Event** belongs to one or more **Subjects** through **Subject Events**.
+- An **Event** can have zero or more **Participants**.
 - An **Event** has exactly one **Event Source Id** for V1 imports.
-- An **Event Participant** has exactly one **Event Participant Details** value.
+- A **Subject Event** has exactly one **Subject** and one **Event**.
+- A **Participant** has exactly one **Participant Details** value.
 - A **Subject** has exactly one **Subject Details** value.
 - A **Subscription** belongs to one **User** and one **Subject**.
 - A **Subscription** has exactly one **Schedule**.
@@ -177,11 +183,11 @@ _Avoid_: Direct `process.env` reads in services
 - V1 stores league identity as `leagueId` in sports details; add a separate league table/FK only when the product needs richer league data.
 - NBA team seed records include stable checked-in UUID subject ids; subject import/upsert uses those ids rather than deriving ids from mutable names or slugs.
 - Keep NBA teams and NBA games as separate seed collections because teams are catalog/reference data and games are schedule/import data.
-- Seed data uses a relational JSON shape: team records carry stable subject ids, and game records reference `homeSubjectId` and `awaySubjectId` directly. Import validates and upserts from this structure instead of inferring identities from names, abbreviations, or slugs.
-- Provide two seed flows: `seed:dev` may reset/import all development data, while `seed:prod` only touches catalog and schedule data and must not modify users or subscriptions. `seed:prod` is non-destructive, upsert-only for subjects, events, and participant edges, and requires a typed CLI confirmation.
+- Seed data uses a relational JSON shape: team records carry stable subject ids, and game records reference subject ids plus event-local participant details directly. Import validates and upserts from this structure instead of inferring identities from names, abbreviations, or slugs.
+- Provide two seed flows: `seed:dev` may reset/import all development data, while `seed:prod` only touches catalog and schedule data and must not modify users or subscriptions. `seed:prod` is non-destructive, upsert-only for subjects, events, subject events, and participant records, and requires a typed CLI confirmation.
 - Checked-in seed collections live in private `@dtpt/data` and are activated through an explicit registry. Seed commands import all registered collections; V1 registers only NBA.
 - A **Sports Game Event** is a kind of **Event**.
-- A **Sports Game Event** has exactly two **Event Participants**, one home and one away.
+- A **Sports Game Event** has exactly two **Participants**, one home and one away.
 - An **Event** has exactly one **Event Payload**.
 - A **Notification** is built from one **User**, one **Subscription**, one **Subject**, and one or more due **Events**.
 - A **Subject-Scoped Notification** is the V1 notification unit.
@@ -204,10 +210,10 @@ _Avoid_: Direct `process.env` reads in services
 
 ```txt
 User -> Subscription -> Subject
-Subject <- Event Participant -> Event
+Subject <- Subject Event -> Event -> Participant
 ```
 
-V1 sports-league notifications populate this model with team subjects and sports game events. Future subject families can use the same graph when they have subscribable subjects, scheduled events, and subject-event participation.
+V1 sports-league notifications populate this model with team subjects and sports game events. Future subject families can link events into subject feeds without requiring every subject-feed relationship to be a participant.
 
 **User** is persisted as recipient identity plus delivery timezone and unsubscribe token. Unsubscribe hard-deletes this row; re-signup creates a fresh user and unsubscribe token.
 
@@ -257,21 +263,33 @@ type EventDetails = {
 };
 ```
 
-**Event Participant** is persisted as the edge between a subject and an event:
+**Subject Event** is persisted as the edge between a subject feed and an event:
 
 ```ts
-type EventParticipant = {
+type SubjectEvent = {
   readonly eventId: EventId;
   readonly subjectId: SubjectId;
-  readonly _tag: EventParticipantDetails["_tag"];
-  readonly details: EventParticipantDetails;
-};
-
-type EventParticipantDetails = {
-  readonly _tag: "sports_game";
-  readonly role: "home" | "away";
 };
 ```
+
+**Participant** is persisted as an event-local participant record:
+
+```ts
+type Participant = {
+  readonly id: ParticipantId;
+  readonly eventId: EventId;
+  readonly _tag: ParticipantDetails["_tag"];
+  readonly details: ParticipantDetails;
+};
+
+type ParticipantDetails = {
+  readonly _tag: "sports_game";
+  readonly role: "home" | "away";
+  readonly title: string;
+};
+```
+
+Participants are event-local one-off records. They do not carry subject-derived identity in V1. The subject-feed edge remains `SubjectEvent`. `Participant._tag` selects the JSON details shape for that participant domain. Sports-game participants start with `role` and `title`; future participant tags define their own details instead of inheriting sports fields.
 
 **Subscription** connects a user to a subject and owns executable notification timing:
 
@@ -301,8 +319,8 @@ Event `availability` values are source truth for active versus cancelled events.
 - Row-level discriminated values use top-level `_tag` as a query/index projection and keep the real Effect discriminator in `details._tag`.
 - For row-level discriminated values, top-level `_tag` must equal `details._tag`.
 - Nested discriminated subconcerns such as `schedule` keep their own `_tag` and do not need a table-level `_tag`.
-- Generic/query-critical facts stay as columns, such as `events.source_id`, `events.starts_at`, `events.availability`, `subscriptions.user_id`, and `subscriptions.subject_id`.
-- Type-specific facts stay in JSON details, such as sports team league/name fields, sports game league, and home/away participant role.
+- Generic/query-critical facts stay as columns, such as `events.source_id`, `events.starts_at`, `events.availability`, `subject_events.subject_id`, `subscriptions.user_id`, and `subscriptions.subject_id`.
+- Type-specific facts stay in JSON details, such as sports team league/name fields, sports game league, and participant title/role facts.
 
 ## Import Semantics
 
@@ -314,10 +332,13 @@ Rules:
 - V1 sports seed data uses source ids such as `sports_game:seed:<uuid>`.
 - NBA game seed records include explicit stable event source ids.
 - `source_id` must not be derived from mutable schedule facts such as start time, game date, or participants.
-- Re-importing the same source id updates mutable event facts such as `starts_at`, `availability`, and details, then replaces that event's participant edges.
+- Re-importing the same source id updates mutable event facts such as `starts_at`, `availability`, and details, ensures the relevant subject feed links exist, and replaces that event's participant records.
 - Missing events in a seed collection are not deleted. Cancellation must be represented explicitly with `availability: "cancelled"`.
-- Sports game imports must resolve home and away teams to existing subjects before writing the event.
-- Sports game imports write exactly two event participants, one `home` and one `away`.
+- Sports game imports must resolve home and away team feed subjects before writing subject events.
+- `Subjects.addEventToFeed` relies on subject and event foreign-key constraints for feed-edge integrity; it does not create subjects or events.
+- `Events.setParticipants` replaces only the event-local participant records and relies on the event foreign-key constraint for parent integrity; it does not create subjects or subject events.
+- API/admin command handlers that need user-facing not-found or authorization semantics should read the relevant parent row before calling leaf writes.
+- Sports game imports write exactly two participants, one `home` and one `away`.
 - If the same source id points to unexpectedly different participants, import should fail or log an explicit data-integrity error instead of silently changing identity.
 - V1 does not attempt cross-source dedupe; switching event sources is a migration/reconciliation task.
 
@@ -333,12 +354,8 @@ type Notification = {
   readonly events: NonEmptyReadonlyArray<EventWithParticipants>;
 };
 
-type EventWithParticipants = {
-  readonly event: Event;
-  readonly participants: NonEmptyReadonlyArray<{
-    readonly subject: Subject;
-    readonly participant: EventParticipant;
-  }>;
+type EventWithParticipants = Event & {
+  readonly participants: ReadonlyArray<Participant>;
 };
 ```
 
@@ -400,7 +417,7 @@ Notify uses subscription-first orchestration:
 2. For each recipient, evaluate due time in application code.
 3. Skip recipients already sent on the user's current local date.
 4. Compute the user's **Local Day UTC Range**.
-5. Load same-day events with `Events.listBySubject({ subjectId, range })`.
+5. Load same-day events with `Events.listBySubject(subjectId, { range })`.
 6. Skip recipients with no same-day events.
 7. Send a subject-scoped notification.
 8. Mark the subscription sent only after successful non-dry-run delivery.
@@ -429,19 +446,22 @@ Subjects.get(
   subjectId: SubjectId,
 ): Effect<Subject, SubjectNotFound | DatabaseReadError>;
 
-Events.listBySubject(input: {
-  subjectId: SubjectId;
-  range?: { fromUtc: DateTimeUtc; toUtc: DateTimeUtc };
-  includeCancelled?: boolean;
-}): Effect<ReadonlyArray<EventWithParticipants>, DatabaseReadError>;
+Events.listBySubject(
+  subjectId: SubjectId,
+  opts?: {
+    range?: { fromUtc: DateTimeUtc; toUtc: DateTimeUtc };
+    availability?: "active" | "cancelled" | "all";
+  },
+): Effect<ReadonlyArray<EventWithParticipants>, DatabaseReadError>;
 ```
 
 Rules:
 
 - Aggregates are projections, not the default load shape. `Subjects.get` does not return events.
-- `Events` owns the `events` and `event_participants` tables and exposes subject-scoped queries.
-- `Events.listBySubject` accepts an optional UTC range, filters to `availability: "active"` by default, and orders results by ascending `startsAt`.
-- `Events.listBySubject({ includeCancelled: true })` is reserved for tooling or explicit admin/debug reads; notify does not use it.
+- `Events` owns event reads/writes and participant writes, and exposes subject-scoped queries through `subject_events`.
+- `Subjects.addEventToFeed` owns writing the `subject_events` feed edge; `Subjects.get` and `Subjects.list` still do not return events.
+- `Events.listBySubject` accepts an optional UTC range and optional availability filter, defaults to `availability: "active"`, and orders results by ascending `startsAt`.
+- `Events.listBySubject(subjectId, { availability: "all" })` is reserved for tooling or explicit admin/debug reads; notify does not use it.
 - `Events.listBySubject` uses `event.id` as a stable tiebreaker after `startsAt`.
 - Timezone conversion is the caller's responsibility through a shared time utility; service queries stay UTC-only.
 - New per-window methods such as "today" or "this week" are not added until a real second use case appears.
@@ -464,8 +484,8 @@ V1 keeps table/domain ownership in services and leaves one-off workflow orchestr
 Services:
 
 - `Users` owns `users` reads/writes, including signup upsert, unsubscribe-token lookup, and user deletion.
-- `Subjects` owns `subjects` reads.
-- `Events` owns `events` and `event_participants`, including event import upsert and subject-scoped event queries.
+- `Subjects` owns `subjects` reads and `subject_events` feed-edge writes.
+- `Events` owns `events` and `participants`, including event import upsert and subject-scoped event queries through `subject_events`.
 - `Subscriptions` owns `subscriptions`, including user replacement, notify listing, and sent markers.
 - `Notifier`, `NotifierChannel`, and `NotifierChannelProvider` own notification delivery boundaries.
 
@@ -507,8 +527,11 @@ Subjects.get(subjectId);
 Subjects.list();
 
 Events.get(eventId);
-Events.listBySubject(input);
-Events.upsertWithParticipants(input);
+Events.listBySubject(subjectId, opts);
+Events.upsert(event);
+Events.setParticipants(eventId, participants);
+
+Subjects.addEventToFeed(input);
 
 Subscriptions.list();
 Subscriptions.recipients();
@@ -573,7 +596,7 @@ Until official Drizzle SQLite Effect support is available in the pinned Drizzle 
 
 Define Drizzle relations only for relation-shaped queries the product actually needs or natural hierarchical loads. Do not register every foreign key or automatically define bidirectional relations.
 
-Initial V1 relations support `Subscriptions.recipients()` and `Events.listBySubject()`: subscription-to-user, subscription-to-subject, event-to-participants, and event-participant-to-subject. Add more relations only when a concrete query needs them.
+Initial V1 relations support `Subscriptions.recipients()` and `Events.listBySubject()`: subscription-to-user, subscription-to-subject, event-to-subject-events, and event-to-participants. Add more relations only when a concrete query needs them.
 
 Domain services always decode database reads through the relevant Effect schema before returning domain values and always encode schema-backed writes before passing values to Drizzle. This preserves truthful app-level values such as `DateTimeUtc`, branded ids, and tagged JSON rather than relying on raw Drizzle inference field by field.
 
@@ -619,9 +642,14 @@ Subscriptions.replaceForUser(input): Effect<
   InvalidSubjectSelection | TeamCapExceeded | DatabaseWriteError
 >;
 
-Events.upsertWithParticipants(input): Effect<
+Subjects.addEventToFeed(input): Effect<
   void,
-  EventImportConflict | UnknownParticipantSubject | DatabaseWriteError
+  DatabaseWriteError
+>;
+
+Events.setParticipants(eventId, participants): Effect<
+  void,
+  DatabaseWriteError
 >;
 ```
 
@@ -673,10 +701,10 @@ Rules:
 > **Domain expert:** "Not as the core model. Use Subject and Event, then represent teams and games as sports-league cases of those concepts."
 
 > **Dev:** "Does an Event belong directly to one Subject?"
-> **Domain expert:** "No — Events have participants. A sports game has two team subjects as participants; other event types may have one or more subjects."
+> **Domain expert:** "No — Events belong to subjects through subject events. A sports game links to its team subjects, and a later category subject such as NBA playoffs can link to the same event without becoming a participant."
 
 > **Dev:** "Can home/away be derived from team and event locations?"
-> **Domain expert:** "No — home/away is a fact about a team's participation in a game, so it belongs on Event Participant details."
+> **Domain expert:** "No — home/away is an event-local participant fact, so it belongs on Participant details."
 
 > **Dev:** "Should send time be subscription details?"
 > **Domain expert:** "No — schedule is an executable timing policy, not descriptive details."
@@ -699,8 +727,8 @@ Rules:
 - The database owns **Subject Details**; V1 can group decoded sports subjects by league in memory instead of adding league-specific SQL columns or subtype tables.
 - The generic **Subject** shape has only identity and discriminator fields; display, league, slug, and abbreviation live in **Subject Details**.
 - "event" is clearer than alternatives like "occurrence" for day-to-day code, but it should be documented as subject-owned to avoid confusion with telemetry, webhooks, or domain events.
-- "event" is not owned by exactly one **Subject**. Resolved: use **Event Participant** as the generic link between **Subject** and **Event**.
-- Relationship-specific facts such as home/away belong to **Event Participant Details**, not **Subject Details** or **Event Payload**.
+- "event" is not owned by exactly one **Subject**. Resolved: use **Subject Event** as the generic feed link between **Subject** and **Event**.
+- Event-local participant facts such as home/away and title belong to **Participant Details**, not **Subject Details** or **Event Payload**.
 - Sports-specific event facts such as league belong to **Event Payload**, while SQL-critical generic event facts such as start time stay on **Event**.
 - Import identity belongs to `events.source_id`, not JSON details, and is stable source identity rather than a key derived from schedule facts.
 - Event availability belongs to `events.availability`; it is active/cancelled source truth, not a temporal lifecycle. Past/future stays derived from `events.starts_at`.
@@ -709,7 +737,7 @@ Rules:
 - **Schedule** is modeled as a tagged union, but V1 includes only **Fixed Local Schedule**. New scheduling models should be added by extending the union and updating the explicit schedule evaluation callsites.
 - User send preferences are stored as local wall-clock intent in the user's timezone; event start times are stored as UTC instants and converted to the user's timezone for same-day checks.
 - Same-day event queries use a caller-computed **Local Day UTC Range**; event services accept UTC ranges only.
-- **Subject**, **Event**, and **Event Participant** use a **Row-Level Discriminator** because the whole row is the discriminated value.
+- **Subject**, **Event**, and **Participant** use a **Row-Level Discriminator** because the whole row is the discriminated value.
 - **Schedule** uses a **Subconcern Discriminator** because it is a nested executable policy stored inside a subscription row.
 - Row-level tables use top-level `_tag` as a query/index projection of `details._tag` when the details tag represents the whole row.
 - When `details._tag` represents the whole row, top-level `_tag` must equal `details._tag`.
@@ -737,7 +765,7 @@ Rules:
 - Notify recipient order is deterministic by `subscription.id`; event order is deterministic by `startsAt`, then `event.id`.
 - Notify sends before marking `last_sent_at`. If delivery succeeds but `markSent` fails, V1 accepts possible duplicate delivery on a later run rather than risking silent missed notifications.
 - `Subscriptions.markSent` returns an effect error on failure. The V1 notify job collapses that error to a log and continues processing later subscriptions.
-- Inconsistent event participant graphs are data-integrity failures and may abort the notify run.
+- Inconsistent participant graphs are data-integrity failures and may abort the notify run.
 - Unsubscribe is safe enough before auth by using an opaque random bearer token that exposes no raw email or user id.
 - The unsubscribe token has no embedded payload, signature, timestamp, or expiry in V1.
 - Store the raw unsubscribe token in `users.unsubscribe_token` for V1; hashing does not fit the stable-token email model because future emails need the raw token.

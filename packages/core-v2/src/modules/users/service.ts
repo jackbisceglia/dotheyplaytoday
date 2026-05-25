@@ -5,6 +5,8 @@ import {
   DatabaseDeleteError,
   DatabaseReadError,
   DatabaseWriteError,
+  toReadError,
+  toWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/domain/id.js";
@@ -61,21 +63,14 @@ export const UsersLayer = Layer.effect(
   Effect.gen(function* () {
     const database = yield* Database;
 
-    const get = Effect.fn("Users.get")(function* (userId: User["id"]) {
+    const get: Users["Service"]["get"] = Effect.fn("Users.get")(function* (
+      userId: User["id"],
+    ) {
       const row = yield* database.query.usersTable
         .findFirst({
           where: { id: userId },
         })
-        .pipe(
-          Effect.mapError(
-            (cause) =>
-              new DatabaseReadError({
-                operation: "Users.get",
-                cause,
-                metadata: { userId },
-              }),
-          ),
-        );
+        .pipe(toReadError("Users.get", { userId }));
 
       if (!row) {
         return yield* new UserNotFound({ key: "id", value: userId });
@@ -86,23 +81,14 @@ export const UsersLayer = Layer.effect(
       return user;
     });
 
-    const getByEmail = Effect.fn("Users.getByEmail")(function* (
-      email: User["email"],
-    ) {
+    const getByEmail: Users["Service"]["getByEmail"] = Effect.fn(
+      "Users.getByEmail",
+    )(function* (email: User["email"]) {
       const row = yield* database.query.usersTable
         .findFirst({
           where: { email },
         })
-        .pipe(
-          Effect.mapError(
-            (cause) =>
-              new DatabaseReadError({
-                operation: "Users.getByEmail",
-                cause,
-                metadata: { email },
-              }),
-          ),
-        );
+        .pipe(toReadError("Users.getByEmail", { email }));
 
       if (!row) {
         return yield* new UserNotFound({ key: "email", value: email });
@@ -113,21 +99,18 @@ export const UsersLayer = Layer.effect(
       return user;
     });
 
-    const getByUnsubscribeToken = Effect.fn("Users.getByUnsubscribeToken")(
-      function* (token: User["unsubscribeToken"]) {
+    const getByUnsubscribeToken: Users["Service"]["getByUnsubscribeToken"] =
+      Effect.fn("Users.getByUnsubscribeToken")(function* (
+        token: User["unsubscribeToken"],
+      ) {
         const row = yield* database.query.usersTable
           .findFirst({
             where: { unsubscribeToken: token },
           })
           .pipe(
-            Effect.mapError(
-              (cause) =>
-                new DatabaseReadError({
-                  operation: "Users.getByUnsubscribeToken",
-                  cause,
-                  metadata: { unsubscribeToken: token },
-                }),
-            ),
+            toReadError("Users.getByUnsubscribeToken", {
+              unsubscribeToken: token,
+            }),
           );
 
         if (!row) {
@@ -140,12 +123,11 @@ export const UsersLayer = Layer.effect(
         const user = yield* decodeUser(row);
 
         return user;
-      },
-    );
+      });
 
-    const listByIds = Effect.fn("Users.listByIds")(function* (
-      userIds: readonly User["id"][],
-    ) {
+    const listByIds: Users["Service"]["listByIds"] = Effect.fn(
+      "Users.listByIds",
+    )(function* (userIds: readonly User["id"][]) {
       if (Array.isReadonlyArrayEmpty(userIds)) {
         return [];
       }
@@ -155,28 +137,16 @@ export const UsersLayer = Layer.effect(
           where: { id: { in: Array.fromIterable(userIds) } },
           orderBy: { id: "asc" },
         })
-        .pipe(
-          Effect.mapError(
-            (cause) =>
-              new DatabaseReadError({
-                operation: "Users.listByIds",
-                cause,
-                metadata: {
-                  userIds,
-                },
-              }),
-          ),
-        );
+        .pipe(toReadError("Users.listByIds", { userIds }));
 
       const users = yield* decodeUsers(rows);
 
       return users;
     });
 
-    const upsertForSignup = Effect.fn("Users.upsertForSignup")(function* (
-      email: User["email"],
-      timezone: User["timezone"],
-    ) {
+    const upsertForSignup: Users["Service"]["upsertForSignup"] = Effect.fn(
+      "Users.upsertForSignup",
+    )(function* (email: User["email"], timezone: User["timezone"]) {
       const insertable = yield* encodeUser({
         id: yield* Id.createFromBrandedSchema(User.fields.id),
         unsubscribeToken: yield* Id.createFromBrandedSchema(
@@ -195,17 +165,10 @@ export const UsersLayer = Layer.effect(
         })
         .returning()
         .pipe(
-          Effect.mapError(
-            (cause) =>
-              new DatabaseWriteError({
-                operation: "Users.upsertForSignup",
-                cause,
-                metadata: {
-                  email: insertable.email,
-                  timezone: insertable.timezone,
-                },
-              }),
-          ),
+          toWriteError("Users.upsertForSignup", {
+            email: insertable.email,
+            timezone: insertable.timezone,
+          }),
         );
 
       const row = Array.head(rows);
@@ -225,21 +188,23 @@ export const UsersLayer = Layer.effect(
       return user;
     });
 
-    const remove = Effect.fn("Users.remove")(function* (userId: User["id"]) {
-      yield* database
-        .delete(usersTable)
-        .where(eq(usersTable.id, userId))
-        .pipe(
-          Effect.mapError(
-            (cause) =>
-              new DatabaseDeleteError({
-                operation: "Users.remove",
-                cause,
-                metadata: { userId },
-              }),
-          ),
-        );
-    });
+    const remove: Users["Service"]["remove"] = Effect.fn("Users.remove")(
+      function* (userId: User["id"]) {
+        yield* database
+          .delete(usersTable)
+          .where(eq(usersTable.id, userId))
+          .pipe(
+            Effect.mapError(
+              (cause) =>
+                new DatabaseDeleteError({
+                  operation: "Users.remove",
+                  cause,
+                  metadata: { userId },
+                }),
+            ),
+          );
+      },
+    );
 
     return Users.of({
       get,

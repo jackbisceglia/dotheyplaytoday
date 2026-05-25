@@ -1,10 +1,20 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer, Schema } from "effect";
+import { DateTime, Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 
-import { DatabaseReadError } from "../../../lib/database/errors.js";
+import {
+  DatabaseReadError,
+  DatabaseWriteError,
+} from "../../../lib/database/errors.js";
 import { Database } from "../../../lib/database/service.js";
 import { createTables, layerTest } from "../../../lib/database/test-setup.js";
+import {
+  EventId,
+  EventInsert,
+  EventSourceId,
+  eventsTable,
+} from "../../events/schema.js";
+import { subjectEventsTable } from "../../events/subject-event.schema.js";
 import {
   Subject,
   SubjectId,
@@ -17,6 +27,14 @@ const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
 
 const layerSubjectsTest = SubjectsLayer.pipe(Layer.provideMerge(layerTest));
+
+const utc = (input: string) =>
+  DateTime.toUtc(
+    DateTime.makeZonedUnsafe(input, {
+      timeZone: "UTC",
+      adjustForTimeZone: true,
+    }),
+  );
 
 const subjectInput = {
   id: "00000000-0000-4000-8000-000000000301",
@@ -46,6 +64,21 @@ const secondSubjectInput = {
 
 const subjectId = SubjectId.make(subjectInput.id);
 const secondSubjectId = SubjectId.make(secondSubjectInput.id);
+const eventId = EventId.make("00000000-0000-4000-8000-000000000701");
+
+const eventInput = {
+  id: eventId,
+  _tag: "sports_game",
+  sourceId: EventSourceId.make(
+    "sports_game:test:00000000-0000-4000-8000-000000000701",
+  ),
+  startsAt: utc("2026-05-24T20:00:00"),
+  availability: "active",
+  details: {
+    _tag: "sports_game",
+    leagueId: "nba",
+  },
+} satisfies EventInsert;
 
 const seedSubjects = Effect.gen(function* () {
   const database = yield* Database;
@@ -55,6 +88,13 @@ const seedSubjects = Effect.gen(function* () {
   ];
 
   yield* database.insert(subjectsTable).values(inserts);
+});
+
+const seedEvent = Effect.gen(function* () {
+  const database = yield* Database;
+  const insert = encode(EventInsert)(eventInput);
+
+  yield* database.insert(eventsTable).values(insert);
 });
 
 describe("v2 Subjects service", () => {
@@ -139,6 +179,44 @@ describe("v2 Subjects service", () => {
       const error = yield* subjects.get(subjectId).pipe(Effect.flip);
 
       expect(error._tag).toBe("SchemaError");
+    }).pipe(Effect.provide(layerSubjectsTest)),
+  );
+
+  it.effect("adds an event to a subject feed idempotently", () =>
+    Effect.gen(function* () {
+      yield* createTables;
+      yield* seedSubjects;
+      yield* seedEvent;
+
+      const subjects = yield* Subjects;
+      const database = yield* Database;
+
+      yield* subjects.addEventToFeed({ eventId, subjectId });
+      yield* subjects.addEventToFeed({ eventId, subjectId });
+
+      const rows = yield* database.select().from(subjectEventsTable);
+
+      expect(rows).toEqual([{ eventId, subjectId }]);
+    }).pipe(Effect.provide(layerSubjectsTest)),
+  );
+
+  it.effect("maps missing feed-edge parents to DatabaseWriteError", () =>
+    Effect.gen(function* () {
+      yield* createTables;
+
+      const subjects = yield* Subjects;
+      const database = yield* Database;
+      const input = { eventId, subjectId };
+      const error = yield* subjects.addEventToFeed(input).pipe(Effect.flip);
+      const rows = yield* database.select().from(subjectEventsTable);
+
+      expect(error).toBeInstanceOf(DatabaseWriteError);
+      if (!(error instanceof DatabaseWriteError)) {
+        return;
+      }
+      expect(error.operation).toBe("Subjects.addEventToFeed");
+      expect(error.metadata).toEqual(input);
+      expect(rows).toHaveLength(0);
     }).pipe(Effect.provide(layerSubjectsTest)),
   );
 });
