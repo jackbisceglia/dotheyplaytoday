@@ -9,7 +9,7 @@ import {
   DatabaseWriteError,
 } from "../../../lib/database/errors.js";
 import { Database } from "../../../lib/database/service.js";
-import { createTables, layerTest } from "../../../lib/database/test-setup.js";
+import { createTables, layerTest } from "../../../lib/database/__tests__/setup.js";
 import {
   EmailAddress,
   User,

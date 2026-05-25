@@ -1,7 +1,7 @@
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { Effect } from "effect";
 
-import { createDatabaseLayer } from "./service.js";
+import { createDatabaseLayer } from "../service.js";
 
 export const layerTest = createDatabaseLayer(":memory:");
 

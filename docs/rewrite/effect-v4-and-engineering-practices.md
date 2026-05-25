@@ -73,7 +73,7 @@ Rely on `drizzle-orm/effect-schema` helper typings to enforce refinement/overrid
 
 Name the local Drizzle effect-schema refinement/override object `domainOverrides` by default. Define reusable scalar schemas first, then reference them directly in `domainOverrides`; this keeps primitive definitions readable and importable. Share `domainOverrides` between `createSelectSchema` and `createInsertSchema` when the domain refinement is the same for reads and writes.
 
-Every derived row/insert schema must include a single type-only table contract using `Check<TableSchemasMatch<...>>` from `lib/database/type-contracts`. Put this contract near the top of the module after imports so it reads like a file annotation, not as part of the domain/schema definition flow. This catches drift between the schema encoded types and Drizzle's inferred table models while still keeping the schema definition readable.
+Every derived row/insert schema must include a single type-only table contract using `Check<TableSchemasMatch<...>>` from `lib/database/utils`. Put this contract near the top of the module after imports so it reads like a file annotation, not as part of the domain/schema definition flow. This catches drift between the schema encoded types and Drizzle's inferred table models while still keeping the schema definition readable.
 
 Do not rely on callback overrides as a general optionality fix. In the current Drizzle Effect helper, callback overrides are useful for refining the derived base column schema, but refined insert fields with nullable/default table metadata can still infer as required. If a table contract fails for an optional/default refined field, split the insert overrides and encode that insert optionality explicitly with `Schema.optional(...)` / `Schema.UndefinedOr(...)` / `Schema.NullOr(...)`.
 
@@ -237,10 +237,10 @@ Raw platform APIs belong only inside narrow adapter layers when no Effect servic
 
 - Keep SQLite and Drizzle as the first backend.
 - Use snake_case table and column names to avoid constant string remapping.
-- Define tables with the shared `sqliteTable` factory from `lib/database/drizzle` so snake_case configuration is applied consistently.
+- Define tables with the shared `sqliteTable` factory from `lib/database/drizzle/index` so snake_case configuration is applied consistently.
 - Keep Drizzle table definitions close to owning domain modules or in a focused database schema module. Pick one layout and keep it boring.
 - Generate insert/select/update schemas from Drizzle when the helper is Effect v4-compatible; otherwise define the row schemas beside the tables and share the same field object.
-- Until official Drizzle SQLite Effect support is available in the pinned Drizzle version, keep the temporary SQLite/Effect compatibility code quarantined in `lib/database/sqlite-drizzle.ts`. The public consumer shape should match the expected official Effect driver shape: query builders are yieldable Effects, the `Database` service is injected through the database layer, and domain modules do not import or know about the shim. When official SQLite Effect support lands, deleting that shim should remove the temporary implementation details.
+- Until official Drizzle SQLite Effect support is available in the pinned Drizzle version, keep the temporary SQLite/Effect compatibility code quarantined in `lib/database/drizzle/sqlite.ts`. The public consumer shape should match the expected official Effect driver shape: query builders are yieldable Effects, the `Database` service is injected through the database layer, and domain modules do not import or know about the shim. When official SQLite Effect support lands, deleting that shim should remove the temporary implementation details.
 - Use JSON columns only for app-owned tagged payloads that do not need relational querying yet.
 - Add relational columns only when queries require them.
 - Keep query-critical generic event facts as columns, including `source_id`, `starts_at`, and `availability`.

@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { Effect, Schema } from "effect";
 
 import { Database } from "../../../lib/database/service.js";
-import { createTables, layerTest } from "../../../lib/database/test-setup.js";
+import { createTables, layerTest } from "../../../lib/database/__tests__/setup.js";
 import { User, UserInsert, usersTable } from "../schema.js";
 
 const decode = Schema.decodeUnknownSync;

@@ -4,11 +4,11 @@ import {
 } from "drizzle-orm/effect-schema";
 import { index, primaryKey, text } from "drizzle-orm/sqlite-core";
 
-import { sqliteTable } from "../../../lib/database/drizzle.js";
+import { sqliteTable } from "../../../lib/database/drizzle/index.js";
 import type {
   Check,
   TableSchemasMatch,
-} from "../../../lib/database/type-contracts.js";
+} from "../../../lib/database/utils.js";
 import { EventId, eventsTable } from "../../events/schema.js";
 import { SubjectId, subjectsTable } from "../schema.js";
 

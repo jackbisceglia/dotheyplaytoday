@@ -5,11 +5,11 @@ import {
 import { text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { Schema } from "effect";
 
-import { sqliteTable } from "../../lib/database/drizzle.js";
+import { sqliteTable } from "../../lib/database/drizzle/index.js";
 import type {
   Check,
   TableSchemasMatch,
-} from "../../lib/database/type-contracts.js";
+} from "../../lib/database/utils.js";
 import { Id } from "../../lib/domain/id.js";
 
 export type UserSchemasMatchTable = Check<
