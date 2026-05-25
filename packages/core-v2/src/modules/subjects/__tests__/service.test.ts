@@ -14,7 +14,7 @@ import {
   EventSourceId,
   eventsTable,
 } from "../../events/schema.js";
-import { subjectEventsTable } from "../feed.schema.js";
+import { subjectEventsTable } from "../../feed/schema.js";
 import {
   Subject,
   SubjectId,

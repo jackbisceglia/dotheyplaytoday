@@ -10,7 +10,7 @@ import type {
   TableSchemasMatch,
 } from "../../lib/database/type-contracts.js";
 import { EventId, eventsTable } from "../events/schema.js";
-import { SubjectId, subjectsTable } from "./schema.js";
+import { SubjectId, subjectsTable } from "../subjects/schema.js";
 
 export type SubjectEventSchemasMatchTable = Check<
   TableSchemasMatch<

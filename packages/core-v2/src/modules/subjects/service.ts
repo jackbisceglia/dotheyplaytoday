@@ -11,7 +11,7 @@ import type { EventId } from "../events/schema.js";
 import {
   SubjectEventInsert,
   subjectEventsTable,
-} from "./feed.schema.js";
+} from "../feed/schema.js";
 import { Subject } from "./schema.js";
 
 export class SubjectNotFound extends Schema.TaggedErrorClass<SubjectNotFound>()(
