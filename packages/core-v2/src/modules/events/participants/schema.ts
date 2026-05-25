@@ -13,7 +13,7 @@ import type {
 import { Id } from "../../../lib/domain/id.js";
 import { TaggedUnion } from "../../../lib/effect/index.js";
 import { EventId, eventsTable } from "../schema.js";
-import { SportParticipant } from "./sports/schema.js";
+import { SportParticipant } from "./variants/sport.schema.js";
 
 export type ParticipantSchemasMatchTable = Check<
   TableSchemasMatch<

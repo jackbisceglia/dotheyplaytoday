@@ -12,7 +12,7 @@ import type {
 } from "../../lib/database/type-contracts.js";
 import { Id } from "../../lib/domain/id.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
-import { SportTeamSubject } from "./sports/schema.js";
+import { SportTeamSubject } from "./variants/sport.schema.js";
 
 export type SubjectSchemasMatchTable = Check<
   TableSchemasMatch<typeof subjectsTable, typeof Subject, typeof SubjectInsert>

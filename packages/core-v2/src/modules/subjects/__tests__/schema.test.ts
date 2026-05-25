@@ -5,7 +5,7 @@ import { Effect, Schema } from "effect";
 import { Database } from "../../../lib/database/service.js";
 import { createTables, layerTest } from "../../../lib/database/test-setup.js";
 import { Subject, SubjectInsert, subjectsTable } from "../schema.js";
-import { SportLeagueIds } from "../sports/schema.js";
+import { SportLeagueIds } from "../variants/sport.schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
