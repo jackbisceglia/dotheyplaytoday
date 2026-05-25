@@ -74,9 +74,7 @@ export class Events extends Context.Service<
 
     readonly setParticipants: (
       eventId: EventId,
-      participants: Array.NonEmptyReadonlyArray<
-        Omit<ParticipantInsert, "id" | "eventId">
-      >,
+      participants: readonly Omit<ParticipantInsert, "id" | "eventId">[],
     ) => Effect.Effect<void, DatabaseWriteError | Schema.SchemaError>;
   }
 >()("@dtpt/core-v2/Events") {}
@@ -215,6 +213,8 @@ export const EventsLayer = Layer.effect(
             yield* database
               .delete(participantsTable)
               .where(eq(participantsTable.eventId, eventId));
+
+            if (Array.isReadonlyArrayEmpty(insertableParticipants)) return;
 
             yield* database
               .insert(participantsTable)

@@ -227,6 +227,26 @@ describe("v2 Events service", () => {
     }).pipe(Effect.provide(layerEventsTest)),
   );
 
+  it.effect("clears event-local participants when replacement is empty", () =>
+    Effect.gen(function* () {
+      yield* createTables;
+
+      const events = yield* Events;
+      const database = yield* Database;
+      const event = yield* events.upsert(celticsKnicksEvent);
+
+      yield* events.setParticipants(event.id, participants);
+      yield* events.setParticipants(event.id, []);
+
+      const rows = yield* database
+        .select()
+        .from(participantsTable)
+        .where(eq(participantsTable.eventId, event.id));
+
+      expect(rows).toHaveLength(0);
+    }).pipe(Effect.provide(layerEventsTest)),
+  );
+
   it.effect(
     "rolls participant replacement back when the event id violates the foreign key",
     () =>

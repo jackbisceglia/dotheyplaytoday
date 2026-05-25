@@ -336,7 +336,7 @@ Rules:
 - Missing events in a seed collection are not deleted. Cancellation must be represented explicitly with `availability: "cancelled"`.
 - Sports game imports must resolve home and away team feed subjects before writing subject events.
 - `Subjects.addEventToFeed` relies on subject and event foreign-key constraints for feed-edge integrity; it does not create subjects or events.
-- `Events.setParticipants` replaces only the event-local participant records and relies on the event foreign-key constraint for parent integrity; it does not create subjects or subject events.
+- `Events.setParticipants` replaces only the event-local participant records with the provided list, which may be empty; it relies on the event foreign-key constraint when inserting participant rows and does not create subjects or subject events.
 - API/admin command handlers that need user-facing not-found or authorization semantics should read the relevant parent row before calling leaf writes.
 - Sports game imports write exactly two participants, one `home` and one `away`.
 - If the same source id points to unexpectedly different participants, import should fail or log an explicit data-integrity error instead of silently changing identity.
