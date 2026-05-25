@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 
 const fields = {
   operation: Schema.String,
@@ -25,3 +25,31 @@ export class DatabaseTransactionError extends Schema.TaggedErrorClass<DatabaseTr
   "DatabaseTransactionError",
   fields,
 ) {}
+
+export const toReadError =
+  (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
+  <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+    effect.pipe(
+      Effect.mapError(
+        (cause) =>
+          new DatabaseReadError({
+            operation,
+            cause,
+            metadata,
+          }),
+      ),
+    );
+
+export const toWriteError =
+  (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
+  <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+    effect.pipe(
+      Effect.mapError(
+        (cause) =>
+          new DatabaseWriteError({
+            operation,
+            cause,
+            metadata,
+          }),
+      ),
+    );

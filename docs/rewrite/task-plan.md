@@ -24,7 +24,7 @@ Scope:
 - Add shared table/schema helpers, such as snake_case Drizzle table creation and type-only table/schema contracts.
 - Document any temporary database compatibility shim needed while waiting for official Drizzle SQLite Effect support.
 - Keep business-style domain services, import upserts, signup, notify, and unsubscribe orchestration out of this branch.
-- Keep `Subject`, `Event`, `EventParticipant`, `Subscription`, schedule, and details schemas out of this branch unless a tiny shared primitive is required by the accepted `User` pattern.
+- Keep `Subject`, `Event`, `SubjectEvent`, `Participant`, `Subscription`, schedule, and details schemas out of this branch unless a tiny shared primitive is required by the accepted `User` pattern.
 
 Vertical slice check-in:
 
@@ -79,14 +79,14 @@ Goal: apply the accepted model/database/service pattern across the rest of the c
 
 Scope:
 
-- Define schemas and tables for `Subject`, `Event`, `EventParticipant`, `Subscription`, fixed local schedule, sports subject details, sports event details, and participant details.
+- Define schemas and tables for `Subject`, `Event`, `SubjectEvent`, `Participant`, `Subscription`, fixed local schedule, sports subject details, sports event details, and participant details.
 - Add `events.source_id` for stable import identity and `events.availability` with `active | cancelled`; keep past/future derived from `starts_at`.
 - Add migrations or database push setup needed to create all tables.
 - Implement `Subjects`, `Events`, and `Subscriptions` services.
 - Implement `Subjects.get` and `Subjects.list`.
-- Implement `Events.get`, `Events.listBySubject`, and `Events.upsertWithParticipants`.
-- Implement `Events.listBySubject` as the normal active-only event read, with explicit `includeCancelled` for tooling/debug reads.
-- Implement `Events.upsertWithParticipants` using stable `(_tag, source_id)` identity.
+- Implement `Events.get`, `Events.listBySubject`, `Events.upsert`, `Events.setParticipants`, and `Subjects.addEventToFeed`.
+- Implement `Events.listBySubject` as the normal active-only event read, with explicit availability options for tooling/debug reads.
+- Implement `Events.upsert` using stable `(_tag, source_id)` identity.
 - Implement `Subscriptions.list`, `Subscriptions.recipients`, `Subscriptions.replaceForUser`, and `Subscriptions.markSent`.
 - Implement local send-time due calculation, local-day UTC range, event local-date matching helpers, already-sent guard, team cap policy, and 15-minute schedule increments.
 - Keep signup, notify, and unsubscribe orchestration out of this branch except where tests need minimal fixtures.
@@ -134,7 +134,7 @@ Vertical slice check-in:
 Verification:
 
 - Registry tests or import tests for explicit activation.
-- Seed import tests for one event plus two participant edges.
+- Seed import tests for one event plus two subject events and two participant records.
 - Changed start-time import updates the existing event.
 - Cancelled import updates `availability`.
 - Production seed confirmation test.

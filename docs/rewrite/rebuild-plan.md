@@ -34,8 +34,8 @@ Verification:
 
 Deliverables:
 
-- Define core schemas for `User` with `unsubscribeToken`, `Subject`, `Event` with `sourceId` and `availability`, `EventParticipant`, `Subscription`, fixed local schedule, and sports details payloads.
-- Define Drizzle tables: `users`, `subjects`, `events`, `event_participants`, `subscriptions`.
+- Define core schemas for `User` with `unsubscribeToken`, `Subject`, `Event` with `sourceId` and `availability`, `SubjectEvent`, `Participant`, `Subscription`, fixed local schedule, and sports details payloads.
+- Define Drizzle tables: `users`, `subjects`, `events`, `subject_events`, `participants`, `subscriptions`.
 - Add `events.availability` with initial values `active` and `cancelled`; past/future status remains derived from `starts_at`.
 - Generate Effect schemas from Drizzle for persisted rows.
 - Add SQLite database layer using Effect SQL and Drizzle.
@@ -50,12 +50,13 @@ Key decisions:
 - No `enabled` unless a pause/resume workflow is added.
 - Plain database failures use shared database errors instead of service-specific read/write wrappers.
 - Service methods use predictable read names (`get`, `getByX`, `list`, `listByX`), meaning-based projections such as `Subscriptions.recipients`, and domain write names for invariant-bearing operations.
-- `schedule_json` stores the fixed schedule tagged payload.
-- Row-level variant tables use `kind` as a query projection of `details_json._tag`.
-- `events.source_id` stores stable import identity formatted as `<eventType>:<source>:<uuid>` and is unique with `kind`.
+- `subscriptions.schedule` stores the fixed schedule tagged payload.
+- Row-level variant tables use `_tag` as a query projection of `details._tag`.
+- `events.source_id` stores stable import identity formatted as `<eventType>:<source>:<uuid>` and is unique with `_tag`.
 - `events.availability` stores source-provided event availability, not past/future lifecycle state.
-- `events.details_json` stores sports game event details.
-- `event_participants.details_json` stores sports game participant details.
+- `events.details` stores sports game event details.
+- `subject_events` stores the subject-feed membership for events.
+- `participants.details` stores tagged participant-domain details, such as sports game title and home/away role.
 
 Verification:
 
@@ -63,9 +64,9 @@ Verification:
 - Database error tests prove operation/context metadata is preserved.
 - Drizzle migration or push creates all tables.
 - SQLite roundtrip tests for each table.
-- Event upsert tests prove repeated import by `(kind, source_id)` updates one event instead of creating duplicates.
+- Event upsert tests prove repeated import by `(_tag, source_id)` updates one event instead of creating duplicates.
 - Event read tests prove cancelled events are excluded from normal subject-scoped reads and available only through an explicit cancelled-inclusive path.
-- Subject schedule load returns deterministic event ordering through event participants.
+- Subject-scoped event reads return deterministic event ordering and event-local participants.
 
 ## Phase 2 - Subscription Behavior Slice
 
@@ -115,7 +116,7 @@ Key decisions:
 - Notify assembles the prepared `Notification` inline; do not add a builder/projection service in V1.
 - Provider failures are per-subscription and do not stop later subscriptions.
 - Data integrity or database read failures may abort the run.
-- Inconsistent event participant graph tests abort the run.
+- Inconsistent participant graph tests abort the run.
 - `last_sent_at` updates only after successful real send.
 - Dry-run evaluates and reports would-send behavior without provider delivery or `last_sent_at` updates.
 - `--user <email>` limits recipients to one normalized email address.
@@ -166,7 +167,7 @@ Verification:
 
 - Handler tests for success, validation failure, cap rejection, invalid subject id, and rate limit.
 - Persistence tests prove resubmission overwrites preferences for the same email.
-- Import tests prove sports games write one event plus two participant edges and reject unresolved teams.
+- Import tests prove sports games write one event plus two subject events and two participant records, and reject unresolved teams.
 
 ## Phase 5 - Landing Page Slice
 

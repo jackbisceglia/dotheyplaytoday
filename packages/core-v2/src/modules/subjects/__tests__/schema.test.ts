@@ -3,9 +3,9 @@ import { eq } from "drizzle-orm";
 import { Effect, Schema } from "effect";
 
 import { Database } from "../../../lib/database/service.js";
-import { createTables, layerTest } from "../../../lib/database/test-setup.js";
+import { createTables, layerTest } from "../../../lib/database/__tests__/setup.js";
 import { Subject, SubjectInsert, subjectsTable } from "../schema.js";
-import { SportLeagueIds } from "../sports.js";
+import { SportLeagueIds } from "../variants/sport.schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
