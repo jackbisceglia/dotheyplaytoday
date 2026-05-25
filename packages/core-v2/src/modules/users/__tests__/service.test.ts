@@ -33,6 +33,7 @@ const userInput = {
 
 const userId = UserId.make(userInput.id);
 const email = EmailAddress.make(userInput.email);
+const unsubscribeToken = decode(User)(userInput).unsubscribeToken;
 const newYorkTimezone = decode(User)(userInput).timezone;
 const chicagoTimezone = decode(User)({
   ...userInput,
@@ -151,6 +152,10 @@ describe("v2 Users service", () => {
       Effect.gen(function* () {
         const users = yield* Users;
         const error = yield* users.get(userId).pipe(Effect.flip);
+        const emailError = yield* users.getByEmail(email).pipe(Effect.flip);
+        const tokenError = yield* users
+          .getByUnsubscribeToken(unsubscribeToken)
+          .pipe(Effect.flip);
 
         expect(error).toBeInstanceOf(DatabaseReadError);
         if (!(error instanceof DatabaseReadError)) {
@@ -158,6 +163,20 @@ describe("v2 Users service", () => {
         }
         expect(error.operation).toBe("Users.get");
         expect(error.metadata).toEqual({ userId });
+
+        expect(emailError).toBeInstanceOf(DatabaseReadError);
+        if (!(emailError instanceof DatabaseReadError)) {
+          return;
+        }
+        expect(emailError.operation).toBe("Users.getByEmail");
+        expect(emailError.metadata).toEqual({ lookup: "email" });
+
+        expect(tokenError).toBeInstanceOf(DatabaseReadError);
+        if (!(tokenError instanceof DatabaseReadError)) {
+          return;
+        }
+        expect(tokenError.operation).toBe("Users.getByUnsubscribeToken");
+        expect(tokenError.metadata).toEqual({ lookup: "unsubscribeToken" });
       }).pipe(Effect.provide(layerUsersTest)),
   );
 
@@ -176,7 +195,6 @@ describe("v2 Users service", () => {
         }
         expect(error.operation).toBe("Users.upsertForSignup");
         expect(error.metadata).toEqual({
-          email,
           timezone: "America/New_York",
         });
       }).pipe(Effect.provide(layerUsersTest)),

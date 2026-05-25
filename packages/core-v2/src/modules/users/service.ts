@@ -88,7 +88,7 @@ export const UsersLayer = Layer.effect(
         .findFirst({
           where: { email },
         })
-        .pipe(toReadError("Users.getByEmail", { email }));
+        .pipe(toReadError("Users.getByEmail", { lookup: "email" }));
 
       if (!row) {
         return yield* new UserNotFound({ key: "email", value: email });
@@ -109,7 +109,7 @@ export const UsersLayer = Layer.effect(
           })
           .pipe(
             toReadError("Users.getByUnsubscribeToken", {
-              unsubscribeToken: token,
+              lookup: "unsubscribeToken",
             }),
           );
 
@@ -166,7 +166,6 @@ export const UsersLayer = Layer.effect(
         .returning()
         .pipe(
           toWriteError("Users.upsertForSignup", {
-            email: insertable.email,
             timezone: insertable.timezone,
           }),
         );
@@ -177,7 +176,6 @@ export const UsersLayer = Layer.effect(
         return yield* new DatabaseWriteError({
           operation: "Users.upsertForSignup",
           metadata: {
-            email: insertable.email,
             timezone: insertable.timezone,
           },
         });
