@@ -25,7 +25,7 @@ import {
   Participant,
   ParticipantInsert,
   participantsTable,
-} from "./participant.schema.js";
+} from "./participants/schema.js";
 import {
   Event,
   EventAvailability,

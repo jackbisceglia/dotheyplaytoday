@@ -4,7 +4,7 @@ export {
   ParticipantId,
   ParticipantInsert,
   participantsTable,
-} from "./modules/events/participant.schema.js";
+} from "./modules/events/participants/schema.js";
 export { EventNotFound } from "./modules/events/errors.js";
 export {
   Event,
@@ -25,7 +25,7 @@ export {
   SubjectEvent,
   SubjectEventInsert,
   subjectEventsTable,
-} from "./modules/events/subject-event.schema.js";
+} from "./modules/subjects/feed.schema.js";
 export {
   Subject,
   SubjectDetails,

@@ -5,15 +5,15 @@ import {
 import { index, text } from "drizzle-orm/sqlite-core";
 import { Schema } from "effect";
 
-import { sqliteTable } from "../../lib/database/drizzle.js";
+import { sqliteTable } from "../../../lib/database/drizzle.js";
 import type {
   Check,
   TableSchemasMatch,
-} from "../../lib/database/type-contracts.js";
-import { Id } from "../../lib/domain/id.js";
-import { TaggedUnion } from "../../lib/effect/index.js";
-import { EventId, eventsTable } from "./schema.js";
-import { SportParticipant } from "./sports.js";
+} from "../../../lib/database/type-contracts.js";
+import { Id } from "../../../lib/domain/id.js";
+import { TaggedUnion } from "../../../lib/effect/index.js";
+import { EventId, eventsTable } from "../schema.js";
+import { SportParticipant } from "./sports/schema.js";
 
 export type ParticipantSchemasMatchTable = Check<
   TableSchemasMatch<

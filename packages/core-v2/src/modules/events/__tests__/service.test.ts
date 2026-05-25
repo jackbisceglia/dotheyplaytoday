@@ -16,13 +16,13 @@ import {
   Participant,
   ParticipantInsert,
   participantsTable,
-} from "../participant.schema.js";
+} from "../participants/schema.js";
 import { EventId, EventInsert, EventSourceId, eventsTable } from "../schema.js";
 import { Events, EventsLayer } from "../service.js";
 import {
   SubjectEventInsert,
   subjectEventsTable,
-} from "../subject-event.schema.js";
+} from "../../subjects/feed.schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
