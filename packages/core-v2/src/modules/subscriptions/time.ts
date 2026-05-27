@@ -83,7 +83,8 @@ const isDue = (input: {
   readonly nowUtc: DateTime.Utc;
 }) => {
   const zonedNow = DateTime.setZone(input.nowUtc, input.user.timezone);
-  // -1, 0, and 1 are the previous, current, and next local-day candidates.
+  // Send time is anchored from `now`, so early/late drift windows must check
+  // the previous/current/next local days when they cross midnight.
   const candidates = [-1, 0, 1].map((days) =>
     computeScheduleSendAtUtc({
       schedule: input.subscription.schedule,
