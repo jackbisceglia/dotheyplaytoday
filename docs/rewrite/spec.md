@@ -240,7 +240,20 @@ SubscriptionTiming.localDayUtcRange(input: {
 }): { from: DateTimeUtc; to: DateTimeUtc };
 ```
 
-Notify computes the user's local day UTC range and uses it to call `Events.listBySubject`. `Events` does not know what "today" means for a user.
+Notify maps the `SubscriptionTiming.localDayUtcRange` result into the `Events.listBySubject` range keys:
+
+```ts
+const localDay = SubscriptionTiming.localDayUtcRange({ nowUtc, timezone });
+
+Events.listBySubject(subjectId, {
+  range: {
+    fromUtc: localDay.from,
+    toUtc: localDay.to,
+  },
+});
+```
+
+`Events` does not know what "today" means for a user.
 
 ## Service Boundaries
 
@@ -358,7 +371,7 @@ Notify uses subscription-first orchestration:
 2. For each recipient, evaluate due time in application code.
 3. Skip recipients already sent on the user's current local date.
 4. Compute the user's local-day UTC range.
-5. Load same-day events with `Events.listBySubject(subjectId, { range })`.
+5. Load same-day events with `Events.listBySubject`, mapping `localDay.from` to `range.fromUtc` and `localDay.to` to `range.toUtc`.
 6. Skip recipients with no same-day events.
 7. Send a subject-scoped notification.
 8. Mark the subscription sent only after successful non-dry-run delivery.
