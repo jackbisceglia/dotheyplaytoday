@@ -39,6 +39,25 @@ export {
   SubjectsLayer,
 } from "./modules/subjects/service.js";
 export {
+  InvalidSubjectSelection,
+  SubjectCapacityReached,
+} from "./modules/subscriptions/errors.js";
+export { SubscriptionPolicy } from "./modules/subscriptions/policy.js";
+export {
+  FixedSchedule,
+  Schedule,
+  Subscription,
+  SubscriptionId,
+  SubscriptionInsert,
+  subscriptionsTable,
+} from "./modules/subscriptions/schema.js";
+export {
+  NotificationRecipient,
+  Subscriptions,
+  SubscriptionsLayer,
+} from "./modules/subscriptions/service.js";
+export { SubscriptionTiming } from "./modules/subscriptions/time.js";
+export {
   EmailAddress,
   UnsubscribeToken,
   User,

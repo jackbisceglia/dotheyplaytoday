@@ -3,8 +3,8 @@ import { Context, Effect, Layer, Schema } from "effect";
 import {
   DatabaseReadError,
   DatabaseWriteError,
-  toReadError,
-  toWriteError,
+  mapToReadError,
+  mapToWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import type { EventId } from "../events/schema.js";
@@ -55,7 +55,7 @@ export const SubjectsLayer = Layer.effect(
           .findFirst({
             where: { id: subjectId },
           })
-          .pipe(toReadError("Subjects.get", { subjectId }));
+          .pipe(mapToReadError("Subjects.get", { subjectId }));
 
         if (!row) {
           return yield* new SubjectNotFound({ key: "id", value: subjectId });
@@ -73,7 +73,7 @@ export const SubjectsLayer = Layer.effect(
           .findMany({
             orderBy: { id: "asc" },
           })
-          .pipe(toReadError("Subjects.list"));
+          .pipe(mapToReadError("Subjects.list"));
 
         const subjects = yield* decodeSubjects(rows);
 
@@ -90,7 +90,7 @@ export const SubjectsLayer = Layer.effect(
         .insert(subjectEventsTable)
         .values(insertable)
         .onConflictDoNothing()
-        .pipe(toWriteError("Subjects.addEventToFeed", input));
+        .pipe(mapToWriteError("Subjects.addEventToFeed", input));
     });
 
     return Subjects.of({

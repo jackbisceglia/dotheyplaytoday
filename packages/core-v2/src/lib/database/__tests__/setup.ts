@@ -85,4 +85,31 @@ export const createTables = Effect.gen(function* () {
     CREATE INDEX participants_event_id_idx
     ON participants (event_id)
   `;
+
+  yield* sql`
+    CREATE TABLE subscriptions (
+      id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
+      subject_id TEXT NOT NULL,
+      schedule TEXT NOT NULL,
+      last_sent_at TEXT,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+    )
+  `;
+
+  yield* sql`
+    CREATE INDEX subscriptions_user_id_idx
+    ON subscriptions (user_id)
+  `;
+
+  yield* sql`
+    CREATE INDEX subscriptions_subject_id_idx
+    ON subscriptions (subject_id)
+  `;
+
+  yield* sql`
+    CREATE UNIQUE INDEX subscriptions_user_subject_idx
+    ON subscriptions (user_id, subject_id)
+  `;
 });

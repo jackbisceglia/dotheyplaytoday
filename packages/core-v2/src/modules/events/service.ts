@@ -14,7 +14,8 @@ import {
 import {
   DatabaseReadError,
   DatabaseWriteError,
-  toReadError,
+  mapToReadError,
+  mapToWriteError,
   toWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
@@ -99,7 +100,7 @@ export const EventsLayer = Layer.effect(
           .findFirst({
             where: { id: eventId },
           })
-          .pipe(toReadError("Events.get", { eventId }));
+          .pipe(mapToReadError("Events.get", { eventId }));
 
         if (!row) {
           return yield* new EventNotFound({ eventId });
@@ -147,7 +148,7 @@ export const EventsLayer = Layer.effect(
           },
           orderBy: { startsAt: "asc", id: "asc" },
         })
-        .pipe(toReadError("Events.listBySubject", { subjectId, opts }));
+        .pipe(mapToReadError("Events.listBySubject", { subjectId, opts }));
 
       const eventsWithParticipants = yield* decodeEventWithParticipants(rows);
 
@@ -173,7 +174,7 @@ export const EventsLayer = Layer.effect(
             },
           })
           .returning()
-          .pipe(toWriteError("Events.upsert"));
+          .pipe(mapToWriteError("Events.upsert"));
 
         const row = Array.head(rows);
 
@@ -222,14 +223,9 @@ export const EventsLayer = Layer.effect(
           }),
         )
         .pipe(
-          Effect.catchTag("SqlError", (cause) =>
-            Effect.fail(
-              new DatabaseWriteError({
-                operation: "Events.setParticipants",
-                cause,
-                metadata: { eventId },
-              }),
-            ),
+          Effect.catchTag(
+            "SqlError",
+            toWriteError("Events.setParticipants", { eventId }),
           ),
         );
     });

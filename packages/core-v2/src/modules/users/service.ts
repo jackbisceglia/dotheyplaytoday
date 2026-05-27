@@ -5,8 +5,8 @@ import {
   DatabaseDeleteError,
   DatabaseReadError,
   DatabaseWriteError,
-  toReadError,
-  toWriteError,
+  mapToReadError,
+  mapToWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/domain/id.js";
@@ -70,7 +70,7 @@ export const UsersLayer = Layer.effect(
         .findFirst({
           where: { id: userId },
         })
-        .pipe(toReadError("Users.get", { userId }));
+        .pipe(mapToReadError("Users.get", { userId }));
 
       if (!row) {
         return yield* new UserNotFound({ key: "id", value: userId });
@@ -88,7 +88,7 @@ export const UsersLayer = Layer.effect(
         .findFirst({
           where: { email },
         })
-        .pipe(toReadError("Users.getByEmail", { lookup: "email" }));
+        .pipe(mapToReadError("Users.getByEmail", { lookup: "email" }));
 
       if (!row) {
         return yield* new UserNotFound({ key: "email", value: email });
@@ -108,7 +108,7 @@ export const UsersLayer = Layer.effect(
             where: { unsubscribeToken: token },
           })
           .pipe(
-            toReadError("Users.getByUnsubscribeToken", {
+            mapToReadError("Users.getByUnsubscribeToken", {
               lookup: "unsubscribeToken",
             }),
           );
@@ -137,7 +137,7 @@ export const UsersLayer = Layer.effect(
           where: { id: { in: Array.fromIterable(userIds) } },
           orderBy: { id: "asc" },
         })
-        .pipe(toReadError("Users.listByIds", { userIds }));
+        .pipe(mapToReadError("Users.listByIds", { userIds }));
 
       const users = yield* decodeUsers(rows);
 
@@ -165,7 +165,7 @@ export const UsersLayer = Layer.effect(
         })
         .returning()
         .pipe(
-          toWriteError("Users.upsertForSignup", {
+          mapToWriteError("Users.upsertForSignup", {
             timezone: insertable.timezone,
           }),
         );

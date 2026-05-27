@@ -28,6 +28,17 @@ export class DatabaseTransactionError extends Schema.TaggedErrorClass<DatabaseTr
 
 export const toReadError =
   (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
+  (cause: unknown) =>
+    Effect.fail(
+      new DatabaseReadError({
+        operation,
+        cause,
+        metadata,
+      }),
+    );
+
+export const mapToReadError =
+  (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
   <A, E, R>(effect: Effect.Effect<A, E, R>) =>
     effect.pipe(
       Effect.mapError(
@@ -41,6 +52,17 @@ export const toReadError =
     );
 
 export const toWriteError =
+  (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
+  (cause: unknown) =>
+    Effect.fail(
+      new DatabaseWriteError({
+        operation,
+        cause,
+        metadata,
+      }),
+    );
+
+export const mapToWriteError =
   (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
   <A, E, R>(effect: Effect.Effect<A, E, R>) =>
     effect.pipe(
