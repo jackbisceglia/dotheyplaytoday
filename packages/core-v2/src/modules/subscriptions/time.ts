@@ -82,17 +82,24 @@ const isDue = (input: {
   readonly user: User;
   readonly nowUtc: DateTime.Utc;
 }) => {
-  const sendAtUtc = computeScheduleSendAtUtc({
-    schedule: input.subscription.schedule,
-    timezone: input.user.timezone,
-    nowUtc: input.nowUtc,
-  });
-  const driftMs =
-    DateTime.toEpochMillis(input.nowUtc) - DateTime.toEpochMillis(sendAtUtc);
-
-  return (
-    driftMs >= -CONSTRAINTS.due.msLow && driftMs <= CONSTRAINTS.due.msHigh
+  const zonedNow = DateTime.setZone(input.nowUtc, input.user.timezone);
+  // -1, 0, and 1 are the previous, current, and next local-day candidates.
+  const candidates = [-1, 0, 1].map((days) =>
+    computeScheduleSendAtUtc({
+      schedule: input.subscription.schedule,
+      timezone: input.user.timezone,
+      nowUtc: DateTime.toUtc(DateTime.add(zonedNow, { days })),
+    }),
   );
+
+  return candidates.some((candidateUtc) => {
+    const driftMs =
+      DateTime.toEpochMillis(input.nowUtc) - DateTime.toEpochMillis(candidateUtc);
+
+    return (
+      driftMs >= -CONSTRAINTS.due.msLow && driftMs <= CONSTRAINTS.due.msHigh
+    );
+  });
 };
 
 /**

@@ -133,6 +133,26 @@ describe("subscription time utilities", () => {
     ).toBe(false);
   });
 
+  it("checks due windows that cross local midnight", () => {
+    const user = makeUser("America/New_York");
+    const subscription = makeSubscription(0);
+
+    expect(
+      SubscriptionTiming.isDue({
+        subscription,
+        user,
+        nowUtc: utc("2026-02-10T04:59:30.000Z"),
+      }),
+    ).toBe(true);
+    expect(
+      SubscriptionTiming.isDue({
+        subscription,
+        user,
+        nowUtc: utc("2026-02-10T04:58:30.000Z"),
+      }),
+    ).toBe(false);
+  });
+
   it("compares last sent and current instants by the user's local date", () => {
     const user = makeUser("America/New_York");
     const lastSentAt = utc("2026-02-10T01:00:00.000Z");
