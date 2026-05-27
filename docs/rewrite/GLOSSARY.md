@@ -116,9 +116,9 @@ _Avoid_: Email message, provider payload
 A notification produced for one user subscription to one subject.
 _Avoid_: User-level digest
 
-**Subscription Recipient**:
-A subscription paired with the user who receives notifications for it.
-_Avoid_: getAllWithUsers
+**Notification Recipient**:
+A notification-oriented projection of a user and one subscription, with that subscription's subject loaded.
+_Avoid_: recipients, getAllWithUsers
 
 **Forced Notify Run**:
 A dev/operator run that bypasses subscription timing and already-sent guards while still requiring same-day events.
@@ -191,7 +191,7 @@ _Avoid_: Direct `process.env` reads in services
 - An **Event** has exactly one **Event Payload**.
 - A **Notification** is built from one **User**, one **Subscription**, one **Subject**, and one or more due **Events**.
 - A **Subject-Scoped Notification** is the V1 notification unit.
-- A **Subscription Recipient** is the notify job's input projection.
+- A **Notification Recipient** is the notify job's input projection.
 - A **Forced Notify Run** is restricted by optional user filtering and still requires matching same-day events.
 - **Last Sent At** changes only after successful notification delivery.
 - A **Notifier** uses exactly one **NotifierChannel** for V1.
@@ -413,11 +413,11 @@ If one subscribed subject has multiple same-day events, such as a doubleheader, 
 
 Notify uses subscription-first orchestration:
 
-1. Load subscription recipients through `Subscriptions.recipients()`.
+1. Load subscription notification recipients through `Subscriptions.listNotificationRecipients()`.
 2. For each recipient, evaluate due time in application code.
 3. Skip recipients already sent on the user's current local date.
 4. Compute the user's **Local Day UTC Range**.
-5. Load same-day events with `Events.listBySubject(subjectId, { range })`.
+5. Load same-day events with `Events.listBySubject`, mapping `localDay.from` to `range.fromUtc` and `localDay.to` to `range.toUtc`.
 6. Skip recipients with no same-day events.
 7. Send a subject-scoped notification.
 8. Mark the subscription sent only after successful non-dry-run delivery.
@@ -469,13 +469,26 @@ Rules:
 Shared time utility:
 
 ```ts
-localDayUtcRange(input: {
+SubscriptionTiming.localDayUtcRange(input: {
   nowUtc: DateTimeUtc;
   timezone: TimeZone;
-}): { fromUtc: DateTimeUtc; toUtc: DateTimeUtc };
+}): { from: DateTimeUtc; to: DateTimeUtc };
 ```
 
-Notify computes the user's local day UTC range and passes that range to `Events.listBySubject`. `Events` does not know what "today" means for a user.
+Notify maps the `SubscriptionTiming.localDayUtcRange` result into the `Events.listBySubject` range keys:
+
+```ts
+const localDay = SubscriptionTiming.localDayUtcRange({ nowUtc, timezone });
+
+Events.listBySubject(subjectId, {
+  range: {
+    fromUtc: localDay.from,
+    toUtc: localDay.to,
+  },
+});
+```
+
+`Events` does not know what "today" means for a user.
 
 ## Service Boundaries
 
@@ -507,7 +520,7 @@ Naming rules:
 - `getByX(value)` reads one entity by another unique key.
 - `list(input?)` reads many entities, optionally filtered.
 - `listByX(input)` reads many entities scoped by a foreign/domain key.
-- Domain projections use meaning-based names, such as `Subscriptions.recipients()`, instead of mechanical names like `getAllWithUsers()`.
+- Domain projections use meaning-based names, such as `Subscriptions.listNotificationRecipients()`, instead of mechanical names like `getAllWithUsers()`.
 - Generic write names are allowed only when the operation is simple and invariant-light; V1 favors domain writes for invariant-bearing operations.
 - Prefer direct domain scalar arguments for small method surfaces. Use an input object when the parameters form a named payload or range, or when the operation naturally carries a multi-field command.
 
@@ -534,24 +547,25 @@ Events.setParticipants(eventId, participants);
 Subjects.addEventToFeed(input);
 
 Subscriptions.list();
-Subscriptions.recipients();
-Subscriptions.replaceForUser(input);
+Subscriptions.listNotificationRecipients();
+Subscriptions.replaceForUser({ user, subjectIds, schedule });
 Subscriptions.markSent(input);
 ```
 
 This follows the style seen in the local `reference/opencode` and `reference/t3code` repos: predictable read names, boundary-level decode, domain-value service inputs, meaning-based projections, and domain write names when the operation carries business invariants.
 
-`Subscriptions.recipients()` returns the notify input projection:
+`Subscriptions.listNotificationRecipients()` returns the notify input projection:
 
 ```ts
-type SubscriptionRecipient = {
-  readonly subscription: Subscription;
+type NotificationRecipient = {
   readonly user: User;
-  readonly subject: Subject;
+  readonly subscription: Subscription & {
+    readonly subject: Subject;
+  };
 };
 ```
 
-`Subscriptions.recipients()` orders by `subscription.id` ascending. The order has no domain meaning; it exists for deterministic logs and tests.
+`Subscriptions.listNotificationRecipients()` orders by `subscription.id` ascending. The order has no domain meaning; it exists for deterministic logs and tests.
 
 ## API And Web Contracts
 
@@ -596,7 +610,7 @@ Until official Drizzle SQLite Effect support is available in the pinned Drizzle 
 
 Define Drizzle relations only for relation-shaped queries the product actually needs or natural hierarchical loads. Do not register every foreign key or automatically define bidirectional relations.
 
-Initial V1 relations support `Subscriptions.recipients()` and `Events.listBySubject()`: subscription-to-user, subscription-to-subject, event-to-subject-events, and event-to-participants. Add more relations only when a concrete query needs them.
+Initial V1 relations support `Subscriptions.listNotificationRecipients()` and `Events.listBySubject()`: subscription-to-user, subscription-to-subject, event-to-subject-events, and event-to-participants. Add more relations only when a concrete query needs them.
 
 Domain services always decode database reads through the relevant Effect schema before returning domain values and always encode schema-backed writes before passing values to Drizzle. This preserves truthful app-level values such as `DateTimeUtc`, branded ids, and tagged JSON rather than relying on raw Drizzle inference field by field.
 
@@ -637,9 +651,9 @@ Subjects.get(
   id: SubjectId,
 ): Effect<Subject, SubjectNotFound | DatabaseReadError>;
 
-Subscriptions.replaceForUser(input): Effect<
+Subscriptions.replaceForUser({ user, subjectIds, schedule }): Effect<
   void,
-  InvalidSubjectSelection | TeamCapExceeded | DatabaseWriteError
+  InvalidSubjectSelection | SubjectCapacityReached | DatabaseWriteError
 >;
 
 Subjects.addEventToFeed(input): Effect<
@@ -761,7 +775,7 @@ Rules:
 - Multiple same-day events for one subscribed subject are condensed into one subject-scoped notification.
 - Notify CLI uses `--dry-run`, `--user <email>`, and `--force`; `--force` bypasses timing and already-sent guards only.
 - Notify CLI does not accept database selection flags; database configuration stays in Effect Config/layers.
-- Notify remains subscription-first in V1 and starts from `Subscriptions.recipients()`.
+- Notify remains subscription-first in V1 and starts from `Subscriptions.listNotificationRecipients()`.
 - Notify recipient order is deterministic by `subscription.id`; event order is deterministic by `startsAt`, then `event.id`.
 - Notify sends before marking `last_sent_at`. If delivery succeeds but `markSent` fails, V1 accepts possible duplicate delivery on a later run rather than risking silent missed notifications.
 - `Subscriptions.markSent` returns an effect error on failure. The V1 notify job collapses that error to a log and continues processing later subscriptions.

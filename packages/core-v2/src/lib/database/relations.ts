@@ -13,4 +13,14 @@ export const relations = defineRelations(schema, (d) => ({
       to: d.subjectEventsTable.eventId,
     }),
   },
+  subscriptionsTable: {
+    subject: d.one.subjectsTable({
+      from: d.subscriptionsTable.subjectId,
+      to: d.subjectsTable.id,
+    }),
+    user: d.one.usersTable({
+      from: d.subscriptionsTable.userId,
+      to: d.usersTable.id,
+    }),
+  },
 }));

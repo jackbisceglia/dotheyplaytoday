@@ -49,7 +49,7 @@ Key decisions:
 - No `relative` schedule.
 - No `enabled` unless a pause/resume workflow is added.
 - Plain database failures use shared database errors instead of service-specific read/write wrappers.
-- Service methods use predictable read names (`get`, `getByX`, `list`, `listByX`), meaning-based projections such as `Subscriptions.recipients`, and domain write names for invariant-bearing operations.
+- Service methods use predictable read names (`get`, `getByX`, `list`, `listByX`), meaning-based projections such as `Subscriptions.listNotificationRecipients`, and domain write names for invariant-bearing operations.
 - `subscriptions.schedule` stores the fixed schedule tagged payload.
 - Row-level variant tables use `_tag` as a query projection of `details._tag`.
 - `events.source_id` stores stable import identity formatted as `<eventType>:<source>:<uuid>` and is unique with `_tag`.
@@ -75,10 +75,10 @@ Deliverables:
 - Implement due-time calculation from local schedule and timezone.
 - Implement local-date event matching.
 - Ensure local-date event matching uses normal active-only event reads.
-- Implement `localDayUtcRange` shared time utility for querying events by a user's local day.
+- Implement `SubscriptionTiming.localDayUtcRange` shared time utility for querying events by a user's local day.
 - Implement already-sent local-date guard.
 - Implement subscription replacement for one user by selected subject set, preserving the user's `unsubscribeToken` while resetting recreated subscriptions' `last_sent_at`.
-- Add shared subscription policy for team cap and schedule increments.
+- Add `SubscriptionPolicy.subject` for subject allowance, and keep fixed local schedule increment validation with the schedule schema.
 
 Key decisions:
 
@@ -111,7 +111,7 @@ Key decisions:
 - A notifier `service.ts` file may be abstract or concrete: abstract files export the `Context.Service` boundary without a layer, while concrete implementation files provide the layer used by runtime composition.
 - Email is the V1 `NotifierChannel`; Resend is the first email `NotifierChannelProvider` under `providers/email`.
 - Notify orchestration stays in the job callsite; do not add a `NotifyService` in V1.
-- Notify reads subscription recipients through `Subscriptions.recipients()` rather than mechanical `getAllWithUsers` naming.
+- Notify reads subscription notification recipients through `Subscriptions.listNotificationRecipients()` rather than mechanical `getAllWithUsers` naming.
 - Notify remains subscription-first: load recipients, due-check in app, query same-day events by subject/local-day UTC range, send, then mark sent.
 - Notify assembles the prepared `Notification` inline; do not add a builder/projection service in V1.
 - Provider failures are per-subscription and do not stop later subscriptions.
@@ -176,7 +176,7 @@ Deliverables:
 - Build signup landing page in SolidStart.
 - Render team grid from decoded sports subject details.
 - Capture timezone with fallback.
-- Render fixed send-time options from shared policy.
+- Render fixed send-time options from the shared fixed local schedule constraints.
 - Submit to real API client.
 - Show success and overwrite explanation.
 

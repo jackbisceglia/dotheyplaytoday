@@ -51,7 +51,7 @@ Scope:
 - Implement the `Users` service.
 - Keep decode DB reads / encode DB writes at service boundaries.
 - Keep service inputs as decoded domain values; raw API/input normalization belongs at route, job, seed, or importer boundaries.
-- Use the shared `Id.SchemaBranded` / `Id.createFromBrandedSchema(Entity.fields.id)` pattern for generated ids.
+- Use the shared `Id.SchemaBranded` / `Id.createFromBrandedSchema(EntityId)` pattern for generated ids.
 - Implement `Users` methods needed by later flows: primary read, email read, unsubscribe-token read, signup upsert, and remove.
 - Generate `unsubscribeToken` for new users and preserve it on signup resubmission.
 - Map database failures to shared infrastructure errors with operation metadata.
@@ -87,8 +87,8 @@ Scope:
 - Implement `Events.get`, `Events.listBySubject`, `Events.upsert`, `Events.setParticipants`, and `Subjects.addEventToFeed`.
 - Implement `Events.listBySubject` as the normal active-only event read, with explicit availability options for tooling/debug reads.
 - Implement `Events.upsert` using stable `(_tag, source_id)` identity.
-- Implement `Subscriptions.list`, `Subscriptions.recipients`, `Subscriptions.replaceForUser`, and `Subscriptions.markSent`.
-- Implement local send-time due calculation, local-day UTC range, event local-date matching helpers, already-sent guard, team cap policy, and 15-minute schedule increments.
+- Implement `Subscriptions.list`, `Subscriptions.listNotificationRecipients`, `Subscriptions.replaceForUser`, and `Subscriptions.markSent`.
+- Implement local send-time due calculation, local-day UTC range, event local-date matching helpers, already-sent guard, subject allowance policy, and 15-minute schedule increments.
 - Keep signup, notify, and unsubscribe orchestration out of this branch except where tests need minimal fixtures.
 
 Vertical slice check-in:
@@ -152,7 +152,7 @@ Scope:
 - Implement email channel rendering and Resend email provider.
 - Add dry-run notifier behavior.
 - Implement notify job orchestration with `--dry-run`, `--user <email>`, and `--force`.
-- Use `Subscriptions.recipients()`, due checks, `Events.listBySubject`, `Notifier`, then `Subscriptions.markSent`.
+- Use `Subscriptions.listNotificationRecipients()`, due checks, `Events.listBySubject`, `Notifier`, then `Subscriptions.markSent`.
 - Log skip reasons, send successes, provider failures, mark-sent failures, and run counts.
 - Keep notify orchestration in the job callsite; do not introduce `NotifyService`.
 
