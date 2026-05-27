@@ -87,28 +87,28 @@ Do not export `decodeX`, `decodeXs`, or `encodeXInsert` helpers by default. Use 
 
 Use schema `.make(...)` for trusted internal construction of decoded insert/domain objects. Use `.makeEffect(...)` when construction input is untrusted and validation failure should remain in the Effect error channel.
 
-Use `Id.SchemaBranded("Brand")` for branded ids and `Id.createFromBrandedSchema(Entity.fields.id)` for effectful id generation. The ID module owns the UUID implementation detail so domain modules can speak in branded domain ids. Do not use raw `crypto.randomUUID()` in Effect workflows by default.
+Use `Id.SchemaBranded("Brand")` for branded ids and `Id.createFromBrandedSchema(EntityId)` for effectful id generation. The ID module owns the UUID implementation detail so domain modules can speak in branded domain ids. Do not use raw `crypto.randomUUID()` in Effect workflows by default.
 
 `makeEffect` does not replace effectful field generation. Generate effectful fields first, then pass the completed object to `.make(...)` or `.makeEffect(...)`.
 
-For bulk reads/writes, operate on collection schemas rather than looping encode/decode per item. Build decoded objects first, then encode the whole array with `Schema.encode(Schema.Array(InsertSchema))`. Decode queried arrays with `Schema.decodeUnknown(Schema.Array(SelectSchema))`.
+For bulk reads, operate on collection schemas rather than looping decode per item. Decode queried arrays with `Schema.decodeUnknown(Schema.Array(SelectSchema))`.
 
-Avoid extra helpers or per-row loops when a schema array can encode/decode the collection directly.
+For writes, prefer the simplest shape that matches row construction. If construction is pure, encoding a whole array is fine. If each row needs effectful fields such as generated ids, use a local `Effect.forEach` and encode each completed row at the boundary.
 
-When row construction is effectful, keep build-then-encode as one local pipeline-style operation:
+When row construction is effectful, keep build-then-encode local to the write method:
 
 ```ts
-const inserts =
-  yield *
-  Effect.forEach(input.subjectIds, function* (subjectId) {
-    return SubscriptionInsert.make({
-      id: yield* Id.createFromBrandedSchema(Subscription.fields.id),
-      userId: input.userId,
+const inserts = yield* Effect.forEach(subjectIds, (subjectId) =>
+  Effect.gen(function* () {
+    return yield* encodeSubscription({
+      id: yield* Id.createFromBrandedSchema(SubscriptionId),
+      userId: input.user.id,
       subjectId,
-      scheduleJson: input.schedule,
+      schedule: input.schedule,
       lastSentAt: null,
     });
-  }).pipe(Effect.andThen(Schema.encode(Schema.Array(SubscriptionInsert))));
+  }),
+);
 ```
 
 Example:
@@ -165,11 +165,11 @@ const notify = Effect.fn("Notify.run")(function* (input: NotifyInput) {
 });
 ```
 
-For service methods and longer effectful helpers, prefer the two-call layout because it is easier to scan and formats cleanly with named input types:
+For service methods and longer effectful helpers, prefer the two-call layout because it is easier to scan and formats cleanly:
 
 ```ts
 const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(function* (
-  input: ReplaceForUserInput,
+  input,
 ) {
   // ...
 });
@@ -179,21 +179,10 @@ For effectful iteration, prefer `Effect.forEach` over raw `for...of` loops. Omit
 
 Keep pure policy helpers narrow. For example, a due-check helper should answer whether a subscription is due; orchestration should decide whether a forced run bypasses that due check.
 
-Extract semantic policy predicates when they name domain policy, such as `exceedsTeamCap`. Use plain boolean predicate functions by default. Use `effect/Predicate` types or combinators only when composition, generic predicate APIs, or type narrowing make them clearer.
-
-Small local assertion helpers may use unnamed `Effect.fn` with an early failure branch and implicit `void` success:
+Use named domain policy objects when a rule is likely to vary by domain context, such as subscription subject allowance by user. Keep the object scoped to the owning domain language instead of creating generic policy namespaces.
 
 ```ts
-const assertHasSubscriptionCapacity = Effect.fn(function* (
-  subjectIds: ReadonlyArray<SubjectId>,
-) {
-  if (subjectIds.length > TEAM_CAP) {
-    return yield* new TeamCapExceeded({
-      limit: TEAM_CAP,
-      received: subjectIds.length,
-    });
-  }
-});
+yield* SubscriptionPolicy.subject.ensureAllowance(user, subjectIds.length);
 ```
 
 Name intermediate values by domain meaning when it improves readability, such as `todayUtcRange` instead of a generic `range`.
@@ -205,13 +194,13 @@ Use `Effect.tap`, `Effect.tapError`, or nearby logging combinators when the inte
 For expected workflow skip branches, direct logging returns are acceptable:
 
 ```ts
-if (!options.force && !isSubscriptionDue) {
+if (!options.force && !isDue) {
   return (
     yield *
     Effect.logInfo("notify: skipped not due", {
       subscriptionId: recipient.subscription.id,
       userId: recipient.user.id,
-      subjectId: recipient.subject.id,
+      subjectId: recipient.subscription.subject.id,
     })
   );
 }
@@ -256,59 +245,55 @@ Canonical multi-step write shape:
 
 ```ts
 const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(function* (
-  input: ReplaceForUserInput,
+  input: {
+    readonly user: User;
+    readonly subjectIds: readonly SubjectId[];
+    readonly schedule: Subscription["schedule"];
+  },
 ) {
-  yield* assertHasSubscriptionCapacity(input.subjectIds);
-  yield* assertUniqueSubjectIds(input.subjectIds);
-  yield* assertSubjectsExist(input.subjectIds);
+  const subjectIds = Array.dedupe(input.subjectIds);
 
-  const inserts = yield* Effect.forEach(
-    input.subjectIds,
-    function* (subjectId) {
-      return SubscriptionInsert.make({
-        id: yield* Id.createFromBrandedSchema(Subscription.fields.id),
-        userId: input.userId,
+  yield* SubscriptionPolicy.subject.ensureAllowance(
+    input.user,
+    subjectIds.length,
+  );
+  yield* assertSubjectsExist(subjectIds);
+
+  const inserts = yield* Effect.forEach(subjectIds, (subjectId) =>
+    Effect.gen(function* () {
+      return yield* Schema.encodeEffect(SubscriptionInsert)({
+        id: yield* Id.createFromBrandedSchema(SubscriptionId),
+        userId: input.user.id,
         subjectId,
-        scheduleJson: input.schedule,
+        schedule: input.schedule,
         lastSentAt: null,
       });
-    },
-  ).pipe(Effect.andThen(Schema.encode(Schema.Array(SubscriptionInsert))));
-
-  yield* sql.withTransaction(
-    Effect.gen(function* () {
-      yield* db
-        .delete(subscriptionsTable)
-        .where(eq(subscriptionsTable.userId, input.userId))
-        .pipe(
-          Effect.mapError(
-            (cause) =>
-              new DatabaseDeleteError({
-                operation: "Subscriptions.replaceForUser",
-                cause,
-                context: { userId: input.userId },
-              }),
-          ),
-        );
-
-      yield* db
-        .insert(subscriptionsTable)
-        .values(inserts)
-        .pipe(
-          Effect.mapError(
-            (cause) =>
-              new DatabaseWriteError({
-                operation: "Subscriptions.replaceForUser",
-                cause,
-                context: {
-                  userId: input.userId,
-                  subscriptionCount: inserts.length,
-                },
-              }),
-          ),
-        );
     }),
   );
+
+  yield* sql
+    .withTransaction(
+      Effect.gen(function* () {
+        yield* database
+          .delete(subscriptionsTable)
+          .where(eq(subscriptionsTable.userId, input.user.id));
+
+        if (Array.isReadonlyArrayEmpty(inserts)) return;
+
+        yield* database
+          .insert(subscriptionsTable)
+          .values(inserts);
+      }),
+    )
+    .pipe(
+      Effect.catchTag(
+        "SqlError",
+        toWriteError("Subscriptions.replaceForUser", {
+          userId: input.user.id,
+          subscriptionCount: inserts.length,
+        }),
+      ),
+    );
 });
 ```
 
@@ -468,7 +453,7 @@ Define Drizzle relations only when they are needed for actual relation-shaped qu
 
 Initial V1 relation set should support known queries only:
 
-- `subscriptions -> user` and `subscriptions -> subject` for `Subscriptions.recipients()`.
+- `subscriptions -> user` and `subscriptions -> subject` for `Subscriptions.listNotificationRecipients()`.
 - `events -> subjectEvents` for filtering and `events -> participants` for `Events.listBySubject()` returning active `EventWithParticipants` projections by default.
 
 Do not initially define inverse user/subject relations unless a concrete query needs them. Adding a relation later is a small, acceptable change when implementing a CRUD-adjacent method or projection reveals the need.

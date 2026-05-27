@@ -68,7 +68,7 @@ Recommended handler flow, without locking exact Effect syntax:
 
 - Decode through the shared `HttpApi` contract, then normalize/validate request scalars into domain values before calling core services.
 - Apply public write rate limiting before opening the database transaction.
-- In one transaction, call `Users.upsertForSignup(email, timezone)`, then `Subscriptions.replaceForUser`.
+- In one transaction, call `Users.upsertForSignup(email, timezone)`, then `Subscriptions.replaceForUser({ user, subjectIds, schedule })`.
 - Return `{ ok: true }` after both writes succeed.
 - Map validation/cap errors to user-fixable public failures and infrastructure failures to generic unexpected failures.
 - Keep error mapping local to the route file until repetition justifies a shared helper.
