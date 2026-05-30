@@ -150,8 +150,8 @@ importers:
         specifier: workspace:*
         version: link:../core-v2
       '@effect/platform-node':
-        specifier: 4.0.0-beta.36
-        version: 4.0.0-beta.36(effect@4.0.0-beta.65)(ioredis@5.9.1)
+        specifier: 4.0.0-beta.65
+        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)
       effect:
         specifier: 4.0.0-beta.65
         version: 4.0.0-beta.65
@@ -479,11 +479,11 @@ packages:
       '@effect/sql': ^0.51.0
       effect: ^3.21.0
 
-  '@effect/platform-node@4.0.0-beta.36':
-    resolution: {integrity: sha512-S7hMDf+vvWgK/KwW0FRxQ4zEtoThFA6HQVRp6oaKdm+j4zaXEDxg+WF5OoYiM5bwHc4h+hkbHRcCx1FIiZypvw==}
+  '@effect/platform-node@4.0.0-beta.65':
+    resolution: {integrity: sha512-QQy3KRcMwP0TngQdfQGl2u1zp03B7k7DuF5SNS8aZhD0dDBpKZpCwFad1ODY5qdY3ycPgMwBwKRRK7y/aw0C9w==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0-beta.36
+      effect: ^4.0.0-beta.65
       ioredis: ^5.7.0
 
   '@effect/platform@0.96.0':
@@ -3325,9 +3325,9 @@ packages:
     resolution: {integrity: sha512-RqslV2Us5BrllB+JeiZnK4peryVTndy9Dnqq62S3yYRRTj0tFQCwEniUy2167skdGOy3vqRzEvl1Dm4sV2ReDg==}
     engines: {node: '>=20.18.1'}
 
-  undici@7.26.0:
-    resolution: {integrity: sha512-3O9Tf67pGhgOv9jM35AbhkXAKi13f3oy3aE4CSgr+TckGeY+/iu97ZXN+J7DpHPzLbVApFd1IFhcnBjREYXYcg==}
-    engines: {node: '>=20.18.1'}
+  undici@8.3.0:
+    resolution: {integrity: sha512-TkUDgb6tl7KOGZ+7e8E3d2FYgUQgF6z5YypqjWmixVQSQERFcVrVg0ySADm2LVLRh5ljAaHTCR5Fmz3Q34rB7Q==}
+    engines: {node: '>=22.19.0'}
 
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
@@ -4024,13 +4024,13 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0-beta.36(effect@4.0.0-beta.65)(ioredis@5.9.1)':
+  '@effect/platform-node@4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)':
     dependencies:
       '@effect/platform-node-shared': 4.0.0-beta.73(effect@4.0.0-beta.65)
       effect: 4.0.0-beta.65
       ioredis: 5.9.1
       mime: 4.1.0
-      undici: 7.26.0
+      undici: 8.3.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -6481,7 +6481,7 @@ snapshots:
 
   undici@7.22.0: {}
 
-  undici@7.26.0: {}
+  undici@8.3.0: {}
 
   unenv@2.0.0-rc.24:
     dependencies:

@@ -205,6 +205,50 @@ describe("data seed import", () => {
   });
 
   it.effect(
+    "rejects sports event seeds without one home and one away participant",
+    () =>
+      Effect.gen(function* () {
+        const oneParticipantCollection = {
+          ...collection,
+          events: [
+            {
+              ...collection.events[0],
+              participants: [collection.events[0].participants[0]],
+            },
+          ],
+        } as const satisfies SportsSeedInput;
+        const duplicateHomeCollection = {
+          ...collection,
+          events: [
+            {
+              ...collection.events[0],
+              participants: [
+                collection.events[0].participants[0],
+                {
+                  ...collection.events[0].participants[1],
+                  details: {
+                    ...collection.events[0].participants[1].details,
+                    role: "home",
+                  },
+                },
+              ],
+            },
+          ],
+        } as const satisfies SportsSeedInput;
+
+        const oneParticipantError = yield* decodeSportsSeedCollections([
+          oneParticipantCollection,
+        ]).pipe(Effect.flip);
+        const duplicateHomeError = yield* decodeSportsSeedCollections([
+          duplicateHomeCollection,
+        ]).pipe(Effect.flip);
+
+        expect(oneParticipantError._tag).toBe("SchemaError");
+        expect(duplicateHomeError._tag).toBe("SchemaError");
+      }),
+  );
+
+  it.effect(
     "imports one sports game as an event with feed edges and participants",
     () =>
       Effect.gen(function* () {
