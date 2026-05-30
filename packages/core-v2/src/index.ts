@@ -1,4 +1,17 @@
 export {
+  Database,
+  DatabaseLayer,
+  createDatabaseLayer,
+} from "./lib/database/service.js";
+export {
+  DatabaseDeleteError,
+  DatabaseReadError,
+  DatabaseTransactionError,
+  DatabaseWriteError,
+} from "./lib/database/errors.js";
+export { createTablesIfMissing } from "./lib/database/schema-setup.js";
+export type { WithOptionalKeys } from "./lib/types.js";
+export {
   Participant,
   ParticipantDetails,
   ParticipantId,

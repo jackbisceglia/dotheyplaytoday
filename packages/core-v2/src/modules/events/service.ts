@@ -20,6 +20,7 @@ import {
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/domain/id.js";
+import type { WithOptionalKeys } from "../../lib/types.js";
 import { SubjectId } from "../subjects/schema.js";
 import { EventNotFound } from "./errors.js";
 import {
@@ -70,7 +71,7 @@ export class Events extends Context.Service<
     >;
 
     readonly upsert: (
-      event: Omit<EventInsert, "id">,
+      event: WithOptionalKeys<EventInsert, "id">,
     ) => Effect.Effect<Event, DatabaseWriteError | Schema.SchemaError>;
 
     readonly setParticipants: (
@@ -157,9 +158,11 @@ export const EventsLayer = Layer.effect(
 
     const upsert: Events["Service"]["upsert"] = Effect.fn("Events.upsert")(
       function* (event) {
+        const id =
+          event.id ?? (yield* Id.createFromBrandedSchema(Event.fields.id));
         const insertable = yield* encodeEvent({
           ...event,
-          id: yield* Id.createFromBrandedSchema(Event.fields.id),
+          id,
         });
 
         const rows = yield* database

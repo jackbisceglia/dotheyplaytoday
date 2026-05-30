@@ -437,7 +437,7 @@ packages/data/src/
       events.ts
 ```
 
-Each collection `index.ts` exports one typed seed collection. The root `packages/data/src/index.ts` exports the explicit registry consumed by seed tooling. `seed:dev` and `seed:prod` import all registered collections; adding a collection to the registry is the activation step. Keep seed orchestration in the seed scripts themselves until duplication proves a shared helper is worthwhile. `seed:prod` owns the interactive typed confirmation prompt.
+Each collection `index.ts` exports one typed seed collection. `packages/data/src/seed/index.ts` exports the explicit registry consumed by seed tooling. `seed:dev` and `seed:prod` import all registered collections; adding a collection to the registry is the activation step. Keep seed orchestration in the seed scripts themselves until duplication proves a shared helper is worthwhile. `seed:prod` owns the interactive typed confirmation prompt.
 
 The notifier module keeps its delivery abstractions inside `modules/notifier/`. Use `Notifier` for the orchestration-facing service in `modules/notifier/service.ts`. Define `NotifierChannel` as an injectable service boundary in `modules/notifier/channels/service.ts`, with concrete channel behavior under folders such as `modules/notifier/channels/email/`. Define `NotifierChannelProvider` as an injectable service boundary in `modules/notifier/providers/service.ts`, with provider implementations scoped by channel such as `modules/notifier/providers/email/resend.ts`. For V1, email is the only `NotifierChannel` and Resend is the first email `NotifierChannelProvider`.
 

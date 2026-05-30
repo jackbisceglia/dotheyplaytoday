@@ -1,0 +1,33 @@
+{
+  "name": "@dtpt/data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "pnpm --filter @dtpt/core-v2 build && cd ../.. && vitest run packages/data/src",
+    "seed:dev": "pnpm --filter @dtpt/core-v2 build && pnpm build && node dist/seed/cli.js dev",
+    "seed:prod": "pnpm --filter @dtpt/core-v2 build && pnpm build && node dist/seed/cli.js prod"
+  },
+  "dependencies": {
+    "@dtpt/core-v2": "workspace:*",
+    "@effect/platform-node": "4.0.0-beta.36",
+    "effect": "4.0.0-beta.65"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-beta.65"
+  }
+}

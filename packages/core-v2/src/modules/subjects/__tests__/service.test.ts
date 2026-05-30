@@ -98,6 +98,30 @@ const seedEvent = Effect.gen(function* () {
 });
 
 describe("v2 Subjects service", () => {
+  it.effect("upserts subjects by checked-in subject id", () =>
+    Effect.gen(function* () {
+      yield* createTables;
+
+      const subjects = yield* Subjects;
+      const first = yield* subjects.upsert(decode(Subject)(subjectInput));
+      const second = yield* subjects.upsert(
+        decode(Subject)({
+          ...subjectInput,
+          details: {
+            ...subjectInput.details,
+            name: "Updated Celtics",
+          },
+        }),
+      );
+      const listed = yield* subjects.list();
+
+      expect(first.id).toBe(subjectId);
+      expect(second.id).toBe(subjectId);
+      expect(second.details.name).toBe("Updated Celtics");
+      expect(listed).toHaveLength(1);
+    }).pipe(Effect.provide(layerSubjectsTest)),
+  );
+
   it.effect("reads subjects by primary id and lists subjects deterministically", () =>
     Effect.gen(function* () {
       yield* createTables;

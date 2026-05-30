@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Schema } from "effect";
+import { Array, Context, Effect, Layer, Option, Schema } from "effect";
 
 import {
   DatabaseReadError,
@@ -8,11 +8,8 @@ import {
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import type { EventId } from "../events/schema.js";
-import {
-  SubjectEventInsert,
-  subjectEventsTable,
-} from "./feed/schema.js";
-import { Subject } from "./schema.js";
+import { SubjectEventInsert, subjectEventsTable } from "./feed/schema.js";
+import { Subject, SubjectInsert, subjectsTable } from "./schema.js";
 
 export class SubjectNotFound extends Schema.TaggedErrorClass<SubjectNotFound>()(
   "SubjectNotFound",
@@ -22,6 +19,10 @@ export class SubjectNotFound extends Schema.TaggedErrorClass<SubjectNotFound>()(
 export class Subjects extends Context.Service<
   Subjects,
   {
+    readonly upsert: (
+      subject: SubjectInsert,
+    ) => Effect.Effect<Subject, DatabaseWriteError | Schema.SchemaError>;
+
     readonly get: (
       subjectId: Subject["id"],
     ) => Effect.Effect<
@@ -42,12 +43,45 @@ export class Subjects extends Context.Service<
 
 const decodeSubject = Schema.decodeUnknownEffect(Subject);
 const decodeSubjects = Schema.decodeUnknownEffect(Schema.Array(Subject));
+const encodeSubject = Schema.encodeEffect(SubjectInsert);
 const encodeSubjectEvent = Schema.encodeEffect(SubjectEventInsert);
 
 export const SubjectsLayer = Layer.effect(
   Subjects,
   Effect.gen(function* () {
     const database = yield* Database;
+
+    const upsert: Subjects["Service"]["upsert"] = Effect.fn("Subjects.upsert")(
+      function* (subject) {
+        const insertable = yield* encodeSubject(subject);
+
+        const rows = yield* database
+          .insert(subjectsTable)
+          .values(insertable)
+          .onConflictDoUpdate({
+            target: subjectsTable.id,
+            set: {
+              _tag: insertable._tag,
+              details: insertable.details,
+            },
+          })
+          .returning()
+          .pipe(mapToWriteError("Subjects.upsert", { subjectId: subject.id }));
+
+        const row = Array.head(rows);
+
+        if (Option.isNone(row)) {
+          return yield* new DatabaseWriteError({
+            operation: "Subjects.upsert",
+            metadata: { subjectId: subject.id },
+          });
+        }
+
+        const upserted = yield* decodeSubject(row.value);
+
+        return upserted;
+      },
+    );
 
     const get: Subjects["Service"]["get"] = Effect.fn("Subjects.get")(
       function* (subjectId: Subject["id"]) {
@@ -94,6 +128,7 @@ export const SubjectsLayer = Layer.effect(
     });
 
     return Subjects.of({
+      upsert,
       get,
       list,
       addEventToFeed,
