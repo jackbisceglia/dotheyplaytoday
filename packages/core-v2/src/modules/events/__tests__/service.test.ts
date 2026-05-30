@@ -73,6 +73,9 @@ const lakersCelticsSourceId = EventSourceId.make(
   "sports_game:seed:00000000-0000-4000-8000-000000000702",
 );
 const missingEventId = EventId.make("00000000-0000-4000-8000-000000009999");
+const explicitCelticsKnicksEventId = EventId.make(
+  "00000000-0000-4000-8000-000000000703",
+);
 
 const celticsKnicksEvent = {
   _tag: "sports_game",
@@ -178,6 +181,35 @@ describe("v2 Events service", () => {
         expect(selected.id).toBe(first.id);
         expect(selected.startsAt).toEqual(utc("2026-05-25T20:00:00"));
         expect(selected.availability).toBe("cancelled");
+      }).pipe(Effect.provide(layerEventsTest)),
+  );
+
+  it.effect(
+    "preserves checked-in event ids during source id upserts",
+    () =>
+      Effect.gen(function* () {
+        yield* createTables;
+
+        const events = yield* Events;
+        const database = yield* Database;
+        const eventWithId = {
+          ...celticsKnicksEvent,
+          id: explicitCelticsKnicksEventId,
+        };
+        const first = yield* events.upsert(eventWithId);
+        const second = yield* events.upsert({
+          ...eventWithId,
+          startsAt: utc("2026-05-25T20:00:00"),
+        });
+        const rows = yield* database
+          .select()
+          .from(eventsTable)
+          .where(eq(eventsTable.id, explicitCelticsKnicksEventId));
+
+        expect(first.id).toBe(explicitCelticsKnicksEventId);
+        expect(second.id).toBe(explicitCelticsKnicksEventId);
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.id).toBe(explicitCelticsKnicksEventId);
       }).pipe(Effect.provide(layerEventsTest)),
   );
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import {
   Database,
+  DatabaseWriteError,
   Events,
   EventsLayer,
   participantsTable,
@@ -24,6 +25,7 @@ import { SportsSeed } from "../../schema/sports.js";
 import { nbaSeedCollection } from "../../sports/nba/index.js";
 import {
   decodeSportsSeedCollections,
+  SeedDuplicateEventSourceIdError,
   SeedEventResolutionError,
   resetDevCatalog,
   seed,
@@ -45,9 +47,12 @@ const utc = (input: string) =>
   );
 
 const gameSourceId = "sports_game:seed:00000000-0000-4000-8000-000000000801";
+const secondGameSourceId =
+  "sports_game:seed:00000000-0000-4000-8000-000000000802";
 const missingSourceId =
   "sports_game:seed:00000000-0000-4000-8000-000000000899";
 const gameId = "00000000-0000-4000-8000-000000000801";
+const duplicateGameId = "00000000-0000-4000-8000-000000000802";
 const homeSubjectSeedId = "00000000-0000-4000-8000-000000000811";
 const awaySubjectSeedId = "00000000-0000-4000-8000-000000000812";
 type SportsSeedInput = Schema.Codec.Encoded<typeof SportsSeed>;
@@ -284,6 +289,39 @@ describe("data seed import", () => {
   );
 
   it.effect(
+    "rejects duplicate event source ids before writing",
+    () =>
+      Effect.gen(function* () {
+        yield* createTables;
+
+        const database = yield* Database;
+        const duplicateSourceCollection = {
+          ...collection,
+          events: [
+            collection.events[0],
+            {
+              ...collection.events[0],
+              id: duplicateGameId,
+            },
+          ],
+        } as const satisfies SportsSeedInput;
+
+        const error = yield* runSeedForTest({
+          mode: "prod",
+          collections: [duplicateSourceCollection],
+        }).pipe(Effect.flip);
+        const eventRows = yield* database.select().from(eventsTable);
+
+        expect(error).toBeInstanceOf(SeedDuplicateEventSourceIdError);
+        if (!(error instanceof SeedDuplicateEventSourceIdError)) return;
+        expect(error.sourceId).toBe(gameSourceId);
+        expect(error.firstEventId).toBe(gameId);
+        expect(error.duplicateEventId).toBe(duplicateGameId);
+        expect(eventRows).toHaveLength(0);
+      }).pipe(Effect.provide(layerSeedTest)),
+  );
+
+  it.effect(
     "rejects subject feed edges with unresolved event source ids before writing",
     () =>
       Effect.gen(function* () {
@@ -313,6 +351,49 @@ describe("data seed import", () => {
         expect(error.sourceId).toBe(missingSourceId);
         expect(eventRows).toHaveLength(0);
       }).pipe(Effect.provide(layerSeedTest)),
+  );
+
+  it.effect("rolls seed writes back when an event import fails", () =>
+    Effect.gen(function* () {
+      yield* createTables;
+
+      const database = yield* Database;
+      const collidingEventIdCollection = {
+        ...collection,
+        subjects: [
+          {
+            ...collection.subjects[0],
+            feedIds: [gameSourceId, secondGameSourceId],
+          },
+          collection.subjects[1],
+        ],
+        events: [
+          collection.events[0],
+          {
+            ...collection.events[0],
+            sourceId: secondGameSourceId,
+          },
+        ],
+      } as const satisfies SportsSeedInput;
+
+      const error = yield* runSeedForTest({
+        mode: "prod",
+        collections: [collidingEventIdCollection],
+      }).pipe(Effect.flip);
+      const [subjectRows, eventRows, feedRows, participantRows] =
+        yield* Effect.all([
+          database.select().from(subjectsTable),
+          database.select().from(eventsTable),
+          database.select().from(subjectEventsTable),
+          database.select().from(participantsTable),
+        ]);
+
+      expect(error).toBeInstanceOf(DatabaseWriteError);
+      expect(subjectRows).toHaveLength(0);
+      expect(eventRows).toHaveLength(0);
+      expect(feedRows).toHaveLength(0);
+      expect(participantRows).toHaveLength(0);
+    }).pipe(Effect.provide(layerSeedTest)),
   );
 
   it.effect("production seed does not modify users or subscriptions", () =>

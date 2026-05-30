@@ -28,7 +28,9 @@ const ConfirmProduction = Prompt.text({
 
 const seed = Effect.fn("Seed.Run")(function* (mode: Mode) {
   const collections = yield* decodeSportsSeedCollections(SeedCollections);
-  yield* importSeed(collections);
+  yield* importSeed(collections).pipe(
+    Effect.catchTag("SeedDuplicateEventSourceIdError", Effect.die),
+  );
 
   // Naive multi-pass counts are good enough for seed output for now.
   const numSubjects = sum(collections, (c) => c.subjects.length);
