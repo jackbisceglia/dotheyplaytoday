@@ -10,6 +10,7 @@ export {
   DatabaseWriteError,
 } from "./lib/database/errors.js";
 export { createTablesIfMissing } from "./lib/database/schema-setup.js";
+export { StringPart, StringParts } from "./lib/string.js";
 export type { WithOptionalKeys } from "./lib/types.js";
 export {
   Participant,
