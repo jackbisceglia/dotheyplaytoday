@@ -1,18 +1,19 @@
 import { Context, Effect } from "effect";
 
 import type { ChannelClientError } from "../channels/errors.js";
-import type { Recipient } from "../channels/schema.js";
 
-export type ChannelClientService<TRendered> = {
+export type ChannelClientService<TRecipient, TRendered> = {
   readonly send: (
-    to: Recipient,
+    to: TRecipient,
     rendered: TRendered,
   ) => Effect.Effect<void, ChannelClientError>;
 };
 
 export const ChannelClient = {
   makeService:
-    <Self, TRendered>() =>
+    <Self, TRecipient, TRendered>() =>
     <const Id extends string>(id: Id) =>
-      Context.Service<Self, ChannelClientService<TRendered>>()(id),
+      Context.Service<Self, ChannelClientService<TRecipient, TRendered>>()(
+        id,
+      ),
 };

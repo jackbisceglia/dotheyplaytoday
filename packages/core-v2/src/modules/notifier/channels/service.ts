@@ -1,20 +1,19 @@
 import { Context, Effect } from "effect";
 
 import type { NotifierError } from "./errors.js";
-import type { Recipient } from "./schema.js";
 import type { Notification } from "../schema.js";
 
-export type ChannelService<TRendered> = {
+export type ChannelService<TRecipient, TRendered> = {
   readonly render: (notification: Notification) => TRendered;
   readonly send: (
-    to: Recipient,
+    to: TRecipient,
     rendered: TRendered,
   ) => Effect.Effect<void, NotifierError>;
 };
 
 export const Channel = {
   makeService:
-    <Self, TRendered>() =>
+    <Self, TRecipient, TRendered>() =>
     <const Id extends string>(id: Id) =>
-      Context.Service<Self, ChannelService<TRendered>>()(id),
+      Context.Service<Self, ChannelService<TRecipient, TRendered>>()(id),
 };
