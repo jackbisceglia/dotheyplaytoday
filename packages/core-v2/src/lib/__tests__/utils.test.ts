@@ -19,4 +19,12 @@ describe("serialize", () => {
   it("uses the fallback when JSON stringification returns undefined", () => {
     expect(serialize(undefined)).toBe("<unserializable>");
   });
+
+  it("uses a custom fallback when provided", () => {
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+
+    expect(serialize(circular, "[error]")).toBe("[error]");
+    expect(serialize(undefined, "[error]")).toBe("[error]");
+  });
 });
