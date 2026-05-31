@@ -1,6 +1,6 @@
 import { Context, Effect } from "effect";
 
-import type { NotifierError } from "./channels/errors.js";
+import type { NotifierError } from "./channel/errors.js";
 import type { Notification } from "./schema.js";
 
 export type NotifierService = {

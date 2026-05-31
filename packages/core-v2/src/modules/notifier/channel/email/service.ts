@@ -1,4 +1,3 @@
-import { ChannelClient } from "../../client/service.js";
 import type { EmailAddress } from "../../../users/schema.js";
 import { Channel } from "../service.js";
 import type { EmailRendered } from "./render.js";
@@ -8,9 +7,3 @@ export class EmailChannel extends Channel.makeService<
   EmailAddress,
   EmailRendered
 >()("@dtpt/core-v2/EmailChannel") {}
-
-export class EmailChannelClient extends ChannelClient.makeService<
-  EmailChannelClient,
-  EmailAddress,
-  EmailRendered
->()("@dtpt/core-v2/EmailChannelClient") {}
