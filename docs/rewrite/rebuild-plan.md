@@ -98,8 +98,8 @@ Verification:
 Deliverables:
 
 - Implement `Notifier` service contract.
-- Implement email `NotifierChannel` layer.
-- Implement Resend `NotifierChannelProvider` layer.
+- Implement email `Channel` layer.
+- Implement Resend `ChannelClient` layer.
 - Add dry-run notifier path.
 - Implement notify job with explicit logs for skip, dry-run, send success, and send failure.
 - Add CLI options: `--dry-run`, `--user <email>`, `--force`.
@@ -107,9 +107,9 @@ Deliverables:
 Key decisions:
 
 - Notify orchestration depends on `Notifier`, `Users`, `Subscriptions`, `Subjects`, and `Events`, not Resend.
-- The notifier module names the subordinate delivery boundaries as `NotifierChannel` and `NotifierChannelProvider`; define them as injectable service boundaries in `channels/service.ts` and `providers/service.ts` instead of shape-only contract files.
+- The notifier module names the subordinate delivery boundaries as `Channel` and `ChannelClient`; define them as injectable service boundaries in `channel/service.ts` and `channel/client/service.ts` instead of shape-only contract files.
 - A notifier `service.ts` file may be abstract or concrete: abstract files export the `Context.Service` boundary without a layer, while concrete implementation files provide the layer used by runtime composition.
-- Email is the V1 `NotifierChannel`; Resend is the first email `NotifierChannelProvider` under `providers/email`.
+- Email is the V1 `Channel`; Resend is the first email `ChannelClient` under `channel/email/clients/`.
 - Notify orchestration stays in the job callsite; do not add a `NotifyService` in V1.
 - Notify reads subscription notification recipients through `Subscriptions.listNotificationRecipients()` rather than mechanical `getAllWithUsers` naming.
 - Notify remains subscription-first: load recipients, due-check in app, query same-day events by subject/local-day UTC range, send, then mark sent.
@@ -132,7 +132,7 @@ Verification:
 - Orchestration branch tests.
 - Deterministic recipient and event ordering tests.
 - Email rendering tests for text and HTML.
-- Provider payload mapping tests.
+- Channel client payload mapping tests.
 - Retry and retry-exhaustion tests.
 - Local dry-run against seeded SQLite.
 

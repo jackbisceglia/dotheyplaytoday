@@ -28,7 +28,7 @@ Use `yield* Service` inside `Effect.gen` for service access by default so depend
 
 Use two service-definition styles intentionally:
 
-- Stable boundary services with clear contracts, such as `Notifier`, `NotifierChannel`, and `NotifierChannelProvider`, should define an explicit interface/shape first, then define the service tag and live layer separately with `Layer.effect`.
+- Stable boundary services with clear contracts, such as `Notifier`, `Channel`, and `ChannelClient`, should define an explicit interface/shape first, then define the service tag and live layer separately with `Layer.effect`.
 - Inference-heavy services, especially Drizzle/database services where implementation details strongly shape method types, may define the service with `Context.Service` and inline `make`, then expose an explicit `layer` built from `Layer.effect(this, this.make)`.
 
 Layer naming follows v4 conventions:
@@ -388,16 +388,18 @@ packages/core/src/
     notifier/
       schema.ts
       service.ts
-      channels/
+      channel/
         service.ts
+        schema.ts
+        errors.ts
+        client/
+          service.ts
         email/
-          schema.ts
           service.ts
           render.ts
-      providers/
-        service.ts
-        email/
-          resend.ts
+          clients/
+            service.ts
+            resend.ts
 
   lib/
     database/
@@ -439,7 +441,7 @@ packages/data/src/
 
 Each collection `index.ts` exports one typed seed collection. `packages/data/src/seed/index.ts` exports the explicit registry consumed by seed tooling. `seed:dev` and `seed:prod` import all registered collections; adding a collection to the registry is the activation step. Keep seed orchestration in the seed scripts themselves until duplication proves a shared helper is worthwhile. `seed:prod` owns the interactive typed confirmation prompt.
 
-The notifier module keeps its delivery abstractions inside `modules/notifier/`. Use `Notifier` for the orchestration-facing service in `modules/notifier/service.ts`. Define `NotifierChannel` as an injectable service boundary in `modules/notifier/channels/service.ts`, with concrete channel behavior under folders such as `modules/notifier/channels/email/`. Define `NotifierChannelProvider` as an injectable service boundary in `modules/notifier/providers/service.ts`, with provider implementations scoped by channel such as `modules/notifier/providers/email/resend.ts`. For V1, email is the only `NotifierChannel` and Resend is the first email `NotifierChannelProvider`.
+The notifier module keeps its delivery abstractions inside `modules/notifier/`. Use `Notifier` for the orchestration-facing service in `modules/notifier/service.ts`. Define `Channel` as an injectable service boundary in `modules/notifier/channel/service.ts`, with concrete channel behavior under folders such as `modules/notifier/channel/email/`. Define `ChannelClient` as an injectable service boundary in `modules/notifier/channel/client/service.ts`, with client implementations scoped by channel such as `modules/notifier/channel/email/clients/resend.ts`. For V1, email is the only `Channel` and Resend is the first email `ChannelClient`.
 
 A `service.ts` file may define either an abstract injectable service boundary or a concrete implementation. If it exports a `Context.Service` tag but no `layer`, runtime composition must provide a concrete layer from an implementation module. Do not use `service.ts` for shape-only files; pure shared data shapes belong in `schema.ts`, and protocol-like construction helpers may use `protocol.ts` when that name fits.
 
