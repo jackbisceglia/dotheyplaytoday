@@ -1,14 +1,20 @@
 import { Context, Effect } from "effect";
 
-import type { Notification } from "../notification.js";
-import type { ChannelDeliveryError } from "./errors.js";
+import type { NotifierError } from "./errors.js";
+import type { Recipient } from "./schema.js";
+import type { Notification } from "../schema.js";
 
-export type ChannelService = {
-  readonly deliver: (
-    notification: Notification,
-  ) => Effect.Effect<void, ChannelDeliveryError>;
+export type ChannelService<TRendered> = {
+  readonly render: (notification: Notification) => TRendered;
+  readonly send: (
+    to: Recipient,
+    rendered: TRendered,
+  ) => Effect.Effect<void, NotifierError>;
 };
 
-export class Channel extends Context.Service<Channel, ChannelService>()(
-  "@dtpt/core-v2/Channel",
-) {}
+export const Channel = {
+  makeService:
+    <Self, TRendered>() =>
+    <const Id extends string>(id: Id) =>
+      Context.Service<Self, ChannelService<TRendered>>()(id),
+};

@@ -3,7 +3,7 @@ import { Schema } from "effect";
 export type ChannelName = typeof ChannelName.Type;
 export const ChannelName = Schema.Literals(["email"]);
 
-const providerErrorFields = {
+const channelClientErrorFields = {
   channel: ChannelName,
   message: Schema.String,
 };
@@ -17,25 +17,25 @@ export class ChannelError extends Schema.TaggedErrorClass<ChannelError>()(
   },
 ) {}
 
-export class ChannelProviderRequestError extends Schema.TaggedErrorClass<ChannelProviderRequestError>()(
-  "ChannelProviderRequestError",
+export class ChannelClientRequestError extends Schema.TaggedErrorClass<ChannelClientRequestError>()(
+  "ChannelClientRequestError",
   {
-    ...providerErrorFields,
+    ...channelClientErrorFields,
     cause: Schema.Defect,
   },
 ) {}
 
-export class ChannelProviderResponseError extends Schema.TaggedErrorClass<ChannelProviderResponseError>()(
-  "ChannelProviderResponseError",
+export class ChannelClientResponseError extends Schema.TaggedErrorClass<ChannelClientResponseError>()(
+  "ChannelClientResponseError",
   {
-    ...providerErrorFields,
+    ...channelClientErrorFields,
     code: Schema.String,
     statusCode: Schema.NullOr(Schema.Number),
   },
 ) {}
 
-export type ChannelProviderError =
-  | ChannelProviderRequestError
-  | ChannelProviderResponseError;
+export type ChannelClientError =
+  | ChannelClientRequestError
+  | ChannelClientResponseError;
 
-export type ChannelDeliveryError = ChannelError | ChannelProviderError;
+export type NotifierError = ChannelError | ChannelClientError;

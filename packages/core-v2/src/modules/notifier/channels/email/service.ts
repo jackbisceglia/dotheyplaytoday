@@ -1,18 +1,13 @@
-import type { EmailAddress } from "../../../users/schema.js";
-import {
-  ChannelProvider,
-  ChannelProviderClient,
-} from "../providers/service.js";
-import type { EmailRendered } from "./rendered.js";
+import { ChannelClient } from "../../client/service.js";
+import { Channel } from "../service.js";
+import type { EmailRendered } from "./render.js";
 
-export class EmailChannelProvider extends ChannelProvider.makeService<
-  EmailChannelProvider,
-  EmailAddress,
+export class EmailChannel extends Channel.makeService<
+  EmailChannel,
   EmailRendered
->()("@dtpt/core-v2/EmailChannelProvider") {}
+>()("@dtpt/core-v2/EmailChannel") {}
 
-export class EmailChannelClient extends ChannelProviderClient.makeService<
+export class EmailChannelClient extends ChannelClient.makeService<
   EmailChannelClient,
-  EmailAddress,
   EmailRendered
 >()("@dtpt/core-v2/EmailChannelClient") {}
