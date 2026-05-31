@@ -148,8 +148,8 @@ Goal: rebuild notification delivery and the scheduled job around the completed d
 
 Scope:
 
-- Implement `Notifier`, `NotifierChannel`, and `NotifierChannelProvider` service boundaries.
-- Implement email channel rendering and Resend email provider.
+- Implement `Notifier`, `Channel`, and `ChannelClient` service boundaries.
+- Implement email channel rendering and Resend email channel client.
 - Add dry-run notifier behavior.
 - Implement notify job orchestration with `--dry-run`, `--user <email>`, and `--force`.
 - Use `Subscriptions.listNotificationRecipients()`, due checks, `Events.listBySubject`, `Notifier`, then `Subscriptions.markSent`.
@@ -159,12 +159,12 @@ Scope:
 Vertical slice check-in:
 
 - Implement one due subscription that renders one email notification through a dry-run channel and marks sent only in the real-send path.
-- Check that notifier folder structure, channel/provider boundaries, rendering inputs, logging, and send-before-mark behavior are right before adding all CLI branches.
+- Check that notifier folder structure, channel/client boundaries, rendering inputs, logging, and send-before-mark behavior are right before adding all CLI branches.
 
 Verification:
 
 - Email text and HTML rendering tests.
-- Provider payload mapping tests.
+- Channel client payload mapping tests.
 - Notify branch tests for skip, dry-run, force, user filter, send failure, and mark-sent failure.
 - Inconsistent participant graph test aborts the run.
 - Local dry-run against seeded SQLite.

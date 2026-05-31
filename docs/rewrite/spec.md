@@ -265,7 +265,7 @@ Services:
 - `Subjects` owns `subjects` reads and `subject_events` feed-edge writes.
 - `Events` owns `events` and `participants`, including event import upsert and subject-scoped event queries through `subject_events`.
 - `Subscriptions` owns `subscriptions`, including user replacement, notify listing, and sent markers.
-- `Notifier`, `NotifierChannel`, and `NotifierChannelProvider` own notification delivery boundaries.
+- `Notifier`, `Channel`, and `ChannelClient` own notification delivery boundaries.
 
 Callsite workflows:
 
@@ -551,7 +551,7 @@ Rules:
 - Define typed Effect `Config` structs near the concern that owns the value, usually in core modules such as API URL, web URL, database, or provider config. Do not create one giant central config file.
 - Keep shared helpers in core that install config providers from environment sources, such as dotenv for Node runtimes and Vite env for Vite apps. Runtime callsites supply source-specific inputs like the dotenv path or `import.meta.env`.
 - Database config belongs with database infrastructure under `packages/core/src/lib/database/config.ts`, not under `modules/`.
-- Provider config belongs near the provider that owns it, such as Resend config under the notifier email provider folder.
+- Provider config belongs near the client implementation that owns it, such as Resend config under the notifier email channel client folder.
 - Non-library packages such as `api`, `jobs`, `web`, and scripts define their own `ManagedRuntime` assembly. They install the appropriate config provider, platform layers, and live/default service layers once at the runtime boundary.
 - Web installs a Vite env config provider. Node runtimes such as API, jobs, and core scripts install a dotenv/env provider; database config may be read from the repo/root `.env`.
 - Core scripts use their own script runtime assembly rather than borrowing API or jobs runtime setup.
@@ -574,7 +574,7 @@ Mocks/fakes are acceptable at external provider or network boundaries, such as e
 
 Email is the only V1 delivery channel.
 
-Notify orchestration assembles a prepared notification inline after loading the subscription recipient, subject, and same-day events, then calls `Notifier.notify(notification)`. The notifier delegates to the configured `NotifierChannel`. The channel renders the notification into a channel-specific message and sends that rendered message through its `NotifierChannelProvider`.
+Notify orchestration assembles a prepared notification inline after loading the subscription recipient, subject, and same-day events, then calls `Notifier.deliver(notification)`. The notifier delegates to the configured `Channel`. The channel renders the notification into channel-specific content and sends that content plus a typed recipient through its `ChannelClient`.
 
 Rough interface shape:
 
@@ -591,35 +591,38 @@ type EventWithParticipants = Event & {
 };
 
 interface Notifier {
-  readonly notify: (
+  readonly deliver: (
     notification: Notification,
   ) => Effect.Effect<void, NotifierError>;
 }
 
-interface NotifierChannel<Rendered> {
+interface Channel<Recipient, Rendered> {
   readonly render: (notification: Notification) => Rendered;
-  readonly send: (message: Rendered) => Effect.Effect<void, NotifierError>;
+  readonly send: (
+    to: Recipient,
+    rendered: Rendered,
+  ) => Effect.Effect<void, NotifierError>;
 }
 ```
 
 V1 email channel shape:
 
 ```ts
-type EmailMessage = {
-  readonly to: EmailAddress;
+type EmailRendered = {
   readonly subject: string;
   readonly text: string;
   readonly html: string;
 };
 
-interface NotifierChannelProvider<Rendered> {
+interface ChannelClient<Recipient, Rendered> {
   readonly send: (
-    message: Rendered,
-  ) => Effect.Effect<void, NotifierProviderError>;
+    to: Recipient,
+    rendered: Rendered,
+  ) => Effect.Effect<void, ChannelClientError>;
 }
 ```
 
-Define each delivery service boundary in the folder that owns it. The notifier-facing `Notifier` service lives in `modules/notifier/service.ts`. The shared `NotifierChannel` injectable boundary lives in `modules/notifier/channels/service.ts`, while email channel behavior and rendering live under `modules/notifier/channels/email/`. The shared `NotifierChannelProvider` injectable boundary lives in `modules/notifier/providers/service.ts`, while Resend lives under `modules/notifier/providers/email/` because it can only send email channel messages.
+Define each delivery service boundary in the folder that owns it. The notifier-facing `Notifier` service lives in `modules/notifier/service.ts`. The shared `Channel` injectable boundary lives in `modules/notifier/channel/service.ts`, while email channel behavior and rendering live under `modules/notifier/channel/email/`. The shared `ChannelClient` injectable boundary lives in `modules/notifier/channel/client/service.ts`, while concrete email clients such as Resend live under `modules/notifier/channel/email/clients/` because they can only send email channel content.
 
 In this module, `service.ts` may be abstract or concrete. Abstract service files define the `Context.Service` tag and no layer. Concrete implementation files provide a layer that satisfies the abstract service. Shape-only files should not be named `service.ts`.
 
@@ -637,15 +640,15 @@ Do not add a notification builder/projection service in V1. Inline assembly is o
 
 If one subscribed subject has multiple same-day events, such as a doubleheader, V1 sends one subject-scoped email containing all of those events rather than one email per event.
 
-Provider-specific payload mapping belongs in the `NotifierChannelProvider` layer. Email formatting belongs in the email `NotifierChannel` layer. `NotifierChannel.render` is pure: it takes a prepared `Notification` and produces the channel-specific rendered message. Providers do not render notification copy. Notify orchestration depends only on the notifier service. The notifier method is `notify(notification)`; `send` is reserved for channel/provider delivery of rendered messages.
+Client-specific payload mapping belongs in the `ChannelClient` layer. Email formatting belongs in the email `Channel` layer. `Channel.render` is pure: it takes a prepared `Notification` and produces the channel-specific rendered content. Clients do not render notification copy. Notify orchestration depends only on the notifier service. The notifier method is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed recipient.
 
-Keep `NotifierChannel.render` pure in V1. If rendering later needs real failure/effect cases, make the render boundary effectful in that slice.
+Keep `Channel.render` pure in V1. If rendering later needs real failure/effect cases, make the render boundary effectful in that slice.
 
 Email rendering builds unsubscribe links from channel/web config plus `notification.user.unsubscribeToken`. Notify orchestration does not construct public URLs. Extract a shared link helper only when multiple channels need the same link construction.
 
-Email channel providers accept the app-level `EmailMessage` shape. Provider implementations map `EmailMessage` to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
+Email channel clients accept `EmailAddress` plus the app-level `EmailRendered` shape. Client implementations map the typed recipient and rendered content to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
 
-The delivery design is generic, but V1 runtime wiring provides exactly one email `NotifierChannel`. A future SMS channel should be addable by implementing another `NotifierChannel` and supplying its layer at the runtime edge, without changing notify orchestration unless SMS needs different notification data.
+The delivery design is generic, but V1 runtime wiring provides exactly one email `Channel`. A future SMS channel should be addable by implementing another `Channel` and supplying its layer at the runtime edge, without changing notify orchestration unless SMS needs different notification data.
 
 ## Non-Goals For First Rebuild
 

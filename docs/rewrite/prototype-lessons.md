@@ -8,7 +8,7 @@
 - A 15-minute external cron model is operationally sufficient for V1.
 - The notify job can stay sequential for now. Reliability and clear logs matter more than throughput.
 - Notifier-channel-first notification wiring worked: top-level orchestration should depend on `Notifier`, not Resend.
-- Email rendering belongs above the provider and below notify orchestration.
+- Email rendering belongs above the concrete channel client and below notify orchestration.
 - SolidStart plus Effect HttpApi is a reasonable public signup stack.
 - Drizzle plus SQLite is a better persistence baseline than JSON files or Redis/KVS for this product.
 - Relational event storage is useful; the rewrite sharpens this into events plus subject events and participants so one real sports game can involve multiple subscribed subjects.
@@ -36,7 +36,7 @@
 - Event rows with subject events, event-local participants, active/cancelled availability, and JSON details for type-specific facts.
 - Shared core contracts for API and web.
 - Shared sports subject catalog/seed data and shared subscription policy.
-- `NotifierChannel` / `NotifierChannelProvider` split for notifications.
+- Notifier/channel/client split for notifications: orchestration depends on `Notifier`, channel code renders and sends, and concrete clients only deliver rendered channel output.
 - Tests around DST, timezone boundaries, already-sent behavior, no-event skips, provider failure continuation, and no update on failed send.
 - CLI support for dry-run and dev-user targeting.
 
