@@ -36,6 +36,34 @@ export {
   EventsLayer,
 } from "./modules/events/service.js";
 export {
+  ChannelError,
+  ChannelName,
+  ChannelProviderRequestError,
+  ChannelProviderResponseError,
+} from "./modules/notifier/channels/errors.js";
+export type {
+  ChannelDeliveryError,
+  ChannelProviderError,
+} from "./modules/notifier/channels/errors.js";
+export { Channel } from "./modules/notifier/channels/service.js";
+export type { ChannelService } from "./modules/notifier/channels/service.js";
+export {
+  EmailChannelClient,
+  EmailChannelProvider,
+} from "./modules/notifier/channels/email/service.js";
+export type {
+  EmailRendered,
+} from "./modules/notifier/channels/email/rendered.js";
+export {
+  ChannelProvider,
+  ChannelProviderClient,
+} from "./modules/notifier/channels/providers/service.js";
+export type {
+  ChannelProviderClientService,
+  ChannelProviderService,
+} from "./modules/notifier/channels/providers/service.js";
+export { Notification } from "./modules/notifier/notification.js";
+export {
   SubjectEvent,
   SubjectEventInsert,
   subjectEventsTable,
