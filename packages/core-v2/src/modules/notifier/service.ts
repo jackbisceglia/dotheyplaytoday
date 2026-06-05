@@ -23,7 +23,7 @@ export const NotifierLayer = Layer.effect(
       "Notifier.deliver",
     )(function* (notification) {
       const recipient = notification.user.email;
-      const rendered = channel.render(notification);
+      const rendered = yield* channel.render(notification).pipe(Effect.orDie);
 
       yield* channel.send(recipient, rendered);
     });
