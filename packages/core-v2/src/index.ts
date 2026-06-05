@@ -3,6 +3,8 @@ export {
   DatabaseLayer,
   createDatabaseLayer,
 } from "./lib/database/service.js";
+export { WebConfig } from "./lib/config/web.js";
+export type { WebConfig as WebConfigShape } from "./lib/config/web.js";
 export {
   DatabaseDeleteError,
   DatabaseReadError,
@@ -11,7 +13,12 @@ export {
 } from "./lib/database/errors.js";
 export { createTablesIfMissing } from "./lib/database/schema-setup.js";
 export { StringPart, StringParts } from "./lib/string.js";
-export type { WithOptionalKeys } from "./lib/types.js";
+export { buildUnsubscribeUrl, WebUrl } from "./lib/url.js";
+export type {
+  ExtractFromDiscriminator,
+  ExtractFromTag,
+  WithOptionalKeys,
+} from "./lib/types.js";
 export {
   Participant,
   ParticipantDetails,
@@ -45,26 +52,21 @@ export type {
   ChannelClientError,
   NotifierError,
 } from "./modules/notifier/channel/errors.js";
-export { Notifier } from "./modules/notifier/service.js";
+export { Notifier, NotifierLayer } from "./modules/notifier/service.js";
 export type { NotifierService } from "./modules/notifier/service.js";
 export { Recipient } from "./modules/notifier/channel/schema.js";
 export { Channel } from "./modules/notifier/channel/service.js";
-export type {
-  ChannelService,
-} from "./modules/notifier/channel/service.js";
+export type { ChannelService } from "./modules/notifier/channel/service.js";
 export { ChannelClient } from "./modules/notifier/channel/client/service.js";
-export type {
-  ChannelClientService,
-} from "./modules/notifier/channel/client/service.js";
+export type { ChannelClientService } from "./modules/notifier/channel/client/service.js";
 export {
   EmailChannel,
+  EmailChannelLayer,
+  EmailRenderError,
 } from "./modules/notifier/channel/email/service.js";
-export {
-  EmailChannelClient,
-} from "./modules/notifier/channel/email/clients/service.js";
-export type {
-  EmailRendered,
-} from "./modules/notifier/channel/email/render.js";
+export { EmailView } from "./modules/notifier/channel/email/render.js";
+export { EmailChannelClient } from "./modules/notifier/channel/email/clients/service.js";
+export type { EmailRendered } from "./modules/notifier/channel/email/render.js";
 export { Notification } from "./modules/notifier/schema.js";
 export {
   SubjectEvent,

@@ -5,7 +5,7 @@ import { StringParts } from "../string.js";
 describe("StringParts", () => {
   describe("core logic", () => {
     it("builds from initial parts", () => {
-      expect(StringParts(["error=DatabaseWriteError", "op=save"]).make()).toBe(
+      expect(StringParts("error=DatabaseWriteError", "op=save").make()).toBe(
         "error=DatabaseWriteError op=save",
       );
     });
@@ -63,24 +63,24 @@ describe("StringParts", () => {
 
   describe("delimiter testing", () => {
     it("uses a space by default", () => {
-      expect(StringParts(["first", "second"]).make()).toBe("first second");
+      expect(StringParts("first", "second").make()).toBe("first second");
     });
 
     it("uses a custom delimiter", () => {
-      expect(StringParts(["first", "second"]).make("\n")).toBe(
+      expect(StringParts("first", "second").make("\n")).toBe(
         "first\nsecond",
       );
     });
 
     it("preserves empty strings", () => {
-      expect(StringParts(["", "next"]).make(":")).toBe(":next");
+      expect(StringParts("", "next").make(":")).toBe(":next");
     });
   });
 
   describe("misc", () => {
     it("copies initial parts", () => {
       const parts = ["first"];
-      const builder = StringParts(parts);
+      const builder = StringParts(...parts);
 
       parts.push("second");
 
@@ -88,7 +88,7 @@ describe("StringParts", () => {
     });
 
     it("reuses the current builder for no-op additions", () => {
-      const builder = StringParts(["a"]);
+      const builder = StringParts("a");
 
       expect(builder.addParts()).toBe(builder);
       expect(builder.addNullable(undefined)).toBe(builder);

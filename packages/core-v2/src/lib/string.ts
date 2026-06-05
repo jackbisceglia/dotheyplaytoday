@@ -40,5 +40,5 @@ const createBuilder = (parts: readonly string[]) => {
 };
 
 /** Builds a string from ordered parts while keeping conditional and nullable additions explicit. */
-export const StringParts = (parts: readonly string[] = []) =>
+export const StringParts = (...parts: readonly string[]) =>
   createBuilder([...parts]);

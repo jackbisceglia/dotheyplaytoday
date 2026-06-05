@@ -370,8 +370,10 @@ interface Notifier {
 ```
 
 ```ts
-interface Channel<Recipient, Rendered> {
-  readonly render: (notification: Notification) => Rendered;
+interface Channel<Recipient, Rendered, RenderError = never> {
+  readonly render: (
+    notification: Notification,
+  ) => Effect.Effect<Rendered, RenderError>;
   readonly send: (
     to: Recipient,
     rendered: Rendered,
@@ -382,8 +384,10 @@ interface Channel<Recipient, Rendered> {
 ```ts
 type EmailRendered = {
   readonly subject: string;
-  readonly text: string;
-  readonly html: string;
+  readonly body: {
+    readonly text: string;
+    readonly html: string;
+  };
 };
 
 interface ChannelClient<Recipient, Rendered> {
@@ -398,15 +402,13 @@ interface ChannelClient<Recipient, Rendered> {
 notify orchestration -> Notifier -> Channel -> ChannelClient
 ```
 
-For V1, the configured `Channel` is email. Notify orchestration constructs a prepared `Notification` and calls `Notifier.deliver(notification)`. The notifier delegates to the configured channel: `Channel.render(notification)` creates rendered content, then `Channel.send(to, rendered)` sends it through the channel client. The email channel renders `Notification` into `EmailRendered`; the email channel/client boundary pins `to` to `EmailAddress`, and the client maps the typed recipient plus `EmailRendered` to a vendor API such as Resend. `Channel.render` is pure: it takes a prepared `Notification` and produces channel-specific rendered content.
+For V1, the configured `Channel` is email. Notify orchestration constructs a prepared `Notification` and calls `Notifier.deliver(notification)`. The notifier delegates to the configured channel: `Channel.render(notification)` effectfully creates rendered content, then `Channel.send(to, rendered)` sends it through the channel client. The email channel renders `Notification` into `EmailRendered`; the email channel/client boundary pins `to` to `EmailAddress`, and the client maps the typed recipient plus `EmailRendered` to a vendor API such as Resend. `Channel.render` is effectful so channel-owned rendering can read runtime config and surface typed render errors. In V1, `Notifier.deliver` collapses email render errors to defects rather than sending fallback email.
 
 Do not add a notification builder/projection service in V1. Inline assembly is only object construction from data already loaded by notify. Extract a builder only after a second callsite, channel-specific data divergence, or concrete testability/readability win appears.
 
 The delivery design is generic, but V1 runtime wiring provides exactly one email `Channel`. A future SMS channel should be addable by implementing another `Channel` and supplying its layer at the runtime edge, without changing notify orchestration unless SMS needs different notification data.
 
-Keep `Channel.render` pure in V1. If rendering later needs real failure/effect cases, make the render boundary effectful in that slice.
-
-Email rendering builds unsubscribe links from channel/web config plus `notification.user.unsubscribeToken`. Notify orchestration does not construct public URLs. Extract a shared link helper only when multiple channels need the same link construction.
+Email rendering builds unsubscribe links from typed web config plus `notification.user.unsubscribeToken` through the shared URL helper. Notify orchestration does not construct public URLs.
 
 Email channel clients accept `EmailAddress` plus the app-level `EmailRendered` shape. Client implementations map the typed recipient and rendered content to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
 
@@ -761,8 +763,8 @@ Rules:
 - Nested subconcerns such as **Schedule** keep their own `_tag` inside JSON and do not require a row-level `_tag` column.
 - **Notifier** delivers prepared **Notifications**; it does not decide which subscriptions are due.
 - The notifier method is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed recipient.
-- **Channel** owns pure render plus send for a delivery medium.
-- `Channel.render` is pure in V1; effectful rendering is deferred until there is a concrete failure/effect case.
+- **Channel** owns effectful render plus send for a delivery medium.
+- `Channel.render` can read channel-owned runtime config and return typed render errors. V1 notifier delivery collapses email render errors to defects rather than sending fallback email.
 - Email unsubscribe link construction belongs to rendering/channel code, not notify orchestration.
 - Email client implementations map typed `EmailAddress` recipients plus generic `EmailRendered` values to vendor-specific SDK payloads.
 - Delivery interfaces are generic over channels, but V1 runtime wiring is one concrete email channel.
