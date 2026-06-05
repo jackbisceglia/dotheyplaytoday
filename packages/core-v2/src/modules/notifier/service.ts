@@ -1,6 +1,7 @@
 import { Context, Effect, Layer } from "effect";
 
 import type { NotifierError } from "./channel/errors.js";
+import { EmailDelivery } from "./channel/email/delivery.js";
 import { EmailChannel } from "./channel/email/service.js";
 import type { Notification } from "./schema.js";
 
@@ -22,10 +23,10 @@ export const NotifierLayer = Layer.effect(
     const deliver: Notifier["Service"]["deliver"] = Effect.fn(
       "Notifier.deliver",
     )(function* (notification) {
-      const recipient = notification.user.email;
       const rendered = yield* channel.render(notification).pipe(Effect.orDie);
+      const delivery = EmailDelivery.makeFromNotification(notification);
 
-      yield* channel.send(recipient, rendered);
+      yield* channel.send(delivery, rendered);
     });
 
     return Notifier.of({ deliver });

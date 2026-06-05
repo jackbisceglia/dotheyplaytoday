@@ -56,7 +56,10 @@ export { Notifier, NotifierLayer } from "./modules/notifier/service.js";
 export type { NotifierService } from "./modules/notifier/service.js";
 export { Recipient } from "./modules/notifier/channel/schema.js";
 export { Channel } from "./modules/notifier/channel/service.js";
-export type { ChannelService } from "./modules/notifier/channel/service.js";
+export type {
+  ChannelDelivery,
+  ChannelService,
+} from "./modules/notifier/channel/service.js";
 export { ChannelClient } from "./modules/notifier/channel/client/service.js";
 export type { ChannelClientService } from "./modules/notifier/channel/client/service.js";
 export {
@@ -64,9 +67,14 @@ export {
   EmailChannelLayer,
   EmailRenderError,
 } from "./modules/notifier/channel/email/service.js";
+export { EmailDelivery } from "./modules/notifier/channel/email/delivery.js";
+export type { EmailDelivery as EmailDeliveryShape } from "./modules/notifier/channel/email/delivery.js";
 export { EmailView } from "./modules/notifier/channel/email/render.js";
 export { EmailChannelClient } from "./modules/notifier/channel/email/clients/service.js";
 export type { EmailRendered } from "./modules/notifier/channel/email/render.js";
+export { ResendConfig } from "./modules/notifier/channel/email/clients/config.js";
+export type { ResendConfig as ResendConfigShape } from "./modules/notifier/channel/email/clients/config.js";
+export { EmailChannelClientLayerResend } from "./modules/notifier/channel/email/clients/resend.js";
 export { Notification } from "./modules/notifier/schema.js";
 export {
   SubjectEvent,

@@ -5,6 +5,7 @@ import { Notification } from "../schema.js";
 const decode = Schema.decodeUnknownSync;
 
 export const notification = decode(Notification)({
+  sendAt: "2026-05-24T13:00:00.000Z",
   user: {
     id: "00000000-0000-4000-8000-000000000101",
     email: "fan@example.com",

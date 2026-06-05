@@ -141,8 +141,8 @@ export const EmailChannelLayer = Layer.effect(
     );
 
     const send: Service["send"] = Effect.fn("EmailChannel.send")(
-      function* (to, rendered) {
-        return yield* client.send(to, rendered);
+      function* (delivery, rendered) {
+        return yield* client.send(delivery, rendered);
       },
     );
 

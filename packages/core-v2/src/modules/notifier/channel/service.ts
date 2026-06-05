@@ -3,12 +3,17 @@ import { Context, Effect } from "effect";
 import type { NotifierError } from "./errors.js";
 import type { Notification } from "../schema.js";
 
+export type ChannelDelivery<TRecipient> = {
+  readonly recipient: TRecipient;
+  readonly hash: string;
+};
+
 export type ChannelService<TRecipient, TRendered, TRenderError = never> = {
   readonly render: (
     notification: Notification,
   ) => Effect.Effect<TRendered, TRenderError>;
   readonly send: (
-    to: TRecipient,
+    delivery: ChannelDelivery<TRecipient>,
     rendered: TRendered,
   ) => Effect.Effect<void, NotifierError>;
 };

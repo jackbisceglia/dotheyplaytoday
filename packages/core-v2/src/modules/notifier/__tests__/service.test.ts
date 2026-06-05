@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Cause, Effect, Exit, Layer } from "effect";
 
+import type { EmailDelivery } from "../channel/email/delivery.js";
 import { EmailChannel, EmailRenderError } from "../channel/email/service.js";
 import type { EmailRendered } from "../channel/email/render.js";
 import { Notifier, NotifierLayer } from "../service.js";
@@ -18,7 +19,7 @@ describe("v2 Notifier service", () => {
   it.effect("delivers notifications through the configured channel", () => {
     const renderedNotifications: string[] = [];
     const sentMessages: {
-      readonly to: string;
+      readonly delivery: EmailDelivery;
       readonly rendered: EmailRendered;
     }[] = [];
     const EmailChannelLayerTest = Layer.succeed(
@@ -31,9 +32,9 @@ describe("v2 Notifier service", () => {
             return rendered;
           });
         },
-        send: (to, message) =>
+        send: (delivery, message) =>
           Effect.sync(() => {
-            sentMessages.push({ to, rendered: message });
+            sentMessages.push({ delivery, rendered: message });
           }),
       }),
     );
@@ -47,7 +48,10 @@ describe("v2 Notifier service", () => {
       expect(renderedNotifications).toEqual([notification.subscription.id]);
       expect(sentMessages).toEqual([
         {
-          to: notification.user.email,
+          delivery: {
+            recipient: notification.user.email,
+            hash: "00000000-0000-4000-8000-000000000401:2026-05-24T13:00:00.000Z",
+          },
           rendered,
         },
       ]);
@@ -61,16 +65,16 @@ describe("v2 Notifier service", () => {
       role: "home",
     });
     const sentMessages: {
-      readonly to: string;
+      readonly delivery: EmailDelivery;
       readonly rendered: EmailRendered;
     }[] = [];
     const EmailChannelLayerTest = Layer.succeed(
       EmailChannel,
       EmailChannel.of({
         render: () => Effect.fail(error),
-        send: (to, message) =>
+        send: (delivery, message) =>
           Effect.sync(() => {
-            sentMessages.push({ to, rendered: message });
+            sentMessages.push({ delivery, rendered: message });
           }),
       }),
     );
