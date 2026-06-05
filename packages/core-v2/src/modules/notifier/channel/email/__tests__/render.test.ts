@@ -56,6 +56,9 @@ describe("v2 email rendering", () => {
         expect(rendered.body.html).toContain(
           "https://example.com:8080/unsubscribe/",
         );
+        expect(rendered.body.html).toContain(
+          '<a href="https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201"',
+        );
       }).pipe(Effect.provide(EmailChannelLayerTest)),
   );
 
@@ -169,7 +172,7 @@ describe("v2 email rendering", () => {
 
         expect(rendered).not.toHaveProperty("to");
         expect(rendered.body.html).toContain(
-          "https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
+          '<a href="https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201"',
         );
         expect(sentMessages).toEqual([
           {

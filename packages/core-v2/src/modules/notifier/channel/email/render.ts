@@ -8,10 +8,15 @@ export type EmailRendered = {
   };
 };
 
+export type Unsubscribe = {
+  readonly href: string;
+  readonly text: string;
+};
+
 export type EmailViewProps = {
   readonly subject: string;
   readonly main: readonly string[];
-  readonly footer: readonly string[];
+  readonly unsubscribe: Unsubscribe;
 };
 
 const escapeHtml = (value: string) =>
@@ -22,27 +27,33 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-const text = (main: readonly string[], footer: readonly string[]) =>
+const text = (main: readonly string[], unsubscribe: Unsubscribe) =>
   StringParts()
     .addParts(...main)
     .add("")
-    .addParts(...footer)
+    .add(`${unsubscribe.text}: ${unsubscribe.href}`)
     .make("\n");
 
 const html = (
   subject: string,
   main: readonly string[],
-  footer: readonly string[],
+  unsubscribe: Unsubscribe,
 ) => {
-  const divider = '<div style="height: 10px;"></div>';
-  const p = (line: string) =>
-    `<p style="margin: 0 0 8px; font-size: 15px; line-height: 1.5; color: #1f2937;">${escapeHtml(line)}</p>`;
+  const element = {
+    div: '<div style="height: 10px;"></div>',
+    a: (href: string, text: string) =>
+      `<a href="${escapeHtml(href)}" style="color: #6b7280;">${escapeHtml(text)}</a>`,
+    p: (content: string) =>
+      `<p style="margin: 0 0 8px; font-size: 15px; line-height: 1.5; color: #1f2937;">${content}</p>`,
+  };
 
   const Main = StringParts(
-    ...main.map((line) => (line === "" ? divider : p(line))),
+    ...main.map((line) =>
+      line === "" ? element.div : element.p(escapeHtml(line)),
+    ),
   ).make("");
 
-  const Footer = StringParts(...footer.map((line) => p(line))).make("");
+  const Footer = element.p(element.a(unsubscribe.href, unsubscribe.text));
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -60,8 +71,8 @@ export function EmailView(input: EmailViewProps): EmailRendered {
   return {
     subject: input.subject,
     body: {
-      text: text(input.main, input.footer),
-      html: html(input.subject, input.main, input.footer),
+      text: text(input.main, input.unsubscribe),
+      html: html(input.subject, input.main, input.unsubscribe),
     },
   };
 }

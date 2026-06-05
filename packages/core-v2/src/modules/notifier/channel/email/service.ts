@@ -111,9 +111,12 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
             }),
           );
 
-          const footer = [`Unsubscribe: ${unsubscribeUrl}`];
+          const unsubscribe = {
+            text: "Unsubscribe",
+            href: unsubscribeUrl,
+          };
 
-          return { subject, main, footer };
+          return { subject, main, unsubscribe };
         }),
       ),
       Match.exhaustive,
