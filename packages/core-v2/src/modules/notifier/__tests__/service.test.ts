@@ -49,8 +49,8 @@ describe("v2 Notifier service", () => {
       expect(sentMessages).toEqual([
         {
           delivery: {
-            to: notification.user.email,
-            hash: "dtpt:notify:v1:00000000-0000-4000-8000-000000000401:2026-05-24:32400",
+            recipient: notification.user.email,
+            hash: "00000000-0000-4000-8000-000000000401:2026-05-24T13:00:00.000Z",
           },
           rendered,
         },

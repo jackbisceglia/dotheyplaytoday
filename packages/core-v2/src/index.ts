@@ -56,7 +56,10 @@ export { Notifier, NotifierLayer } from "./modules/notifier/service.js";
 export type { NotifierService } from "./modules/notifier/service.js";
 export { Recipient } from "./modules/notifier/channel/schema.js";
 export { Channel } from "./modules/notifier/channel/service.js";
-export type { ChannelService } from "./modules/notifier/channel/service.js";
+export type {
+  ChannelDelivery,
+  ChannelService,
+} from "./modules/notifier/channel/service.js";
 export { ChannelClient } from "./modules/notifier/channel/client/service.js";
 export type { ChannelClientService } from "./modules/notifier/channel/client/service.js";
 export {

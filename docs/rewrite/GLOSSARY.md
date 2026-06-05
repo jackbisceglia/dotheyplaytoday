@@ -133,11 +133,11 @@ The service that delivers a prepared notification through the configured deliver
 _Avoid_: Email provider, Resend client, notify job
 
 **Channel**:
-The delivery-medium adapter that renders a notification and sends rendered channel content to a typed recipient.
+The delivery-medium adapter that renders a notification and sends rendered channel content to a typed delivery.
 _Avoid_: Provider
 
 **ChannelClient**:
-The concrete client boundary that sends already-rendered channel content to a typed recipient through a provider or transport.
+The concrete client boundary that sends already-rendered channel content to a typed delivery through a provider or transport.
 _Avoid_: Notification formatter
 
 **Workflow Service**:
@@ -195,7 +195,7 @@ _Avoid_: Direct `process.env` reads in services
 - A **Forced Notify Run** is restricted by optional user filtering and still requires matching same-day events.
 - **Last Sent At** changes only after successful notification delivery.
 - A **Notifier** uses exactly one **Channel** for V1.
-- A **Channel** renders a **Notification** into channel content and sends that content plus a typed recipient through a **ChannelClient**.
+- A **Channel** renders a **Notification** into channel content and sends that content plus a typed delivery through a **ChannelClient**.
 - An **Unsubscribe** removes one **User** and cascades to that user's **Subscriptions**.
 - An **Unsubscribe Token** authorizes one global **Unsubscribe** action.
 - An **Unsubscribe Token** resolves to one **User** by matching the user's stored token.
@@ -348,6 +348,7 @@ Notify orchestration assembles a prepared notification inline after loading the 
 
 ```ts
 type Notification = {
+  readonly sendAt: DateTime.Utc;
   readonly user: User;
   readonly subscription: Subscription;
   readonly subject: Subject;
@@ -370,12 +371,17 @@ interface Notifier {
 ```
 
 ```ts
+type ChannelDelivery<Recipient> = {
+  readonly recipient: Recipient;
+  readonly hash: string;
+};
+
 interface Channel<Recipient, Rendered, RenderError = never> {
   readonly render: (
     notification: Notification,
   ) => Effect.Effect<Rendered, RenderError>;
   readonly send: (
-    to: Recipient,
+    delivery: ChannelDelivery<Recipient>,
     rendered: Rendered,
   ) => Effect.Effect<void, NotifierError>;
 }
@@ -392,7 +398,7 @@ type EmailRendered = {
 
 interface ChannelClient<Recipient, Rendered> {
   readonly send: (
-    to: Recipient,
+    delivery: ChannelDelivery<Recipient>,
     rendered: Rendered,
   ) => Effect.Effect<void, ChannelClientError>;
 }
@@ -402,7 +408,7 @@ interface ChannelClient<Recipient, Rendered> {
 notify orchestration -> Notifier -> Channel -> ChannelClient
 ```
 
-For V1, the configured `Channel` is email. Notify orchestration constructs a prepared `Notification` and calls `Notifier.deliver(notification)`. The notifier delegates to the configured channel: `Channel.render(notification)` effectfully creates rendered content, then `Channel.send(to, rendered)` sends it through the channel client. The email channel renders `Notification` into `EmailRendered`; the email channel/client boundary pins `to` to `EmailAddress`, and the client maps the typed recipient plus `EmailRendered` to a vendor API such as Resend. `Channel.render` is effectful so channel-owned rendering can read runtime config and surface typed render errors. In V1, `Notifier.deliver` collapses email render errors to defects rather than sending fallback email.
+For V1, the configured `Channel` is email. Notify orchestration constructs a prepared `Notification` and calls `Notifier.deliver(notification)`. The notifier delegates to the configured channel: `Channel.render(notification)` effectfully creates rendered content, then `Channel.send(delivery, rendered)` sends it through the channel client. The email channel renders `Notification` into `EmailRendered`; the email channel/client boundary pins `delivery.recipient` to `EmailAddress`, and the client maps the typed delivery plus `EmailRendered` to a vendor API such as Resend. `Channel.render` is effectful so channel-owned rendering can read runtime config and surface typed render errors. In V1, `Notifier.deliver` collapses email render errors to defects rather than sending fallback email.
 
 Do not add a notification builder/projection service in V1. Inline assembly is only object construction from data already loaded by notify. Extract a builder only after a second callsite, channel-specific data divergence, or concrete testability/readability win appears.
 
@@ -410,7 +416,7 @@ The delivery design is generic, but V1 runtime wiring provides exactly one email
 
 Email rendering builds unsubscribe links from typed web config plus `notification.user.unsubscribeToken` through the shared URL helper. Notify orchestration does not construct public URLs.
 
-Email channel clients accept `EmailAddress` plus the app-level `EmailRendered` shape. Client implementations map the typed recipient and rendered content to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
+Email channel clients accept `ChannelDelivery<EmailAddress>` plus the app-level `EmailRendered` shape. Client implementations map the typed delivery and rendered content to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
 
 V1 sends one subject-scoped notification per due subscription. If a user subscribes to both subjects in the same game, they may receive two emails for that game. Per-user or per-game deduplication is a follow-up issue, not part of the first rebuild.
 
@@ -735,7 +741,7 @@ Rules:
 > **Domain expert:** "No — league is part of sports-team subject details, not a generic subject property."
 
 > **Dev:** "Who formats notification copy?"
-> **Domain expert:** "The channel formats. Channel clients only send already-rendered channel content to a typed recipient."
+> **Domain expert:** "The channel formats. Channel clients only send already-rendered channel content to a typed delivery."
 
 ## Flagged Ambiguities
 
@@ -762,14 +768,14 @@ Rules:
 - When `details._tag` represents the whole row, top-level `_tag` must equal `details._tag`.
 - Nested subconcerns such as **Schedule** keep their own `_tag` inside JSON and do not require a row-level `_tag` column.
 - **Notifier** delivers prepared **Notifications**; it does not decide which subscriptions are due.
-- The notifier method is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed recipient.
+- The notifier method is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed delivery.
 - **Channel** owns effectful render plus send for a delivery medium.
 - `Channel.render` can read channel-owned runtime config and return typed render errors. V1 notifier delivery collapses email render errors to defects rather than sending fallback email.
 - Email unsubscribe link construction belongs to rendering/channel code, not notify orchestration.
-- Email client implementations map typed `EmailAddress` recipients plus generic `EmailRendered` values to vendor-specific SDK payloads.
+- Email client implementations map typed `ChannelDelivery<EmailAddress>` values plus generic `EmailRendered` values to vendor-specific SDK payloads.
 - Delivery interfaces are generic over channels, but V1 runtime wiring is one concrete email channel.
 - V1 does not specify provider retry/backoff; provider failures are surfaced as effect errors and logged.
-- **ChannelClient** does not render notification copy; it only maps typed recipients and rendered channel content to a vendor API.
+- **ChannelClient** does not render notification copy; it only maps typed deliveries and rendered channel content to a vendor API.
 - The notify job is a runnable script that orchestrates due subscriptions through domain services and the **Notifier**; cron/recurrence is an infrastructure concern outside the application.
 - Notify orchestration delegates graph queries to domain services rather than inlining database joins in the job.
 - Unsubscribe is global and hard-delete based in V1; there is no per-subject unsubscribe or soft-disable preference.

@@ -1,17 +1,18 @@
 import { Context, Effect } from "effect";
 
 import type { ChannelClientError } from "../errors.js";
+import type { ChannelDelivery } from "../service.js";
 
-export type ChannelClientService<TDelivery, TRendered> = {
+export type ChannelClientService<TRecipient, TRendered> = {
   readonly send: (
-    delivery: TDelivery,
+    delivery: ChannelDelivery<TRecipient>,
     rendered: TRendered,
   ) => Effect.Effect<void, ChannelClientError>;
 };
 
 export const ChannelClient = {
   makeService:
-    <Self, TDelivery, TRendered>() =>
+    <Self, TRecipient, TRendered>() =>
     <const Id extends string>(id: Id) =>
-      Context.Service<Self, ChannelClientService<TDelivery, TRendered>>()(id),
+      Context.Service<Self, ChannelClientService<TRecipient, TRendered>>()(id),
 };

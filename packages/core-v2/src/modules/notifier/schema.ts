@@ -7,6 +7,7 @@ import { User } from "../users/schema.js";
 
 export type Notification = typeof Notification.Type;
 export const Notification = Schema.Struct({
+  sendAt: Schema.DateTimeUtcFromString,
   user: User,
   subscription: Subscription,
   subject: Subject,

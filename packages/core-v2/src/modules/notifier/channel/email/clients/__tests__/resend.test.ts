@@ -83,7 +83,10 @@ const EmailChannelClientLayerTest = EmailChannelClientLayerResend.pipe(
 const sendRendered = Effect.gen(function* () {
   const client = yield* EmailChannelClient;
 
-  yield* client.send(EmailDelivery.fromNotification(notification), rendered);
+  yield* client.send(
+    EmailDelivery.makeFromNotification(notification),
+    rendered,
+  );
 }).pipe(Effect.provide(EmailChannelClientLayerTest));
 
 describe("EmailChannelClientLayerResend", () => {
@@ -108,7 +111,7 @@ describe("EmailChannelClientLayerResend", () => {
           });
           expect(options).toEqual({
             idempotencyKey:
-              "dtpt:notify:v1:00000000-0000-4000-8000-000000000401:2026-05-24:32400",
+              "00000000-0000-4000-8000-000000000401:2026-05-24T13:00:00.000Z",
           });
 
           return Promise.resolve(successResponse);

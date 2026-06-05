@@ -1,32 +1,21 @@
 import { DateTime } from "effect";
 
+import { StringParts } from "../../../../lib/string.js";
 import type { EmailAddress } from "../../../users/schema.js";
+import type { ChannelDelivery } from "../service.js";
 import type { Notification } from "../../schema.js";
 
-export type EmailDelivery = {
-  readonly to: EmailAddress;
-  readonly hash: string;
-};
+export type EmailDelivery = ChannelDelivery<EmailAddress>;
 
-const deliveryHash = (notification: Notification) => {
-  const [event] = notification.events;
-  const localEventDate = DateTime.formatIsoDate(
-    DateTime.setZone(event.startsAt, notification.user.timezone),
-  );
-
-  return [
-    "dtpt",
-    "notify",
-    "v1",
-    notification.subscription.id,
-    localEventDate,
-    notification.subscription.schedule.sendAtSecondsLocal,
-  ].join(":");
-};
+const deliveryHash = (notification: Notification) =>
+  StringParts()
+    .add(notification.subscription.id)
+    .add(DateTime.formatIso(notification.sendAt))
+    .make(":");
 
 export const EmailDelivery = {
-  fromNotification: (notification: Notification): EmailDelivery => ({
-    to: notification.user.email,
+  makeFromNotification: (notification: Notification): EmailDelivery => ({
+    recipient: notification.user.email,
     hash: deliveryHash(notification),
   }),
 };

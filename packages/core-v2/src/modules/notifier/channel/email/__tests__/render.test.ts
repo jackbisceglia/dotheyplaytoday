@@ -169,7 +169,7 @@ describe("v2 email rendering", () => {
         const channel = yield* EmailChannel;
         const rendered = yield* channel.render(notification);
 
-        const delivery = EmailDelivery.fromNotification(notification);
+        const delivery = EmailDelivery.makeFromNotification(notification);
 
         yield* channel.send(delivery, rendered);
 
@@ -208,7 +208,7 @@ describe("v2 email rendering", () => {
     return Effect.gen(function* () {
       const channel = yield* EmailChannel;
       const rendered = yield* channel.render(notification);
-      const delivery = EmailDelivery.fromNotification(notification);
+      const delivery = EmailDelivery.makeFromNotification(notification);
       const actual = yield* channel.send(delivery, rendered).pipe(Effect.flip);
 
       expect(actual).toBe(error);

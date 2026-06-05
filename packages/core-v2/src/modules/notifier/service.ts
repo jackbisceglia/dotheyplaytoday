@@ -24,7 +24,7 @@ export const NotifierLayer = Layer.effect(
       "Notifier.deliver",
     )(function* (notification) {
       const rendered = yield* channel.render(notification).pipe(Effect.orDie);
-      const delivery = EmailDelivery.fromNotification(notification);
+      const delivery = EmailDelivery.makeFromNotification(notification);
 
       yield* channel.send(delivery, rendered);
     });

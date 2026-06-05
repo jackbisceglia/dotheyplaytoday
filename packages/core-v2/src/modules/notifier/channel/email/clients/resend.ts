@@ -71,7 +71,7 @@ export const EmailChannelClientLayerResend = Layer.effect(
           client.emails.send(
             {
               from: config.from,
-              to: delivery.to,
+              to: delivery.recipient,
               subject: rendered.subject,
               text: rendered.body.text,
               html: rendered.body.html,

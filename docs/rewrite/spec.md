@@ -574,12 +574,13 @@ Mocks/fakes are acceptable at external provider or network boundaries, such as e
 
 Email is the only V1 delivery channel.
 
-Notify orchestration assembles a prepared notification inline after loading the subscription recipient, subject, and same-day events, then calls `Notifier.deliver(notification)`. The notifier delegates to the configured `Channel`. The channel renders the notification into channel-specific content and sends that content plus a typed recipient through its `ChannelClient`.
+Notify orchestration assembles a prepared notification inline after loading the subscription recipient, subject, and same-day events, then calls `Notifier.deliver(notification)`. The notifier delegates to the configured `Channel`. The channel renders the notification into channel-specific content and sends that content plus a typed delivery through its `ChannelClient`.
 
 Rough interface shape:
 
 ```ts
 type Notification = {
+  readonly sendAt: DateTime.Utc;
   readonly user: User;
   readonly subscription: Subscription;
   readonly subject: Subject;
@@ -596,12 +597,17 @@ interface Notifier {
   ) => Effect.Effect<void, NotifierError>;
 }
 
+type ChannelDelivery<Recipient> = {
+  readonly recipient: Recipient;
+  readonly hash: string;
+};
+
 interface Channel<Recipient, Rendered, RenderError = never> {
   readonly render: (
     notification: Notification,
   ) => Effect.Effect<Rendered, RenderError>;
   readonly send: (
-    to: Recipient,
+    delivery: ChannelDelivery<Recipient>,
     rendered: Rendered,
   ) => Effect.Effect<void, NotifierError>;
 }
@@ -644,13 +650,13 @@ Do not add a notification builder/projection service in V1. Inline assembly is o
 
 If one subscribed subject has multiple same-day events, such as a doubleheader, V1 sends one subject-scoped email containing all of those events rather than one email per event.
 
-Client-specific payload mapping belongs in the `ChannelClient` layer. Email formatting belongs in the email `Channel` layer. `Channel.render` is effectful: it takes a prepared `Notification` and produces the channel-specific rendered content while allowing channel-owned rendering to read runtime config and surface typed render errors. Clients do not render notification copy. Notify orchestration depends only on the notifier service. The notifier method is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed recipient.
+Client-specific payload mapping belongs in the `ChannelClient` layer. Email formatting belongs in the email `Channel` layer. `Channel.render` is effectful: it takes a prepared `Notification` and produces the channel-specific rendered content while allowing channel-owned rendering to read runtime config and surface typed render errors. Clients do not render notification copy. Notify orchestration depends only on the notifier service. The notifier method is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed delivery.
 
 In V1, `Notifier.deliver` collapses email render errors to defects rather than sending fallback email.
 
 Email rendering builds unsubscribe links from typed web config plus `notification.user.unsubscribeToken` through the shared URL helper. Notify orchestration does not construct public URLs.
 
-Email channel clients accept `EmailAddress` plus the app-level `EmailRendered` shape. Client implementations map the typed recipient and rendered content to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
+Email channel clients accept `ChannelDelivery<EmailAddress>` plus the app-level `EmailRendered` shape. Client implementations map the typed delivery and rendered content to vendor SDK payloads such as Resend or SES; email rendering never emits vendor-specific payloads.
 
 The delivery design is generic, but V1 runtime wiring provides exactly one email `Channel`. A future SMS channel should be addable by implementing another `Channel` and supplying its layer at the runtime edge, without changing notify orchestration unless SMS needs different notification data.
 

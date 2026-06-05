@@ -3,22 +3,27 @@ import { Context, Effect } from "effect";
 import type { NotifierError } from "./errors.js";
 import type { Notification } from "../schema.js";
 
-export type ChannelService<TDelivery, TRendered, TRenderError = never> = {
+export type ChannelDelivery<TRecipient> = {
+  readonly recipient: TRecipient;
+  readonly hash: string;
+};
+
+export type ChannelService<TRecipient, TRendered, TRenderError = never> = {
   readonly render: (
     notification: Notification,
   ) => Effect.Effect<TRendered, TRenderError>;
   readonly send: (
-    delivery: TDelivery,
+    delivery: ChannelDelivery<TRecipient>,
     rendered: TRendered,
   ) => Effect.Effect<void, NotifierError>;
 };
 
 export const Channel = {
   makeService:
-    <Self, TDelivery, TRendered, TRenderError = never>() =>
+    <Self, TRecipient, TRendered, TRenderError = never>() =>
     <const Id extends string>(id: Id) =>
       Context.Service<
         Self,
-        ChannelService<TDelivery, TRendered, TRenderError>
+        ChannelService<TRecipient, TRendered, TRenderError>
       >()(id),
 };
