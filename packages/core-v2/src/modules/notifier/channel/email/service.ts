@@ -45,7 +45,8 @@ function createFeedCases() {
   // events
   const areSportsGames = (
     events: Notification["events"],
-  ): events is SportsGameEvents => events.every(isTaggedAs("sports_game"));
+  ): events is SportsGameEvents =>
+    events.length > 0 && events.every(isTaggedAs("sports_game"));
 
   return {
     sportsTeamFeed: {
