@@ -67,6 +67,11 @@ export {
 export { EmailView } from "./modules/notifier/channel/email/render.js";
 export { EmailChannelClient } from "./modules/notifier/channel/email/clients/service.js";
 export type { EmailRendered } from "./modules/notifier/channel/email/render.js";
+export { ResendConfig } from "./modules/notifier/channel/email/clients/config.js";
+export type {
+  ResendConfig as ResendConfigShape,
+} from "./modules/notifier/channel/email/clients/config.js";
+export { EmailChannelClientLayerResend } from "./modules/notifier/channel/email/clients/resend.js";
 export { Notification } from "./modules/notifier/schema.js";
 export {
   SubjectEvent,
