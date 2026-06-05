@@ -3,6 +3,7 @@ import { ConfigProvider, Effect, Layer } from "effect";
 
 import { ChannelClientResponseError } from "../../errors.js";
 import { EmailChannelClient } from "../clients/service.js";
+import { EmailDelivery } from "../delivery.js";
 import type { EmailRendered } from "../render.js";
 import {
   EmailChannel,
@@ -147,15 +148,15 @@ describe("v2 email rendering", () => {
     "renders and sends through the configured email channel client",
     () => {
       const sentMessages: {
-        readonly to: string;
+        readonly delivery: EmailDelivery;
         readonly rendered: EmailRendered;
       }[] = [];
       const EmailChannelClientLayerTest = Layer.succeed(
         EmailChannelClient,
         EmailChannelClient.of({
-          send: (to, rendered) =>
+          send: (delivery, rendered) =>
             Effect.sync(() => {
-              sentMessages.push({ to, rendered });
+              sentMessages.push({ delivery, rendered });
             }),
         }),
       );
@@ -168,7 +169,9 @@ describe("v2 email rendering", () => {
         const channel = yield* EmailChannel;
         const rendered = yield* channel.render(notification);
 
-        yield* channel.send(notification.user.email, rendered);
+        const delivery = EmailDelivery.fromNotification(notification);
+
+        yield* channel.send(delivery, rendered);
 
         expect(rendered).not.toHaveProperty("to");
         expect(rendered.body.html).toContain(
@@ -176,7 +179,7 @@ describe("v2 email rendering", () => {
         );
         expect(sentMessages).toEqual([
           {
-            to: notification.user.email,
+            delivery,
             rendered,
           },
         ]);
@@ -205,9 +208,8 @@ describe("v2 email rendering", () => {
     return Effect.gen(function* () {
       const channel = yield* EmailChannel;
       const rendered = yield* channel.render(notification);
-      const actual = yield* channel
-        .send(notification.user.email, rendered)
-        .pipe(Effect.flip);
+      const delivery = EmailDelivery.fromNotification(notification);
+      const actual = yield* channel.send(delivery, rendered).pipe(Effect.flip);
 
       expect(actual).toBe(error);
     }).pipe(Effect.provide(layer));

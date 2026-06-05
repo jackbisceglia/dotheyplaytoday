@@ -1,11 +1,4 @@
-import {
-  Effect,
-  Layer,
-  Match,
-  Redacted,
-  Schedule,
-  Schema,
-} from "effect";
+import { Effect, Layer, Match, Redacted, Schedule, Schema } from "effect";
 import { Resend } from "resend";
 
 import {
@@ -70,39 +63,43 @@ export const EmailChannelClientLayerResend = Layer.effect(
         catch: (cause) => new ResendRequestError({ cause }),
       });
 
-    const send: EmailChannelClient["Service"]["send"] =
-      Effect.fn("EmailChannelClient.resend.send")(
-        function* (to, rendered) {
-          const response = yield* use((client) =>
-            client.emails.send({
+    const send: EmailChannelClient["Service"]["send"] = Effect.fn(
+      "EmailChannelClient.resend.send",
+    )(
+      function* (delivery, rendered) {
+        const response = yield* use((client) =>
+          client.emails.send(
+            {
               from: config.from,
-              to,
+              to: delivery.to,
               subject: rendered.subject,
               text: rendered.body.text,
               html: rendered.body.html,
-            }),
-          );
-
-          if (response.error) {
-            return yield* new ChannelClientResponseError({
-              channel: "email",
-              message: response.error.message,
-              code: response.error.name,
-              statusCode: response.error.statusCode,
-            });
-          }
-        },
-        Effect.catchTag("ResendRequestError", (error) =>
-          Effect.fail(
-            new ChannelClientRequestError({
-              channel: "email",
-              message: "Failed to reach Resend API",
-              cause: error.cause,
-            }),
+            },
+            { idempotencyKey: delivery.hash },
           ),
+        );
+
+        if (response.error) {
+          return yield* new ChannelClientResponseError({
+            channel: "email",
+            message: response.error.message,
+            code: response.error.name,
+            statusCode: response.error.statusCode,
+          });
+        }
+      },
+      Effect.catchTag("ResendRequestError", (error) =>
+        Effect.fail(
+          new ChannelClientRequestError({
+            channel: "email",
+            message: "Failed to reach Resend API",
+            cause: error.cause,
+          }),
         ),
-        Effect.retry({ schedule: retryPolicy, while: isRetriableError }),
-      );
+      ),
+      Effect.retry({ schedule: retryPolicy, while: isRetriableError }),
+    );
 
     return EmailChannelClient.of({ send });
   }),

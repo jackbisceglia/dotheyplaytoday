@@ -7,10 +7,11 @@ import { buildUnsubscribeUrl } from "../../../../lib/url.js";
 import { EventId } from "../../../events/schema.js";
 import type { EventWithParticipants } from "../../../events/service.js";
 import type { Subject } from "../../../subjects/schema.js";
-import type { EmailAddress, User } from "../../../users/schema.js";
+import type { User } from "../../../users/schema.js";
 import type { Notification } from "../../schema.js";
 import { Channel } from "../service.js";
 import { EmailChannelClient } from "./clients/service.js";
+import { EmailDelivery } from "./delivery.js";
 import { EmailView, type EmailRendered } from "./render.js";
 
 export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>()(
@@ -24,7 +25,7 @@ export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>(
 
 export class EmailChannel extends Channel.makeService<
   EmailChannel,
-  EmailAddress,
+  EmailDelivery,
   EmailRendered,
   EmailRenderError
 >()("@dtpt/core-v2/EmailChannel") {}
@@ -141,8 +142,8 @@ export const EmailChannelLayer = Layer.effect(
     );
 
     const send: Service["send"] = Effect.fn("EmailChannel.send")(
-      function* (to, rendered) {
-        return yield* client.send(to, rendered);
+      function* (delivery, rendered) {
+        return yield* client.send(delivery, rendered);
       },
     );
 
