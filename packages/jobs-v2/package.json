@@ -1,0 +1,32 @@
+{
+  "name": "@dtpt/jobs-v2",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start:notify": "node dist/notify/cli.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "pnpm --filter @dtpt/core-v2 build && cd ../.. && vitest run packages/jobs-v2/src"
+  },
+  "dependencies": {
+    "@dtpt/core-v2": "workspace:*",
+    "@effect/platform-node": "4.0.0-beta.65",
+    "effect": "4.0.0-beta.65"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.0.0-beta.65"
+  }
+}

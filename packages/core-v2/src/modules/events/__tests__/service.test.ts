@@ -4,7 +4,10 @@ import { Array, DateTime, Effect, Layer, Schema } from "effect";
 
 import { DatabaseWriteError } from "../../../lib/database/errors.js";
 import { Database } from "../../../lib/database/service.js";
-import { createTables, layerTest } from "../../../lib/database/__tests__/setup.js";
+import {
+  createTables,
+  layerTest,
+} from "../../../lib/database/__tests__/setup.js";
 import {
   Subject,
   SubjectId,
@@ -184,33 +187,31 @@ describe("v2 Events service", () => {
       }).pipe(Effect.provide(layerEventsTest)),
   );
 
-  it.effect(
-    "preserves checked-in event ids during source id upserts",
-    () =>
-      Effect.gen(function* () {
-        yield* createTables;
+  it.effect("preserves checked-in event ids during source id upserts", () =>
+    Effect.gen(function* () {
+      yield* createTables;
 
-        const events = yield* Events;
-        const database = yield* Database;
-        const eventWithId = {
-          ...celticsKnicksEvent,
-          id: explicitCelticsKnicksEventId,
-        };
-        const first = yield* events.upsert(eventWithId);
-        const second = yield* events.upsert({
-          ...eventWithId,
-          startsAt: utc("2026-05-25T20:00:00"),
-        });
-        const rows = yield* database
-          .select()
-          .from(eventsTable)
-          .where(eq(eventsTable.id, explicitCelticsKnicksEventId));
+      const events = yield* Events;
+      const database = yield* Database;
+      const eventWithId = {
+        ...celticsKnicksEvent,
+        id: explicitCelticsKnicksEventId,
+      };
+      const first = yield* events.upsert(eventWithId);
+      const second = yield* events.upsert({
+        ...eventWithId,
+        startsAt: utc("2026-05-25T20:00:00"),
+      });
+      const rows = yield* database
+        .select()
+        .from(eventsTable)
+        .where(eq(eventsTable.id, explicitCelticsKnicksEventId));
 
-        expect(first.id).toBe(explicitCelticsKnicksEventId);
-        expect(second.id).toBe(explicitCelticsKnicksEventId);
-        expect(rows).toHaveLength(1);
-        expect(rows[0]?.id).toBe(explicitCelticsKnicksEventId);
-      }).pipe(Effect.provide(layerEventsTest)),
+      expect(first.id).toBe(explicitCelticsKnicksEventId);
+      expect(second.id).toBe(explicitCelticsKnicksEventId);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]?.id).toBe(explicitCelticsKnicksEventId);
+    }).pipe(Effect.provide(layerEventsTest)),
   );
 
   it.effect(
@@ -409,15 +410,13 @@ describe("v2 Events service", () => {
         });
         const rangedOut = yield* events.listBySubject(celticsSubjectId, {
           range: {
-            fromUtc: utc("2026-05-25T00:00:00"),
-            toUtc: utc("2026-05-26T00:00:00"),
+            from: utc("2026-05-25T00:00:00"),
+            to: utc("2026-05-26T00:00:00"),
           },
         });
 
         expect(defaultFeed.map((event) => event.id)).toEqual([active.id]);
-        expect(cancelledOnly.map((event) => event.id)).toEqual([
-          cancelled.id,
-        ]);
+        expect(cancelledOnly.map((event) => event.id)).toEqual([cancelled.id]);
         expect(allAvailability.map((event) => event.id)).toEqual([
           cancelled.id,
           active.id,

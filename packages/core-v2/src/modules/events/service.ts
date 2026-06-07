@@ -35,6 +35,9 @@ import {
   EventInsert,
   eventsTable,
 } from "./schema.js";
+import type { Range } from "../subscriptions/time.js";
+
+export type DateRangeUtc = Range<DateTime.Utc>;
 
 export type EventWithParticipants = typeof EventWithParticipants.Type;
 export const EventWithParticipants = Schema.Struct({
@@ -42,13 +45,8 @@ export const EventWithParticipants = Schema.Struct({
   participants: Schema.Array(Participant),
 });
 
-export type DateRangeUtc = {
-  readonly fromUtc: DateTime.Utc;
-  readonly toUtc: DateTime.Utc;
-};
-
 export type ListBySubjectOptions = {
-  readonly range?: DateRangeUtc;
+  readonly range?: Range<DateTime.Utc>;
   readonly availability?: EventAvailability | "all";
 };
 
@@ -126,10 +124,10 @@ export const EventsLayer = Layer.effect(
       const startsAt = yield* Match.value(opts?.range).pipe(
         Match.when(undefined, () => Effect.void.pipe(Effect.as(undefined))),
         Match.orElse(
-          Effect.fn(function* (range: DateRangeUtc) {
+          Effect.fn(function* (range: Range<DateTime.Utc>) {
             return {
-              gte: yield* encodeDateTimeUtc(range.fromUtc),
-              lt: yield* encodeDateTimeUtc(range.toUtc),
+              gte: yield* encodeDateTimeUtc(range.from),
+              lt: yield* encodeDateTimeUtc(range.to),
             };
           }),
         ),

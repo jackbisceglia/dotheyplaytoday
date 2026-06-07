@@ -52,7 +52,11 @@ export type {
   ChannelClientError,
   NotifierError,
 } from "./modules/notifier/channel/errors.js";
-export { Notifier, NotifierLayer } from "./modules/notifier/service.js";
+export {
+  EmailNotifierLayer,
+  Notifier,
+  NotifierLayer,
+} from "./modules/notifier/service.js";
 export type { NotifierService } from "./modules/notifier/service.js";
 export { Recipient } from "./modules/notifier/channel/schema.js";
 export { Channel } from "./modules/notifier/channel/service.js";
@@ -67,6 +71,12 @@ export {
   EmailChannelLayer,
   EmailRenderError,
 } from "./modules/notifier/channel/email/service.js";
+export { ConsoleNotifierLayer } from "./modules/notifier/channel/console/notifier.js";
+export {
+  ConsoleChannel,
+  ConsoleChannelLayer,
+} from "./modules/notifier/channel/console/service.js";
+export type { ConsoleRendered } from "./modules/notifier/channel/console/service.js";
 export { EmailDelivery } from "./modules/notifier/channel/email/delivery.js";
 export type { EmailDelivery as EmailDeliveryShape } from "./modules/notifier/channel/email/delivery.js";
 export { EmailView } from "./modules/notifier/channel/email/render.js";
