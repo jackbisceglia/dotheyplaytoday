@@ -36,10 +36,7 @@ const NotifyCommand = Command.make(
     user: UserFlag,
   },
   Effect.fn("Notify.Cli")(function* (opts) {
-    const userEmail = Option.match(opts.user, {
-      onNone: () => ({}),
-      onSome: (userEmail) => ({ userEmail }),
-    });
+    const userEmail = Option.getOrUndefined(opts.user);
     const NotifierLayer = opts.dryRun
       ? ConsoleNotifierLayer.pipe(Layer.provide(ConsoleChannelLayer))
       : EmailNotifierLayer.pipe(Layer.provide(EmailChannelLayer));
@@ -47,7 +44,7 @@ const NotifyCommand = Command.make(
     return yield* notify({
       dryRun: opts.dryRun,
       force: opts.force,
-      ...userEmail,
+      ...(userEmail && { userEmail }),
     }).pipe(Effect.provide(NotifierLayer));
   }),
 ).pipe(Command.withDescription("Run the v2 notify job"));
