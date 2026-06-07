@@ -36,12 +36,12 @@ export class Channel extends Context.Service<Channel, ChannelService>()(
         const { render, send } = yield* Definition;
 
         const deliver: Channel["Service"]["deliver"] = Effect.fn(
-          function* (notification) {
-            const rendered = yield* render(notification).pipe(Effect.orDie);
+          "Channel.deliver",
+        )(function* (notification) {
+          const rendered = yield* render(notification).pipe(Effect.orDie);
 
-            yield* send(notification, rendered);
-          },
-        );
+          yield* send(notification, rendered);
+        });
 
         return Channel.of({ deliver });
       }),
