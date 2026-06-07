@@ -38,4 +38,4 @@ export type ChannelClientError =
   | ChannelClientRequestError
   | ChannelClientResponseError;
 
-export type NotifierError = ChannelError | ChannelClientError;
+export type ChannelDeliveryError = ChannelError | ChannelClientError;

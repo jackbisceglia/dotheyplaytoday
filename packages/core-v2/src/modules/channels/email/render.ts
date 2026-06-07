@@ -1,4 +1,4 @@
-import { StringParts } from "../../../../lib/string.js";
+import { StringParts } from "../../../lib/string.js";
 
 export type EmailRendered = {
   readonly subject: string;

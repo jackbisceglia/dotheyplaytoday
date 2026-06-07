@@ -93,23 +93,23 @@ Verification:
 - Duplicate suppression tests.
 - Replace-for-user tests covering create, retain, delete, dedupe, cap rejection, and preserved `last_sent_at` for retained subscriptions.
 
-## Phase 3 - Notifier And Notify Job Slice
+## Phase 3 - Channel And Notify Job Slice
 
 Deliverables:
 
-- Implement `Notifier` service contract.
-- Implement email `Channel` layer.
+- Implement the orchestration-facing `Channel` service contract.
+- Implement email `Channel` layer through the generic `Channel.makeLayer` factory.
 - Implement Resend `ChannelClient` layer.
-- Add dry-run notifier path.
+- Add dry-run channel path.
 - Implement notify job with explicit logs for skip, dry-run, send success, and send failure.
 - Add CLI options: `--dry-run`, `--user <email>`, `--force`.
 
 Key decisions:
 
-- Notify orchestration depends on `Notifier`, `Users`, `Subscriptions`, `Subjects`, and `Events`, not Resend.
-- The notifier module names the subordinate delivery boundaries as `Channel` and `ChannelClient`; define them as injectable service boundaries in `channel/service.ts` and `channel/client/service.ts` instead of shape-only contract files.
-- A notifier `service.ts` file may be abstract or concrete: abstract files export the `Context.Service` boundary without a layer, while concrete implementation files provide the layer used by runtime composition.
-- Email is the V1 `Channel`; Resend is the first email `ChannelClient` under `channel/email/clients/`.
+- Notify orchestration depends on `Channel`, `Users`, `Subscriptions`, `Subjects`, and `Events`, not Resend.
+- The channels module names the delivery boundaries as `Channel` and `ChannelClient`; define them as injectable service boundaries in `modules/channels/service.ts` and `modules/channels/client/service.ts` instead of shape-only contract files. Keep the prepared `Notification` schema in `modules/channels/notification/schema.ts`.
+- `Channel` is one non-generic runtime service tag. `Channel.makeLayer` is the generic layer factory that accepts an effectful channel definition, infers rendered type and requirements from that definition, ties concrete `render` and `send` functions together, and resolves channel-owned runtime dependencies once while building the layer. Concrete channel send steps create whatever typed delivery their client boundary requires.
+- Email is the V1 `Channel`; Resend is the first email `ChannelClient` under `modules/channels/email/clients/`.
 - Notify orchestration stays in the job callsite; do not add a `NotifyService` in V1.
 - Notify reads subscription notification recipients through `Subscriptions.listNotificationRecipients()` rather than mechanical `getAllWithUsers` naming.
 - Notify remains subscription-first: load recipients, due-check in app, query same-day events by subject/local-day UTC range, send, then mark sent.
@@ -245,7 +245,7 @@ Prefer semi-atomic commits by vertical slice:
 1. Project baseline and Effect v4 pins.
 2. Core database schema and test database helper.
 3. Subscription scheduling behavior.
-4. Notifier and notify job.
+4. Channel and notify job.
 5. Signup API.
 6. Landing page.
 7. Unsubscribe.

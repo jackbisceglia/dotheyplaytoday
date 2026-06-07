@@ -2,10 +2,8 @@ import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import {
   ConsoleChannelLayer,
-  ConsoleNotifierLayer,
   EmailAddress,
   EmailChannelLayer,
-  EmailNotifierLayer,
 } from "@dtpt/core-v2";
 import { Effect, Layer, Option, Schema } from "effect";
 import * as SchemaTransformation from "effect/SchemaTransformation";
@@ -37,15 +35,13 @@ const NotifyCommand = Command.make(
   },
   Effect.fn("Notify.Cli")(function* (opts) {
     const userEmail = Option.getOrUndefined(opts.user);
-    const NotifierLayer = opts.dryRun
-      ? ConsoleNotifierLayer.pipe(Layer.provide(ConsoleChannelLayer))
-      : EmailNotifierLayer.pipe(Layer.provide(EmailChannelLayer));
+    const ChannelLayer = opts.dryRun ? ConsoleChannelLayer : EmailChannelLayer;
 
     return yield* notify({
       dryRun: opts.dryRun,
       force: opts.force,
       ...(userEmail && { userEmail }),
-    }).pipe(Effect.provide(NotifierLayer));
+    }).pipe(Effect.provide(ChannelLayer));
   }),
 ).pipe(Command.withDescription("Run the v2 notify job"));
 

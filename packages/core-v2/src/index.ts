@@ -47,45 +47,35 @@ export {
   ChannelClientResponseError,
   ChannelError,
   ChannelName,
-} from "./modules/notifier/channel/errors.js";
+} from "./modules/channels/errors.js";
 export type {
+  ChannelDeliveryError,
   ChannelClientError,
-  NotifierError,
-} from "./modules/notifier/channel/errors.js";
-export {
-  EmailNotifierLayer,
-  Notifier,
-  NotifierLayer,
-} from "./modules/notifier/service.js";
-export type { NotifierService } from "./modules/notifier/service.js";
-export { Recipient } from "./modules/notifier/channel/schema.js";
-export { Channel } from "./modules/notifier/channel/service.js";
+} from "./modules/channels/errors.js";
+export { Recipient } from "./modules/channels/schema.js";
+export { Channel } from "./modules/channels/service.js";
 export type {
+  ChannelDefinition,
   ChannelDelivery,
   ChannelService,
-} from "./modules/notifier/channel/service.js";
-export { ChannelClient } from "./modules/notifier/channel/client/service.js";
-export type { ChannelClientService } from "./modules/notifier/channel/client/service.js";
+} from "./modules/channels/service.js";
+export { ChannelClient } from "./modules/channels/client/service.js";
+export type { ChannelClientService } from "./modules/channels/client/service.js";
 export {
-  EmailChannel,
   EmailChannelLayer,
   EmailRenderError,
-} from "./modules/notifier/channel/email/service.js";
-export { ConsoleNotifierLayer } from "./modules/notifier/channel/console/notifier.js";
-export {
-  ConsoleChannel,
-  ConsoleChannelLayer,
-} from "./modules/notifier/channel/console/service.js";
-export type { ConsoleRendered } from "./modules/notifier/channel/console/service.js";
-export { EmailDelivery } from "./modules/notifier/channel/email/delivery.js";
-export type { EmailDelivery as EmailDeliveryShape } from "./modules/notifier/channel/email/delivery.js";
-export { EmailView } from "./modules/notifier/channel/email/render.js";
-export { EmailChannelClient } from "./modules/notifier/channel/email/clients/service.js";
-export type { EmailRendered } from "./modules/notifier/channel/email/render.js";
-export { ResendConfig } from "./modules/notifier/channel/email/clients/config.js";
-export type { ResendConfig as ResendConfigShape } from "./modules/notifier/channel/email/clients/config.js";
-export { EmailChannelClientLayerResend } from "./modules/notifier/channel/email/clients/resend.js";
-export { Notification } from "./modules/notifier/schema.js";
+} from "./modules/channels/email/service.js";
+export { ConsoleChannelLayer } from "./modules/channels/console/service.js";
+export type { ConsoleRendered } from "./modules/channels/console/service.js";
+export { EmailDelivery } from "./modules/channels/email/delivery.js";
+export type { EmailDelivery as EmailDeliveryShape } from "./modules/channels/email/delivery.js";
+export { EmailView } from "./modules/channels/email/render.js";
+export { EmailChannelClient } from "./modules/channels/email/clients/service.js";
+export type { EmailRendered } from "./modules/channels/email/render.js";
+export { ResendConfig } from "./modules/channels/email/clients/config.js";
+export type { ResendConfig as ResendConfigShape } from "./modules/channels/email/clients/config.js";
+export { EmailChannelClientLayerResend } from "./modules/channels/email/clients/resend.js";
+export { Notification } from "./modules/channels/notification/schema.js";
 export {
   SubjectEvent,
   SubjectEventInsert,

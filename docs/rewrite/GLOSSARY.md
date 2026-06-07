@@ -128,10 +128,6 @@ _Avoid_: Sending eventless notifications
 The UTC instant when a subscription last successfully delivered a notification.
 _Avoid_: Last evaluated at
 
-**Notifier**:
-The service that delivers a prepared notification through the configured delivery channel.
-_Avoid_: Email provider, Resend client, notify job
-
 **Channel**:
 The delivery-medium adapter that renders a notification and sends rendered channel content to a typed delivery.
 _Avoid_: Provider
@@ -194,7 +190,6 @@ _Avoid_: Direct `process.env` reads in services
 - A **Notification Recipient** is the notify job's input projection.
 - A **Forced Notify Run** is restricted by optional user filtering and still requires matching same-day events.
 - **Last Sent At** changes only after successful notification delivery.
-- A **Notifier** uses exactly one **Channel** for V1.
 - A **Channel** renders a **Notification** into channel content and sends that content plus a typed delivery through a **ChannelClient**.
 - An **Unsubscribe** removes one **User** and cascades to that user's **Subscriptions**.
 - An **Unsubscribe Token** authorizes one global **Unsubscribe** action.
@@ -344,7 +339,7 @@ Rules:
 
 ## Notification Interfaces
 
-Notify orchestration assembles a prepared notification inline after loading the subscription recipient, subject, and same-day events, then calls the notifier. Channels own rendering and channel clients own vendor payload delivery.
+Notify orchestration assembles a prepared notification inline after loading the subscription recipient, subject, and same-day events, then calls the configured channel. Channels own rendering and channel clients own vendor payload delivery.
 
 ```ts
 type Notification = {
@@ -363,28 +358,26 @@ type EventWithParticipants = Event & {
 `lastSentAt` records successful notification delivery only. A due evaluation that finds no same-day events does not update `lastSentAt`.
 
 ```ts
-interface Notifier {
-  readonly deliver: (
-    notification: Notification,
-  ) => Effect.Effect<void, NotifierError>;
-}
-```
-
-```ts
 type ChannelDelivery<Recipient> = {
   readonly recipient: Recipient;
   readonly hash: string;
 };
 
-interface Channel<Recipient, Rendered, RenderError = never> {
+interface Channel {
+  readonly deliver: (
+    notification: Notification,
+  ) => Effect.Effect<void, ChannelDeliveryError>;
+}
+
+type ChannelDefinition<Rendered> = {
   readonly render: (
     notification: Notification,
-  ) => Effect.Effect<Rendered, RenderError>;
+  ) => Effect.Effect<Rendered, unknown, never>;
   readonly send: (
-    delivery: ChannelDelivery<Recipient>,
+    notification: Notification,
     rendered: Rendered,
-  ) => Effect.Effect<void, NotifierError>;
-}
+  ) => Effect.Effect<void, ChannelDeliveryError>;
+};
 ```
 
 ```ts
@@ -405,10 +398,10 @@ interface ChannelClient<Recipient, Rendered> {
 ```
 
 ```txt
-notify orchestration -> Notifier -> Channel -> ChannelClient
+notify orchestration -> Channel -> ChannelClient
 ```
 
-For V1, the configured `Channel` is email. Notify orchestration constructs a prepared `Notification` and calls `Notifier.deliver(notification)`. The notifier delegates to the configured channel: `Channel.render(notification)` effectfully creates rendered content, then `Channel.send(delivery, rendered)` sends it through the channel client. The email channel renders `Notification` into `EmailRendered`; the email channel/client boundary pins `delivery.recipient` to `EmailAddress`, and the client maps the typed delivery plus `EmailRendered` to a vendor API such as Resend. `Channel.render` is effectful so channel-owned rendering can read runtime config and surface typed render errors. In V1, `Notifier.deliver` collapses email render errors to defects rather than sending fallback email.
+For V1, the configured `Channel` is email. Notify orchestration constructs a prepared `Notification` and calls `Channel.deliver(notification)`. The email channel's `Channel.makeLayer` definition renders `Notification` into `EmailRendered`; its send step creates an email delivery and sends both through the email channel client. The email channel/client boundary pins `delivery.recipient` to `EmailAddress`, and the client maps the typed delivery plus `EmailRendered` to a vendor API such as Resend. `Channel.makeLayer` accepts an effectful channel definition and infers the rendered type and builder requirements from that definition so concrete `render` and `send` functions agree, while callers only depend on the non-generic `Channel` service.
 
 Do not add a notification builder/projection service in V1. Inline assembly is only object construction from data already loaded by notify. Extract a builder only after a second callsite, channel-specific data divergence, or concrete testability/readability win appears.
 
@@ -511,7 +504,7 @@ Services:
 - `Subjects` owns `subjects` reads and `subject_events` feed-edge writes.
 - `Events` owns `events` and `participants`, including event import upsert and subject-scoped event queries through `subject_events`.
 - `Subscriptions` owns `subscriptions`, including user replacement, notify listing, and sent markers.
-- `Notifier`, `Channel`, and `ChannelClient` own notification delivery boundaries.
+- `Channel` and `ChannelClient` own notification delivery boundaries.
 
 Callsite workflows:
 
@@ -767,16 +760,16 @@ Rules:
 - Row-level tables use top-level `_tag` as a query/index projection of `details._tag` when the details tag represents the whole row.
 - When `details._tag` represents the whole row, top-level `_tag` must equal `details._tag`.
 - Nested subconcerns such as **Schedule** keep their own `_tag` inside JSON and do not require a row-level `_tag` column.
-- **Notifier** delivers prepared **Notifications**; it does not decide which subscriptions are due.
-- The notifier method is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed delivery.
+- **Channel** delivers prepared **Notifications**; it does not decide which subscriptions are due.
+- The channel method exposed to orchestration is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed delivery.
 - **Channel** owns effectful render plus send for a delivery medium.
-- `Channel.render` can read channel-owned runtime config and return typed render errors. V1 notifier delivery collapses email render errors to defects rather than sending fallback email.
+- `Channel.makeLayer` definitions can read channel-owned runtime config. Render definitions may use typed errors locally, and V1 channel delivery collapses render errors to defects rather than sending fallback notifications.
 - Email unsubscribe link construction belongs to rendering/channel code, not notify orchestration.
 - Email client implementations map typed `ChannelDelivery<EmailAddress>` values plus generic `EmailRendered` values to vendor-specific SDK payloads.
 - Delivery interfaces are generic over channels, but V1 runtime wiring is one concrete email channel.
 - V1 does not specify provider retry/backoff; provider failures are surfaced as effect errors and logged.
 - **ChannelClient** does not render notification copy; it only maps typed deliveries and rendered channel content to a vendor API.
-- The notify job is a runnable script that orchestrates due subscriptions through domain services and the **Notifier**; cron/recurrence is an infrastructure concern outside the application.
+- The notify job is a runnable script that orchestrates due subscriptions through domain services and the configured **Channel**; cron/recurrence is an infrastructure concern outside the application.
 - Notify orchestration delegates graph queries to domain services rather than inlining database joins in the job.
 - Unsubscribe is global and hard-delete based in V1; there is no per-subject unsubscribe or soft-disable preference.
 - Subscription rows do not have `enabled` in V1; hard-delete unsubscribe is the only stop-notifications workflow.

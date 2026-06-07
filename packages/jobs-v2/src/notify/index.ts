@@ -1,9 +1,9 @@
 import {
   Events,
   type EventWithParticipants,
+  Channel,
   Notification,
   type NotificationRecipient,
-  Notifier,
   Subscription,
   Subscriptions,
   SubscriptionTiming,
@@ -78,7 +78,7 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
   ) {
     const subscriptions = yield* Subscriptions;
     const events = yield* Events;
-    const notifier = yield* Notifier;
+    const channel = yield* Channel;
 
     const { subscription, user } = recipient;
 
@@ -118,7 +118,7 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
       events: eventsToInclude,
     });
 
-    yield* notifier
+    yield* channel
       .deliver(notification)
       .pipe(
         Effect.mapError(
