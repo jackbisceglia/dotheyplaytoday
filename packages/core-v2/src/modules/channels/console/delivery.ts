@@ -1,11 +1,11 @@
 import { DateTime } from "effect";
 
-import { StringParts } from "../../../../lib/string.js";
-import type { EmailAddress } from "../../../users/schema.js";
+import { StringParts } from "../../../lib/string.js";
+import type { EmailAddress } from "../../users/schema.js";
+import type { Notification } from "../notification/schema.js";
 import type { ChannelDelivery } from "../service.js";
-import type { Notification } from "../../schema.js";
 
-export type EmailDelivery = ChannelDelivery<EmailAddress>;
+export type ConsoleDelivery = ChannelDelivery<EmailAddress>;
 
 const deliveryHash = (notification: Notification) =>
   StringParts()
@@ -13,8 +13,8 @@ const deliveryHash = (notification: Notification) =>
     .add(DateTime.formatIso(notification.sendAt))
     .make(":");
 
-export const EmailDelivery = {
-  makeFromNotification: (notification: Notification): EmailDelivery => ({
+export const ConsoleDelivery = {
+  makeFromNotification: (notification: Notification): ConsoleDelivery => ({
     recipient: notification.user.email,
     hash: deliveryHash(notification),
   }),

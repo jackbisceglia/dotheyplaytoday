@@ -1,22 +1,16 @@
-import { DateTime, Effect, Layer } from "effect";
+import { DateTime, Effect } from "effect";
 
-import type { EmailAddress } from "../../../users/schema.js";
+import type { Notification } from "../notification/schema.js";
 import { Channel } from "../service.js";
+import { ConsoleDelivery } from "./delivery.js";
 
 export type ConsoleRendered = {
   readonly message: string;
 };
 
-export class ConsoleChannel extends Channel.makeService<
-  ConsoleChannel,
-  EmailAddress,
-  ConsoleRendered
->()("@dtpt/core-v2/ConsoleChannel") {}
-
-export const ConsoleChannelLayer = Layer.succeed(
-  ConsoleChannel,
-  ConsoleChannel.of({
-    render: (notification) => {
+export const ConsoleChannelLayer = Channel.makeLayer(
+  Effect.succeed({
+    render: Effect.fn((notification: Notification) => {
       const message = [
         `subscription=${notification.subscription.id}`,
         `user=${notification.user.email}`,
@@ -26,8 +20,12 @@ export const ConsoleChannelLayer = Layer.succeed(
       ].join(" ");
 
       return Effect.succeed({ message });
-    },
-    send: Effect.fn("ConsoleChannel.send")(function* (delivery, rendered) {
+    }),
+    send: Effect.fn(function* (
+      notification: Notification,
+      rendered: ConsoleRendered,
+    ) {
+      const delivery = ConsoleDelivery.makeFromNotification(notification);
       const details = [
         `recipient=${delivery.recipient}`,
         `hash=${delivery.hash}`,

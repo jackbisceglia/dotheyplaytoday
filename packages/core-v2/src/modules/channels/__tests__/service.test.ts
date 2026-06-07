@@ -1,10 +1,10 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Cause, Effect, Exit, Layer } from "effect";
+import { Cause, Effect, Exit } from "effect";
 
-import type { EmailDelivery } from "../channel/email/delivery.js";
-import { EmailChannel, EmailRenderError } from "../channel/email/service.js";
-import type { EmailRendered } from "../channel/email/render.js";
-import { EmailNotifierLayer, Notifier } from "../service.js";
+import { Channel } from "../service.js";
+import { EmailRenderError } from "../email/service.js";
+import type { EmailRendered } from "../email/render.js";
+import type { Notification } from "../notification/schema.js";
 import { notification } from "./fixtures.js";
 
 const rendered: EmailRendered = {
@@ -15,49 +15,45 @@ const rendered: EmailRendered = {
   },
 };
 
-describe("v2 Notifier service", () => {
+describe("v2 Channel service", () => {
   it.effect("delivers notifications through the configured channel", () => {
     const renderedNotifications: string[] = [];
     const sentMessages: {
-      readonly delivery: EmailDelivery;
+      readonly subscriptionId: string;
       readonly rendered: EmailRendered;
     }[] = [];
-    const EmailChannelLayerTest = Layer.succeed(
-      EmailChannel,
-      EmailChannel.of({
-        render: (input) => {
+    const ChannelLayerTest = Channel.makeLayer(
+      Effect.succeed({
+        render: (input: Notification) => {
           return Effect.sync(() => {
             renderedNotifications.push(input.subscription.id);
 
             return rendered;
           });
         },
-        send: (delivery, message) =>
+        send: (input: Notification, message: EmailRendered) =>
           Effect.sync(() => {
-            sentMessages.push({ delivery, rendered: message });
+            sentMessages.push({
+              subscriptionId: input.subscription.id,
+              rendered: message,
+            });
           }),
       }),
     );
-    const layer = EmailNotifierLayer.pipe(
-      Layer.provideMerge(EmailChannelLayerTest),
-    );
 
     return Effect.gen(function* () {
-      const notifier = yield* Notifier;
+      const channel = yield* Channel;
 
-      yield* notifier.deliver(notification);
+      yield* channel.deliver(notification);
 
       expect(renderedNotifications).toEqual([notification.subscription.id]);
       expect(sentMessages).toEqual([
         {
-          delivery: {
-            recipient: notification.user.email,
-            hash: "00000000-0000-4000-8000-000000000401:2026-05-24T13:00:00.000Z",
-          },
+          subscriptionId: notification.subscription.id,
           rendered,
         },
       ]);
-    }).pipe(Effect.provide(layer));
+    }).pipe(Effect.provide(ChannelLayerTest));
   });
 
   it.effect("dies on render errors instead of sending fallback email", () => {
@@ -67,32 +63,31 @@ describe("v2 Notifier service", () => {
       role: "home",
     });
     const sentMessages: {
-      readonly delivery: EmailDelivery;
+      readonly subscriptionId: string;
       readonly rendered: EmailRendered;
     }[] = [];
-    const EmailChannelLayerTest = Layer.succeed(
-      EmailChannel,
-      EmailChannel.of({
+    const ChannelLayerTest = Channel.makeLayer(
+      Effect.succeed({
         render: () => Effect.fail(error),
-        send: (delivery, message) =>
+        send: (input: Notification, message: EmailRendered) =>
           Effect.sync(() => {
-            sentMessages.push({ delivery, rendered: message });
+            sentMessages.push({
+              subscriptionId: input.subscription.id,
+              rendered: message,
+            });
           }),
       }),
     );
-    const layer = EmailNotifierLayer.pipe(
-      Layer.provideMerge(EmailChannelLayerTest),
-    );
 
     return Effect.gen(function* () {
-      const notifier = yield* Notifier;
-      const exit = yield* notifier.deliver(notification).pipe(Effect.exit);
+      const channel = yield* Channel;
+      const exit = yield* channel.deliver(notification).pipe(Effect.exit);
 
       expect(Exit.isFailure(exit)).toBe(true);
       if (Exit.isFailure(exit)) {
         expect(Cause.squash(exit.cause)).toBe(error);
       }
       expect(sentMessages).toEqual([]);
-    }).pipe(Effect.provide(layer));
+    }).pipe(Effect.provide(ChannelLayerTest));
   });
 });

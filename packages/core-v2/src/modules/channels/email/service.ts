@@ -1,17 +1,18 @@
 import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 
-import { StringParts } from "../../../../lib/string.js";
-import { isTaggedAs } from "../../../../lib/tagged.js";
-import type { ExtractFromTag } from "../../../../lib/types.js";
-import { buildUnsubscribeUrl } from "../../../../lib/url.js";
-import { EventId } from "../../../events/schema.js";
-import type { EventWithParticipants } from "../../../events/service.js";
-import type { Subject } from "../../../subjects/schema.js";
-import type { EmailAddress, User } from "../../../users/schema.js";
-import type { Notification } from "../../schema.js";
+import { StringParts } from "../../../lib/string.js";
+import { isTaggedAs } from "../../../lib/tagged.js";
+import type { ExtractFromTag } from "../../../lib/types.js";
+import { buildUnsubscribeUrl } from "../../../lib/url.js";
+import { EventId } from "../../events/schema.js";
+import type { EventWithParticipants } from "../../events/service.js";
+import type { Subject } from "../../subjects/schema.js";
+import type { User } from "../../users/schema.js";
+import type { Notification } from "../notification/schema.js";
 import { Channel } from "../service.js";
 import { EmailChannelClientLayerResend } from "./clients/resend.js";
 import { EmailChannelClient } from "./clients/service.js";
+import { EmailDelivery } from "./delivery.js";
 import { EmailView, type EmailRendered } from "./render.js";
 
 export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>()(
@@ -22,13 +23,6 @@ export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>(
     role: Schema.Literals(["home", "away"]),
   },
 ) {}
-
-export class EmailChannel extends Channel.makeService<
-  EmailChannel,
-  EmailAddress,
-  EmailRendered,
-  EmailRenderError
->()("@dtpt/core-v2/EmailChannel") {}
 
 type SportsGameEvents = Array.NonEmptyReadonlyArray<SportsGameEvent>;
 type SportsGameEvent = ExtractFromTag<EventWithParticipants, "sports_game">;
@@ -126,29 +120,28 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
   },
 );
 
-export const EmailChannelLayer = Layer.effect(
-  EmailChannel,
+export const EmailChannelLayer = Channel.makeLayer(
   Effect.gen(function* () {
     const client = yield* EmailChannelClient;
 
-    type Service = EmailChannel["Service"];
+    const render = Effect.fn(function* (notification: Notification) {
+      const props = yield* getEmailViewProps(notification);
 
-    const render: Service["render"] = Effect.fn("EmailChannel.render")(
-      function* (notification) {
-        const props = yield* getEmailViewProps(notification);
+      return EmailView(props);
+    });
 
-        return EmailView(props);
-      },
-    );
+    const send = Effect.fn(function* (
+      notification: Notification,
+      rendered: EmailRendered,
+    ) {
+      const delivery = EmailDelivery.makeFromNotification(notification);
 
-    const send: Service["send"] = Effect.fn("EmailChannel.send")(
-      function* (delivery, rendered) {
-        return yield* client.send(delivery, rendered);
-      },
-    );
+      return yield* client.send(delivery, rendered);
+    });
 
-    return EmailChannel.of({ render, send });
+    return {
+      render,
+      send,
+    };
   }),
-).pipe(
-  Layer.provide(EmailChannelClientLayerResend),
-);
+).pipe(Layer.provide(EmailChannelClientLayerResend));

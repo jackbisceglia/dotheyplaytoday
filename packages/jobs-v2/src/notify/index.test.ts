@@ -1,15 +1,14 @@
 import { describe, expect, it } from "@effect/vitest";
 import {
+  Channel,
   ChannelClientRequestError,
   ChannelClientResponseError,
   ConsoleChannelLayer,
-  ConsoleNotifierLayer,
   DatabaseReadError,
   DatabaseWriteError,
   EmailAddress,
   Events,
   EventWithParticipants,
-  Notifier,
   NotificationRecipient,
   Subscriptions,
   type Notification,
@@ -137,7 +136,7 @@ type HarnessOptions = {
   >;
   readonly deliver?: (
     notification: Notification,
-  ) => ReturnType<Notifier["Service"]["deliver"]>;
+  ) => ReturnType<Channel["Service"]["deliver"]>;
   readonly markSent?: (
     input: Parameters<Subscriptions["Service"]["markSent"]>[0],
   ) => ReturnType<Subscriptions["Service"]["markSent"]>;
@@ -184,9 +183,9 @@ const makeHarness = (opts: HarnessOptions) => {
     }),
   );
 
-  const NotifierLayerTest = Layer.succeed(
-    Notifier,
-    Notifier.of({
+  const ChannelLayerTest = Layer.succeed(
+    Channel,
+    Channel.of({
       deliver: (notification) =>
         Effect.sync(() => deliveries.push(notification)).pipe(
           Effect.andThen(
@@ -203,7 +202,7 @@ const makeHarness = (opts: HarnessOptions) => {
     layer: Layer.mergeAll(
       SubscriptionsLayerTest,
       EventsLayerTest,
-      NotifierLayerTest,
+      ChannelLayerTest,
     ),
   };
 };
@@ -278,14 +277,10 @@ describe("v2 notify orchestration", () => {
     });
   });
 
-  it.effect("console notifier layer does not require Resend config", () =>
+  it.effect("console channel layer does not require Resend config", () =>
     Effect.gen(function* () {
-      yield* Notifier;
-    }).pipe(
-      Effect.provide(
-        ConsoleNotifierLayer.pipe(Layer.provide(ConsoleChannelLayer)),
-      ),
-    ),
+      yield* Channel;
+    }).pipe(Effect.provide(ConsoleChannelLayer)),
   );
 
   it.effect(

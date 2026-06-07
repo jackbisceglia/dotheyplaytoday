@@ -33,7 +33,7 @@ Signup runs inside one transaction:
 2. Job loads users and subscriptions through domain services, not inline database joins.
 3. Job evaluates fixed local send time against the current UTC instant and the user's timezone.
 4. Job skips subscriptions that are not due, already sent today, or have no events on the user's local date.
-5. Job sends one notification per due user/subject subscription with all matching events for that subject on the user's local date through the `Notifier`.
+5. Job sends one notification per due user/subject subscription with all matching events for that subject on the user's local date through the configured `Channel`.
 6. Job updates `last_sent_at` only after successful delivery. Due evaluations with no same-day events do not update `last_sent_at`.
 7. Dry-run mode evaluates due subscriptions and reports what would happen, but never sends through the provider and never updates `last_sent_at`.
 
@@ -265,7 +265,7 @@ Services:
 - `Subjects` owns `subjects` reads and `subject_events` feed-edge writes.
 - `Events` owns `events` and `participants`, including event import upsert and subject-scoped event queries through `subject_events`.
 - `Subscriptions` owns `subscriptions`, including user replacement, notify listing, and sent markers.
-- `Notifier`, `Channel`, and `ChannelClient` own notification delivery boundaries.
+- `Channel` and `ChannelClient` own notification delivery boundaries.
 
 Callsite workflows:
 
@@ -574,7 +574,7 @@ Mocks/fakes are acceptable at external provider or network boundaries, such as e
 
 Email is the only V1 delivery channel.
 
-Notify orchestration assembles a prepared notification inline after loading the subscription recipient, subject, and same-day events, then calls `Notifier.deliver(notification)`. The notifier delegates to the configured `Channel`. The channel renders the notification into channel-specific content and sends that content plus a typed delivery through its `ChannelClient`.
+Notify orchestration assembles a prepared notification inline after loading the subscription recipient, subject, and same-day events, then calls `Channel.deliver(notification)`. The configured channel renders the notification into channel-specific content and sends that content plus a typed delivery through its `ChannelClient`.
 
 Rough interface shape:
 
@@ -591,26 +591,36 @@ type EventWithParticipants = Event & {
   readonly participants: ReadonlyArray<Participant>;
 };
 
-interface Notifier {
-  readonly deliver: (
-    notification: Notification,
-  ) => Effect.Effect<void, NotifierError>;
-}
-
 type ChannelDelivery<Recipient> = {
   readonly recipient: Recipient;
   readonly hash: string;
 };
 
-interface Channel<Recipient, Rendered, RenderError = never> {
+interface Channel {
+  readonly deliver: (
+    notification: Notification,
+  ) => Effect.Effect<void, ChannelDeliveryError>;
+}
+
+type ChannelDefinition<Rendered> = {
   readonly render: (
     notification: Notification,
-  ) => Effect.Effect<Rendered, RenderError>;
+  ) => Effect.Effect<Rendered, unknown, never>;
   readonly send: (
-    delivery: ChannelDelivery<Recipient>,
+    notification: Notification,
     rendered: Rendered,
-  ) => Effect.Effect<void, NotifierError>;
-}
+  ) => Effect.Effect<void, ChannelDeliveryError>;
+};
+
+declare const Channel: {
+  readonly makeLayer: <Rendered, Requirements = never, BuildError = never>(
+    Definition: Effect.Effect<
+      ChannelDefinition<Rendered>,
+      BuildError,
+      Requirements
+    >,
+  ) => Layer.Layer<Channel, BuildError, Requirements>;
+};
 ```
 
 V1 email channel shape:
@@ -626,13 +636,13 @@ type EmailRendered = {
 
 interface ChannelClient<Recipient, Rendered> {
   readonly send: (
-    to: Recipient,
+    delivery: ChannelDelivery<Recipient>,
     rendered: Rendered,
   ) => Effect.Effect<void, ChannelClientError>;
 }
 ```
 
-Define each delivery service boundary in the folder that owns it. The notifier-facing `Notifier` service lives in `modules/notifier/service.ts`. The shared `Channel` injectable boundary lives in `modules/notifier/channel/service.ts`, while email channel behavior and rendering live under `modules/notifier/channel/email/`. The shared `ChannelClient` injectable boundary lives in `modules/notifier/channel/client/service.ts`, while concrete email clients such as Resend live under `modules/notifier/channel/email/clients/` because they can only send email channel content.
+Define each delivery service boundary in the folder that owns it. The orchestration-facing `Channel` service lives in `modules/channels/service.ts`, and the prepared `Notification` schema lives in `modules/channels/notification/schema.ts`. Concrete channel behavior and rendering live under folders such as `modules/channels/email/` and provide the one shared `Channel` tag through `Channel.makeLayer`. The shared `ChannelClient` injectable boundary lives in `modules/channels/client/service.ts`, while concrete email clients such as Resend live under `modules/channels/email/clients/` because they can only send email channel content.
 
 In this module, `service.ts` may be abstract or concrete. Abstract service files define the `Context.Service` tag and no layer. Concrete implementation files provide a layer that satisfies the abstract service. Shape-only files should not be named `service.ts`.
 
@@ -650,9 +660,9 @@ Do not add a notification builder/projection service in V1. Inline assembly is o
 
 If one subscribed subject has multiple same-day events, such as a doubleheader, V1 sends one subject-scoped email containing all of those events rather than one email per event.
 
-Client-specific payload mapping belongs in the `ChannelClient` layer. Email formatting belongs in the email `Channel` layer. `Channel.render` is effectful: it takes a prepared `Notification` and produces the channel-specific rendered content while allowing channel-owned rendering to read runtime config and surface typed render errors. Clients do not render notification copy. Notify orchestration depends only on the notifier service. The notifier method is `deliver(notification)`; `send` is reserved for channel/client delivery of rendered content to a typed delivery.
+Client-specific payload mapping belongs in the `ChannelClient` layer. Email formatting belongs in the email `Channel` layer. `Channel.makeLayer` accepts an effectful channel definition and infers the rendered type and builder requirements from that definition so concrete `render` and `send` functions agree. Render definitions may use typed errors locally, but `Channel.deliver` treats them as opaque and collapses them to defects. The definition resolves channel-owned runtime dependencies once, while callers only yield the non-generic `Channel` service and call `deliver(notification)`. Clients do not render notification copy. Notify orchestration depends only on the configured `Channel`; `send` is reserved for channel delivery after rendering and client delivery of rendered content to a typed delivery.
 
-In V1, `Notifier.deliver` collapses email render errors to defects rather than sending fallback email.
+In V1, `Channel.deliver` collapses render errors to defects rather than sending fallback notifications.
 
 Email rendering builds unsubscribe links from typed web config plus `notification.user.unsubscribeToken` through the shared URL helper. Notify orchestration does not construct public URLs.
 

@@ -18,7 +18,7 @@ import {
   EmailChannelClientLayerResend,
   ResendInstantiationError,
 } from "../resend.js";
-import { notification } from "../../../../__tests__/fixtures.js";
+import { notification } from "../../../__tests__/fixtures.js";
 
 const resendMock = vi.hoisted(() => ({
   constructor: vi.fn(),

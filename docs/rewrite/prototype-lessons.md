@@ -7,7 +7,7 @@
 - `lastSentAt` compared by user-local date is a simple duplicate guard that matches the product.
 - A 15-minute external cron model is operationally sufficient for V1.
 - The notify job can stay sequential for now. Reliability and clear logs matter more than throughput.
-- Notifier-channel-first notification wiring worked: top-level orchestration should depend on `Notifier`, not Resend.
+- Channel-first notification wiring worked: top-level orchestration should depend on the configured `Channel`, not Resend.
 - Email rendering belongs above the concrete channel client and below notify orchestration.
 - SolidStart plus Effect HttpApi is a reasonable public signup stack.
 - Drizzle plus SQLite is a better persistence baseline than JSON files or Redis/KVS for this product.
@@ -36,7 +36,7 @@
 - Event rows with subject events, event-local participants, active/cancelled availability, and JSON details for type-specific facts.
 - Shared core contracts for API and web.
 - Shared sports subject catalog/seed data and shared subscription policy.
-- Notifier/channel/client split for notifications: orchestration depends on `Notifier`, channel code renders and sends, and concrete clients only deliver rendered channel output.
+- Channel/client split for notifications: orchestration depends on `Channel`, channel code renders and sends, and concrete clients only deliver rendered channel output. A separate `Notifier` wrapper is deferred until fan-out or runtime channel selection needs it.
 - Tests around DST, timezone boundaries, already-sent behavior, no-event skips, provider failure continuation, and no update on failed send.
 - CLI support for dry-run and dev-user targeting.
 

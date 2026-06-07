@@ -142,24 +142,24 @@ Verification:
 - `pnpm lint`
 - `pnpm typecheck`
 
-## Task 5 - Notifier And Notify Job
+## Task 5 - Channel And Notify Job
 
 Goal: rebuild notification delivery and the scheduled job around the completed domain services.
 
 Scope:
 
-- Implement `Notifier`, `Channel`, and `ChannelClient` service boundaries.
+- Implement the `Channel` and `ChannelClient` service boundaries.
 - Implement email channel rendering and Resend email channel client.
-- Add dry-run notifier behavior.
+- Add dry-run channel behavior.
 - Implement notify job orchestration with `--dry-run`, `--user <email>`, and `--force`.
-- Use `Subscriptions.listNotificationRecipients()`, due checks, `Events.listBySubject`, `Notifier`, then `Subscriptions.markSent`.
+- Use `Subscriptions.listNotificationRecipients()`, due checks, `Events.listBySubject`, `Channel`, then `Subscriptions.markSent`.
 - Log skip reasons, send successes, provider failures, mark-sent failures, and run counts.
 - Keep notify orchestration in the job callsite; do not introduce `NotifyService`.
 
 Vertical slice check-in:
 
 - Implement one due subscription that renders one email notification through a dry-run channel and marks sent only in the real-send path.
-- Check that notifier folder structure, channel/client boundaries, rendering inputs, logging, and send-before-mark behavior are right before adding all CLI branches.
+- Check that channels folder structure, channel/client boundaries, rendering inputs, logging, and send-before-mark behavior are right before adding all CLI branches.
 
 Verification:
 

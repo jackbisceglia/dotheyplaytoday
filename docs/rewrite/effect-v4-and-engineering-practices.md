@@ -28,7 +28,7 @@ Use `yield* Service` inside `Effect.gen` for service access by default so depend
 
 Use two service-definition styles intentionally:
 
-- Stable boundary services with clear contracts, such as `Notifier`, `Channel`, and `ChannelClient`, should define an explicit interface/shape first, then define the service tag and live layer separately with `Layer.effect`.
+- Stable boundary services with clear contracts, such as `Channel` and `ChannelClient`, should define an explicit interface/shape first, then define the service tag and live layer separately with `Layer.effect`.
 - Inference-heavy services, especially Drizzle/database services where implementation details strongly shape method types, may define the service with `Context.Service` and inline `make`, then expose an explicit `layer` built from `Layer.effect(this, this.make)`.
 
 Layer naming follows v4 conventions:
@@ -98,17 +98,19 @@ For writes, prefer the simplest shape that matches row construction. If construc
 When row construction is effectful, keep build-then-encode local to the write method:
 
 ```ts
-const inserts = yield* Effect.forEach(subjectIds, (subjectId) =>
-  Effect.gen(function* () {
-    return yield* encodeSubscription({
-      id: yield* Id.createFromBrandedSchema(SubscriptionId),
-      userId: input.user.id,
-      subjectId,
-      schedule: input.schedule,
-      lastSentAt: null,
-    });
-  }),
-);
+const inserts =
+  yield *
+  Effect.forEach(subjectIds, (subjectId) =>
+    Effect.gen(function* () {
+      return yield* encodeSubscription({
+        id: yield* Id.createFromBrandedSchema(SubscriptionId),
+        userId: input.user.id,
+        subjectId,
+        schedule: input.schedule,
+        lastSentAt: null,
+      });
+    }),
+  );
 ```
 
 Example:
@@ -168,11 +170,11 @@ const notify = Effect.fn("Notify.run")(function* (input: NotifyInput) {
 For service methods and longer effectful helpers, prefer the two-call layout because it is easier to scan and formats cleanly:
 
 ```ts
-const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(function* (
-  input,
-) {
-  // ...
-});
+const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(
+  function* (input) {
+    // ...
+  },
+);
 ```
 
 For effectful iteration, prefer `Effect.forEach` over raw `for...of` loops. Omit default options such as `concurrency: 1` unless the code needs to call attention to sequencing.
@@ -182,7 +184,7 @@ Keep pure policy helpers narrow. For example, a due-check helper should answer w
 Use named domain policy objects when a rule is likely to vary by domain context, such as subscription subject allowance by user. Keep the object scoped to the owning domain language instead of creating generic policy namespaces.
 
 ```ts
-yield* SubscriptionPolicy.subject.ensureAllowance(user, subjectIds.length);
+yield * SubscriptionPolicy.subject.ensureAllowance(user, subjectIds.length);
 ```
 
 Name intermediate values by domain meaning when it improves readability, such as `todayUtcRange` instead of a generic `range`.
@@ -244,57 +246,55 @@ Raw platform APIs belong only inside narrow adapter layers when no Effect servic
 Canonical multi-step write shape:
 
 ```ts
-const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(function* (
-  input: {
+const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(
+  function* (input: {
     readonly user: User;
     readonly subjectIds: readonly SubjectId[];
     readonly schedule: Subscription["schedule"];
-  },
-) {
-  const subjectIds = Array.dedupe(input.subjectIds);
+  }) {
+    const subjectIds = Array.dedupe(input.subjectIds);
 
-  yield* SubscriptionPolicy.subject.ensureAllowance(
-    input.user,
-    subjectIds.length,
-  );
-  yield* assertSubjectsExist(subjectIds);
-
-  const inserts = yield* Effect.forEach(subjectIds, (subjectId) =>
-    Effect.gen(function* () {
-      return yield* Schema.encodeEffect(SubscriptionInsert)({
-        id: yield* Id.createFromBrandedSchema(SubscriptionId),
-        userId: input.user.id,
-        subjectId,
-        schedule: input.schedule,
-        lastSentAt: null,
-      });
-    }),
-  );
-
-  yield* sql
-    .withTransaction(
-      Effect.gen(function* () {
-        yield* database
-          .delete(subscriptionsTable)
-          .where(eq(subscriptionsTable.userId, input.user.id));
-
-        if (Array.isReadonlyArrayEmpty(inserts)) return;
-
-        yield* database
-          .insert(subscriptionsTable)
-          .values(inserts);
-      }),
-    )
-    .pipe(
-      Effect.catchTag(
-        "SqlError",
-        toWriteError("Subscriptions.replaceForUser", {
-          userId: input.user.id,
-          subscriptionCount: inserts.length,
-        }),
-      ),
+    yield* SubscriptionPolicy.subject.ensureAllowance(
+      input.user,
+      subjectIds.length,
     );
-});
+    yield* assertSubjectsExist(subjectIds);
+
+    const inserts = yield* Effect.forEach(subjectIds, (subjectId) =>
+      Effect.gen(function* () {
+        return yield* Schema.encodeEffect(SubscriptionInsert)({
+          id: yield* Id.createFromBrandedSchema(SubscriptionId),
+          userId: input.user.id,
+          subjectId,
+          schedule: input.schedule,
+          lastSentAt: null,
+        });
+      }),
+    );
+
+    yield* sql
+      .withTransaction(
+        Effect.gen(function* () {
+          yield* database
+            .delete(subscriptionsTable)
+            .where(eq(subscriptionsTable.userId, input.user.id));
+
+          if (Array.isReadonlyArrayEmpty(inserts)) return;
+
+          yield* database.insert(subscriptionsTable).values(inserts);
+        }),
+      )
+      .pipe(
+        Effect.catchTag(
+          "SqlError",
+          toWriteError("Subscriptions.replaceForUser", {
+            userId: input.user.id,
+            subscriptionCount: inserts.length,
+          }),
+        ),
+      );
+  },
+);
 ```
 
 ## Config And Runtime Patterns
@@ -385,21 +385,20 @@ packages/core/src/
       schema.ts
       service.ts
       time.ts
-    notifier/
-      schema.ts
+    channels/
       service.ts
-      channel/
-        service.ts
+      schema.ts
+      errors.ts
+      notification/
         schema.ts
-        errors.ts
-        client/
+      client/
+        service.ts
+      email/
+        service.ts
+        render.ts
+        clients/
           service.ts
-        email/
-          service.ts
-          render.ts
-          clients/
-            service.ts
-            resend.ts
+          resend.ts
 
   lib/
     database/
@@ -441,7 +440,7 @@ packages/data/src/
 
 Each collection `index.ts` exports one typed seed collection. `packages/data/src/seed/index.ts` exports the explicit registry consumed by seed tooling. `seed:dev` and `seed:prod` import all registered collections; adding a collection to the registry is the activation step. Keep seed orchestration in the seed scripts themselves until duplication proves a shared helper is worthwhile. `seed:prod` owns the interactive typed confirmation prompt.
 
-The notifier module keeps its delivery abstractions inside `modules/notifier/`. Use `Notifier` for the orchestration-facing service in `modules/notifier/service.ts`. Define `Channel` as an injectable service boundary in `modules/notifier/channel/service.ts`, with concrete channel behavior under folders such as `modules/notifier/channel/email/`. Define `ChannelClient` as an injectable service boundary in `modules/notifier/channel/client/service.ts`, with client implementations scoped by channel such as `modules/notifier/channel/email/clients/resend.ts`. For V1, email is the only `Channel` and Resend is the first email `ChannelClient`.
+The channels module keeps its delivery abstractions inside `modules/channels/`. Define `Channel` as the orchestration-facing injectable service boundary in `modules/channels/service.ts`, and keep the prepared `Notification` schema in `modules/channels/notification/schema.ts`. `Channel` is one non-generic runtime tag with `deliver(notification)`; concrete channels use the generic `Channel.makeLayer` factory under folders such as `modules/channels/email/`. `Channel.makeLayer` accepts an effectful channel definition, infers rendered type and requirements from that definition, and ties `render` and `send` together while resolving channel-owned runtime dependencies once. Concrete channel send steps create whatever typed delivery their client boundary requires. Define `ChannelClient` as an injectable service boundary in `modules/channels/client/service.ts`, with client implementations scoped by channel such as `modules/channels/email/clients/resend.ts`. For V1, email is the real `Channel`, console is the dry-run channel, and Resend is the first email `ChannelClient`.
 
 A `service.ts` file may define either an abstract injectable service boundary or a concrete implementation. If it exports a `Context.Service` tag but no `layer`, runtime composition must provide a concrete layer from an implementation module. Do not use `service.ts` for shape-only files; pure shared data shapes belong in `schema.ts`, and protocol-like construction helpers may use `protocol.ts` when that name fits.
 
