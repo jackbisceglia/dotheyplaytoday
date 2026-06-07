@@ -3,7 +3,7 @@ import { DateTime, Duration } from "effect";
 import type { User } from "../users/schema.js";
 import type { Schedule, Subscription } from "./schema.js";
 
-type Range<T> = {
+export type Range<T> = {
   readonly from: T;
   readonly to: T;
 };
@@ -19,10 +19,8 @@ const CONSTRAINTS = {
  * Formats the calendar date that a UTC instant lands on in a user's timezone.
  * Use this for local-day comparisons, not as user-facing display copy.
  */
-const formatLocalDate = (
-  utc: DateTime.Utc,
-  tz: User["timezone"],
-) => DateTime.formatIsoDate(DateTime.setZone(utc, tz));
+const formatLocalDate = (utc: DateTime.Utc, tz: User["timezone"]) =>
+  DateTime.formatIsoDate(DateTime.setZone(utc, tz));
 
 /**
  * Returns the UTC range for the local day containing `nowUtc`.
@@ -95,7 +93,8 @@ const isDue = (input: {
 
   return candidates.some((candidateUtc) => {
     const driftMs =
-      DateTime.toEpochMillis(input.nowUtc) - DateTime.toEpochMillis(candidateUtc);
+      DateTime.toEpochMillis(input.nowUtc) -
+      DateTime.toEpochMillis(candidateUtc);
 
     return (
       driftMs >= -CONSTRAINTS.due.msLow && driftMs <= CONSTRAINTS.due.msHigh

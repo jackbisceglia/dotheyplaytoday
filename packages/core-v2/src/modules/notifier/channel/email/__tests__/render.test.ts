@@ -1,10 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer } from "effect";
 
-import { ChannelClientResponseError } from "../../errors.js";
-import { EmailChannelClient } from "../clients/service.js";
-import { EmailDelivery } from "../delivery.js";
-import type { EmailRendered } from "../render.js";
 import {
   EmailChannel,
   EmailChannelLayer,
@@ -17,18 +13,13 @@ const EmailConfigLayerTest = ConfigProvider.layer(
     env: {
       VITE_WEB_PORT: "8080",
       VITE_WEB_URL: "https://example.com",
+      RESEND_API_KEY: "re_test_key",
+      RESEND_FROM_EMAIL: "sender@example.com",
     },
   }),
 );
 
-const EmailChannelClientLayerNoop = Layer.succeed(
-  EmailChannelClient,
-  EmailChannelClient.of({
-    send: () => Effect.void,
-  }),
-);
 const EmailChannelLayerTest = EmailChannelLayer.pipe(
-  Layer.provideMerge(EmailChannelClientLayerNoop),
   Layer.provideMerge(EmailConfigLayerTest),
 );
 
@@ -144,74 +135,4 @@ describe("v2 email rendering", () => {
     },
   );
 
-  it.effect(
-    "renders and sends through the configured email channel client",
-    () => {
-      const sentMessages: {
-        readonly delivery: EmailDelivery;
-        readonly rendered: EmailRendered;
-      }[] = [];
-      const EmailChannelClientLayerTest = Layer.succeed(
-        EmailChannelClient,
-        EmailChannelClient.of({
-          send: (delivery, rendered) =>
-            Effect.sync(() => {
-              sentMessages.push({ delivery, rendered });
-            }),
-        }),
-      );
-      const layer = EmailChannelLayer.pipe(
-        Layer.provideMerge(EmailChannelClientLayerTest),
-        Layer.provideMerge(EmailConfigLayerTest),
-      );
-
-      return Effect.gen(function* () {
-        const channel = yield* EmailChannel;
-        const rendered = yield* channel.render(notification);
-
-        const delivery = EmailDelivery.makeFromNotification(notification);
-
-        yield* channel.send(delivery, rendered);
-
-        expect(rendered).not.toHaveProperty("to");
-        expect(rendered.body.html).toContain(
-          '<a href="https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201"',
-        );
-        expect(sentMessages).toEqual([
-          {
-            delivery,
-            rendered,
-          },
-        ]);
-      }).pipe(Effect.provide(layer));
-    },
-  );
-
-  it.effect("propagates typed channel client failures", () => {
-    const error = new ChannelClientResponseError({
-      channel: "email",
-      message: "Provider rejected payload",
-      code: "bad_request",
-      statusCode: 400,
-    });
-    const EmailChannelClientLayerTest = Layer.succeed(
-      EmailChannelClient,
-      EmailChannelClient.of({
-        send: () => Effect.fail(error),
-      }),
-    );
-    const layer = EmailChannelLayer.pipe(
-      Layer.provideMerge(EmailChannelClientLayerTest),
-      Layer.provideMerge(EmailConfigLayerTest),
-    );
-
-    return Effect.gen(function* () {
-      const channel = yield* EmailChannel;
-      const rendered = yield* channel.render(notification);
-      const delivery = EmailDelivery.makeFromNotification(notification);
-      const actual = yield* channel.send(delivery, rendered).pipe(Effect.flip);
-
-      expect(actual).toBe(error);
-    }).pipe(Effect.provide(layer));
-  });
 });

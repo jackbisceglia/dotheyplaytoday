@@ -4,7 +4,7 @@ import { Cause, Effect, Exit, Layer } from "effect";
 import type { EmailDelivery } from "../channel/email/delivery.js";
 import { EmailChannel, EmailRenderError } from "../channel/email/service.js";
 import type { EmailRendered } from "../channel/email/render.js";
-import { Notifier, NotifierLayer } from "../service.js";
+import { EmailNotifierLayer, Notifier } from "../service.js";
 import { notification } from "./fixtures.js";
 
 const rendered: EmailRendered = {
@@ -38,7 +38,9 @@ describe("v2 Notifier service", () => {
           }),
       }),
     );
-    const layer = NotifierLayer.pipe(Layer.provideMerge(EmailChannelLayerTest));
+    const layer = EmailNotifierLayer.pipe(
+      Layer.provideMerge(EmailChannelLayerTest),
+    );
 
     return Effect.gen(function* () {
       const notifier = yield* Notifier;
@@ -78,7 +80,9 @@ describe("v2 Notifier service", () => {
           }),
       }),
     );
-    const layer = NotifierLayer.pipe(Layer.provideMerge(EmailChannelLayerTest));
+    const layer = EmailNotifierLayer.pipe(
+      Layer.provideMerge(EmailChannelLayerTest),
+    );
 
     return Effect.gen(function* () {
       const notifier = yield* Notifier;

@@ -18,6 +18,7 @@
     "@web": "pnpm -F @dtpt/web",
     "@api": "pnpm -F @dtpt/api",
     "@jobs": "pnpm -F @dtpt/jobs",
+    "@jobs-v2": "pnpm -F @dtpt/jobs-v2",
     "prepare": "pnpm exec effect-language-service patch"
   },
   "devDependencies": {

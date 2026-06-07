@@ -15,7 +15,7 @@ export class Notifier extends Context.Service<Notifier, NotifierService>()(
   "@dtpt/core-v2/Notifier",
 ) {}
 
-export const NotifierLayer = Layer.effect(
+export const EmailNotifierLayer = Layer.effect(
   Notifier,
   Effect.gen(function* () {
     const channel = yield* EmailChannel;
@@ -32,3 +32,5 @@ export const NotifierLayer = Layer.effect(
     return Notifier.of({ deliver });
   }),
 );
+
+export const NotifierLayer = EmailNotifierLayer;

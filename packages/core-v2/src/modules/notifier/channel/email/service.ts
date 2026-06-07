@@ -10,6 +10,7 @@ import type { Subject } from "../../../subjects/schema.js";
 import type { EmailAddress, User } from "../../../users/schema.js";
 import type { Notification } from "../../schema.js";
 import { Channel } from "../service.js";
+import { EmailChannelClientLayerResend } from "./clients/resend.js";
 import { EmailChannelClient } from "./clients/service.js";
 import { EmailView, type EmailRendered } from "./render.js";
 
@@ -148,4 +149,6 @@ export const EmailChannelLayer = Layer.effect(
 
     return EmailChannel.of({ render, send });
   }),
+).pipe(
+  Layer.provide(EmailChannelClientLayerResend),
 );
