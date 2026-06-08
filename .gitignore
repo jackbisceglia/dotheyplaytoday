@@ -11,6 +11,9 @@ dist/
 .env*
 !.env.template
 
+# local databases
+packages/data/**/*.sqlite
+
 # misc
 .DS_Store
 
