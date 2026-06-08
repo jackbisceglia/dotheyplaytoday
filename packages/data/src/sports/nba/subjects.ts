@@ -265,7 +265,11 @@ export const Teams = {
       abbreviation: "NYK",
       slug: "new-york-knicks",
     },
-    feedIds: [Games.celticsKnicks.sourceId],
+    feedIds: [
+      Games.celticsKnicks.sourceId,
+      Games.finalsGame3SpursKnicks.sourceId,
+      Games.finalsGame4SpursKnicks.sourceId,
+    ],
   },
   OklahomaCityThunder: {
     id: "00000000-0000-4000-8000-000000000121",
@@ -356,7 +360,10 @@ export const Teams = {
       abbreviation: "SAS",
       slug: "san-antonio-spurs",
     },
-    feedIds: [],
+    feedIds: [
+      Games.finalsGame3SpursKnicks.sourceId,
+      Games.finalsGame4SpursKnicks.sourceId,
+    ],
   },
   TorontoRaptors: {
     id: "00000000-0000-4000-8000-000000000128",

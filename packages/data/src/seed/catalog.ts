@@ -1,20 +1,15 @@
 import {
-  createTablesIfMissing,
-  Database,
-  DatabaseWriteError,
   EventId,
   EventSourceId,
   Events,
-  eventsTable,
-  participantsTable,
-  subjectEventsTable,
+  StringParts,
   Subjects,
-  subjectsTable,
 } from "@dtpt/core-v2";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { Effect, HashMap, Option, Schema } from "effect";
 
 import { SportsSeed } from "../schema/sports.js";
+import { SeedCollections } from "./index.js";
 
 export class SeedEventResolutionError extends Schema.TaggedErrorClass<SeedEventResolutionError>()(
   "SeedEventResolutionError",
@@ -43,56 +38,105 @@ export const decodeSportsSeedCollections = Schema.decodeUnknownEffect(
   Schema.Array(SportsSeed),
 );
 
-const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(
-  function* (collections: readonly SportsSeedCollection[]) {
-    const buildEventIdsBySourceId = Effect.fn(function* () {
-      const eventIdsBySourceId = new Map<EventSourceId, EventId>();
+export const summarizeCatalog = (
+  collections: readonly SportsSeedCollection[],
+) => {
+  const summary = {
+    collections: collections.length,
+    subjects: collections.reduce(
+      (total, collection) => total + collection.subjects.length,
+      0,
+    ),
+    events: collections.reduce(
+      (total, collection) => total + collection.events.length,
+      0,
+    ),
+    feedEdges: collections.reduce(
+      (total, collection) =>
+        total +
+        collection.subjects.reduce(
+          (subjectTotal, subject) => subjectTotal + subject.feedIds.length,
+          0,
+        ),
+      0,
+    ),
+    participants: collections.reduce(
+      (total, collection) =>
+        total +
+        collection.events.reduce(
+          (eventTotal, event) => eventTotal + event.participants.length,
+          0,
+        ),
+      0,
+    ),
+  };
 
-      for (const event of collections.flatMap((collection) => collection.events)) {
-        const existingEventId = eventIdsBySourceId.get(event.sourceId);
+  return StringParts()
+    .add("seed:catalog")
+    .add(`collections=${summary.collections.toString()}`)
+    .add(`subjects=${summary.subjects.toString()}`)
+    .add(`events=${summary.events.toString()}`)
+    .add(`feedEdges=${summary.feedEdges.toString()}`)
+    .add(`participants=${summary.participants.toString()}`)
+    .make();
+};
 
-        if (existingEventId) {
-          // If a duplicate source id is found, error early in the import process.
-          return yield* new SeedDuplicateEventSourceIdError({
-            sourceId: event.sourceId,
-            firstEventId: existingEventId,
-            duplicateEventId: event.id,
-          });
-        }
+const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
+  collections: readonly SportsSeedCollection[],
+) {
+  const buildEventIdsBySourceId = Effect.fn(function* () {
+    const eventIdsBySourceId = new Map<EventSourceId, EventId>();
 
-        eventIdsBySourceId.set(event.sourceId, event.id);
+    for (const event of collections.flatMap(
+      (collection) => collection.events,
+    )) {
+      const existingEventId = eventIdsBySourceId.get(event.sourceId);
+
+      if (existingEventId) {
+        // If a duplicate source id is found, error early in the import process.
+        return yield* new SeedDuplicateEventSourceIdError({
+          sourceId: event.sourceId,
+          firstEventId: existingEventId,
+          duplicateEventId: event.id,
+        });
       }
 
-      return eventIdsBySourceId;
-    });
+      eventIdsBySourceId.set(event.sourceId, event.id);
+    }
 
-    const validateSubjectFeedIds = Effect.fn(function* (
-      eventIdsBySourceId: Map<EventSourceId, EventId>,
-    ) {
-      for (const collection of collections) {
-        for (const subject of collection.subjects) {
-          for (const sourceId of subject.feedIds) {
-            if (!eventIdsBySourceId.has(sourceId)) {
-              return yield* new SeedEventResolutionError({
-                collectionId: collection.id,
-                subjectId: subject.id,
-                sourceId,
-              });
-            }
+    return eventIdsBySourceId;
+  });
+
+  const validateSubjectFeedIds = Effect.fn(function* (
+    eventIdsBySourceId: Map<EventSourceId, EventId>,
+  ) {
+    for (const collection of collections) {
+      for (const subject of collection.subjects) {
+        for (const sourceId of subject.feedIds) {
+          if (!eventIdsBySourceId.has(sourceId)) {
+            return yield* new SeedEventResolutionError({
+              collectionId: collection.id,
+              subjectId: subject.id,
+              sourceId,
+            });
           }
         }
       }
-    });
+    }
+  });
 
-    const eventIdsBySourceId = yield* buildEventIdsBySourceId();
+  const eventIdsBySourceId = yield* buildEventIdsBySourceId();
 
-    yield* validateSubjectFeedIds(eventIdsBySourceId);
-  },
-);
+  yield* validateSubjectFeedIds(eventIdsBySourceId);
+});
 
-export const seed = Effect.fn("DataSeed.seed")(function* (
-  collections: readonly SportsSeedCollection[],
+export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
+  input?: readonly SportsSeedInput[],
 ) {
+  const collections = yield* decodeSportsSeedCollections(
+    input ?? SeedCollections,
+  );
+
   yield* validateFeedIds(collections);
 
   const sql = yield* SqlClient;
@@ -147,39 +191,9 @@ export const seed = Effect.fn("DataSeed.seed")(function* (
       });
     }),
   );
+
+  return collections;
 });
-
-export const resetDevCatalog = Effect.fn("DataSeed.resetDevCatalog")(
-  function* () {
-    yield* createTablesIfMissing();
-
-    const database = yield* Database;
-    const sql = yield* SqlClient;
-
-    yield* sql
-      .withTransaction(
-        Effect.gen(function* () {
-          yield* database.delete(subjectEventsTable);
-          yield* database.delete(participantsTable);
-          yield* database.delete(eventsTable);
-          yield* database.delete(subjectsTable);
-        }),
-      )
-      .pipe(
-        Effect.catchTag(
-          "SqlError",
-          (cause) =>
-            Effect.fail(
-              new DatabaseWriteError({
-                operation: "DataSeed.resetDevCatalog",
-                cause,
-                metadata: { mode: "dev" },
-              }),
-            ),
-        ),
-      );
-  },
-);
 
 const resolveEventSource = Effect.fn("DataSeed.resolveEventSource")(
   function* (input: {

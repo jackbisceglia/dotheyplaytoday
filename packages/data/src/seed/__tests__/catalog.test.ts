@@ -27,9 +27,10 @@ import {
   decodeSportsSeedCollections,
   SeedDuplicateEventSourceIdError,
   SeedEventResolutionError,
-  resetDevCatalog,
-  seed,
-} from "../import.js";
+  seedCatalog,
+  summarizeCatalog,
+} from "../catalog.js";
+import { reset } from "../reset.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -49,8 +50,7 @@ const utc = (input: string) =>
 const gameSourceId = "sports_game:seed:00000000-0000-4000-8000-000000000801";
 const secondGameSourceId =
   "sports_game:seed:00000000-0000-4000-8000-000000000802";
-const missingSourceId =
-  "sports_game:seed:00000000-0000-4000-8000-000000000899";
+const missingSourceId = "sports_game:seed:00000000-0000-4000-8000-000000000899";
 const gameId = "00000000-0000-4000-8000-000000000801";
 const duplicateGameId = "00000000-0000-4000-8000-000000000802";
 const homeSubjectSeedId = "00000000-0000-4000-8000-000000000811";
@@ -137,41 +137,14 @@ const runSeedForTest = Effect.fn("DataSeedTest.runSeed")(function* (input: {
   readonly collections: readonly SportsSeedInput[];
 }) {
   if (input.mode === "dev") {
-    yield* resetDevCatalog();
+    yield* reset();
   }
 
-  const collections = yield* decodeSportsSeedCollections(input.collections);
-  yield* seed(collections);
+  const collections = yield* seedCatalog(input.collections);
 
   return {
     mode: input.mode,
-    collections: collections.length,
-    subjects: collections.reduce(
-      (total, collection) => total + collection.subjects.length,
-      0,
-    ),
-    events: collections.reduce(
-      (total, collection) => total + collection.events.length,
-      0,
-    ),
-    feedEdges: collections.reduce(
-      (total, collection) =>
-        total +
-        collection.subjects.reduce(
-          (subjectTotal, subject) => subjectTotal + subject.feedIds.length,
-          0,
-        ),
-      0,
-    ),
-    participants: collections.reduce(
-      (total, collection) =>
-        total +
-        collection.events.reduce(
-          (eventTotal, event) => eventTotal + event.participants.length,
-          0,
-        ),
-      0,
-    ),
+    summary: summarizeCatalog(collections),
   };
 });
 
@@ -197,11 +170,20 @@ const changedCollection = {
   ],
 } as const satisfies SportsSeedInput;
 
-describe("data seed import", () => {
+describe("data seed catalog", () => {
   it("registers NBA seed data explicitly", () => {
     expect(nbaSeedCollection.id).toBe("sports.nba");
     expect(nbaSeedCollection.subjects).toHaveLength(30);
-    expect(nbaSeedCollection.events).toHaveLength(1);
+    expect(nbaSeedCollection.events).toHaveLength(3);
+
+    const spurs = nbaSeedCollection.subjects.find(
+      (subject) => subject.details.slug === "san-antonio-spurs",
+    );
+
+    expect(spurs?.feedIds).toEqual([
+      "sports_game:seed:00000000-0000-4000-8000-000000000702",
+      "sports_game:seed:00000000-0000-4000-8000-000000000703",
+    ]);
   });
 
   it.effect(
@@ -268,11 +250,8 @@ describe("data seed import", () => {
 
         expect(result).toEqual({
           mode: "prod",
-          collections: 1,
-          subjects: 2,
-          events: 1,
-          feedEdges: 2,
-          participants: 2,
+          summary:
+            "seed:catalog collections=1 subjects=2 events=1 feedEdges=2 participants=2",
         });
         expect(eventRows).toHaveLength(1);
         expect(eventRows[0]?.id).toBe(gameId);
@@ -332,37 +311,35 @@ describe("data seed import", () => {
       }).pipe(Effect.provide(layerSeedTest)),
   );
 
-  it.effect(
-    "rejects duplicate event source ids before writing",
-    () =>
-      Effect.gen(function* () {
-        yield* createTables;
+  it.effect("rejects duplicate event source ids before writing", () =>
+    Effect.gen(function* () {
+      yield* createTables;
 
-        const database = yield* Database;
-        const duplicateSourceCollection = {
-          ...collection,
-          events: [
-            collection.events[0],
-            {
-              ...collection.events[0],
-              id: duplicateGameId,
-            },
-          ],
-        } as const satisfies SportsSeedInput;
+      const database = yield* Database;
+      const duplicateSourceCollection = {
+        ...collection,
+        events: [
+          collection.events[0],
+          {
+            ...collection.events[0],
+            id: duplicateGameId,
+          },
+        ],
+      } as const satisfies SportsSeedInput;
 
-        const error = yield* runSeedForTest({
-          mode: "prod",
-          collections: [duplicateSourceCollection],
-        }).pipe(Effect.flip);
-        const eventRows = yield* database.select().from(eventsTable);
+      const error = yield* runSeedForTest({
+        mode: "prod",
+        collections: [duplicateSourceCollection],
+      }).pipe(Effect.flip);
+      const eventRows = yield* database.select().from(eventsTable);
 
-        expect(error).toBeInstanceOf(SeedDuplicateEventSourceIdError);
-        if (!(error instanceof SeedDuplicateEventSourceIdError)) return;
-        expect(error.sourceId).toBe(gameSourceId);
-        expect(error.firstEventId).toBe(gameId);
-        expect(error.duplicateEventId).toBe(duplicateGameId);
-        expect(eventRows).toHaveLength(0);
-      }).pipe(Effect.provide(layerSeedTest)),
+      expect(error).toBeInstanceOf(SeedDuplicateEventSourceIdError);
+      if (!(error instanceof SeedDuplicateEventSourceIdError)) return;
+      expect(error.sourceId).toBe(gameSourceId);
+      expect(error.firstEventId).toBe(gameId);
+      expect(error.duplicateEventId).toBe(duplicateGameId);
+      expect(eventRows).toHaveLength(0);
+    }).pipe(Effect.provide(layerSeedTest)),
   );
 
   it.effect(
@@ -485,6 +462,64 @@ describe("data seed import", () => {
       expect(subscriptionRows).toHaveLength(1);
       expect(userRows[0]?.email).toBe("fan@example.com");
       expect(subscriptionRows[0]?.subjectId).toBe(homeSubjectId);
+    }).pipe(Effect.provide(layerSeedTest)),
+  );
+
+  it.effect("reset clears all current v2 seed tables", () =>
+    Effect.gen(function* () {
+      yield* createTables;
+
+      const database = yield* Database;
+      yield* runSeedForTest({
+        mode: "prod",
+        collections: [collection],
+      });
+      const homeSubjectId = yield* getHomeSubjectId;
+      const user = decode(User)({
+        id: "00000000-0000-4000-8000-000000000911",
+        email: "reset@example.com",
+        timezone: "America/New_York",
+        unsubscribeToken: "00000000-0000-4000-8000-000000000912",
+      });
+      const subscription = decode(SubscriptionInsert)({
+        id: "00000000-0000-4000-8000-000000000913",
+        userId: user.id,
+        subjectId: homeSubjectId,
+        schedule: {
+          _tag: "fixed_local_time",
+          sendAtSecondsLocal: 32400,
+        },
+        lastSentAt: null,
+      });
+
+      yield* database.insert(usersTable).values(encode(UserInsert)(user));
+      yield* database
+        .insert(subscriptionsTable)
+        .values(encode(SubscriptionInsert)(subscription));
+      yield* reset();
+
+      const [
+        userRows,
+        subscriptionRows,
+        subjectRows,
+        eventRows,
+        feedRows,
+        participantRows,
+      ] = yield* Effect.all([
+        database.select().from(usersTable),
+        database.select().from(subscriptionsTable),
+        database.select().from(subjectsTable),
+        database.select().from(eventsTable),
+        database.select().from(subjectEventsTable),
+        database.select().from(participantsTable),
+      ]);
+
+      expect(userRows).toHaveLength(0);
+      expect(subscriptionRows).toHaveLength(0);
+      expect(subjectRows).toHaveLength(0);
+      expect(eventRows).toHaveLength(0);
+      expect(feedRows).toHaveLength(0);
+      expect(participantRows).toHaveLength(0);
     }).pipe(Effect.provide(layerSeedTest)),
   );
 });

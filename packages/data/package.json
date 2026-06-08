@@ -19,8 +19,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "pnpm --filter @dtpt/core-v2 build && cd ../.. && vitest run packages/data/src",
-    "seed:dev": "pnpm --filter @dtpt/core-v2 build && pnpm build && node dist/seed/cli.js dev",
-    "seed:prod": "pnpm --filter @dtpt/core-v2 build && pnpm build && node dist/seed/cli.js prod"
+    "seed:dev": "pnpm --filter @dtpt/core-v2 build && pnpm build && cd ../.. && node packages/data/dist/seed/cli.js dev",
+    "seed:prod": "pnpm --filter @dtpt/core-v2 build && pnpm build && cd ../.. && node packages/data/dist/seed/cli.js prod"
   },
   "dependencies": {
     "@dtpt/core-v2": "workspace:*",

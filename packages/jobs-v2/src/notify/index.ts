@@ -118,6 +118,15 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
       events: eventsToInclude,
     });
 
+    yield* Effect.logInfo(
+      opts.dryRun ? "notify: dry-run would send" : "notify: sending",
+      {
+        ...ctx,
+        eventCount: eventsToInclude.length,
+        sendAt: DateTime.formatIso(notification.sendAt),
+      },
+    );
+
     yield* channel
       .deliver(notification)
       .pipe(
@@ -125,6 +134,14 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
           (error) => new NotifyFailed({ ...ctx, error, step: "send" }),
         ),
       );
+
+    yield* Effect.logInfo(
+      opts.dryRun ? "notify: dry-run delivered" : "notify: sent",
+      {
+        ...ctx,
+        eventCount: eventsToInclude.length,
+      },
+    );
 
     if (!opts.dryRun) {
       yield* subscriptions
@@ -134,6 +151,8 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
             (error) => new NotifyFailed({ ...ctx, error, step: "mark-sent" }),
           ),
         );
+
+      yield* Effect.logInfo("notify: marked sent", ctx);
     }
   },
   Effect.catchTags({
@@ -167,6 +186,13 @@ export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
   const targetUser = Option.fromNullishOr(opts.userEmail);
   const now = opts.now ?? (yield* DateTime.now);
 
+  yield* Effect.logInfo("notify: start", {
+    dryRun: opts.dryRun ?? false,
+    force: opts.force ?? false,
+    now: DateTime.formatIso(now),
+    userEmail: opts.userEmail,
+  });
+
   const recipients = yield* subscriptions.listNotificationRecipients();
   const toProcess = targetUser.pipe(
     Option.match({
@@ -175,10 +201,16 @@ export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
     }),
   );
 
-  yield* Effect.logInfo("loaded", {
+  yield* Effect.logInfo("notify: loaded", {
     recipients: recipients.length,
     selected: toProcess.length,
   });
+
+  if (Option.isSome(targetUser) && Array.isReadonlyArrayEmpty(toProcess)) {
+    yield* Effect.logInfo("notify: user filter matched no recipients", {
+      userEmail: targetUser.value,
+    });
+  }
 
   yield* Effect.forEach(toProcess, (recipient) =>
     notifyOneRecipient(recipient, now, {
@@ -186,4 +218,8 @@ export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
       force: opts.force ?? false,
     }),
   );
+
+  yield* Effect.logInfo("notify: done", {
+    processed: toProcess.length,
+  });
 });

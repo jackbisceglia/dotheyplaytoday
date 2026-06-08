@@ -120,7 +120,7 @@ Scope:
 
 - Add private `@dtpt/data` package with explicit collection registry.
 - Register NBA subjects and sports game event collections only for V1.
-- Implement seed/import scripts in core with their own runtime assembly.
+- Implement seed/catalog scripts in core with their own runtime assembly.
 - Add `seed:dev` and `seed:prod`; production seed requires typed CLI confirmation.
 - Keep seed orchestration in the script until real duplication appears.
 - Ensure imports update mutable event facts for stable source ids, including `starts_at`, `availability`, details, and participants.
@@ -232,7 +232,7 @@ Verification:
 These are follow-up cleanup items surfaced while implementing the ordered rewrite tasks. Track them here without changing the current branch order.
 
 - Define the V2 local database URL story, including a canonical local SQLite default and documented `DATABASE_URL` behavior for fresh-checkout seed and debug scripts.
-- Move root `.env` loading into a shared V2 Effect utility or layer instead of hand-rolling package-local `ConfigProvider.fromDotEnv` setup.
+- Move root `.env` loading into a shared V2 Effect utility or layer instead of hand-rolling package-local `ConfigProvider.fromDotEnv` setup. The shared helper should resolve the repo-root dotenv path explicitly so CLI cwd choices, package scripts, and `DATABASE_URL` path semantics are documented and consistent.
 - Standardize Node CLI runtime wiring for V2 packages so domain layers, Node services, and root env loading compose in one obvious place.
 - Standardize V2 test names on a `should <behavior> when <condition>` style instead of current ad-hoc descriptions.
 
