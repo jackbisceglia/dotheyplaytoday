@@ -1,5 +1,7 @@
-import { ConfigProvider } from "effect";
+import { ConfigProvider, Effect } from "effect";
 
-export const DotEnvConfigProvider = ConfigProvider.layer(
-  ConfigProvider.fromDotEnv({ path: ".env" }),
+export const DotEnvConfigProvider = ConfigProvider.layerAdd(
+  ConfigProvider.fromDotEnv({ path: ".env" }).pipe(
+    Effect.orElseSucceed(() => ConfigProvider.fromUnknown({})),
+  ),
 );
