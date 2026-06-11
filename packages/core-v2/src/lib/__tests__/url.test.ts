@@ -26,7 +26,7 @@ describe("v2 url config", () => {
     ),
   );
 
-  it.effect("uses public url overrides when configured", () =>
+  it.effect("uses public url overrides without ports", () =>
     Effect.gen(function* () {
       const apiUrl = yield* ApiUrl;
       const webUrl = yield* WebUrl;
@@ -38,8 +38,6 @@ describe("v2 url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              API_PORT: "3001",
-              WEB_PORT: "3000",
               VITE_API_URL: "https://api.example.com",
               VITE_WEB_URL: "https://example.com",
             },
@@ -49,7 +47,7 @@ describe("v2 url config", () => {
     ),
   );
 
-  it.effect("requires api and web ports", () =>
+  it.effect("requires api and web ports when url overrides are absent", () =>
     Effect.gen(function* () {
       const apiExit = yield* ApiUrl.pipe(Effect.exit);
       const webExit = yield* WebUrl.pipe(Effect.exit);
@@ -60,10 +58,7 @@ describe("v2 url config", () => {
       Effect.provide(
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
-            env: {
-              VITE_API_URL: "http://localhost",
-              VITE_WEB_URL: "http://localhost",
-            },
+            env: {},
           }),
         ),
       ),
