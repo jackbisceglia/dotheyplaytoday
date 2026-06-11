@@ -4,11 +4,11 @@ This document captures API/web decisions for the rewrite without implying the we
 
 ## Rewrite Boundary
 
-Only change the internals of `packages/api` and `packages/web` when needed for the rewrite. Existing scaffolding, package shape, and app/server surfaces do not need to change unless a core contract decision requires consumers to update.
+Only change the internals of the rewrite API/web boundary when needed for the rewrite. The current Effect v4 public API implementation intentionally lives in `packages/api-v2` / `@dtpt/api-v2` so the prototype `packages/api` package can stay preserved until cutover.
 
 When core public contracts change, update their consumers:
 
-- `packages/api` implements the core Effect `HttpApi` contract.
+- `packages/api-v2` implements the core Effect `HttpApi` contract.
 - `packages/web` consumes the core API contract through the generated/typesafe client.
 
 Avoid API/web churn that does not change behavior or contract consumption.
@@ -17,7 +17,7 @@ Avoid API/web churn that does not change behavior or contract consumption.
 
 ### Shared Contract Ownership
 
-Shared request/response schemas live in `packages/core/src/contracts/` as the Effect `HttpApi` contract. The API package implements that contract, and the web package consumes it through the generated/typesafe client.
+Shared request/response schemas live in `packages/core-v2/src/contracts/` as the Effect `HttpApi` contract. The `packages/api-v2` package implements that contract, and the web package consumes it through the generated/typesafe client.
 
 Do not define route-local request/response shapes in the API package unless they are private implementation details.
 
@@ -41,6 +41,12 @@ Endpoint contracts should declare the public error cases the web client can mean
 
 Do not expose raw domain error classes as the public HTTP contract unless a future endpoint needs a stable SDK-visible domain error shape.
 
+### V2 URL Configuration
+
+`API_PORT` and `WEB_PORT` are required runtime/dev ports. `VITE_API_URL` and `VITE_WEB_URL` are optional full public URL overrides; when omitted, V2 derives `http://localhost:${API_PORT}` and `http://localhost:${WEB_PORT}` respectively.
+
+Do not split public URLs into separate `VITE_*_URL` and `VITE_*_PORT` values. Production validation that requires explicit public URL overrides belongs in a later environment-mode config pass.
+
 ### Rate Limiting
 
 Public write endpoints require rate limiting at the API boundary. The exact policy, identity key, storage, and provider are runtime/config decisions, not part of the public API contract.
@@ -49,8 +55,8 @@ Public write endpoints require rate limiting at the API boundary. The exact poli
 
 Use a semantic endpoint name and a thin API-owned group layer:
 
-- Core owns the signup group and public request/response schemas in `packages/core/src/contracts/signup.ts`.
-- API implements `packages/api/src/routes.signup.ts`.
+- Core owns the signup group and public request/response schemas in `packages/core-v2/src/contracts/signup.ts`.
+- API implements `packages/api-v2/src/routes.signup.ts`.
 - The handler is a named `Effect.fn("SignupHttpApi.submit")`.
 - The handler performs API concerns first, then orchestrates domain services inside one transaction.
 - The route boundary maps domain/infrastructure errors to public HTTP errors chosen during implementation.
@@ -82,6 +88,7 @@ Required states:
 
 - Initial: user can enter email, timezone, fixed send time, and selected teams.
 - Client validation: show fixable errors before submit where possible.
+- Subject cap validation should consume the canonical core subscription policy/limit when the web signup layer lands, rather than hardcoding the current cap in UI code.
 - Submitting: prevent duplicate submit while preserving visible selections.
 - Success: explain signup worked and resubmitting the same email replaces previous preferences.
 - Failure: show user-fixable validation/cap messages when available, and a generic retry message for unexpected errors.

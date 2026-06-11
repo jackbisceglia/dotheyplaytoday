@@ -6,7 +6,7 @@ Before broad implementation in any task, complete one representative vertical sl
 
 Current execution order intentionally starts with one end-to-end domain path instead of defining every table before any service exists. First land the `User` model/database blueprint. Then implement the `Users` service against that blueprint. After the user path is proven through model, database, and service layers, fan out the same pattern across subjects, events, participants, subscriptions, and scheduling behavior.
 
-Implementation note: rewrite core work currently lives in `packages/core-v2` / `@dtpt/core-v2` so Effect v4 can move independently from the prototype `@dtpt/core` package. Older broad docs that say `packages/core` mean the rewrite core package boundary unless a task says otherwise.
+Implementation note: rewrite core work currently lives in `packages/core-v2` / `@dtpt/core-v2` so Effect v4 can move independently from the prototype `@dtpt/core` package. The public rewrite API follows the same boundary in `packages/api-v2` / `@dtpt/api-v2`; the prototype `packages/api` package remains preserved until cutover. Older broad docs that say `packages/core` or `packages/api` mean the rewrite v2 package boundary unless a task says otherwise.
 
 ## Task 1 - User Model And Database Blueprint
 
