@@ -13,7 +13,7 @@ export {
 } from "./contracts/signup.js";
 export { ApiConfig, ApiUrl, ServerBoundPort } from "./lib/config/api.js";
 export type { ApiConfig as ApiConfigShape } from "./lib/config/api.js";
-export { WebConfig } from "./lib/config/web.js";
+export { WebConfig, WebUrl } from "./lib/config/web.js";
 export type { WebConfig as WebConfigShape } from "./lib/config/web.js";
 export {
   DatabaseDeleteError,
@@ -23,7 +23,7 @@ export {
 } from "./lib/database/errors.js";
 export { createTablesIfMissing } from "./lib/database/schema-setup.js";
 export { StringPart, StringParts } from "./lib/string.js";
-export { buildUnsubscribeUrl, WebUrl } from "./lib/url.js";
+export { buildUnsubscribeUrl } from "./lib/url.js";
 export type {
   ExtractFromDiscriminator,
   ExtractFromTag,

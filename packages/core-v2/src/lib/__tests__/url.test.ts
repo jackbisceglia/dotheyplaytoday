@@ -2,7 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, Effect } from "effect";
 
 import { ApiUrl, ServerBoundPort } from "../config/api.js";
-import { WebUrl } from "../url.js";
+import { WebUrl } from "../config/web.js";
 
 describe("v2 url config", () => {
   it.effect("derives localhost api and web urls from required ports", () =>
