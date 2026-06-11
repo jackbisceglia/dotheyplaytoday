@@ -1,27 +1,16 @@
-import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as NodeServices from "@effect/platform-node/NodeServices";
 import {
   ConsoleChannelLayer,
-  EmailAddress,
+  EmailAddressFromString,
   EmailChannelLayer,
 } from "@dtpt/core-v2";
-import { Effect, Layer, Option, Schema } from "effect";
-import * as SchemaTransformation from "effect/SchemaTransformation";
+import { Effect, Option, Schema } from "effect";
 import { Command, Flag } from "effect/unstable/cli";
 
-import { DotEnvConfigProvider } from "../lib/env.js";
+import { JobsRuntime } from "../runtime.js";
 import { notify } from "./index.js";
-import { NotifyRuntimeLayer } from "./runtime.js";
-
-const UserEmail = Schema.String.pipe(
-  Schema.decode(
-    SchemaTransformation.trim().compose(SchemaTransformation.toLowerCase()),
-  ),
-  Schema.decodeTo(EmailAddress),
-);
 
 const UserFlag = Flag.string("user").pipe(
-  Flag.withSchema(UserEmail),
+  Flag.withSchema(EmailAddressFromString),
   Flag.optional,
   Flag.withDescription("Process only recipients for this email address"),
 );
@@ -57,16 +46,10 @@ const NotifyCommand = Command.make(
 
 const NotifyCli = Command.run(NotifyCommand, { version: "0.0.0" });
 
-export function main() {
-  const RuntimeLayer = NotifyRuntimeLayer.pipe(
-    Layer.provideMerge(
-      DotEnvConfigProvider.pipe(Layer.provideMerge(NodeServices.layer)),
-    ),
-  );
-
-  NotifyCli.pipe(Effect.provide(RuntimeLayer), NodeRuntime.runMain);
+export async function main() {
+  await JobsRuntime.runPromise(NotifyCli).finally(() => JobsRuntime.dispose());
 }
 
 if (import.meta.main) {
-  main();
+  await main();
 }

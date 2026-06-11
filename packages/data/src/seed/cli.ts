@@ -1,12 +1,9 @@
-import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as NodeServices from "@effect/platform-node/NodeServices";
-import { Effect, Layer } from "effect";
+import { Effect } from "effect";
 import { Command, Prompt } from "effect/unstable/cli";
 
-import { DotEnvConfigProvider } from "../lib/env.js";
+import { DataRuntime } from "../runtime.js";
 import { seedCatalog, summarizeCatalog } from "./catalog.js";
 import { reset } from "./reset.js";
-import { SeedRuntimeLayer } from "./runtime.js";
 import { seedUsers, summarizeUsers } from "./users.js";
 
 const ConfirmProduction = Prompt.text({
@@ -46,22 +43,16 @@ const SeedCli = Command.run(
   { version: "0.0.0" },
 );
 
-function main() {
-  SeedCli.pipe(
-    Effect.catchTag("SeedDuplicateEventSourceIdError", Effect.die),
-    Effect.provide(
-      SeedRuntimeLayer.pipe(
-        Layer.provideMerge(
-          DotEnvConfigProvider.pipe(Layer.provideMerge(NodeServices.layer)),
-        ),
-      ),
-    ),
-    NodeRuntime.runMain,
-  );
+const SeedProgram = SeedCli.pipe(
+  Effect.catchTag("SeedDuplicateEventSourceIdError", Effect.die),
+);
+
+async function main() {
+  await DataRuntime.runPromise(SeedProgram).finally(() => DataRuntime.dispose());
 }
 
 if (import.meta.main) {
-  main();
+  await main();
 }
 
 export default main;
