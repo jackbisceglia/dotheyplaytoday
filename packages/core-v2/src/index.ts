@@ -3,6 +3,16 @@ export {
   DatabaseLayer,
   createDatabaseLayer,
 } from "./lib/database/service.js";
+export { Api } from "./contracts/api.js";
+export { PingGroup, PingResponse } from "./contracts/ping.js";
+export {
+  SignupGroup,
+  SignupRateLimited,
+  SignupRequest,
+  SignupResponse,
+} from "./contracts/signup.js";
+export { ApiConfig, ApiUrl, ServerBoundPort } from "./lib/config/api.js";
+export type { ApiConfig as ApiConfigShape } from "./lib/config/api.js";
 export { WebConfig } from "./lib/config/web.js";
 export type { WebConfig as WebConfigShape } from "./lib/config/web.js";
 export {
@@ -114,6 +124,7 @@ export {
 export { SubscriptionTiming } from "./modules/subscriptions/time.js";
 export {
   EmailAddress,
+  EmailAddressFromString,
   UnsubscribeToken,
   User,
   UserId,

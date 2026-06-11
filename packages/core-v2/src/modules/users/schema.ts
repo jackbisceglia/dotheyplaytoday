@@ -4,6 +4,7 @@ import {
 } from "drizzle-orm/effect-schema";
 import { text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { Schema } from "effect";
+import * as SchemaTransformation from "effect/SchemaTransformation";
 
 import { sqliteTable } from "../../lib/database/drizzle/index.js";
 import type {
@@ -26,6 +27,13 @@ export const EmailAddress = Schema.String.check(
     description: "an email address",
   }),
 ).pipe(Schema.brand("EmailAddress"));
+
+export const EmailAddressFromString = Schema.String.pipe(
+  Schema.decode(
+    SchemaTransformation.trim().compose(SchemaTransformation.toLowerCase()),
+  ),
+  Schema.decodeTo(EmailAddress),
+);
 
 export type UnsubscribeToken = typeof UnsubscribeToken.Type;
 export const UnsubscribeToken = Id.SchemaBranded("UnsubscribeToken");
