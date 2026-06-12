@@ -11,6 +11,12 @@ export {
   SignupRequest,
   SignupResponse,
 } from "./contracts/signup.js";
+export {
+  Request as UnsubscribeRequest,
+  Response as UnsubscribeResponse,
+  UnsubscribeGroup,
+  UnsubscribeRateLimited,
+} from "./contracts/unsubscribe.js";
 export { ApiConfig, ApiUrl, ServerBoundPort } from "./lib/config/api.js";
 export type { ApiConfig as ApiConfigShape } from "./lib/config/api.js";
 export { WebConfig, WebUrl } from "./lib/config/web.js";
