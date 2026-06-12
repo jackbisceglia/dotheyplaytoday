@@ -17,6 +17,7 @@
     "@data": "pnpm -F @dtpt/data",
     "@web": "pnpm -F @dtpt/web",
     "@api": "pnpm -F @dtpt/api",
+    "@api-v2": "pnpm -F @dtpt/api-v2",
     "@jobs": "pnpm -F @dtpt/jobs",
     "@jobs-v2": "pnpm -F @dtpt/jobs-v2",
     "prepare": "pnpm exec effect-language-service patch"

@@ -88,6 +88,25 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
 
+  packages/api-v2:
+    dependencies:
+      '@dtpt/core-v2':
+        specifier: workspace:*
+        version: link:../core-v2
+      '@effect/platform-node':
+        specifier: 4.0.0-beta.65
+        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)
+      effect:
+        specifier: 4.0.0-beta.65
+        version: 4.0.0-beta.65
+    devDependencies:
+      '@effect/vitest':
+        specifier: 4.0.0-beta.65
+        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(vitest@3.2.4(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+
   packages/core:
     dependencies:
       '@effect/platform':
