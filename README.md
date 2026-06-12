@@ -36,7 +36,6 @@ The forward path is built around:
 - `packages/web`: current frontend surface while the web direction moves toward
   Astro.
 - `docs/rewrite`: canonical product, domain, and rebuild notes.
-- `reference`: local source references for implementation patterns.
 
 ## Coming Soon
 
