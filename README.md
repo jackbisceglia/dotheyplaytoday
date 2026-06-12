@@ -28,12 +28,9 @@ The forward path is built around:
 
 ### Codebase Shape
 
-- `packages/core`: domain, schemas, persistence, and notification code.
 - `packages/core-v2`: current domain model, schemas, persistence, subscriptions,
   event reads, and channel boundaries.
-- `packages/api`: HTTP API built on top of `core`.
 - `packages/api-v2`: HTTP API built on top of `core-v2`.
-- `packages/jobs`: migration and notify jobs built on top of `core`.
 - `packages/jobs-v2`: notify job built on top of `core-v2`.
 - `packages/data`: seed/import data, including NBA subjects and events.
 - `packages/web`: current frontend surface while the web direction moves toward
@@ -61,12 +58,9 @@ pnpm build
 Package helpers:
 
 ```bash
-pnpm @core <cmd>
 pnpm @core-v2 <cmd>
-pnpm @api <cmd>
 pnpm @api-v2 <cmd>
 pnpm @web <cmd>
-pnpm @jobs <cmd>
 pnpm @jobs-v2 <cmd>
 pnpm @data <cmd>
 ```
