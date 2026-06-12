@@ -23,7 +23,7 @@ export {
 } from "./lib/database/errors.js";
 export { createTablesIfMissing } from "./lib/database/schema-setup.js";
 export { StringPart, StringParts } from "./lib/string.js";
-export { buildUnsubscribeUrl } from "./lib/url.js";
+export { buildUnsubscribeUrl } from "./lib/unsubscribe.js";
 export type {
   ExtractFromDiscriminator,
   ExtractFromTag,

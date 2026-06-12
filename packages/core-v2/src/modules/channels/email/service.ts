@@ -3,7 +3,7 @@ import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 import { StringParts } from "../../../lib/string.js";
 import { isTaggedAs } from "../../../lib/tagged.js";
 import type { ExtractFromTag } from "../../../lib/types.js";
-import { buildUnsubscribeUrl } from "../../../lib/url.js";
+import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
 import { EventId } from "../../events/schema.js";
 import type { EventWithParticipants } from "../../events/service.js";
 import type { Subject } from "../../subjects/schema.js";

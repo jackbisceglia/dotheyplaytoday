@@ -1,6 +1,6 @@
 import { Config, Effect } from "effect";
 
-import { buildServiceUrl } from "../service-url.js";
+import { buildServiceUrl } from "../url.js";
 
 export type ApiConfig = Config.Success<typeof ApiConfig>;
 export const ApiConfig = Config.all({
@@ -13,9 +13,11 @@ export const ApiUrl = Effect.gen(function* () {
 
   return yield* buildServiceUrl(config.url, config.port);
 }).pipe(
-  Effect.catchTag(["NoSuchElementError", "ConfigError"], () =>
-    Effect.die("API_PORT or VITE_API_URL is required"),
-  ),
+  Effect.catchTags({
+    ConfigError: () => Effect.die("Unknown API configuration error occurred"),
+    NoSuchElementError: () =>
+      Effect.die("API_PORT or VITE_API_URL is required"),
+  }),
 );
 
 export const ServerBoundPort = Effect.gen(function* () {

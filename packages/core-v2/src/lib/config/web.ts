@@ -1,6 +1,6 @@
 import { Config, Effect } from "effect";
 
-import { buildServiceUrl } from "../service-url.js";
+import { buildServiceUrl } from "../url.js";
 
 export type WebConfig = Config.Success<typeof WebConfig>;
 export const WebConfig = Config.all({
@@ -13,7 +13,9 @@ export const WebUrl = Effect.gen(function* () {
 
   return yield* buildServiceUrl(config.url, config.port);
 }).pipe(
-  Effect.catchTag(["NoSuchElementError", "ConfigError"], () =>
-    Effect.die("WEB_PORT or VITE_WEB_URL is required"),
-  ),
+  Effect.catchTags({
+    ConfigError: () => Effect.die("Unknown web configuration error occurred"),
+    NoSuchElementError: () =>
+      Effect.die("WEB_PORT or VITE_WEB_URL is required"),
+  }),
 );
