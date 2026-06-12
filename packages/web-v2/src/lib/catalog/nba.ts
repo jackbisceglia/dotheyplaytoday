@@ -42,21 +42,21 @@ const makeSportTeamSubject: typeof SportTeamSubject.make = (input) =>
 
 type NbaTeamBuilder = (make: typeof makeSportTeamSubject) => Subject["details"];
 
-const makeNbaSubjectId = (index: number): Subject["id"] =>
-  `00000000-0000-4000-8000-${String(index + 101).padStart(12, "0")}`;
+const makeNbaSubjectId = (serial: number): Subject["id"] =>
+  `00000000-0000-4000-8000-${String(serial + 100).padStart(12, "0")}`;
 
-const makeNbaTeam = (index: number, fn: NbaTeamBuilder): Subject => {
+const makeNbaTeam = (serial: number, fn: NbaTeamBuilder): Subject => {
   const details = fn(makeSportTeamSubject);
 
   return {
-    id: makeNbaSubjectId(index),
+    id: makeNbaSubjectId(serial),
     _tag: details._tag,
     details,
   };
 };
 
 export const NBA_TEAMS = [
-  makeNbaTeam(0, (make) =>
+  makeNbaTeam(1, (make) =>
     make({
       leagueId: "nba",
       location: "Atlanta",
@@ -65,7 +65,7 @@ export const NBA_TEAMS = [
       slug: "atlanta-hawks",
     }),
   ),
-  makeNbaTeam(1, (make) =>
+  makeNbaTeam(2, (make) =>
     make({
       leagueId: "nba",
       location: "Boston",
@@ -74,7 +74,7 @@ export const NBA_TEAMS = [
       slug: "boston-celtics",
     }),
   ),
-  makeNbaTeam(2, (make) =>
+  makeNbaTeam(3, (make) =>
     make({
       leagueId: "nba",
       location: "Brooklyn",
@@ -83,7 +83,7 @@ export const NBA_TEAMS = [
       slug: "brooklyn-nets",
     }),
   ),
-  makeNbaTeam(3, (make) =>
+  makeNbaTeam(4, (make) =>
     make({
       leagueId: "nba",
       location: "Charlotte",
@@ -92,7 +92,7 @@ export const NBA_TEAMS = [
       slug: "charlotte-hornets",
     }),
   ),
-  makeNbaTeam(4, (make) =>
+  makeNbaTeam(5, (make) =>
     make({
       leagueId: "nba",
       location: "Chicago",
@@ -101,7 +101,7 @@ export const NBA_TEAMS = [
       slug: "chicago-bulls",
     }),
   ),
-  makeNbaTeam(5, (make) =>
+  makeNbaTeam(6, (make) =>
     make({
       leagueId: "nba",
       location: "Cleveland",
@@ -110,7 +110,7 @@ export const NBA_TEAMS = [
       slug: "cleveland-cavaliers",
     }),
   ),
-  makeNbaTeam(6, (make) =>
+  makeNbaTeam(7, (make) =>
     make({
       leagueId: "nba",
       location: "Dallas",
@@ -119,7 +119,7 @@ export const NBA_TEAMS = [
       slug: "dallas-mavericks",
     }),
   ),
-  makeNbaTeam(7, (make) =>
+  makeNbaTeam(8, (make) =>
     make({
       leagueId: "nba",
       location: "Denver",
@@ -128,7 +128,7 @@ export const NBA_TEAMS = [
       slug: "denver-nuggets",
     }),
   ),
-  makeNbaTeam(8, (make) =>
+  makeNbaTeam(9, (make) =>
     make({
       leagueId: "nba",
       location: "Detroit",
@@ -137,7 +137,7 @@ export const NBA_TEAMS = [
       slug: "detroit-pistons",
     }),
   ),
-  makeNbaTeam(9, (make) =>
+  makeNbaTeam(10, (make) =>
     make({
       leagueId: "nba",
       location: "Golden State",
@@ -146,7 +146,7 @@ export const NBA_TEAMS = [
       slug: "golden-state-warriors",
     }),
   ),
-  makeNbaTeam(10, (make) =>
+  makeNbaTeam(11, (make) =>
     make({
       leagueId: "nba",
       location: "Houston",
@@ -155,7 +155,7 @@ export const NBA_TEAMS = [
       slug: "houston-rockets",
     }),
   ),
-  makeNbaTeam(11, (make) =>
+  makeNbaTeam(12, (make) =>
     make({
       leagueId: "nba",
       location: "Indiana",
@@ -164,7 +164,7 @@ export const NBA_TEAMS = [
       slug: "indiana-pacers",
     }),
   ),
-  makeNbaTeam(12, (make) =>
+  makeNbaTeam(13, (make) =>
     make({
       leagueId: "nba",
       location: "LA",
@@ -173,7 +173,7 @@ export const NBA_TEAMS = [
       slug: "la-clippers",
     }),
   ),
-  makeNbaTeam(13, (make) =>
+  makeNbaTeam(14, (make) =>
     make({
       leagueId: "nba",
       location: "Los Angeles",
@@ -182,7 +182,7 @@ export const NBA_TEAMS = [
       slug: "los-angeles-lakers",
     }),
   ),
-  makeNbaTeam(14, (make) =>
+  makeNbaTeam(15, (make) =>
     make({
       leagueId: "nba",
       location: "Memphis",
@@ -191,7 +191,7 @@ export const NBA_TEAMS = [
       slug: "memphis-grizzlies",
     }),
   ),
-  makeNbaTeam(15, (make) =>
+  makeNbaTeam(16, (make) =>
     make({
       leagueId: "nba",
       location: "Miami",
@@ -200,7 +200,7 @@ export const NBA_TEAMS = [
       slug: "miami-heat",
     }),
   ),
-  makeNbaTeam(16, (make) =>
+  makeNbaTeam(17, (make) =>
     make({
       leagueId: "nba",
       location: "Milwaukee",
@@ -209,7 +209,7 @@ export const NBA_TEAMS = [
       slug: "milwaukee-bucks",
     }),
   ),
-  makeNbaTeam(17, (make) =>
+  makeNbaTeam(18, (make) =>
     make({
       leagueId: "nba",
       location: "Minnesota",
@@ -218,7 +218,7 @@ export const NBA_TEAMS = [
       slug: "minnesota-timberwolves",
     }),
   ),
-  makeNbaTeam(18, (make) =>
+  makeNbaTeam(19, (make) =>
     make({
       leagueId: "nba",
       location: "New Orleans",
@@ -227,7 +227,7 @@ export const NBA_TEAMS = [
       slug: "new-orleans-pelicans",
     }),
   ),
-  makeNbaTeam(19, (make) =>
+  makeNbaTeam(20, (make) =>
     make({
       leagueId: "nba",
       location: "New York",
@@ -236,7 +236,7 @@ export const NBA_TEAMS = [
       slug: "new-york-knicks",
     }),
   ),
-  makeNbaTeam(20, (make) =>
+  makeNbaTeam(21, (make) =>
     make({
       leagueId: "nba",
       location: "Oklahoma City",
@@ -245,7 +245,7 @@ export const NBA_TEAMS = [
       slug: "oklahoma-city-thunder",
     }),
   ),
-  makeNbaTeam(21, (make) =>
+  makeNbaTeam(22, (make) =>
     make({
       leagueId: "nba",
       location: "Orlando",
@@ -254,7 +254,7 @@ export const NBA_TEAMS = [
       slug: "orlando-magic",
     }),
   ),
-  makeNbaTeam(22, (make) =>
+  makeNbaTeam(23, (make) =>
     make({
       leagueId: "nba",
       location: "Philadelphia",
@@ -263,7 +263,7 @@ export const NBA_TEAMS = [
       slug: "philadelphia-76ers",
     }),
   ),
-  makeNbaTeam(23, (make) =>
+  makeNbaTeam(24, (make) =>
     make({
       leagueId: "nba",
       location: "Phoenix",
@@ -272,7 +272,7 @@ export const NBA_TEAMS = [
       slug: "phoenix-suns",
     }),
   ),
-  makeNbaTeam(24, (make) =>
+  makeNbaTeam(25, (make) =>
     make({
       leagueId: "nba",
       location: "Portland",
@@ -281,7 +281,7 @@ export const NBA_TEAMS = [
       slug: "portland-trail-blazers",
     }),
   ),
-  makeNbaTeam(25, (make) =>
+  makeNbaTeam(26, (make) =>
     make({
       leagueId: "nba",
       location: "Sacramento",
@@ -290,7 +290,7 @@ export const NBA_TEAMS = [
       slug: "sacramento-kings",
     }),
   ),
-  makeNbaTeam(26, (make) =>
+  makeNbaTeam(27, (make) =>
     make({
       leagueId: "nba",
       location: "San Antonio",
@@ -299,7 +299,7 @@ export const NBA_TEAMS = [
       slug: "san-antonio-spurs",
     }),
   ),
-  makeNbaTeam(27, (make) =>
+  makeNbaTeam(28, (make) =>
     make({
       leagueId: "nba",
       location: "Toronto",
@@ -308,7 +308,7 @@ export const NBA_TEAMS = [
       slug: "toronto-raptors",
     }),
   ),
-  makeNbaTeam(28, (make) =>
+  makeNbaTeam(29, (make) =>
     make({
       leagueId: "nba",
       location: "Utah",
@@ -317,7 +317,7 @@ export const NBA_TEAMS = [
       slug: "utah-jazz",
     }),
   ),
-  makeNbaTeam(29, (make) =>
+  makeNbaTeam(30, (make) =>
     make({
       leagueId: "nba",
       location: "Washington",
