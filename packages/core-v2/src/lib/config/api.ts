@@ -10,10 +10,13 @@ export const ApiConfig = Config.all({
 
 export const ApiUrl = Effect.gen(function* () {
   const config = yield* ApiConfig;
-  const url = buildServiceUrl(config);
+  const url = buildServiceUrl(
+    Option.getOrUndefined(config.url),
+    Option.getOrUndefined(config.port),
+  );
 
-  if (Option.isSome(url)) {
-    return url.value;
+  if (url !== undefined) {
+    return url;
   }
 
   return yield* Effect.die("API_PORT or VITE_API_URL is required");

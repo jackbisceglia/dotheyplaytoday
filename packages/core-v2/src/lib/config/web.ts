@@ -10,10 +10,13 @@ export const WebConfig = Config.all({
 
 export const WebUrl = Effect.gen(function* () {
   const config = yield* WebConfig;
-  const url = buildServiceUrl(config);
+  const url = buildServiceUrl(
+    Option.getOrUndefined(config.url),
+    Option.getOrUndefined(config.port),
+  );
 
-  if (Option.isSome(url)) {
-    return url.value;
+  if (url !== undefined) {
+    return url;
   }
 
   return yield* Effect.die("WEB_PORT or VITE_WEB_URL is required");

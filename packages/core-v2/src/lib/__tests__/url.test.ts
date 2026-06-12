@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { ConfigProvider, Effect, Option } from "effect";
+import { ConfigProvider, Effect } from "effect";
 
 import { ApiUrl, ServerBoundPort } from "../config/api.js";
 import { WebUrl } from "../config/web.js";
@@ -7,20 +7,13 @@ import { buildServiceUrl } from "../url.js";
 
 describe("v2 url config", () => {
   it("builds service urls from explicit urls or localhost ports", () => {
-    expect(
-      buildServiceUrl({
-        url: Option.some("https://example.com"),
-        port: Option.some(3000),
-      }),
-    ).toEqual(Option.some("https://example.com"));
+    expect(buildServiceUrl("https://example.com", 3000)).toBe(
+      "https://example.com",
+    );
 
-    expect(
-      buildServiceUrl({ url: Option.none(), port: Option.some(3000) }),
-    ).toEqual(Option.some("http://localhost:3000"));
+    expect(buildServiceUrl(undefined, 3000)).toBe("http://localhost:3000");
 
-    expect(
-      buildServiceUrl({ url: Option.none(), port: Option.none() }),
-    ).toEqual(Option.none());
+    expect(buildServiceUrl(undefined, undefined)).toBeUndefined();
   });
 
   it.effect("derives localhost api and web urls from required ports", () =>
