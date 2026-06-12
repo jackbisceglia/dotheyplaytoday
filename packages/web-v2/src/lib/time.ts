@@ -13,19 +13,18 @@ const secondsPerDay = Duration.toSeconds("24 hours");
 const sendTimeOptionCount = secondsPerDay / sendTimeStepSeconds;
 
 const formatSecondsLocal = (seconds: number) => {
-  const { hours: hours24, minutes } = Duration.parts(Duration.seconds(seconds));
-  const meridiem = hours24 < 12 ? "AM" : "PM";
-  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
-  return `${String(hours12)}:${String(minutes).padStart(2, "0")} ${meridiem}`;
+  const parts = Duration.parts(Duration.seconds(seconds));
+  const meridiem = parts.hours < 12 ? "AM" : "PM";
+  const hours = parts.hours % 12 === 0 ? 12 : parts.hours % 12;
+  return `${String(hours)}:${String(parts.minutes).padStart(2, "0")} ${meridiem}`;
 };
 
-export const sendTimeOptions: readonly SendTimeOption[] = Array.range(
-  0,
-  sendTimeOptionCount - 1,
-).map((index): SendTimeOption => {
-  const value = index * sendTimeStepSeconds;
-  return { value, label: formatSecondsLocal(value) };
-});
+export const sendTimeOptions = Array.range(0, sendTimeOptionCount - 1).map(
+  (index) => {
+    const value = index * sendTimeStepSeconds;
+    return { value, label: formatSecondsLocal(value) };
+  },
+) satisfies SendTimeOption[];
 
 export const isValidSendTime = (seconds: number) =>
   Number.isInteger(seconds) &&
@@ -33,7 +32,7 @@ export const isValidSendTime = (seconds: number) =>
   seconds < secondsPerDay &&
   seconds % sendTimeStepSeconds === 0;
 
-export const detectTimezone = (): string | undefined => {
+export const detectTimezone = () => {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   } catch {
