@@ -1,10 +1,28 @@
 import { describe, expect, it } from "@effect/vitest";
-import { ConfigProvider, Effect } from "effect";
+import { ConfigProvider, Effect, Option } from "effect";
 
 import { ApiUrl, ServerBoundPort } from "../config/api.js";
 import { WebUrl } from "../config/web.js";
+import { buildServiceUrl } from "../service-url.js";
 
 describe("v2 url config", () => {
+  it("builds service urls from explicit urls or localhost ports", () => {
+    expect(
+      buildServiceUrl({
+        url: Option.some("https://example.com"),
+        port: Option.some(3000),
+      }),
+    ).toEqual(Option.some("https://example.com"));
+
+    expect(
+      buildServiceUrl({ url: Option.none(), port: Option.some(3000) }),
+    ).toEqual(Option.some("http://localhost:3000"));
+
+    expect(
+      buildServiceUrl({ url: Option.none(), port: Option.none() }),
+    ).toEqual(Option.none());
+  });
+
   it.effect("derives localhost api and web urls from required ports", () =>
     Effect.gen(function* () {
       const apiUrl = yield* ApiUrl;
