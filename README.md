@@ -1,38 +1,19 @@
 # dotheyplaytoday
 
-`dotheyplaytoday` is a sports notification app for a simple recurring
-question: does my team play today?
+`dotheyplaytoday` is a sports notification app for a simple recurring question: does my team play today?
 
-Users subscribe to teams, choose a local send time and timezone, and get notified
-only when a selected team has a game on their local date.
+Users subscribe to teams and get notified only when their team has a game that day.
 
 ## What It Does
 
-- Lets a user subscribe to supported sports teams.
-- Treats game times as global instants and evaluates "today" in the user's
-  timezone.
-- Sends one subject-scoped notification when a subscribed team has one or more
-  same-day events.
-- Tracks successful sends so normal runs do not repeatedly notify for the same
-  local day.
-- Keeps the operational model simple: schedule data is imported, then an
-  external cron can run the notify job on a regular interval.
+- Allows a user to subscribe to supported sports teams.
+- Sends a notification when their subscribed team has an event that day.
 
 ## Designed To Extend
 
-Sports are the first product scope, not a one-off model baked through the whole
-system.
+Sports are the initial scope, but teams and games are implementations of generic **Subject** and **Event** concepts.
 
-The core language is intentionally broader:
-
-- A **subject** is something a user can follow, like an NBA team.
-- An **event** is a scheduled item that can appear in one or more subject feeds,
-  like a game.
-- A **subscription** connects a user to a subject plus a notification schedule.
-
-That shape keeps the first version focused on sports notifications while leaving
-room for other event feeds later: more leagues, tournaments, campus groups,
-venues, clubs, shows, artists, or other recurring event sources.
+Thus, the app can extend to more leagues, tournaments, campus groups, venues, clubs, shows, artists, or other recurring event sources.
 
 ## State Of The Monorepo
 
@@ -47,13 +28,13 @@ The forward path is built around:
 
 ### Codebase Shape
 
-- `packages/core`: first core implementation and product-behavior reference.
+- `packages/core`: domain, schemas, persistence, and notification code.
 - `packages/core-v2`: current domain model, schemas, persistence, subscriptions,
   event reads, and channel boundaries.
-- `packages/api`: first API runtime.
-- `packages/api-v2`: current signup API runtime on top of `core-v2`.
-- `packages/jobs`: first migration and notify job runtime.
-- `packages/jobs-v2`: current notify job runtime on top of `core-v2`.
+- `packages/api`: HTTP API built on top of `core`.
+- `packages/api-v2`: HTTP API built on top of `core-v2`.
+- `packages/jobs`: migration and notify jobs built on top of `core`.
+- `packages/jobs-v2`: notify job built on top of `core-v2`.
 - `packages/data`: seed/import data, including NBA subjects and events.
 - `packages/web`: current frontend surface while the web direction moves toward
   Astro.
