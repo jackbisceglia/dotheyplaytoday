@@ -20,6 +20,4 @@ export const ApiUrl = Effect.gen(function* () {
   }),
 );
 
-export const ServerBoundPort = Effect.gen(function* () {
-  return yield* Config.port("API_PORT");
-});
+export const ServerBoundPort = Config.port("API_PORT").asEffect();

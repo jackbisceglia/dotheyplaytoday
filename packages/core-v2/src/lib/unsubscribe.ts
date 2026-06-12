@@ -4,12 +4,12 @@ import { WebUrl } from "./config/web.js";
 import { StringParts } from "./string.js";
 
 export const buildUnsubscribeUrl = Effect.fn("Url.buildUnsubscribe")(function* (
-  unsubscribeToken: string,
+  token: string,
 ) {
   const url = yield* WebUrl;
 
   const normalizedUrl = url.replace(/\/+$/, "");
-  const encodedToken = encodeURIComponent(unsubscribeToken);
+  const encodedToken = encodeURIComponent(token);
 
   return StringParts()
     .add(normalizedUrl)
