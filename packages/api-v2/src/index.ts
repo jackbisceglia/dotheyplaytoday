@@ -8,9 +8,10 @@ import { createServer } from "node:http";
 import { ApiRuntime } from "./runtime.js";
 import { PingGroupLayer } from "./routes.ping.js";
 import { SignupGroupLayer } from "./routes.signup.js";
+import { UnsubscribeGroupLayer } from "./routes.unsubscribe.js";
 
 const HttpApiLayer = HttpApiBuilder.layer(Api).pipe(
-  Layer.provide([PingGroupLayer, SignupGroupLayer]),
+  Layer.provide([PingGroupLayer, SignupGroupLayer, UnsubscribeGroupLayer]),
 );
 
 const CorsLayer = Layer.unwrap(

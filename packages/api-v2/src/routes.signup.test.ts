@@ -18,12 +18,17 @@ import {
   layerTest,
 } from "@dtpt/core-v2/lib/database/__tests__/setup";
 import { Config, Effect, Layer, Schema } from "effect";
-import { HttpClient, HttpClientRequest, HttpRouter } from "effect/unstable/http";
+import {
+  HttpClient,
+  HttpClientRequest,
+  HttpRouter,
+} from "effect/unstable/http";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
 
 import { makeRateLimiterLayer } from "./rate-limit/service.js";
 import { PingGroupLayer } from "./routes.ping.js";
 import { SignupGroupLayer } from "./routes.signup.js";
+import { UnsubscribeGroupLayer } from "./routes.unsubscribe.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -32,7 +37,10 @@ const utc = decode(Schema.DateTimeUtcFromString);
 const timezone = decode(Schema.TimeZoneNamedFromString);
 
 const layerSignupTest = makeSignupTestLayer({ limit: 100, window: 60 });
-const layerSignupRateLimitedTest = makeSignupTestLayer({ limit: 1, window: 60 });
+const layerSignupRateLimitedTest = makeSignupTestLayer({
+  limit: 1,
+  window: 60,
+});
 
 const subjectInput = makeSubjectInput({
   id: "00000000-0000-4000-8000-000000000301",
@@ -244,7 +252,7 @@ function makeSignupTestLayer(config: {
 
   const ServerLayer = HttpRouter.serve(
     HttpApiBuilder.layer(Api).pipe(
-      Layer.provide([PingGroupLayer, SignupGroupLayer]),
+      Layer.provide([PingGroupLayer, SignupGroupLayer, UnsubscribeGroupLayer]),
     ),
     { disableListenLog: true, disableLogger: true },
   ).pipe(

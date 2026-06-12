@@ -1,4 +1,4 @@
-import { SignupRateLimited, Subscriptions, Users } from "@dtpt/core-v2";
+import { UnsubscribeRateLimited, Users } from "@dtpt/core-v2";
 import { Api } from "@dtpt/core-v2/contracts/api";
 import { Effect } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
@@ -7,20 +7,19 @@ import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
 
 const UnexpectedErrorTags = [
+  "DatabaseDeleteError",
   "DatabaseReadError",
-  "DatabaseWriteError",
   "SchemaError",
   "SqlError",
 ] as const;
 
-export const SignupGroupLayer = HttpApiBuilder.group(
+export const UnsubscribeGroupLayer = HttpApiBuilder.group(
   Api,
-  "signup",
+  "unsubscribe",
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
       const sql = yield* SqlClient;
-      const subscriptions = yield* Subscriptions;
       const users = yield* Users;
 
       return handlers.handle(
@@ -29,32 +28,37 @@ export const SignupGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            return yield* sql.withTransaction(
+            const removed = yield* sql.withTransaction(
               Effect.gen(function* () {
-                const user = yield* users.upsertForSignup(
-                  ctx.payload.email,
-                  ctx.payload.timezone,
+                const user = yield* users.getByUnsubscribeToken(
+                  ctx.payload.token,
                 );
 
-                yield* subscriptions.replaceForUser({
-                  user,
-                  subjectIds: ctx.payload.subjectIds,
-                  schedule: ctx.payload.schedule,
-                });
+                yield* users.remove(user.id);
 
-                return { ok: true as const };
+                return user;
               }),
             );
+
+            yield* Effect.logInfo("unsubscribe: user removed", {
+              userId: removed.id,
+            });
+
+            return { ok: true as const };
           },
-          Effect.tapErrorTag(UnexpectedErrorTags, (e) =>
-            Effect.logError("signup: unexpected failure", { error: e.message }),
+          Effect.tapErrorTag("UserNotFound", () =>
+            Effect.logInfo("unsubscribe: token did not match an active user"),
           ),
-          Effect.catchTag(
-            ["InvalidSubjectSelection", "SubjectCapacityReached"],
-            () => Effect.fail(new HttpApiError.BadRequest({})),
+          Effect.catchTag("UserNotFound", () =>
+            Effect.succeed({ ok: true as const }),
+          ),
+          Effect.tapErrorTag(UnexpectedErrorTags, (e) =>
+            Effect.logError("unsubscribe: unexpected failure", {
+              error: e.message,
+            }),
           ),
           Effect.catchTag("RateLimitExceeded", () =>
-            Effect.fail(new SignupRateLimited({})),
+            Effect.fail(new UnsubscribeRateLimited({})),
           ),
           Effect.catchTag(UnexpectedErrorTags, () =>
             Effect.fail(new HttpApiError.InternalServerError({})),
