@@ -1,7 +1,7 @@
 ---
 import { getSignupFormData } from "../lib/api.js";
 import { getLogo, getTeams } from "../lib/catalog/nba.js";
-import { defaultSendTimeSeconds, sendTimeOptions } from "../lib/time.js";
+import { sendTime, sendTimeIntervals } from "../lib/time.js";
 
 const signupFormData = getSignupFormData();
 const teams = getTeams(signupFormData.subjects.sports_team);
@@ -106,12 +106,12 @@ const teams = getTeams(signupFormData.subjects.sports_team);
           <span class="form-label">Send time</span>
           <select class="form-input" name="sendTime" data-send-time>
             {
-              sendTimeOptions.map((option) => (
+              sendTimeIntervals.map((interval) => (
                 <option
-                  value={option.value}
-                  selected={option.value === defaultSendTimeSeconds}
+                  value={interval.value}
+                  selected={interval.value === sendTime.default}
                 >
-                  {option.label}
+                  {interval.label}
                 </option>
               ))
             }

@@ -1,36 +1,46 @@
 import { Array, Duration } from "effect";
 
-export type SendTimeOption = {
+export type Interval = {
   readonly value: number;
   readonly label: string;
 };
 
 export const defaultTimezone = "America/New_York";
-export const sendTimeStepSeconds = Duration.toSeconds("15 minutes");
-export const defaultSendTimeSeconds = Duration.toSeconds("9 hours");
 
-const secondsPerDay = Duration.toSeconds("24 hours");
-const sendTimeOptionCount = secondsPerDay / sendTimeStepSeconds;
+export const sendTime = {
+  default: Duration.toSeconds("9 hours"),
+  stepSeconds: Duration.toSeconds("15 minutes"),
+} as const;
+
+const getStepCount = () =>
+  Duration.toSeconds("24 hours") / sendTime.stepSeconds;
 
 const formatSecondsLocal = (seconds: number) => {
   const parts = Duration.parts(Duration.seconds(seconds));
+
   const meridiem = parts.hours < 12 ? "AM" : "PM";
   const hours = parts.hours % 12 === 0 ? 12 : parts.hours % 12;
-  return `${String(hours)}:${String(parts.minutes).padStart(2, "0")} ${meridiem}`;
+
+  const format = (h: number, m: number, suffix: string) =>
+    `${h.toString()}:${m.toString().padStart(2, "0")} ${suffix}`;
+
+  return format(hours, parts.minutes, meridiem);
 };
 
-export const sendTimeOptions = Array.range(0, sendTimeOptionCount - 1).map(
+export const sendTimeIntervals = Array.range(0, getStepCount() - 1).map(
   (index) => {
-    const value = index * sendTimeStepSeconds;
+    const value = index * sendTime.stepSeconds;
     return { value, label: formatSecondsLocal(value) };
   },
-) satisfies SendTimeOption[];
+) satisfies Interval[];
 
-export const isValidSendTime = (seconds: number) =>
-  Number.isInteger(seconds) &&
-  seconds >= 0 &&
-  seconds < secondsPerDay &&
-  seconds % sendTimeStepSeconds === 0;
+export const isValidSendTime = (seconds: number) => {
+  const isInteger = Number.isInteger(seconds);
+  const isWithinDay = seconds >= 0 && seconds < Duration.toSeconds("24 hours");
+  const isOnStep = seconds % sendTime.stepSeconds === 0;
+
+  return isInteger && isWithinDay && isOnStep;
+};
 
 export const detectTimezone = () => {
   try {
