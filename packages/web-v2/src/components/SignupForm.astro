@@ -1,0 +1,144 @@
+---
+import { getSignupFormData } from "../lib/api.js";
+import { getLogo, getTeams } from "../lib/catalog/nba.js";
+import { defaultSendTimeSeconds, sendTimeOptions } from "../lib/time.js";
+
+const signupFormData = getSignupFormData();
+const teams = getTeams(signupFormData.subjects.sports_team);
+---
+
+<div class="signup-root" data-signup-root>
+  <div class="signup-success" data-success hidden role="status">
+    <p class="signup-success-mark" aria-hidden="true">✓</p>
+    <h3 class="signup-success-title">You're on the roster</h3>
+    <p class="signup-success-copy">
+      Game-day emails for your teams will land at your chosen time, only on days
+      they play.
+    </p>
+    <p class="signup-success-copy">
+      Change your mind later? Sign up again with the same email and your new
+      picks replace the old ones.
+    </p>
+    <button class="btn btn-secondary" type="button" data-edit>
+      Edit my picks
+    </button>
+  </div>
+
+  <form class="signup-form" data-form novalidate>
+    <fieldset class="form-section">
+      <legend class="visually-hidden">League</legend>
+      <div class="league-row" aria-label="League">
+        <button class="league-pill" type="button" aria-pressed="true">
+          NBA
+        </button>
+        <button
+          class="league-pill"
+          type="button"
+          disabled
+          title="More leagues on the way"
+        >
+          MLB
+        </button>
+        <button
+          class="league-pill"
+          type="button"
+          disabled
+          title="More leagues on the way"
+        >
+          NFL
+        </button>
+        <button
+          class="league-pill"
+          type="button"
+          disabled
+          title="More leagues on the way"
+        >
+          NHL
+        </button>
+      </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend class="visually-hidden">Teams</legend>
+      <div class="team-grid">
+        {
+          teams.map((team) => (
+            <button
+              type="button"
+              class="team-card"
+              aria-pressed="false"
+              data-team-id={team.id}
+            >
+              <span class="team-glyph" aria-hidden="true">
+                {getLogo(team.details.abbreviation)}
+              </span>
+              <span class="team-abbr">{team.details.abbreviation}</span>
+              <span class="team-name">
+                {team.details.location} {team.details.name}
+              </span>
+            </button>
+          ))
+        }
+      </div>
+      <div class="team-message-slot">
+        <p data-team-message hidden></p>
+      </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend class="visually-hidden">Delivery</legend>
+      <div class="form-fields">
+        <label class="form-field">
+          <span class="form-label">Email</span>
+          <input
+            class="form-input"
+            type="email"
+            name="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            data-email
+          />
+          <span class="form-error" data-error-for="email" role="alert" hidden>
+          </span>
+        </label>
+
+        <label class="form-field">
+          <span class="form-label">Send time</span>
+          <select class="form-input" name="sendTime" data-send-time>
+            {
+              sendTimeOptions.map((option) => (
+                <option
+                  value={option.value}
+                  selected={option.value === defaultSendTimeSeconds}
+                >
+                  {option.label}
+                </option>
+              ))
+            }
+          </select>
+          <span
+            class="form-error"
+            data-error-for="sendTime"
+            role="alert"
+            hidden
+          >
+          </span>
+        </label>
+      </div>
+      <p class="form-error" data-error-for="timezone" role="alert" hidden></p>
+    </fieldset>
+
+    <div class="form-submit-row">
+      <button class="btn btn-primary" type="submit" data-submit>
+        Sign up
+      </button>
+    </div>
+
+    <p class="form-error form-error-banner" data-form-error role="alert" hidden>
+      Something went wrong on our end. Your picks are still here; try submitting
+      again.
+    </p>
+  </form>
+</div>
+
+<script src="../lib/signup/client.ts"></script>

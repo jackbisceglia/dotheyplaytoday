@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev:web": "pnpm @web dev",
+    "dev:web-v2": "pnpm @web-v2 dev",
     "dev:api": "pnpm @api dev",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
@@ -16,6 +17,7 @@
     "@core-v2": "pnpm -F @dtpt/core-v2",
     "@data": "pnpm -F @dtpt/data",
     "@web": "pnpm -F @dtpt/web",
+    "@web-v2": "pnpm -F @dtpt/web-v2",
     "@api": "pnpm -F @dtpt/api",
     "@jobs": "pnpm -F @dtpt/jobs",
     "@jobs-v2": "pnpm -F @dtpt/jobs-v2",
