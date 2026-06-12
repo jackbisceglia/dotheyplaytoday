@@ -1,32 +1,38 @@
-import { Effect, Option } from "effect";
+import { Effect, Match, Option } from "effect";
 
 import { WebConfig } from "./config/web.js";
 import { StringParts } from "./string.js";
 
-export function buildServiceUrl(url: string | undefined, port: number | undefined) {
-  if (url !== undefined) {
-    return url;
-  }
+const toLocalHost = (port: number) => `http://localhost:${port.toString()}`;
 
-  if (port !== undefined) {
-    return `http://localhost:${port.toString()}`;
-  }
+export const buildServiceUrl = (
+  url: Option.Option<string>,
+  port: Option.Option<number>,
+) =>
+  Match.value({ url, port }).pipe(
+    Match.when({ url: Option.isSome }, function (config) {
+      return config.url;
+    }),
+    Match.when({ port: Option.isSome }, function (config) {
+      return Option.map(config.port, toLocalHost);
+    }),
+    Match.orElse(() => Option.none()),
+  );
 
-  return undefined;
-}
+export const WebUrl = Effect.gen(function* () {
+  const config = yield* WebConfig;
+
+  return yield* buildServiceUrl(config.url, config.port);
+}).pipe(
+  Effect.catchTag("NoSuchElementError", () =>
+    Effect.die("WEB_PORT or VITE_WEB_URL is required"),
+  ),
+);
 
 export const buildUnsubscribeUrl = Effect.fn("Url.buildUnsubscribe")(function* (
   unsubscribeToken: string,
 ) {
-  const config = yield* WebConfig;
-  const url = buildServiceUrl(
-    Option.getOrUndefined(config.url),
-    Option.getOrUndefined(config.port),
-  );
-
-  if (url === undefined) {
-    return yield* Effect.die("WEB_PORT or VITE_WEB_URL is required");
-  }
+  const url = yield* WebUrl;
 
   const normalizedUrl = url.replace(/\/+$/, "");
   const encodedToken = encodeURIComponent(unsubscribeToken);

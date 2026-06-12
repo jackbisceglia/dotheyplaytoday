@@ -1,4 +1,4 @@
-import { Config, Effect, Option } from "effect";
+import { Config, Effect } from "effect";
 
 import { buildServiceUrl } from "../url.js";
 
@@ -10,17 +10,13 @@ export const ApiConfig = Config.all({
 
 export const ApiUrl = Effect.gen(function* () {
   const config = yield* ApiConfig;
-  const url = buildServiceUrl(
-    Option.getOrUndefined(config.url),
-    Option.getOrUndefined(config.port),
-  );
 
-  if (url !== undefined) {
-    return url;
-  }
-
-  return yield* Effect.die("API_PORT or VITE_API_URL is required");
-});
+  return yield* buildServiceUrl(config.url, config.port);
+}).pipe(
+  Effect.catchTag("NoSuchElementError", () =>
+    Effect.die("API_PORT or VITE_API_URL is required"),
+  ),
+);
 
 export const ServerBoundPort = Effect.gen(function* () {
   return yield* Config.port("API_PORT");
