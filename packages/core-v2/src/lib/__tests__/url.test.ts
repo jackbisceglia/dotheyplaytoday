@@ -3,7 +3,7 @@ import { ConfigProvider, Effect, Option } from "effect";
 
 import { ApiUrl, ServerBoundPort } from "../config/api.js";
 import { WebUrl } from "../config/web.js";
-import { buildServiceUrl } from "../service-url.js";
+import { buildServiceUrl } from "../url.js";
 
 describe("v2 url config", () => {
   it("builds service urls from explicit urls or localhost ports", () => {

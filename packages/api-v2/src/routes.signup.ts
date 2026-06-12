@@ -53,10 +53,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
           },
           Effect.tapErrorTag(
             UnexpectedErrorTags,
-            (e) =>
-              Effect.logError("signup: unexpected failure", {
-                error: e.message,
-              }),
+            (e) => Effect.logError("signup: unexpected failure", { error: e.message }),
           ),
           Effect.catchTag(
             ["InvalidSubjectSelection", "SubjectCapacityReached"],

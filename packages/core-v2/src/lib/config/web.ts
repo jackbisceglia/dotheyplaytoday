@@ -1,6 +1,6 @@
 import { Config, Effect, Option } from "effect";
 
-import { buildServiceUrl } from "../service-url.js";
+import { buildServiceUrl } from "../url.js";
 
 export type WebConfig = Config.Success<typeof WebConfig>;
 export const WebConfig = Config.all({
