@@ -82,15 +82,15 @@ describe("v2 url config", () => {
 
   it.effect("binds the server with API_PORT", () =>
     Effect.gen(function* () {
-      const configuredPort = yield* ServerBoundPort.pipe(
-        Effect.provide(
-          ConfigProvider.layer(
-            ConfigProvider.fromEnv({ env: { API_PORT: "4001" } }),
-          ),
-        ),
-      );
+      const configuredPort = yield* ServerBoundPort;
 
       expect(configuredPort).toBe(4001);
-    }),
+    }).pipe(
+      Effect.provide(
+        ConfigProvider.layer(
+          ConfigProvider.fromEnv({ env: { API_PORT: "4001" } }),
+        ),
+      ),
+    ),
   );
 });
