@@ -6,7 +6,7 @@ Before broad implementation in any task, complete one representative vertical sl
 
 Current execution order intentionally starts with one end-to-end domain path instead of defining every table before any service exists. First land the `User` model/database blueprint. Then implement the `Users` service against that blueprint. After the user path is proven through model, database, and service layers, fan out the same pattern across subjects, events, participants, subscriptions, and scheduling behavior.
 
-Implementation note: rewrite core work currently lives in `packages/core-v2` / `@dtpt/core-v2` so Effect v4 can move independently from the prototype `@dtpt/core` package. The public rewrite API follows the same boundary in `packages/api-v2` / `@dtpt/api-v2`; the prototype `packages/api` package remains preserved until cutover. Older broad docs that say `packages/core` or `packages/api` mean the rewrite v2 package boundary unless a task says otherwise.
+Implementation note: rewrite core work currently lives in `packages/core-v2` / `@dtpt/core-v2` so Effect v4 can move independently from the prototype `@dtpt/core` package. The public rewrite API follows the same boundary in `packages/api-v2` / `@dtpt/api-v2`; the prototype `packages/api` package remains preserved until cutover. The rewrite web app follows the same boundary in `packages/web-v2`, built with Astro rather than the prototype's SolidStart. Older broad docs that say `packages/core`, `packages/api`, or `packages/web` mean the rewrite v2 package boundary unless a task says otherwise.
 
 ## Task 1 - User Model And Database Blueprint
 
@@ -179,7 +179,7 @@ Scope:
 
 - Add shared signup `HttpApi` contract in `packages/core/src/contracts/` at rough behavior level, final literal payload/error details decided during implementation.
 - Implement API signup route with validation, rate limiting, transaction boundary, `Users.upsertForSignup`, and `Subscriptions.replaceForUser`.
-- Build the SolidStart signup page from decoded sports subject details.
+- Build the Astro signup page in `packages/web-v2` from decoded sports subject details.
 - Capture timezone, fixed send time, team selection, success state, and resubmission/overwrite explanation.
 - Keep signup orchestration in the route callsite; do not introduce `SignupService`.
 
