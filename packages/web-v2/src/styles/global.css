@@ -53,6 +53,10 @@ button {
   cursor: pointer;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* Header */
 
 .site-header {
@@ -312,10 +316,6 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
   gap: 10px;
-}
-
-.team-grid[hidden] {
-  display: none;
 }
 
 .team-grid-loading {
