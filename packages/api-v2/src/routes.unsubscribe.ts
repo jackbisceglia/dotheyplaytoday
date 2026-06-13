@@ -46,6 +46,9 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
 
             return { ok: true as const };
           },
+          // A token that resolves to no user is expected, not an error: stale,
+          // unknown, and already-consumed tokens all return the same ok result
+          // so the endpoint can't be used to probe which tokens exist.
           Effect.tapErrorTag("UserNotFound", () =>
             Effect.logInfo("unsubscribe: token did not match an active user"),
           ),
