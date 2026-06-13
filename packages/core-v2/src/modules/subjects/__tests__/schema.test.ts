@@ -3,7 +3,10 @@ import { eq } from "drizzle-orm";
 import { Effect, Schema } from "effect";
 
 import { Database } from "../../../lib/database/service.js";
-import { createTables, layerTest } from "../../../lib/database/__tests__/setup.js";
+import {
+  createTables,
+  layerTest,
+} from "../../../lib/database/__tests__/setup.js";
 import { Subject, SubjectInsert, subjectsTable } from "../schema.js";
 import { SportLeagueIds } from "../variants/sport.schema.js";
 
@@ -25,11 +28,13 @@ const subjectInput = {
 
 describe("v2 Subject model", () => {
   it("lists supported league ids", () => {
-    expect(SportLeagueIds).toEqual(["nba"]);
+    expect(SportLeagueIds).toEqual(["nba", "nfl"]);
   });
 
   it("rejects malformed subject-owned fields and details", () => {
-    expect(() => decode(Subject)({ ...subjectInput, id: "not-uuid" })).toThrow();
+    expect(() =>
+      decode(Subject)({ ...subjectInput, id: "not-uuid" }),
+    ).toThrow();
     expect(() =>
       decode(Subject)({ ...subjectInput, _tag: "campus_group" }),
     ).toThrow();

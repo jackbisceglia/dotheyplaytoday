@@ -1,10 +1,7 @@
-import type { Schema } from "effect";
-
-import { SportsSeed } from "../../schema/sports.js";
+import type { SportsSeedEncoded } from "../../schema/sports.js";
 import { Games } from "./events.js";
 
-type SportsSeedInput = Schema.Codec.Encoded<typeof SportsSeed>;
-type NbaSportSubjectSeed = SportsSeedInput["subjects"][number];
+type NbaSportSubjectSeed = SportsSeedEncoded["subjects"][number];
 
 export const Teams = {
   AtlantaHawks: {

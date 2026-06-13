@@ -1,4 +1,4 @@
-import { NBA_TEAMS } from "./catalog/nba.js";
+import { sportsTeamSubjects } from "./catalog/sports.js";
 
 type CoreFixedSchedule = import("@dtpt/core-v2").FixedSchedule;
 type CoreSubjectDetails = import("@dtpt/core-v2").SubjectDetails;
@@ -49,7 +49,7 @@ export const SUBJECT_CAP = 2;
 
 const mockSignupFormData = {
   subjects: {
-    sports_team: NBA_TEAMS,
+    sports_team: sportsTeamSubjects,
   },
 } satisfies SignupFormData;
 

@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-export const SportLeagueIds = ["nba"] as const;
+export const SportLeagueIds = ["nba", "nfl"] as const;
 
 export type SportLeagueId = typeof SportLeagueId.Type;
 export const SportLeagueId = Schema.Literals(SportLeagueIds);
