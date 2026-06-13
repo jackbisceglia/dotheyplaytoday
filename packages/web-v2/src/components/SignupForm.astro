@@ -16,7 +16,7 @@ const leagues = sportsLeagues.map((league) => ({
 ---
 
 <div class="signup-root" data-signup-root>
-  <div class="signup-success" data-success hidden role="status">
+  <div class="signup-success" data-success hidden style="display: none;" role="status">
     <p class="signup-success-mark" aria-hidden="true">✓</p>
     <h3 class="signup-success-title">You're on the roster</h3>
     <p class="signup-success-copy">
@@ -75,6 +75,7 @@ const leagues = sportsLeagues.map((league) => ({
             class="team-grid"
             data-team-grid={league.id}
             hidden={index !== 0}
+            style={index !== 0 ? "display: none;" : undefined}
           >
             {league.teams.map((team) => (
               <button

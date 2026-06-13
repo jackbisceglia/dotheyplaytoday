@@ -5,6 +5,11 @@ const emailPattern = /^\S+@\S+\.\S+$/;
 
 const root = document.querySelector("[data-signup-root]");
 
+const setHidden = (element: HTMLElement, isHidden: boolean) => {
+  element.hidden = isHidden;
+  element.style.display = isHidden ? "none" : "";
+};
+
 if (root instanceof HTMLElement) {
   const form = root.querySelector<HTMLFormElement>("[data-form]");
   const success = root.querySelector<HTMLElement>("[data-success]");
@@ -43,7 +48,7 @@ if (root instanceof HTMLElement) {
       const element = getFieldError(field);
       if (element === null) return;
       element.textContent = message ?? "";
-      element.hidden = message === undefined;
+      setHidden(element, message === undefined);
     };
 
     const setTeamMessage = (
@@ -52,7 +57,7 @@ if (root instanceof HTMLElement) {
         | { readonly kind: "hint"; readonly text: string }
         | undefined,
     ) => {
-      teamMessage.hidden = message === undefined;
+      setHidden(teamMessage, message === undefined);
       teamMessage.textContent = message?.text ?? "";
       teamMessage.className =
         message?.kind === "error" ? "form-error" : "form-hint";
@@ -89,7 +94,7 @@ if (root instanceof HTMLElement) {
       });
 
       teamGrids.forEach((grid) => {
-        grid.hidden = grid.dataset.teamGrid !== activeLeague;
+        setHidden(grid, grid.dataset.teamGrid !== activeLeague);
       });
     };
 
@@ -165,13 +170,13 @@ if (root instanceof HTMLElement) {
     });
 
     edit.addEventListener("click", () => {
-      success.hidden = true;
-      form.hidden = false;
+      setHidden(success, true);
+      setHidden(form, false);
     });
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      formError.hidden = true;
+      setHidden(formError, true);
       setError("timezone", undefined);
 
       if (!validate()) return;
@@ -188,11 +193,11 @@ if (root instanceof HTMLElement) {
           subjectIds: [...selected],
         })
         .then(() => {
-          form.hidden = true;
-          success.hidden = false;
+          setHidden(form, true);
+          setHidden(success, false);
         })
         .catch(() => {
-          formError.hidden = false;
+          setHidden(formError, false);
         })
         .finally(() => {
           setSubmitting(false);
