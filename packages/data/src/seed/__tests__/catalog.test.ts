@@ -22,7 +22,8 @@ import { User, UserInsert } from "@dtpt/core-v2/modules/users/schema";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
 import { SportsSeed } from "../../schema/sports.js";
-import { nbaSeedCollection } from "../../sports/nba/index.js";
+import { nbaCollection } from "../../sports/nba/index.js";
+import { nflCollection } from "../../sports/nfl/index.js";
 import {
   decodeSportsSeedCollections,
   SeedDuplicateEventSourceIdError,
@@ -172,11 +173,11 @@ const changedCollection = {
 
 describe("data seed catalog", () => {
   it("registers NBA seed data explicitly", () => {
-    expect(nbaSeedCollection.id).toBe("sports.nba");
-    expect(nbaSeedCollection.subjects).toHaveLength(30);
-    expect(nbaSeedCollection.events).toHaveLength(3);
+    expect(nbaCollection.id).toBe("sports.nba");
+    expect(nbaCollection.subjects).toHaveLength(30);
+    expect(nbaCollection.events).toHaveLength(3);
 
-    const spurs = nbaSeedCollection.subjects.find(
+    const spurs = nbaCollection.subjects.find(
       (subject) => subject.details.slug === "san-antonio-spurs",
     );
 
@@ -184,6 +185,28 @@ describe("data seed catalog", () => {
       "sports_game:seed:00000000-0000-4000-8000-000000000702",
       "sports_game:seed:00000000-0000-4000-8000-000000000703",
     ]);
+  });
+
+  it("registers NFL regular season seed data explicitly", () => {
+    expect(nflCollection.id).toBe("sports.nfl");
+    expect(nflCollection.subjects).toHaveLength(32);
+    expect(nflCollection.events).toHaveLength(272);
+
+    const eventSourceIds = new Set(
+      nflCollection.events.map((event) => event.sourceId),
+    );
+    const feedIds = nflCollection.subjects.flatMap(
+      (subject) => subject.feedIds,
+    );
+
+    expect(feedIds).toHaveLength(544);
+    expect(eventSourceIds.size).toBe(272);
+    expect(feedIds.every((sourceId) => eventSourceIds.has(sourceId))).toBe(
+      true,
+    );
+    expect(
+      nflCollection.subjects.every((subject) => subject.feedIds.length === 17),
+    ).toBe(true);
   });
 
   it.effect(

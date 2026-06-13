@@ -2,9 +2,9 @@ import { SportTeamSubject } from "@dtpt/core-v2/modules/subjects/variants/sport.
 
 import type { Subject } from "../api.js";
 
-const FALLBACK_LOGO = "🏀";
+const fallback = "🏀";
 
-const NBA_LOGOS: Readonly<Record<string, string>> = {
+const logos = {
   ATL: "🦅",
   BOS: "🍀",
   BKN: "🕸️",
@@ -55,7 +55,7 @@ const makeNbaTeam = (serial: number, fn: NbaTeamBuilder): Subject => {
   };
 };
 
-export const NBA_TEAMS = [
+export const nbaTeams = [
   makeNbaTeam(1, (make) =>
     make({
       leagueId: "nba",
@@ -328,7 +328,8 @@ export const NBA_TEAMS = [
   ),
 ] satisfies readonly Subject[];
 
-export const getLogo = (abbr: string) => NBA_LOGOS[abbr] ?? FALLBACK_LOGO;
+export const getNbaLogo = (abbr: string) =>
+  abbr in logos ? logos[abbr as keyof typeof logos] : fallback;
 
 export const getTeams = (subjects: readonly Subject[]) =>
   subjects.toSorted((a, b) =>

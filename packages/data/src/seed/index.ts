@@ -1,3 +1,4 @@
-import { nbaSeedCollection } from "../sports/nba/index.js";
+import { nbaCollection } from "../sports/nba/index.js";
+import { nflCollection } from "../sports/nfl/index.js";
 
-export const SeedCollections = [nbaSeedCollection] as const;
+export const SeedCollections = [nbaCollection, nflCollection] as const;

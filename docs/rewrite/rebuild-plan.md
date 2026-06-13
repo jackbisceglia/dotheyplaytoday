@@ -141,7 +141,7 @@ Verification:
 Deliverables:
 
 - Add shared HttpApi contract for signup.
-- Add NBA sports subject catalog/seed data in `@dtpt/data`.
+- Add sports subject catalog/seed data in `@dtpt/data`.
 - Add sports event seed/import path that requires stable event source ids and resolves teams to existing subjects.
 - Add signup domain flow: normalize email, upsert user, generate `unsubscribeToken` for new users, preserve it for existing users, and replace subscriptions.
 - Add public write rate limiter.
@@ -157,7 +157,7 @@ Key decisions:
 - `pnpm @core seed:dev` imports all registered seed collections and may reset development data.
 - `pnpm @core seed:prod` imports all registered seed collections, requires a typed CLI confirmation, must not modify users/subscriptions, and is non-destructive/upsert-only for catalog/schedule data.
 - Seed scripts own seed orchestration directly: import registered `@dtpt/data` collections, write through domain services, and extract shared orchestration only after duplication appears.
-- Seed collections are activated by explicit registration in `@dtpt/data`; V1 registers only NBA.
+- Seed collections are activated by explicit registration in `@dtpt/data`.
 - Event imports update mutable facts for the same stable source id, including changed start times and explicit cancellation through `availability`.
 - `POST /api/signup` returns `{ ok: true }` on success and maps validation/cap failures to public `400` errors.
 - Public write rate limiting applies to signup and unsubscribe at the API boundary.

@@ -314,6 +314,10 @@ button {
   gap: 10px;
 }
 
+.team-grid[hidden] {
+  display: none;
+}
+
 .team-grid-loading {
   color: var(--muted);
   padding: 24px 0;

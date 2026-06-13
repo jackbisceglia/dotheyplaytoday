@@ -119,7 +119,7 @@ Goal: make the completed domain/database model runnable with checked-in V1 data.
 Scope:
 
 - Add private `@dtpt/data` package with explicit collection registry.
-- Register NBA subjects and sports game event collections only for V1.
+- Register sports subject and sports game event collections explicitly for V1.
 - Implement seed/catalog scripts in core with their own runtime assembly.
 - Add `seed:dev` and `seed:prod`; production seed requires typed CLI confirmation.
 - Keep seed orchestration in the script until real duplication appears.
@@ -128,7 +128,7 @@ Scope:
 
 Vertical slice check-in:
 
-- Implement one registered NBA team collection and one game collection through the seed script before adding the full dataset.
+- Implement one registered team collection and one game collection through the seed script before adding full datasets.
 - Check that the registry shape, package boundary, script runtime, and upsert behavior are clear and not dependent on filesystem scanning.
 
 Verification:

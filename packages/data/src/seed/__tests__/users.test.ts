@@ -16,7 +16,7 @@ import {
 import { Effect, Layer, Schema } from "effect";
 
 import { SportsSeed } from "../../schema/sports.js";
-import { nbaSeedCollection } from "../../sports/nba/index.js";
+import { nbaCollection } from "../../sports/nba/index.js";
 import { Teams } from "../../sports/nba/subjects.js";
 import { seedCatalog } from "../catalog.js";
 import { seedUsers, summarizeUsers, Users } from "../users.js";
@@ -30,9 +30,7 @@ const layerSeedTest = Layer.mergeAll(
   SubscriptionsLayer,
 ).pipe(Layer.provideMerge(layerTest));
 
-const seedNbaCatalog = seedCatalog([
-  nbaSeedCollection satisfies SportsSeedInput,
-]);
+const seedNbaCatalog = seedCatalog([nbaCollection satisfies SportsSeedInput]);
 
 describe("seed users", () => {
   it.effect("seeds users with one or more subject subscriptions", () =>

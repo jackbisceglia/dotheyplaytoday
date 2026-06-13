@@ -406,36 +406,36 @@ Rules:
 
 ## Import Contract
 
-V1 launch seed data starts with NBA team subjects and sports game events. League identity is stored as `leagueId` in sports subject and event details. V1 does not add a separate top-level league entity; add a league table/FK only when the product needs richer league data.
+V1 seed data includes NBA and NFL team subjects and sports game events. League identity is stored as `leagueId` in sports subject and event details. V1 does not add a separate top-level league entity; add a league table/FK only when the product needs richer league data.
 
-NBA team seed records include stable checked-in UUID subject ids. Subject import/upsert uses those ids rather than deriving ids from mutable names, abbreviations, or slugs.
+Sports team seed records include stable checked-in UUID subject ids. Subject import/upsert uses those ids rather than deriving ids from mutable names, abbreviations, or slugs.
 
-Keep NBA teams and NBA games as separate seed collections. Teams are catalog/reference data; games are schedule/import data and can change more frequently.
+Keep each league's team and game data in its own registered seed collection. Teams are catalog/reference data; games are schedule/import data and can change more frequently.
 
 Seed data uses a relational JSON shape:
 
 ```ts
-type NbaTeamSeed = {
+type SportTeamSeed = {
   readonly id: SubjectId;
-  readonly leagueId: "nba";
+  readonly leagueId: "nba" | "nfl";
   readonly location: string;
   readonly name: string;
   readonly abbreviation: string;
   readonly slug?: string;
 };
 
-type NbaGameSeed = {
+type SportGameSeed = {
   readonly sourceId: EventSourceId;
-  readonly leagueId: "nba";
+  readonly leagueId: "nba" | "nfl";
   readonly startsAt: DateTimeUtc;
   readonly availability: EventAvailability;
   readonly homeSubjectId: SubjectId;
   readonly awaySubjectId: SubjectId;
-  readonly homeParticipant: NbaGameParticipantSeed;
-  readonly awayParticipant: NbaGameParticipantSeed;
+  readonly homeParticipant: SportGameParticipantSeed;
+  readonly awayParticipant: SportGameParticipantSeed;
 };
 
-type NbaGameParticipantSeed = {
+type SportGameParticipantSeed = {
   readonly title: string;
 };
 ```
@@ -447,7 +447,7 @@ Seed/import flows:
 - Dev seed may reset/import all development data needed for local workflows.
 - Production seed/import only touches catalog and schedule data, such as subjects, events, subject events, and participants. It must not modify users or subscriptions.
 - Production seed/import is non-destructive and upsert-only for teams, events, subject events, and participant records.
-- Dev and production seed commands import all explicitly registered seed collections. For V1, only the NBA collection is registered.
+- Dev and production seed commands import all explicitly registered seed collections.
 - Production seed requires an interactive typed confirmation such as `confirm` before it writes.
 
 V1 imports use one authoritative source per event kind. Imports populate the relational event graph:
@@ -459,7 +459,7 @@ Subject <- SubjectEvent -> Event -> Participant
 Rules:
 
 - Event import upserts by `(_tag, source_id)`.
-- NBA game seed records include explicit stable `source_id` values such as `sports_game:seed:<uuid>`.
+- Sports game seed records include explicit stable `source_id` values such as `sports_game:seed:<uuid>` or `sports_game:espn:<uuid>`.
 - Re-importing the same `source_id` updates mutable event facts such as `starts_at`, `availability`, and details, ensures the relevant subject feed links exist, and replaces that event's participant records.
 - Missing events in a seed collection are not deleted. Cancellation must be represented explicitly with `availability: "cancelled"`.
 - Normal event read paths, including notify-oriented reads, should filter to `availability: "active"` unless a caller explicitly asks for cancelled events.

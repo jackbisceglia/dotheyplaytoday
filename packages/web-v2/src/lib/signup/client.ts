@@ -14,11 +14,16 @@ if (root instanceof HTMLElement) {
   const submit = root.querySelector<HTMLButtonElement>("[data-submit]");
   const formError = root.querySelector<HTMLElement>("[data-form-error]");
   const teamMessage = root.querySelector<HTMLElement>("[data-team-message]");
+  const leagueButtons = [
+    ...root.querySelectorAll<HTMLButtonElement>("[data-league-id]"),
+  ];
+  const teamGrids = [...root.querySelectorAll<HTMLElement>("[data-team-grid]")];
   const teamButtons = [
     ...root.querySelectorAll<HTMLButtonElement>("[data-team-id]"),
   ];
 
   const selected = new Set<string>();
+  let activeLeague = leagueButtons[0]?.dataset.leagueId ?? "";
   const timezone = detectTimezone() ?? defaultTimezone;
 
   if (
@@ -73,6 +78,21 @@ if (root instanceof HTMLElement) {
       submit.textContent = isSubmitting ? "Signing up..." : "Sign up";
     };
 
+    const setLeague = (leagueId: string) => {
+      activeLeague = leagueId;
+
+      leagueButtons.forEach((button) => {
+        button.setAttribute(
+          "aria-pressed",
+          button.dataset.leagueId === activeLeague ? "true" : "false",
+        );
+      });
+
+      teamGrids.forEach((grid) => {
+        grid.hidden = grid.dataset.teamGrid !== activeLeague;
+      });
+    };
+
     const validate = () => {
       let valid = true;
 
@@ -101,6 +121,15 @@ if (root instanceof HTMLElement) {
 
       return valid;
     };
+
+    leagueButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const leagueId = button.dataset.leagueId;
+        if (leagueId === undefined) return;
+
+        setLeague(leagueId);
+      });
+    });
 
     teamButtons.forEach((button) => {
       button.addEventListener("click", () => {

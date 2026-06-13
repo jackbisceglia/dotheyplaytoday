@@ -175,13 +175,13 @@ _Avoid_: Direct `process.env` reads in services
 - An **Event** has one **Event Availability**.
 - A **Local Day UTC Range** is derived from a user's timezone before querying events.
 - A **Team Subject** is a kind of **Subject**.
-- V1 launch seed data starts with NBA team subjects and sports game events.
+- V1 seed data includes NBA and NFL team subjects and sports game events.
 - V1 stores league identity as `leagueId` in sports details; add a separate league table/FK only when the product needs richer league data.
-- NBA team seed records include stable checked-in UUID subject ids; subject import/upsert uses those ids rather than deriving ids from mutable names or slugs.
-- Keep NBA teams and NBA games as separate seed collections because teams are catalog/reference data and games are schedule/import data.
+- Sports team seed records include stable checked-in UUID subject ids; subject import/upsert uses those ids rather than deriving ids from mutable names or slugs.
+- Keep each league's team and game data in its own registered seed collection because teams are catalog/reference data and games are schedule/import data.
 - Seed data uses a relational JSON shape: team records carry stable subject ids, and game records reference subject ids plus event-local participant details directly. Import validates and upserts from this structure instead of inferring identities from names, abbreviations, or slugs.
 - Provide two seed flows: `seed:dev` may reset/import all development data, while `seed:prod` only touches catalog and schedule data and must not modify users or subscriptions. `seed:prod` is non-destructive, upsert-only for subjects, events, subject events, and participant records, and requires a typed CLI confirmation.
-- Checked-in seed collections live in private `@dtpt/data` and are activated through an explicit registry. Seed commands import all registered collections; V1 registers only NBA.
+- Checked-in seed collections live in private `@dtpt/data` and are activated through an explicit registry. Seed commands import all registered collections.
 - A **Sports Game Event** is a kind of **Event**.
 - A **Sports Game Event** has exactly two **Participants**, one home and one away.
 - An **Event** has exactly one **Event Payload**.
@@ -325,7 +325,7 @@ Rules:
 
 - `events.source_id` is a stable source-provided identity used for upsert and has readable format `<eventType>:<source>:<uuid>`.
 - V1 sports seed data uses source ids such as `sports_game:seed:<uuid>`.
-- NBA game seed records include explicit stable event source ids.
+- Sports game seed records include explicit stable event source ids.
 - `source_id` must not be derived from mutable schedule facts such as start time, game date, or participants.
 - Re-importing the same source id updates mutable event facts such as `starts_at`, `availability`, and details, ensures the relevant subject feed links exist, and replaces that event's participant records.
 - Missing events in a seed collection are not deleted. Cancellation must be represented explicitly with `availability: "cancelled"`.

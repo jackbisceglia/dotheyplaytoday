@@ -1,10 +1,18 @@
 ---
 import { getSignupFormData } from "../lib/api.js";
-import { getLogo, getTeams } from "../lib/catalog/nba.js";
+import {
+  getSportsLogo,
+  getTeams,
+  leagues as sportsLeagues,
+} from "../lib/catalog/sports.js";
 import { sendTime, sendTimeIntervals } from "../lib/time.js";
 
 const signupFormData = getSignupFormData();
 const teams = getTeams(signupFormData.subjects.sports_team);
+const leagues = sportsLeagues.map((league) => ({
+  ...league,
+  teams: teams.filter((team) => team.details.leagueId === league.id),
+}));
 ---
 
 <div class="signup-root" data-signup-root>
@@ -28,9 +36,18 @@ const teams = getTeams(signupFormData.subjects.sports_team);
     <fieldset class="form-section">
       <legend class="visually-hidden">League</legend>
       <div class="league-row" aria-label="League">
-        <button class="league-pill" type="button" aria-pressed="true">
-          NBA
-        </button>
+        {
+          leagues.map((league, index) => (
+            <button
+              class="league-pill"
+              type="button"
+              aria-pressed={index === 0 ? "true" : "false"}
+              data-league-id={league.id}
+            >
+              {league.label}
+            </button>
+          ))
+        }
         <button
           class="league-pill"
           type="button"
@@ -45,14 +62,6 @@ const teams = getTeams(signupFormData.subjects.sports_team);
           disabled
           title="More leagues on the way"
         >
-          NFL
-        </button>
-        <button
-          class="league-pill"
-          type="button"
-          disabled
-          title="More leagues on the way"
-        >
           NHL
         </button>
       </div>
@@ -60,26 +69,32 @@ const teams = getTeams(signupFormData.subjects.sports_team);
 
     <fieldset class="form-section">
       <legend class="visually-hidden">Teams</legend>
-      <div class="team-grid">
-        {
-          teams.map((team) => (
-            <button
-              type="button"
-              class="team-card"
-              aria-pressed="false"
-              data-team-id={team.id}
-            >
-              <span class="team-glyph" aria-hidden="true">
-                {getLogo(team.details.abbreviation)}
-              </span>
-              <span class="team-abbr">{team.details.abbreviation}</span>
-              <span class="team-name">
-                {team.details.location} {team.details.name}
-              </span>
-            </button>
-          ))
-        }
-      </div>
+      {
+        leagues.map((league, index) => (
+          <div
+            class="team-grid"
+            data-team-grid={league.id}
+            hidden={index !== 0}
+          >
+            {league.teams.map((team) => (
+              <button
+                type="button"
+                class="team-card"
+                aria-pressed="false"
+                data-team-id={team.id}
+              >
+                <span class="team-glyph" aria-hidden="true">
+                  {getSportsLogo(team.details)}
+                </span>
+                <span class="team-abbr">{team.details.abbreviation}</span>
+                <span class="team-name">
+                  {team.details.location} {team.details.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        ))
+      }
       <div class="team-message-slot">
         <p data-team-message hidden></p>
       </div>
