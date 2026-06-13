@@ -173,7 +173,7 @@ Verification:
 
 Deliverables:
 
-- Build signup landing page in SolidStart.
+- Build signup landing page in Astro (`packages/web-v2`).
 - Render team grid from decoded sports subject details.
 - Capture timezone with fallback.
 - Render fixed send-time options from the shared fixed local schedule constraints.

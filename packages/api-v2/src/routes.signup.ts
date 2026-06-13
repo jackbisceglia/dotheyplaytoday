@@ -1,11 +1,10 @@
 import { SignupRateLimited, Subscriptions, Users } from "@dtpt/core-v2";
 import { Api } from "@dtpt/core-v2/contracts/api";
-import { Effect, Option } from "effect";
+import { Effect } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
-import { HttpServerRequest } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
-import { RateLimiter } from "./rate-limit/service.js";
+import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
 
 const UnexpectedErrorTags = [
   "DatabaseReadError",
@@ -13,9 +12,6 @@ const UnexpectedErrorTags = [
   "SchemaError",
   "SqlError",
 ] as const;
-
-const rateLimitKey = (request: HttpServerRequest.HttpServerRequest) =>
-  Option.getOrElse(request.remoteAddress, () => "unknown");
 
 export const SignupGroupLayer = HttpApiBuilder.group(
   Api,
@@ -31,8 +27,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
         "submit",
         Effect.fn(
           function* (ctx) {
-            const key = rateLimitKey(ctx.request);
-            yield* rateLimiter.check(key);
+            yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
             return yield* sql.withTransaction(
               Effect.gen(function* () {
@@ -51,9 +46,8 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               }),
             );
           },
-          Effect.tapErrorTag(
-            UnexpectedErrorTags,
-            (e) => Effect.logError("signup: unexpected failure", { error: e.message }),
+          Effect.tapErrorTag(UnexpectedErrorTags, (e) =>
+            Effect.logError("signup: unexpected failure", { error: e.message }),
           ),
           Effect.catchTag(
             ["InvalidSubjectSelection", "SubjectCapacityReached"],
@@ -62,9 +56,8 @@ export const SignupGroupLayer = HttpApiBuilder.group(
           Effect.catchTag("RateLimitExceeded", () =>
             Effect.fail(new SignupRateLimited({})),
           ),
-          Effect.catchTag(
-            UnexpectedErrorTags,
-            () => Effect.fail(new HttpApiError.InternalServerError({})),
+          Effect.catchTag(UnexpectedErrorTags, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
           ),
         ),
       );

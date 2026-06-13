@@ -1,10 +1,22 @@
-import { Config, Context, DateTime, Duration, Effect, Layer } from "effect";
+import {
+  Config,
+  Context,
+  DateTime,
+  Duration,
+  Effect,
+  Layer,
+  Option,
+} from "effect";
+import { HttpServerRequest } from "effect/unstable/http";
 
 import {
   RateLimitConfig,
   type RateLimitConfig as RateLimitConfigShape,
 } from "./config.js";
 import { RateLimitExceeded } from "./errors.js";
+
+export const getRateLimitKey = (request: HttpServerRequest.HttpServerRequest) =>
+  Option.getOrElse(request.remoteAddress, () => "unknown");
 
 export class RateLimiter extends Context.Service<
   RateLimiter,

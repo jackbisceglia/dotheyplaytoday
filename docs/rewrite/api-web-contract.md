@@ -9,7 +9,7 @@ Only change the internals of the rewrite API/web boundary when needed for the re
 When core public contracts change, update their consumers:
 
 - `packages/api-v2` implements the core Effect `HttpApi` contract.
-- `packages/web` consumes the core API contract through the generated/typesafe client.
+- `packages/web-v2` consumes the core API contract through the generated/typesafe client.
 
 Avoid API/web churn that does not change behavior or contract consumption.
 
