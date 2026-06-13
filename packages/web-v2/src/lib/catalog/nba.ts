@@ -330,10 +330,3 @@ export const nbaTeams = [
 
 export const getNbaLogo = (abbr: string) =>
   abbr in logos ? logos[abbr as keyof typeof logos] : fallback;
-
-export const getTeams = (subjects: readonly Subject[]) =>
-  subjects.toSorted((a, b) =>
-    `${a.details.location} ${a.details.name}`.localeCompare(
-      `${b.details.location} ${b.details.name}`,
-    ),
-  );
