@@ -1,0 +1,48 @@
+---
+import "../../styles/global.css";
+import { Result, Schema } from "effect";
+import { UnsubscribeToken } from "@dtpt/core-v2/modules/users/schema";
+import UnsubscribeForm from "../../components/UnsubscribeForm.astro";
+
+export const prerender = false;
+
+const decodeToken = Schema.decodeUnknownResult(UnsubscribeToken);
+
+const decoded = decodeToken(Astro.params.token);
+
+if (Result.isFailure(decoded)) {
+  return new Response(null, { status: 404 });
+}
+
+const token = decoded.success;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Unsubscribe · dotheyplaytoday</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="DOTHEYPLAYTODAY home">
+        DOTHEY<em>PLAY</em>TODAY
+      </a>
+    </header>
+
+    <main>
+      <section
+        class="unsubscribe"
+        aria-labelledby="unsubscribe-title"
+      >
+        <UnsubscribeForm token={token} />
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>DOTHEYPLAYTODAY</span>
+    </footer>
+  </body>
+</html>

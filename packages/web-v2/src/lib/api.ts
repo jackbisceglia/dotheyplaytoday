@@ -41,8 +41,13 @@ export type SignupInput = {
 
 export type SignupResult = { readonly ok: true };
 
+export type UnsubscribeInput = { readonly token: string };
+
+export type UnsubscribeResult = { readonly ok: true };
+
 const MOCK_LATENCY_MS = 350;
 const MOCK_FAILURE_EMAIL_MARKER = "+fail";
+const MOCK_FAILURE_TOKEN = "00000000-0000-0000-0000-000000000000";
 
 // TODO: import this from the core contract once signup constraints are public.
 export const SUBJECT_CAP = 2;
@@ -69,6 +74,15 @@ export const api = {
       await delay(MOCK_LATENCY_MS * 2);
       if (input.email.includes(MOCK_FAILURE_EMAIL_MARKER)) {
         throw new Error("mock signup failure");
+      }
+      return { ok: true };
+    },
+  },
+  unsubscribe: {
+    async submit(input: UnsubscribeInput): Promise<UnsubscribeResult> {
+      await delay(MOCK_LATENCY_MS * 2);
+      if (input.token === MOCK_FAILURE_TOKEN) {
+        throw new Error("mock unsubscribe failure");
       }
       return { ok: true };
     },

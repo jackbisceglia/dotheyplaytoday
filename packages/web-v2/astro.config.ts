@@ -1,8 +1,10 @@
 import { fileURLToPath } from "node:url";
 
+import node from "@astrojs/node";
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
+  adapter: node({ mode: "standalone" }),
   vite: {
     resolve: {
       alias: [

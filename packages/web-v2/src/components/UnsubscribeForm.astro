@@ -1,0 +1,44 @@
+---
+interface Props {
+  readonly token: string;
+}
+
+const { token } = Astro.props;
+---
+
+<div class="unsubscribe-root" data-unsubscribe-root data-token={token}>
+  <div class="unsubscribe-confirm" data-confirm>
+    <div class="unsubscribe-header">
+      <h1 class="unsubscribe-title" id="unsubscribe-title">
+        Stop game-day emails?
+      </h1>
+      <p class="unsubscribe-copy">
+        You'll stop receiving game-day emails for every team you picked. You
+        can sign up again later with the same email.
+      </p>
+    </div>
+
+    <div class="form-submit-row">
+      <button class="btn btn-primary" type="button" data-submit>
+        Unsubscribe
+      </button>
+      <a class="btn btn-secondary" href="/">Keep my picks</a>
+    </div>
+
+    <p class="form-error form-error-banner" role="alert" hidden data-error>
+      Something went wrong on our end. Try again.
+    </p>
+  </div>
+
+  <div class="signup-success" data-success hidden role="status">
+    <p class="signup-success-mark" aria-hidden="true">✓</p>
+    <h2 class="signup-success-title">You're unsubscribed</h2>
+    <p class="signup-success-copy">
+      You'll stop receiving game-day emails. Change your mind later? Sign up
+      again any time with the same email.
+    </p>
+    <a class="btn btn-secondary" href="/">Back to home</a>
+  </div>
+</div>
+
+<script src="../lib/unsubscribe/client.ts"></script>

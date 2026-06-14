@@ -490,6 +490,47 @@ select.form-input {
   line-height: 1.55;
 }
 
+/* Unsubscribe */
+
+.unsubscribe {
+  padding: 96px 0 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.unsubscribe-root {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.unsubscribe-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.unsubscribe-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.unsubscribe-title {
+  font-weight: 900;
+  font-stretch: 65%;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  text-transform: uppercase;
+}
+
+.unsubscribe-copy {
+  max-width: 56ch;
+  font-size: 1.1rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
 /* Footer */
 
 .site-footer {
