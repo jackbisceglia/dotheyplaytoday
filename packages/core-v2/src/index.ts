@@ -113,7 +113,10 @@ export {
   InvalidSubjectSelection,
   SubjectCapacityReached,
 } from "./modules/subscriptions/errors.js";
-export { SubscriptionPolicy } from "./modules/subscriptions/policy.js";
+export {
+  SubscriptionConstraints,
+  SubscriptionPolicy,
+} from "./modules/subscriptions/policy.js";
 export {
   FixedSchedule,
   Schedule,

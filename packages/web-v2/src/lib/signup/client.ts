@@ -1,7 +1,41 @@
-import { SUBJECT_CAP, api } from "../api.js";
+import type { SignupRequest as SignupRequestSchema } from "@dtpt/core-v2/contracts/signup";
+import { SubjectId } from "@dtpt/core-v2/modules/subjects/schema";
+import { SubscriptionConstraints } from "@dtpt/core-v2/modules/subscriptions/policy";
+import { EmailAddress } from "@dtpt/core-v2/modules/users/schema";
+import { Array, DateTime, Match, Predicate } from "effect";
+
+import { withApiClient } from "../api.js";
 import { defaultTimezone, detectTimezone, isValidSendTime } from "../time.js";
 
 const emailPattern = /^\S+@\S+\.\S+$/;
+const subjectCap = SubscriptionConstraints.subject.max;
+
+type SignupRequest = typeof SignupRequestSchema.Type;
+
+const isTagged = (error: unknown): error is { readonly _tag: string } =>
+  Predicate.hasProperty(error, "_tag") && typeof error._tag === "string";
+
+const getSignupErrorMessage = (error: unknown) => {
+  if (!isTagged(error)) {
+    return "Something went wrong on our end. Your picks are still here; try submitting again.";
+  }
+
+  return Match.value(error).pipe(
+    Match.tag(
+      "BadRequest",
+      "SchemaError",
+      () =>
+        "That signup did not pass validation. Check your fields and team picks, then try again.",
+    ),
+    Match.tag("SignupRateLimited", () =>
+      "Too many signup attempts. Give it a minute, then try again.",
+    ),
+    Match.orElse(
+      () =>
+        "Something went wrong on our end. Your picks are still here; try submitting again.",
+    ),
+  );
+};
 
 const root = document.querySelector("[data-signup-root]");
 
@@ -68,17 +102,20 @@ if (root instanceof HTMLElement) {
     };
 
     const syncTeamMessage = () => {
-      if (selected.size === SUBJECT_CAP) {
+      if (selected.size === subjectCap) {
         setTeamMessage({
           kind: "hint",
-          text: `Free tier users can subscribe to ${String(SUBJECT_CAP)} teams.`,
+          text: `Free tier users can subscribe to ${String(subjectCap)} teams.`,
         });
         return;
       }
       setTeamMessage(undefined);
     };
 
-    const setSubmitting = (isSubmitting: boolean) => {
+    let isSubmitting = false;
+
+    const setSubmitting = (nextSubmitting: boolean) => {
+      isSubmitting = nextSubmitting;
       submit.disabled = isSubmitting;
       submit.textContent = isSubmitting ? "Signing up..." : "Sign up";
     };
@@ -141,10 +178,10 @@ if (root instanceof HTMLElement) {
         const teamId = button.dataset.teamId;
         if (teamId === undefined) return;
 
-        if (!selected.has(teamId) && selected.size >= SUBJECT_CAP) {
+        if (!selected.has(teamId) && selected.size >= subjectCap) {
           setTeamMessage({
             kind: "hint",
-            text: `Free tier users can subscribe to ${String(SUBJECT_CAP)} teams.`,
+            text: `Free tier users can subscribe to ${String(subjectCap)} teams.`,
           });
           return;
         }
@@ -176,27 +213,41 @@ if (root instanceof HTMLElement) {
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
+      if (isSubmitting) return;
+
       setHidden(formError, true);
       setError("timezone", undefined);
 
       if (!validate()) return;
 
+      const subjectIds = [...selected].map((id) =>
+        SubjectId.make(id),
+      );
+
+      if (!Array.isArrayNonEmpty(subjectIds)) return;
+
       setSubmitting(true);
-      void api.signup
-        .submit({
-          email: email.value.trim().toLowerCase(),
-          timezone,
-          schedule: {
-            _tag: "fixed_local_time",
-            sendAtSecondsLocal: Number(sendTime.value),
-          },
-          subjectIds: [...selected],
-        })
+      const payload = {
+        email: EmailAddress.make(email.value.trim().toLowerCase()),
+        timezone: DateTime.zoneMakeNamedUnsafe(timezone),
+        schedule: {
+          _tag: "fixed_local_time",
+          sendAtSecondsLocal: Number(sendTime.value),
+        },
+        subjectIds,
+      } satisfies SignupRequest;
+
+      void withApiClient((client) =>
+        client.signup.submit({
+          payload,
+        }),
+      )
         .then(() => {
           setHidden(form, true);
           setHidden(success, false);
         })
-        .catch(() => {
+        .catch((error: unknown) => {
+          formError.textContent = getSignupErrorMessage(error);
           setHidden(formError, false);
         })
         .finally(() => {

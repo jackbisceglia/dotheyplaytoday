@@ -1,6 +1,5 @@
+import { SubjectId, type Subject } from "@dtpt/core-v2/modules/subjects/schema";
 import { SportTeamSubject } from "@dtpt/core-v2/modules/subjects/variants/sport.schema";
-
-import type { Subject } from "../api.js";
 
 const fallback = "🏈";
 
@@ -43,7 +42,9 @@ const makeNflTeam = (
   serial: number,
   input: Omit<Parameters<typeof SportTeamSubject.make>[0], "leagueId">,
 ): Subject => {
-  const id: Subject["id"] = `00000000-0000-4000-8000-${String(serial + 200).padStart(12, "0")}`;
+  const id = SubjectId.make(
+    `00000000-0000-4000-8000-${String(serial + 200).padStart(12, "0")}`,
+  );
   const details = SportTeamSubject.make({ ...input, leagueId: "nfl" });
 
   return {

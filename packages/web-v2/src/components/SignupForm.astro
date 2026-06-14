@@ -1,14 +1,13 @@
 ---
-import { getSignupFormData } from "../lib/api.js";
 import {
   getSportsLogo,
   getTeams,
   leagues as sportsLeagues,
+  sportsTeamSubjects,
 } from "../lib/catalog/sports.js";
 import { sendTime, sendTimeIntervals } from "../lib/time.js";
 
-const signupFormData = getSignupFormData();
-const teams = getTeams(signupFormData.subjects.sports_team);
+const teams = getTeams(sportsTeamSubjects);
 const leagues = sportsLeagues.map((league) => ({
   ...league,
   teams: teams.filter((team) => team.details.leagueId === league.id),

@@ -20,7 +20,7 @@ describe("v2 url config", () => {
     );
   });
 
-  it.effect("derives localhost api and web urls from required ports", () =>
+  it.effect("derives localhost api and web urls from required Vite ports", () =>
     Effect.gen(function* () {
       const apiUrl = yield* ApiUrl;
       const webUrl = yield* WebUrl;
@@ -32,7 +32,7 @@ describe("v2 url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              API_PORT: "3001",
+              VITE_API_PORT: "3001",
               WEB_PORT: "3000",
             },
           }),

@@ -1,8 +1,12 @@
 import { Match } from "effect";
 
-import type { SportsTeamDetails, Subject } from "../api.js";
+import type { ExtractFromTag } from "@dtpt/core-v2/lib/types";
+import type { Subject } from "@dtpt/core-v2/modules/subjects/schema";
+
 import { getNbaLogo, nbaTeams } from "./nba.js";
 import { getNflLogo, nflTeams } from "./nfl.js";
+
+type SportsTeamDetails = ExtractFromTag<Subject["details"], "sports_team">;
 
 type League = {
   readonly id: SportsTeamDetails["leagueId"];
