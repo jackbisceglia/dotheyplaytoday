@@ -20,7 +20,7 @@ describe("v2 url config", () => {
     );
   });
 
-  it.effect("derives localhost api and web urls from required ports", () =>
+  it.effect("derives localhost api and web urls from VITE ports", () =>
     Effect.gen(function* () {
       const apiUrl = yield* ApiUrl;
       const webUrl = yield* WebUrl;
@@ -32,8 +32,8 @@ describe("v2 url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              API_PORT: "3001",
-              WEB_PORT: "3000",
+              VITE_API_PORT: "3001",
+              VITE_WEB_PORT: "3000",
             },
           }),
         ),
@@ -62,7 +62,7 @@ describe("v2 url config", () => {
     ),
   );
 
-  it.effect("requires api and web ports when url overrides are absent", () =>
+  it.effect("requires VITE api and web ports when url overrides are absent", () =>
     Effect.gen(function* () {
       const apiExit = yield* ApiUrl.pipe(Effect.exit);
       const webExit = yield* WebUrl.pipe(Effect.exit);
@@ -80,7 +80,28 @@ describe("v2 url config", () => {
     ),
   );
 
-  it.effect("binds the server with API_PORT", () =>
+  it.effect("ignores legacy unprefixed ports", () =>
+    Effect.gen(function* () {
+      const apiExit = yield* ApiUrl.pipe(Effect.exit);
+      const webExit = yield* WebUrl.pipe(Effect.exit);
+
+      expect(apiExit._tag).toBe("Failure");
+      expect(webExit._tag).toBe("Failure");
+    }).pipe(
+      Effect.provide(
+        ConfigProvider.layer(
+          ConfigProvider.fromEnv({
+            env: {
+              API_PORT: "3001",
+              WEB_PORT: "3000",
+            },
+          }),
+        ),
+      ),
+    ),
+  );
+
+  it.effect("binds the server with VITE_API_PORT", () =>
     Effect.gen(function* () {
       const configuredPort = yield* ServerBoundPort;
 
@@ -88,8 +109,20 @@ describe("v2 url config", () => {
     }).pipe(
       Effect.provide(
         ConfigProvider.layer(
-          ConfigProvider.fromEnv({ env: { API_PORT: "4001" } }),
+          ConfigProvider.fromEnv({ env: { VITE_API_PORT: "4001" } }),
         ),
+      ),
+    ),
+  );
+
+  it.effect("defaults the server bind port when VITE_API_PORT is absent", () =>
+    Effect.gen(function* () {
+      const configuredPort = yield* ServerBoundPort;
+
+      expect(configuredPort).toBe(8080);
+    }).pipe(
+      Effect.provide(
+        ConfigProvider.layer(ConfigProvider.fromEnv({ env: {} })),
       ),
     ),
   );
