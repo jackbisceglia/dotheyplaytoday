@@ -14,6 +14,7 @@ export const WebUrl = Effect.gen(function* () {
   return buildServiceUrl(config.baseUrl, config.port);
 }).pipe(
   Effect.catchTags({
-    ConfigError: () => Effect.die("Unknown web configuration error occurred"),
+    ConfigError: (error) =>
+      Effect.die(`Web configuration error: ${error.message}`),
   }),
 );

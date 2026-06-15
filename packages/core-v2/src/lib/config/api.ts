@@ -14,7 +14,8 @@ export const ApiUrl = Effect.gen(function* () {
   return buildServiceUrl(config.baseUrl, config.port);
 }).pipe(
   Effect.catchTags({
-    ConfigError: () => Effect.die("Unknown API configuration error occurred"),
+    ConfigError: (error) =>
+      Effect.die(`API configuration error: ${error.message}`),
   }),
 );
 
