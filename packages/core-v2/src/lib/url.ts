@@ -1,17 +1,10 @@
-import { Match, Option } from "effect";
-
-const toLocalHost = (port: number) => `http://localhost:${port.toString()}`;
+import { Option } from "effect";
 
 export const buildServiceUrl = (
-  url: Option.Option<string>,
+  baseUrl: string,
   port: Option.Option<number>,
 ) =>
-  Match.value({ url, port }).pipe(
-    Match.when({ url: Option.isSome }, function (config) {
-      return config.url;
-    }),
-    Match.when({ port: Option.isSome }, function (config) {
-      return Option.map(config.port, toLocalHost);
-    }),
-    Match.orElse(() => Option.none()),
-  );
+  Option.match(port, {
+    onNone: () => baseUrl,
+    onSome: (value) => `${baseUrl}:${value.toString()}`,
+  });

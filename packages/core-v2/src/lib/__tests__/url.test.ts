@@ -6,42 +6,42 @@ import { WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
 
 describe("v2 url config", () => {
-  it("builds service urls from explicit urls or localhost ports", () => {
-    expect(
-      buildServiceUrl(Option.some("https://example.com"), Option.some(3000)),
-    ).toEqual(Option.some("https://example.com"));
-
-    expect(buildServiceUrl(Option.none(), Option.some(3000))).toEqual(
-      Option.some("http://localhost:3000"),
+  it("builds service urls from base urls and optional ports", () => {
+    expect(buildServiceUrl("https://example.com", Option.none())).toBe(
+      "https://example.com",
     );
 
-    expect(buildServiceUrl(Option.none(), Option.none())).toEqual(
-      Option.none(),
+    expect(buildServiceUrl("http://localhost", Option.some(3000))).toBe(
+      "http://localhost:3000",
     );
   });
 
-  it.effect("derives localhost api and web urls from VITE ports", () =>
-    Effect.gen(function* () {
-      const apiUrl = yield* ApiUrl;
-      const webUrl = yield* WebUrl;
+  it.effect(
+    "builds localhost api and web urls from VITE URL bases and ports",
+    () =>
+      Effect.gen(function* () {
+        const apiUrl = yield* ApiUrl;
+        const webUrl = yield* WebUrl;
 
-      expect(apiUrl).toBe("http://localhost:3001");
-      expect(webUrl).toBe("http://localhost:3000");
-    }).pipe(
-      Effect.provide(
-        ConfigProvider.layer(
-          ConfigProvider.fromEnv({
-            env: {
-              VITE_API_PORT: "3001",
-              VITE_WEB_PORT: "3000",
-            },
-          }),
+        expect(apiUrl).toBe("http://localhost:3001");
+        expect(webUrl).toBe("http://localhost:3000");
+      }).pipe(
+        Effect.provide(
+          ConfigProvider.layer(
+            ConfigProvider.fromEnv({
+              env: {
+                VITE_API_URL_BASE: "http://localhost",
+                VITE_API_URL_PORT: "3001",
+                VITE_WEB_URL_BASE: "http://localhost",
+                VITE_WEB_URL_PORT: "3000",
+              },
+            }),
+          ),
         ),
       ),
-    ),
   );
 
-  it.effect("uses public url overrides without ports", () =>
+  it.effect("uses public url bases without ports", () =>
     Effect.gen(function* () {
       const apiUrl = yield* ApiUrl;
       const webUrl = yield* WebUrl;
@@ -53,8 +53,8 @@ describe("v2 url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              VITE_API_URL: "https://api.example.com",
-              VITE_WEB_URL: "https://example.com",
+              VITE_API_URL_BASE: "https://api.example.com",
+              VITE_WEB_URL_BASE: "https://example.com",
             },
           }),
         ),
@@ -62,7 +62,7 @@ describe("v2 url config", () => {
     ),
   );
 
-  it.effect("requires VITE api and web ports when url overrides are absent", () =>
+  it.effect("requires api and web URL bases", () =>
     Effect.gen(function* () {
       const apiExit = yield* ApiUrl.pipe(Effect.exit);
       const webExit = yield* WebUrl.pipe(Effect.exit);
@@ -73,14 +73,17 @@ describe("v2 url config", () => {
       Effect.provide(
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
-            env: {},
+            env: {
+              VITE_API_URL_PORT: "3001",
+              VITE_WEB_URL_PORT: "3000",
+            },
           }),
         ),
       ),
     ),
   );
 
-  it.effect("ignores legacy unprefixed ports", () =>
+  it.effect("ignores legacy URL and port names", () =>
     Effect.gen(function* () {
       const apiExit = yield* ApiUrl.pipe(Effect.exit);
       const webExit = yield* WebUrl.pipe(Effect.exit);
@@ -94,6 +97,8 @@ describe("v2 url config", () => {
             env: {
               API_PORT: "3001",
               WEB_PORT: "3000",
+              VITE_API_URL: "https://api.example.com",
+              VITE_WEB_URL: "https://example.com",
             },
           }),
         ),
@@ -101,7 +106,7 @@ describe("v2 url config", () => {
     ),
   );
 
-  it.effect("binds the server with VITE_API_PORT", () =>
+  it.effect("binds the server with VITE_API_URL_PORT", () =>
     Effect.gen(function* () {
       const configuredPort = yield* ServerBoundPort;
 
@@ -109,21 +114,34 @@ describe("v2 url config", () => {
     }).pipe(
       Effect.provide(
         ConfigProvider.layer(
-          ConfigProvider.fromEnv({ env: { VITE_API_PORT: "4001" } }),
+          ConfigProvider.fromEnv({
+            env: {
+              VITE_API_URL_BASE: "http://localhost",
+              VITE_API_URL_PORT: "4001",
+            },
+          }),
         ),
       ),
     ),
   );
 
-  it.effect("defaults the server bind port when VITE_API_PORT is absent", () =>
-    Effect.gen(function* () {
-      const configuredPort = yield* ServerBoundPort;
+  it.effect(
+    "defaults the server bind port when VITE_API_URL_PORT is absent",
+    () =>
+      Effect.gen(function* () {
+        const configuredPort = yield* ServerBoundPort;
 
-      expect(configuredPort).toBe(8080);
-    }).pipe(
-      Effect.provide(
-        ConfigProvider.layer(ConfigProvider.fromEnv({ env: {} })),
+        expect(configuredPort).toBe(8080);
+      }).pipe(
+        Effect.provide(
+          ConfigProvider.layer(
+            ConfigProvider.fromEnv({
+              env: {
+                VITE_API_URL_BASE: "https://api.example.com",
+              },
+            }),
+          ),
+        ),
       ),
-    ),
   );
 });
