@@ -1,12 +1,12 @@
+import type { SportTeamSubject, Subject } from "@dtpt/core-v2";
 import { Match } from "effect";
 
-import type { SportsTeamDetails, Subject } from "../api.js";
 import { getNbaLogo, nbaTeams } from "./nba.js";
 import { getNflLogo, nflTeams } from "./nfl.js";
 import { getWorldCupLogo, worldCupTeams } from "./world-cup.js";
 
 type League = {
-  readonly id: SportsTeamDetails["leagueId"];
+  readonly id: SportTeamSubject["leagueId"];
   readonly label: string;
 };
 
@@ -22,7 +22,7 @@ export const sportsTeamSubjects = [
   ...worldCupTeams,
 ] satisfies readonly Subject[];
 
-export const getSportsLogo = (details: SportsTeamDetails) =>
+export const getSportsLogo = (details: SportTeamSubject) =>
   Match.value(details.leagueId).pipe(
     Match.when("nba", () => getNbaLogo(details.abbreviation)),
     Match.when("nfl", () => getNflLogo(details.abbreviation)),

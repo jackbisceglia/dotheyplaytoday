@@ -104,6 +104,7 @@ export {
   SubjectInsert,
   subjectsTable,
 } from "./modules/subjects/schema.js";
+export { SportTeamSubject } from "./modules/subjects/variants/sport.schema.js";
 export {
   SubjectNotFound,
   Subjects,
