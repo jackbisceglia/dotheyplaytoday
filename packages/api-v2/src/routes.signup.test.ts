@@ -211,6 +211,7 @@ function makeSubjectInput(input: {
     details: {
       _tag: "sports_team",
       leagueId: "nba",
+      display: input.name,
       location: input.name,
       name: input.name,
       abbreviation: input.abbreviation,
