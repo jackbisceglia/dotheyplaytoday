@@ -44,6 +44,7 @@ const subjectInput = {
     leagueId: "nba",
     location: "Boston",
     name: "Celtics",
+    display: "Boston Celtics",
     abbreviation: "BOS",
     slug: "boston-celtics",
   },
@@ -57,6 +58,7 @@ const secondSubjectInput = {
     leagueId: "nba",
     location: "Los Angeles",
     name: "Lakers",
+    display: "Los Angeles Lakers",
     abbreviation: "LAL",
     slug: "los-angeles-lakers",
   },
@@ -110,6 +112,7 @@ describe("v2 Subjects service", () => {
           details: {
             ...subjectInput.details,
             name: "Updated Celtics",
+            display: "Boston Updated Celtics",
           },
         }),
       );

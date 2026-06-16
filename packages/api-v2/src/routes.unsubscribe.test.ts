@@ -49,6 +49,7 @@ const subjectInput = {
     leagueId: "nba",
     location: "Boston Celtics",
     name: "Boston Celtics",
+    display: "Boston Celtics Boston Celtics",
     abbreviation: "BOS",
     slug: "boston-celtics",
   },

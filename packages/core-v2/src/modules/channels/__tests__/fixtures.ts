@@ -30,6 +30,7 @@ export const notification = decode(Notification)({
       leagueId: "nba",
       location: "Boston",
       name: "Celtics",
+      display: "Boston Celtics",
       abbreviation: "BOS",
       slug: "boston-celtics",
     },

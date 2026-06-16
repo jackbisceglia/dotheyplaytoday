@@ -103,6 +103,7 @@ V1 subject details:
 {
   "_tag": "sports_team",
   "leagueId": "nba",
+  "display": "Boston Celtics",
   "location": "Boston",
   "name": "Celtics",
   "abbreviation": "BOS",
@@ -406,7 +407,7 @@ Rules:
 
 ## Import Contract
 
-V1 seed data includes NBA and NFL team subjects and sports game events. League identity is stored as `leagueId` in sports subject and event details. V1 does not add a separate top-level league entity; add a league table/FK only when the product needs richer league data.
+V1 seed data includes NBA, NFL, and World Cup team subjects and sports game events. League identity is stored as `leagueId` in sports subject and event details. V1 does not add a separate top-level league entity; add a league table/FK only when the product needs richer league data.
 
 Sports team seed records include stable checked-in UUID subject ids. Subject import/upsert uses those ids rather than deriving ids from mutable names, abbreviations, or slugs.
 
@@ -417,7 +418,8 @@ Seed data uses a relational JSON shape:
 ```ts
 type SportTeamSeed = {
   readonly id: SubjectId;
-  readonly leagueId: "nba" | "nfl";
+  readonly leagueId: "nba" | "nfl" | "world-cup";
+  readonly display: string;
   readonly location: string;
   readonly name: string;
   readonly abbreviation: string;
@@ -426,7 +428,7 @@ type SportTeamSeed = {
 
 type SportGameSeed = {
   readonly sourceId: EventSourceId;
-  readonly leagueId: "nba" | "nfl";
+  readonly leagueId: "nba" | "nfl" | "world-cup";
   readonly startsAt: DateTimeUtc;
   readonly availability: EventAvailability;
   readonly homeSubjectId: SubjectId;

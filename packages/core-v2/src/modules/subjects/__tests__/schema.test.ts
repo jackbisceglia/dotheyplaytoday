@@ -21,6 +21,7 @@ const subjectInput = {
     leagueId: "nba",
     location: "Boston",
     name: "Celtics",
+    display: "Boston Celtics",
     abbreviation: "BOS",
     slug: "boston-celtics",
   },
@@ -28,7 +29,7 @@ const subjectInput = {
 
 describe("v2 Subject model", () => {
   it("lists supported league ids", () => {
-    expect(SportLeagueIds).toEqual(["nba", "nfl"]);
+    expect(SportLeagueIds).toEqual(["nba", "nfl", "world-cup"]);
   });
 
   it("rejects malformed subject-owned fields and details", () => {
