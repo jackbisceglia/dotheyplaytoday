@@ -233,7 +233,7 @@ if (root instanceof HTMLElement) {
       void withApiClient((client) =>
         client.signup.submit({
           payload: {
-            email: EmailAddressFromString.make(email.value),
+            email: EmailAddressFromString.make(email.value.trim()),
             timezone: timezoneValue,
             schedule: {
               _tag: "fixed_local_time",
