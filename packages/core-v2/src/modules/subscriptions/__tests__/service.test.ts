@@ -61,6 +61,7 @@ const makeSubjectInput = (input: {
     leagueId: "nba",
     location: input.name,
     name: input.name,
+    display: input.name,
     abbreviation: input.abbreviation,
     slug: input.name.toLowerCase().replaceAll(" ", "-"),
   },

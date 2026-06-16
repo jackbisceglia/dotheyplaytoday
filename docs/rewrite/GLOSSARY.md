@@ -175,7 +175,7 @@ _Avoid_: Direct `process.env` reads in services
 - An **Event** has one **Event Availability**.
 - A **Local Day UTC Range** is derived from a user's timezone before querying events.
 - A **Team Subject** is a kind of **Subject**.
-- V1 seed data includes NBA and NFL team subjects and sports game events.
+- V1 seed data includes NBA, NFL, and World Cup team subjects and sports game events.
 - V1 stores league identity as `leagueId` in sports details; add a separate league table/FK only when the product needs richer league data.
 - Sports team seed records include stable checked-in UUID subject ids; subject import/upsert uses those ids rather than deriving ids from mutable names or slugs.
 - Keep each league's team and game data in its own registered seed collection because teams are catalog/reference data and games are schedule/import data.
@@ -233,6 +233,7 @@ type Subject = {
 type SubjectDetails = {
   readonly _tag: "sports_team";
   readonly leagueId: LeagueId;
+  readonly display: string;
   readonly location: string;
   readonly name: string;
   readonly abbreviation: string;

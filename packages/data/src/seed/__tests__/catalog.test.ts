@@ -24,6 +24,7 @@ import { DateTime, Effect, Layer, Schema } from "effect";
 import { SportsSeed } from "../../schema/sports.js";
 import { nbaCollection } from "../../sports/nba/index.js";
 import { nflCollection } from "../../sports/nfl/index.js";
+import { worldCupCollection } from "../../sports/world-cup/index.js";
 import {
   decodeSportsSeedCollections,
   SeedDuplicateEventSourceIdError,
@@ -81,6 +82,7 @@ const collection = {
         leagueId: "nba",
         location: "Boston",
         name: "Celtics",
+        display: "Boston Celtics",
         abbreviation: "BOS",
         slug: "boston-celtics",
       },
@@ -94,6 +96,7 @@ const collection = {
         leagueId: "nba",
         location: "New York",
         name: "Knicks",
+        display: "New York Knicks",
         abbreviation: "NYK",
         slug: "new-york-knicks",
       },
@@ -207,6 +210,38 @@ describe("data seed catalog", () => {
     expect(
       nflCollection.subjects.every((subject) => subject.feedIds.length === 17),
     ).toBe(true);
+  });
+
+  it("registers World Cup group stage seed data explicitly", () => {
+    expect(worldCupCollection.id).toBe("sports.world-cup");
+    expect(worldCupCollection.subjects).toHaveLength(48);
+    expect(worldCupCollection.events).toHaveLength(72);
+
+    const eventSourceIds = new Set(
+      worldCupCollection.events.map((event) => event.sourceId),
+    );
+    const feedIds = worldCupCollection.subjects.flatMap(
+      (subject) => subject.feedIds,
+    );
+    const unitedStates = worldCupCollection.subjects.find(
+      (subject) => subject.details.slug === "united-states",
+    );
+
+    expect(feedIds).toHaveLength(144);
+    expect(eventSourceIds.size).toBe(72);
+    expect(feedIds.every((sourceId) => eventSourceIds.has(sourceId))).toBe(
+      true,
+    );
+    expect(
+      worldCupCollection.subjects.every(
+        (subject) => subject.feedIds.length === 3,
+      ),
+    ).toBe(true);
+    expect(unitedStates?.feedIds).toEqual([
+      "sports_game:seed:00000000-0000-4000-8000-000000000919",
+      "sports_game:seed:00000000-0000-4000-8000-000000000921",
+      "sports_game:seed:00000000-0000-4000-8000-000000000923",
+    ]);
   });
 
   it.effect(
