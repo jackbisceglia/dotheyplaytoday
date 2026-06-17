@@ -1,0 +1,131 @@
+---
+import { UnsubscribeToken } from "@dtpt/core-v2/modules/users/schema";
+import { Schema } from "effect";
+
+import "../../styles/global.css";
+
+export const prerender = false;
+
+const decodeToken = Schema.decodeUnknownSync(UnsubscribeToken);
+const tokenParam = Astro.params.token;
+let token: UnsubscribeToken | undefined;
+
+if (tokenParam !== undefined) {
+  try {
+    token = decodeToken(tokenParam);
+  } catch {
+    token = undefined;
+  }
+}
+
+const isTokenShapeValid = token !== undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Confirm that you want to stop dotheyplaytoday emails."
+    />
+    <title>Unsubscribe | dotheyplaytoday</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="DOTHEYPLAYTODAY home">
+        DOTHEY<em>PLAY</em>TODAY
+      </a>
+      <nav aria-label="Primary">
+        <a class="header-cta" href="/">Home</a>
+      </nav>
+    </header>
+
+    <main>
+      <section
+        class="unsubscribe"
+        aria-labelledby={isTokenShapeValid
+          ? "unsubscribe-title"
+          : "unsubscribe-invalid-title"}
+        data-unsubscribe-root
+        data-token={isTokenShapeValid ? token : undefined}
+      >
+        {
+          isTokenShapeValid ? (
+            <>
+              <div class="unsubscribe-panel" data-confirm-panel>
+                <p class="unsubscribe-eyebrow">Email preferences</p>
+                <h1 class="unsubscribe-title" id="unsubscribe-title">
+                  Stop dotheyplaytoday emails
+                </h1>
+                <p class="unsubscribe-copy">
+                  Confirming will stop all dotheyplaytoday emails for this
+                  address. You can sign up again later with fresh team picks.
+                </p>
+
+                <form class="unsubscribe-actions" data-form>
+                  <button class="btn btn-primary" type="submit" data-submit>
+                    Stop emails
+                  </button>
+                  <a class="btn btn-secondary" href="/">
+                    Keep emails
+                  </a>
+                </form>
+
+                <p
+                  class="form-error form-error-banner"
+                  data-form-error
+                  role="alert"
+                  hidden
+                >
+                  We couldn't finish that request. Wait a moment and try again.
+                </p>
+              </div>
+
+              <div
+                class="unsubscribe-panel unsubscribe-success"
+                data-success
+                role="status"
+                hidden
+              >
+                <p class="signup-success-mark" aria-hidden="true">
+                  ✓
+                </p>
+                <h1 class="unsubscribe-title">You're unsubscribed</h1>
+                <p class="unsubscribe-copy">
+                  We processed this unsubscribe request. If this link had
+                  already been used, no additional action was needed.
+                </p>
+                <a class="btn btn-secondary" href="/">
+                  Back home
+                </a>
+              </div>
+            </>
+          ) : (
+            <div class="unsubscribe-panel" role="status">
+              <p class="unsubscribe-eyebrow">Email preferences</p>
+              <h1 class="unsubscribe-title" id="unsubscribe-invalid-title">
+                This link cannot be used
+              </h1>
+              <p class="unsubscribe-copy">
+                This unsubscribe link is invalid or expired. Use the unsubscribe
+                link from a dotheyplaytoday email if you need to stop future
+                messages.
+              </p>
+              <a class="btn btn-secondary" href="/">
+                Back home
+              </a>
+            </div>
+          )
+        }
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>DOTHEYPLAYTODAY</span>
+    </footer>
+
+    <script src="../../lib/unsubscribe/client.ts"></script>
+  </body>
+</html>

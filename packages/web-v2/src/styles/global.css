@@ -494,6 +494,63 @@ select.form-input {
   line-height: 1.55;
 }
 
+/* Unsubscribe */
+
+.unsubscribe {
+  min-height: 58vh;
+  display: flex;
+  align-items: center;
+  padding: 96px 0;
+}
+
+.unsubscribe-panel {
+  width: min(100%, 640px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 36px;
+  border: 3px solid var(--ink);
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.unsubscribe-success {
+  background: var(--kelly-wash);
+  box-shadow: 6px 6px 0 var(--kelly);
+}
+
+.unsubscribe-eyebrow {
+  font-weight: 900;
+  font-stretch: 70%;
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--kelly-deep);
+}
+
+.unsubscribe-title {
+  font-weight: 900;
+  font-stretch: 65%;
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
+  line-height: 0.96;
+  text-transform: uppercase;
+}
+
+.unsubscribe-copy {
+  max-width: 58ch;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.55;
+}
+
+.unsubscribe-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 /* Footer */
 
 .site-footer {
