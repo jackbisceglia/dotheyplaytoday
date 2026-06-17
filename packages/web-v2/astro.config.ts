@@ -4,6 +4,7 @@ import { defineConfig } from "astro/config";
 
 export default defineConfig({
   vite: {
+    envDir: "../../",
     resolve: {
       alias: [
         {

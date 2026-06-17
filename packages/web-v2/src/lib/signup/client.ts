@@ -1,9 +1,35 @@
-import { SUBJECT_CAP, api } from "../api.js";
+import { Subject } from "@dtpt/core-v2/modules/subjects/schema";
+import { SubscriptionPolicy } from "@dtpt/core-v2/modules/subscriptions/policy";
+import { EmailAddressFromString } from "@dtpt/core-v2/modules/users/schema";
+import { DateTime, Match, Option } from "effect";
+
+import { withApiClient } from "../api.js";
 import { defaultTimezone, detectTimezone, isValidSendTime } from "../time.js";
 
 const emailPattern = /^\S+@\S+\.\S+$/;
+const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
+
+const getSubmitErrorMessage = (error: unknown) =>
+  Match.value(error).pipe(
+    Match.when(
+      { _tag: "BadRequest" },
+      () => "Check your email, timezone, send time, and teams, then try again.",
+    ),
+    Match.when(
+      { _tag: "SignupRateLimited" },
+      () => "Too many signup attempts. Wait a minute and try again.",
+    ),
+    Match.orElse(
+      () =>
+        "Something went wrong on our end. Your picks are still here; try submitting again.",
+    ),
+  );
 
 const root = document.querySelector("[data-signup-root]");
+
+const hasSelectedSubjects = <SubjectId>(
+  subjectIds: readonly SubjectId[],
+): subjectIds is readonly [SubjectId, ...SubjectId[]] => subjectIds.length > 0;
 
 const setHidden = (element: HTMLElement, isHidden: boolean) => {
   element.hidden = isHidden;
@@ -51,6 +77,13 @@ if (root instanceof HTMLElement) {
       setHidden(element, message === undefined);
     };
 
+    const setFormError = (message: string | undefined) => {
+      if (message !== undefined) {
+        formError.textContent = message;
+      }
+      setHidden(formError, message === undefined);
+    };
+
     const setTeamMessage = (
       message:
         | { readonly kind: "error"; readonly text: string }
@@ -68,10 +101,10 @@ if (root instanceof HTMLElement) {
     };
 
     const syncTeamMessage = () => {
-      if (selected.size === SUBJECT_CAP) {
+      if (selected.size === subjectCapacity) {
         setTeamMessage({
           kind: "hint",
-          text: `Free tier users can subscribe to ${String(SUBJECT_CAP)} teams.`,
+          text: `Free tier users can subscribe to ${subjectCapacity.toString()} teams.`,
         });
         return;
       }
@@ -141,10 +174,10 @@ if (root instanceof HTMLElement) {
         const teamId = button.dataset.teamId;
         if (teamId === undefined) return;
 
-        if (!selected.has(teamId) && selected.size >= SUBJECT_CAP) {
+        if (!selected.has(teamId) && selected.size >= subjectCapacity) {
           setTeamMessage({
             kind: "hint",
-            text: `Free tier users can subscribe to ${String(SUBJECT_CAP)} teams.`,
+            text: `Free tier users can subscribe to ${subjectCapacity.toString()} teams.`,
           });
           return;
         }
@@ -176,28 +209,44 @@ if (root instanceof HTMLElement) {
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      setHidden(formError, true);
+      setFormError(undefined);
       setError("timezone", undefined);
 
       if (!validate()) return;
 
+      const subjectIds = [...selected].map((subjectId) =>
+        Subject.fields.id.make(subjectId),
+      );
+      if (!hasSelectedSubjects(subjectIds)) return;
+
+      const timezoneValue = Option.getOrUndefined(
+        DateTime.zoneMakeNamed(timezone),
+      );
+      if (timezoneValue === undefined) {
+        setError("timezone", "Choose a valid timezone.");
+        return;
+      }
+
       setSubmitting(true);
-      void api.signup
-        .submit({
-          email: email.value.trim().toLowerCase(),
-          timezone,
-          schedule: {
-            _tag: "fixed_local_time",
-            sendAtSecondsLocal: Number(sendTime.value),
+      void withApiClient((client) =>
+        client.signup.submit({
+          payload: {
+            email: EmailAddressFromString.make(email.value.trim()),
+            timezone: timezoneValue,
+            schedule: {
+              _tag: "fixed_local_time",
+              sendAtSecondsLocal: Number(sendTime.value),
+            },
+            subjectIds,
           },
-          subjectIds: [...selected],
-        })
+        }),
+      )
         .then(() => {
           setHidden(form, true);
           setHidden(success, false);
         })
-        .catch(() => {
-          setHidden(formError, false);
+        .catch((error: unknown) => {
+          setFormError(getSubmitErrorMessage(error));
         })
         .finally(() => {
           setSubmitting(false);

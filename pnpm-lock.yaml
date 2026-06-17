@@ -25,6 +25,11 @@ catalogs:
       specifier: ^6.9.1
       version: 6.9.1
 
+patchedDependencies:
+  drizzle-orm@1.0.0-rc.3:
+    hash: 9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7
+    path: patches/drizzle-orm@1.0.0-rc.3.patch
+
 importers:
 
   .:
@@ -154,7 +159,7 @@ importers:
         version: 12.8.0
       drizzle-orm:
         specifier: 1.0.0-rc.3
-        version: 1.0.0-rc.3(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.65)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3)
+        version: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.65)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3)
       effect:
         specifier: 4.0.0-beta.65
         version: 4.0.0-beta.65
@@ -7276,7 +7281,7 @@ snapshots:
       bun-types: 1.3.5
       zod: 4.4.3
 
-  drizzle-orm@1.0.0-rc.3(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.65)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3):
+  drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.65)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3):
     optionalDependencies:
       '@types/mssql': 9.1.9(@azure/core-client@1.10.1)
       better-sqlite3: 12.8.0

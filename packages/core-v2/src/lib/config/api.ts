@@ -4,8 +4,8 @@ import { buildServiceUrl } from "../url.js";
 
 export type ApiConfig = Config.Success<typeof ApiConfig>;
 export const ApiConfig = Config.all({
-  baseUrl: Config.string("VITE_API_URL_BASE"),
-  port: Config.port("VITE_API_URL_PORT").pipe(Config.option),
+  baseUrl: Config.string("PUBLIC_API_URL_BASE"),
+  port: Config.port("PUBLIC_API_URL_PORT").pipe(Config.option),
 });
 
 export const ApiUrl = Effect.gen(function* () {
