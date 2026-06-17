@@ -7,6 +7,7 @@
     "dev:web": "pnpm @web dev",
     "dev:web-v2": "pnpm @web-v2 dev",
     "dev:api": "pnpm @api dev",
+    "initialize": "pnpm build && node packages/data/dist/seed/cli.js dev",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
     "lint": "pnpm -r run lint",

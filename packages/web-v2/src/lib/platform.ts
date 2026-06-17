@@ -11,5 +11,5 @@ export const ViteEnvConfigProvider = createConfigProviderFromViteEnv(
 );
 
 export const RuntimeClient = ManagedRuntime.make(
-  Layer.provideMerge(FetchHttpClient.layer, ViteEnvConfigProvider),
+  ViteEnvConfigProvider.pipe(Layer.provideMerge(FetchHttpClient.layer)),
 );

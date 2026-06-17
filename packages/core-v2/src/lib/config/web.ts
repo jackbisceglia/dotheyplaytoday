@@ -4,8 +4,8 @@ import { buildServiceUrl } from "../url.js";
 
 export type WebConfig = Config.Success<typeof WebConfig>;
 export const WebConfig = Config.all({
-  baseUrl: Config.string("VITE_WEB_URL_BASE"),
-  port: Config.port("VITE_WEB_URL_PORT").pipe(Config.option),
+  baseUrl: Config.string("PUBLIC_WEB_URL_BASE"),
+  port: Config.port("PUBLIC_WEB_URL_PORT").pipe(Config.option),
 });
 
 export const WebUrl = Effect.gen(function* () {

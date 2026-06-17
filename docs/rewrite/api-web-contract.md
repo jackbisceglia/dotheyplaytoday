@@ -43,9 +43,9 @@ Do not expose raw domain error classes as the public HTTP contract unless a futu
 
 ### V2 URL Configuration
 
-`VITE_API_URL_BASE` and `VITE_WEB_URL_BASE` are required public URL bases. `VITE_API_URL_PORT` and `VITE_WEB_URL_PORT` are optional URL ports; when present, V2 appends them to the corresponding base URL. Local development uses `http://localhost` plus ports, while production/public deploys usually omit URL ports and use full hostnames in the base URL.
+`PUBLIC_API_URL_BASE` and `PUBLIC_WEB_URL_BASE` are required public URL bases. `PUBLIC_API_URL_PORT` and `PUBLIC_WEB_URL_PORT` are optional URL ports; when present, V2 appends them to the corresponding base URL. Local development uses `http://localhost` plus ports, while production/public deploys usually omit URL ports and use full hostnames in the base URL.
 
-The API server bind port is derived from `VITE_API_URL_PORT` when present and otherwise defaults to `8080`. Do not put ports inside `VITE_*_URL_BASE`; the optional `VITE_*_URL_PORT` value is the only configured port component.
+The API server bind port is derived from `PUBLIC_API_URL_PORT` when present and otherwise defaults to `8080`. Do not put ports inside `PUBLIC_*_URL_BASE`; the optional `PUBLIC_*_URL_PORT` value is the only configured port component.
 
 ### Rate Limiting
 
