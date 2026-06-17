@@ -1,4 +1,4 @@
-import { Subject } from "@dtpt/core-v2";
+import { Subject } from "@dtpt/core-v2/modules/subjects/schema";
 import { SportTeamSubject } from "@dtpt/core-v2/modules/subjects/variants/sport.schema";
 
 const fallback = "🏀";

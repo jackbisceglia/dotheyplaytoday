@@ -1,5 +1,5 @@
-import { ApiUrl } from "@dtpt/core-v2";
 import { Api } from "@dtpt/core-v2/contracts/api";
+import { ApiUrl } from "@dtpt/core-v2/lib/config/api";
 import { Effect } from "effect";
 import { HttpApiClient } from "effect/unstable/httpapi";
 

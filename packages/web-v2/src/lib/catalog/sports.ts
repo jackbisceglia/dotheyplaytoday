@@ -1,4 +1,5 @@
-import type { SportTeamSubject, Subject } from "@dtpt/core-v2";
+import type { Subject } from "@dtpt/core-v2/modules/subjects/schema";
+import type { SportTeamSubject } from "@dtpt/core-v2/modules/subjects/variants/sport.schema";
 import { Match } from "effect";
 
 import { getNbaLogo, nbaTeams } from "./nba.js";

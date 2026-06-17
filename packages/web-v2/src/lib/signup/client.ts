@@ -1,8 +1,6 @@
-import {
-  EmailAddressFromString,
-  Subject,
-  SubscriptionPolicy,
-} from "@dtpt/core-v2";
+import { Subject } from "@dtpt/core-v2/modules/subjects/schema";
+import { SubscriptionPolicy } from "@dtpt/core-v2/modules/subscriptions/policy";
+import { EmailAddressFromString } from "@dtpt/core-v2/modules/users/schema";
 import { DateTime, Match, Option } from "effect";
 
 import { withApiClient } from "../api.js";
