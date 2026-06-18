@@ -1,4 +1,18 @@
-import { api } from "../api.js";
+import { UnsubscribeToken } from "@dtpt/core-v2/modules/users/schema";
+import { Match } from "effect";
+
+import { withApiClient } from "../api.js";
+
+const getSubmitErrorMessage = (error: unknown) =>
+  Match.value(error).pipe(
+    Match.when(
+      { _tag: "UnsubscribeRateLimited" },
+      () => "Too many unsubscribe attempts. Wait a minute and try again.",
+    ),
+    Match.orElse(
+      () => "Something went wrong on our end. Try unsubscribing again.",
+    ),
+  );
 
 const root = document.querySelector("[data-unsubscribe-root]");
 
@@ -16,23 +30,33 @@ if (root instanceof HTMLElement) {
     errorBanner !== null &&
     token !== undefined
   ) {
+    const unsubscribeToken = UnsubscribeToken.make(token);
+
     const setSubmitting = (isSubmitting: boolean) => {
       submit.disabled = isSubmitting;
       submit.textContent = isSubmitting ? "Unsubscribing..." : "Unsubscribe";
     };
 
+    const setError = (message: string | undefined) => {
+      if (message !== undefined) {
+        errorBanner.textContent = message;
+      }
+      errorBanner.hidden = message === undefined;
+    };
+
     submit.addEventListener("click", () => {
-      errorBanner.hidden = true;
+      setError(undefined);
       setSubmitting(true);
 
-      void api.unsubscribe
-        .submit({ token })
+      void withApiClient((client) =>
+        client.unsubscribe.submit({ payload: { token: unsubscribeToken } }),
+      )
         .then(() => {
           confirmView.hidden = true;
           successView.hidden = false;
         })
-        .catch(() => {
-          errorBanner.hidden = false;
+        .catch((error: unknown) => {
+          setError(getSubmitErrorMessage(error));
         })
         .finally(() => {
           setSubmitting(false);

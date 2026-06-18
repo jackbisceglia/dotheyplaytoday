@@ -1,90 +1,25 @@
-import { NBA_TEAMS } from "./catalog/nba.js";
+import { Api } from "@dtpt/core-v2/contracts/api";
+import { ApiUrl } from "@dtpt/core-v2/lib/config/api";
+import { Effect } from "effect";
+import { HttpApiClient } from "effect/unstable/httpapi";
 
-type CoreFixedSchedule = import("@dtpt/core-v2").FixedSchedule;
-type CoreSubjectDetails = import("@dtpt/core-v2").SubjectDetails;
+import { RuntimeClient } from "./platform.js";
 
-export type SportsTeamDetails = Extract<
-  CoreSubjectDetails,
-  { readonly _tag: "sports_team" }
->;
+export type Client = typeof Client;
+export const Client = Effect.gen(function* () {
+  const baseUrl = yield* ApiUrl;
 
-export type Subject = {
-  readonly id: string;
-  readonly _tag: SportsTeamDetails["_tag"];
-  readonly details: SportsTeamDetails;
-};
+  return yield* HttpApiClient.make(Api, { baseUrl });
+});
 
-type SubjectTag = Subject["details"]["_tag"];
+export function withApiClient<A, E>(
+  useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
+) {
+  const procedure = Effect.gen(function* () {
+    const client = yield* Client;
 
-export type SubjectsByTag = {
-  readonly [Tag in SubjectTag]: readonly Extract<
-    Subject,
-    { readonly _tag: Tag }
-  >[];
-};
+    return yield* useClient(client);
+  });
 
-export type SignupFormData = {
-  readonly subjects: SubjectsByTag;
-};
-
-export type FixedSchedule = {
-  readonly _tag: CoreFixedSchedule["_tag"];
-  readonly sendAtSecondsLocal: number;
-};
-
-export type SignupInput = {
-  readonly email: string;
-  readonly timezone: string;
-  readonly schedule: FixedSchedule;
-  readonly subjectIds: readonly Subject["id"][];
-};
-
-export type SignupResult = { readonly ok: true };
-
-export type UnsubscribeInput = { readonly token: string };
-
-export type UnsubscribeResult = { readonly ok: true };
-
-const MOCK_LATENCY_MS = 350;
-const MOCK_FAILURE_EMAIL_MARKER = "+fail";
-const MOCK_FAILURE_TOKEN = "00000000-0000-0000-0000-000000000000";
-
-// TODO: import this from the core contract once signup constraints are public.
-export const SUBJECT_CAP = 2;
-
-const mockSignupFormData = {
-  subjects: {
-    sports_team: NBA_TEAMS,
-  },
-} satisfies SignupFormData;
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-export const getSignupFormData = (): SignupFormData => mockSignupFormData;
-
-export const api = {
-  subjects: {
-    async list(): Promise<SubjectsByTag> {
-      await delay(MOCK_LATENCY_MS);
-      return mockSignupFormData.subjects;
-    },
-  },
-  signup: {
-    async submit(input: SignupInput): Promise<SignupResult> {
-      await delay(MOCK_LATENCY_MS * 2);
-      if (input.email.includes(MOCK_FAILURE_EMAIL_MARKER)) {
-        throw new Error("mock signup failure");
-      }
-      return { ok: true };
-    },
-  },
-  unsubscribe: {
-    async submit(input: UnsubscribeInput): Promise<UnsubscribeResult> {
-      await delay(MOCK_LATENCY_MS * 2);
-      if (input.token === MOCK_FAILURE_TOKEN) {
-        throw new Error("mock unsubscribe failure");
-      }
-      return { ok: true };
-    },
-  },
-};
+  return RuntimeClient.runPromise(procedure);
+}

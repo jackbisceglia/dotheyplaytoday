@@ -119,7 +119,7 @@ Goal: make the completed domain/database model runnable with checked-in V1 data.
 Scope:
 
 - Add private `@dtpt/data` package with explicit collection registry.
-- Register NBA subjects and sports game event collections only for V1.
+- Register sports subject and sports game event collections explicitly for V1.
 - Implement seed/catalog scripts in core with their own runtime assembly.
 - Add `seed:dev` and `seed:prod`; production seed requires typed CLI confirmation.
 - Keep seed orchestration in the script until real duplication appears.
@@ -128,7 +128,7 @@ Scope:
 
 Vertical slice check-in:
 
-- Implement one registered NBA team collection and one game collection through the seed script before adding the full dataset.
+- Implement one registered team collection and one game collection through the seed script before adding full datasets.
 - Check that the registry shape, package boundary, script runtime, and upsert behavior are clear and not dependent on filesystem scanning.
 
 Verification:
@@ -235,6 +235,7 @@ These are follow-up cleanup items surfaced while implementing the ordered rewrit
 - Move root `.env` loading into a shared V2 Effect utility or layer instead of hand-rolling package-local `ConfigProvider.fromDotEnv` setup. The shared helper should resolve the repo-root dotenv path explicitly so CLI cwd choices, package scripts, and `DATABASE_URL` path semantics are documented and consistent.
 - Make the V2 dev seed notification recipient configurable or otherwise safe for shared local E2E. `seed:dev` should not commit a real personal mailbox as the default recipient for non-dry-run notify; use local config/env or a clearly safe example/test address, and document how to opt into a real recipient for Resend tests.
 - Standardize Node CLI runtime wiring for V2 packages so domain layers, Node services, and root env loading compose in one obvious place.
+- Add a web-v2 Vite environment provider/runtime so Astro dev and preview bind to the configured `PUBLIC_WEB_URL_PORT`. Until then, keep local `PUBLIC_WEB_URL_PORT` aligned with Astro's default dev server port, `4321`.
 - Standardize V2 test names on a `should <behavior> when <condition>` style instead of current ad-hoc descriptions.
 
 ## Branch Order

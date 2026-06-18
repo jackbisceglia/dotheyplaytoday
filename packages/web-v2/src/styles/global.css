@@ -53,6 +53,10 @@ button {
   cursor: pointer;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* Header */
 
 .site-header {

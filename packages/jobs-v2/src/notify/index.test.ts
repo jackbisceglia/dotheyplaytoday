@@ -74,6 +74,7 @@ const makeRecipient = (
           leagueId: "nba",
           location: "Boston",
           name: opts.subjectName ?? "Celtics",
+          display: `Boston ${opts.subjectName ?? "Celtics"}`,
           abbreviation: "BOS",
           slug: "boston-celtics",
         },

@@ -93,7 +93,7 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
     return yield* Match.value(notification).pipe(
       Match.when(cases.sportsTeamFeed, (notification) =>
         Effect.gen(function* () {
-          const subject = `${notification.subject.details.location} ${notification.subject.details.name} play today`;
+          const subject = `${notification.subject.details.display} play today`;
 
           const main = yield* Effect.forEach(notification.events, (game) =>
             Effect.gen(function* () {

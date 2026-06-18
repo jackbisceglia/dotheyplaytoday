@@ -41,3 +41,6 @@ export const SportsSeed = Schema.Struct({
   subjects: Schema.Array(SportSubjectSeed),
   events: Schema.Array(SportEventSeed),
 });
+
+export type SportsSeedEncoded = typeof SportsSeedEncoded.Type;
+export const SportsSeedEncoded = Schema.toEncoded(SportsSeed);

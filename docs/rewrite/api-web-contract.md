@@ -43,9 +43,9 @@ Do not expose raw domain error classes as the public HTTP contract unless a futu
 
 ### V2 URL Configuration
 
-`API_PORT` and `WEB_PORT` are required runtime/dev ports. `VITE_API_URL` and `VITE_WEB_URL` are optional full public URL overrides; when omitted, V2 derives `http://localhost:${API_PORT}` and `http://localhost:${WEB_PORT}` respectively.
+`PUBLIC_API_URL_BASE` and `PUBLIC_WEB_URL_BASE` are required public URL bases. `PUBLIC_API_URL_PORT` and `PUBLIC_WEB_URL_PORT` are optional URL ports; when present, V2 appends them to the corresponding base URL. Local development uses `http://localhost` plus ports, while production/public deploys usually omit URL ports and use full hostnames in the base URL.
 
-Do not split public URLs into separate `VITE_*_URL` and `VITE_*_PORT` values. Production validation that requires explicit public URL overrides belongs in a later environment-mode config pass.
+The API server bind port is derived from `PUBLIC_API_URL_PORT` when present and otherwise defaults to `8080`. Do not put ports inside `PUBLIC_*_URL_BASE`; the optional `PUBLIC_*_URL_PORT` value is the only configured port component.
 
 ### Rate Limiting
 

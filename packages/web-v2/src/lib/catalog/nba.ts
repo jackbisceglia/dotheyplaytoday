@@ -1,10 +1,9 @@
+import { Subject } from "@dtpt/core-v2/modules/subjects/schema";
 import { SportTeamSubject } from "@dtpt/core-v2/modules/subjects/variants/sport.schema";
 
-import type { Subject } from "../api.js";
+const fallback = "🏀";
 
-const FALLBACK_LOGO = "🏀";
-
-const NBA_LOGOS: Readonly<Record<string, string>> = {
+const logos = {
   ATL: "🦅",
   BOS: "🍀",
   BKN: "🕸️",
@@ -43,7 +42,9 @@ const makeSportTeamSubject: typeof SportTeamSubject.make = (input) =>
 type NbaTeamBuilder = (make: typeof makeSportTeamSubject) => Subject["details"];
 
 const makeNbaSubjectId = (serial: number): Subject["id"] =>
-  `00000000-0000-4000-8000-${String(serial + 100).padStart(12, "0")}`;
+  Subject.fields.id.make(
+    `00000000-0000-4000-8000-${String(serial + 100).padStart(12, "0")}`,
+  );
 
 const makeNbaTeam = (serial: number, fn: NbaTeamBuilder): Subject => {
   const details = fn(makeSportTeamSubject);
@@ -55,12 +56,13 @@ const makeNbaTeam = (serial: number, fn: NbaTeamBuilder): Subject => {
   };
 };
 
-export const NBA_TEAMS = [
+export const nbaTeams = [
   makeNbaTeam(1, (make) =>
     make({
       leagueId: "nba",
       location: "Atlanta",
       name: "Hawks",
+      display: "Atlanta Hawks",
       abbreviation: "ATL",
       slug: "atlanta-hawks",
     }),
@@ -70,6 +72,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Boston",
       name: "Celtics",
+      display: "Boston Celtics",
       abbreviation: "BOS",
       slug: "boston-celtics",
     }),
@@ -79,6 +82,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Brooklyn",
       name: "Nets",
+      display: "Brooklyn Nets",
       abbreviation: "BKN",
       slug: "brooklyn-nets",
     }),
@@ -88,6 +92,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Charlotte",
       name: "Hornets",
+      display: "Charlotte Hornets",
       abbreviation: "CHA",
       slug: "charlotte-hornets",
     }),
@@ -97,6 +102,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Chicago",
       name: "Bulls",
+      display: "Chicago Bulls",
       abbreviation: "CHI",
       slug: "chicago-bulls",
     }),
@@ -106,6 +112,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Cleveland",
       name: "Cavaliers",
+      display: "Cleveland Cavaliers",
       abbreviation: "CLE",
       slug: "cleveland-cavaliers",
     }),
@@ -115,6 +122,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Dallas",
       name: "Mavericks",
+      display: "Dallas Mavericks",
       abbreviation: "DAL",
       slug: "dallas-mavericks",
     }),
@@ -124,6 +132,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Denver",
       name: "Nuggets",
+      display: "Denver Nuggets",
       abbreviation: "DEN",
       slug: "denver-nuggets",
     }),
@@ -133,6 +142,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Detroit",
       name: "Pistons",
+      display: "Detroit Pistons",
       abbreviation: "DET",
       slug: "detroit-pistons",
     }),
@@ -142,6 +152,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Golden State",
       name: "Warriors",
+      display: "Golden State Warriors",
       abbreviation: "GSW",
       slug: "golden-state-warriors",
     }),
@@ -151,6 +162,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Houston",
       name: "Rockets",
+      display: "Houston Rockets",
       abbreviation: "HOU",
       slug: "houston-rockets",
     }),
@@ -160,6 +172,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Indiana",
       name: "Pacers",
+      display: "Indiana Pacers",
       abbreviation: "IND",
       slug: "indiana-pacers",
     }),
@@ -169,6 +182,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "LA",
       name: "Clippers",
+      display: "LA Clippers",
       abbreviation: "LAC",
       slug: "la-clippers",
     }),
@@ -178,6 +192,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Los Angeles",
       name: "Lakers",
+      display: "Los Angeles Lakers",
       abbreviation: "LAL",
       slug: "los-angeles-lakers",
     }),
@@ -187,6 +202,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Memphis",
       name: "Grizzlies",
+      display: "Memphis Grizzlies",
       abbreviation: "MEM",
       slug: "memphis-grizzlies",
     }),
@@ -196,6 +212,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Miami",
       name: "Heat",
+      display: "Miami Heat",
       abbreviation: "MIA",
       slug: "miami-heat",
     }),
@@ -205,6 +222,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Milwaukee",
       name: "Bucks",
+      display: "Milwaukee Bucks",
       abbreviation: "MIL",
       slug: "milwaukee-bucks",
     }),
@@ -214,6 +232,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Minnesota",
       name: "Timberwolves",
+      display: "Minnesota Timberwolves",
       abbreviation: "MIN",
       slug: "minnesota-timberwolves",
     }),
@@ -223,6 +242,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "New Orleans",
       name: "Pelicans",
+      display: "New Orleans Pelicans",
       abbreviation: "NOP",
       slug: "new-orleans-pelicans",
     }),
@@ -232,6 +252,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "New York",
       name: "Knicks",
+      display: "New York Knicks",
       abbreviation: "NYK",
       slug: "new-york-knicks",
     }),
@@ -241,6 +262,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Oklahoma City",
       name: "Thunder",
+      display: "Oklahoma City Thunder",
       abbreviation: "OKC",
       slug: "oklahoma-city-thunder",
     }),
@@ -250,6 +272,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Orlando",
       name: "Magic",
+      display: "Orlando Magic",
       abbreviation: "ORL",
       slug: "orlando-magic",
     }),
@@ -259,6 +282,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Philadelphia",
       name: "76ers",
+      display: "Philadelphia 76ers",
       abbreviation: "PHI",
       slug: "philadelphia-76ers",
     }),
@@ -268,6 +292,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Phoenix",
       name: "Suns",
+      display: "Phoenix Suns",
       abbreviation: "PHX",
       slug: "phoenix-suns",
     }),
@@ -277,6 +302,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Portland",
       name: "Trail Blazers",
+      display: "Portland Trail Blazers",
       abbreviation: "POR",
       slug: "portland-trail-blazers",
     }),
@@ -286,6 +312,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Sacramento",
       name: "Kings",
+      display: "Sacramento Kings",
       abbreviation: "SAC",
       slug: "sacramento-kings",
     }),
@@ -295,6 +322,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "San Antonio",
       name: "Spurs",
+      display: "San Antonio Spurs",
       abbreviation: "SAS",
       slug: "san-antonio-spurs",
     }),
@@ -304,6 +332,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Toronto",
       name: "Raptors",
+      display: "Toronto Raptors",
       abbreviation: "TOR",
       slug: "toronto-raptors",
     }),
@@ -313,6 +342,7 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Utah",
       name: "Jazz",
+      display: "Utah Jazz",
       abbreviation: "UTA",
       slug: "utah-jazz",
     }),
@@ -322,17 +352,12 @@ export const NBA_TEAMS = [
       leagueId: "nba",
       location: "Washington",
       name: "Wizards",
+      display: "Washington Wizards",
       abbreviation: "WAS",
       slug: "washington-wizards",
     }),
   ),
 ] satisfies readonly Subject[];
 
-export const getLogo = (abbr: string) => NBA_LOGOS[abbr] ?? FALLBACK_LOGO;
-
-export const getTeams = (subjects: readonly Subject[]) =>
-  subjects.toSorted((a, b) =>
-    `${a.details.location} ${a.details.name}`.localeCompare(
-      `${b.details.location} ${b.details.name}`,
-    ),
-  );
+export const getNbaLogo = (abbr: string) =>
+  abbr in logos ? logos[abbr as keyof typeof logos] : fallback;

@@ -5,9 +5,10 @@ import { SubjectCapacityReached } from "./errors.js";
 
 const CONSTRAINTS = {
   subject: { min: 0, max: 2 },
-};
+} as const;
 
 const SubscriptionSubjectPolicy = {
+  constraints: CONSTRAINTS.subject,
   ensureAllowance(_user: User, received: number) {
     const { max } = CONSTRAINTS.subject;
 

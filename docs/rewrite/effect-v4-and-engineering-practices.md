@@ -131,6 +131,7 @@ export class SportTeamSubject extends Schema.Class<SportTeamSubject>(
 )({
   _tag: Schema.Literal("sports_team"),
   leagueId: LeagueId,
+  display: Schema.NonEmptyString,
   location: Schema.NonEmptyString,
   name: Schema.NonEmptyString,
   abbreviation: Schema.NonEmptyString,
