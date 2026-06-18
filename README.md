@@ -33,8 +33,7 @@ The forward path is built around:
 - `packages/api-v2`: HTTP API built on top of `core-v2`.
 - `packages/jobs-v2`: notify job built on top of `core-v2`.
 - `packages/data`: seed/import data, including NBA subjects and events.
-- `packages/web`: current frontend surface while the web direction moves toward
-  Astro.
+- `packages/web-v2`: Astro signup frontend built on top of `core-v2`.
 - `docs/rewrite`: canonical product, domain, and rebuild notes.
 
 ## Coming Soon
@@ -59,7 +58,7 @@ Package helpers:
 ```bash
 pnpm @core-v2 <cmd>
 pnpm @api-v2 <cmd>
-pnpm @web <cmd>
+pnpm @web-v2 <cmd>
 pnpm @jobs-v2 <cmd>
 pnpm @data <cmd>
 ```
