@@ -3,17 +3,13 @@ import {
   SubscriptionInsert,
   Subscriptions,
   type User,
-  EmailAddressFromString,
   UserInsert,
   Users as UsersService,
 } from "@dtpt/core-v2";
-import { Config, Effect, Schema, Struct } from "effect";
+import { Effect, Schema, Struct } from "effect";
 
 import { Teams } from "../sports/nba/subjects.js";
-
-const SeedEmail = Config.schema(EmailAddressFromString, "SEED_EMAIL").pipe(
-  Config.withDefault("fan@example.com"),
-);
+import { SeedConfig } from "./config.js";
 
 const UserSeed = Schema.Struct({
   ...Struct.omit(UserInsert.fields, ["id", "unsubscribeToken"]),
@@ -24,11 +20,11 @@ const UserSeed = Schema.Struct({
 type UserSeed = typeof UserSeed.Type;
 
 const DefaultSeedUsers = Effect.gen(function* () {
-  const email = yield* SeedEmail;
+  const config = yield* SeedConfig;
 
   return Schema.decodeUnknownSync(Schema.NonEmptyArray(UserSeed))([
     {
-      email,
+      email: config.email,
       timezone: "America/New_York",
       subjectIds: [Teams.SanAntonioSpurs.id],
       schedule: {
