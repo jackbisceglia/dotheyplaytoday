@@ -14,9 +14,11 @@ dist/
 
 # local databases
 packages/data/**/*.sqlite
+packages/data/**/*.sqlite-shm
+packages/data/**/*.sqlite-wal
 
-# local Cloudflare/Wrangler state
-packages/web-v2/.wrangler/
+# cloudflare
+**/.wrangler/
 
 # misc
 .DS_Store
