@@ -1,8 +1,19 @@
 ---
+import { Result } from "effect";
+
 import UnsubscribeConfirmation from "../../modules/unsubscribe/Confirmation.astro";
+import UnsubscribeNotFound from "../../modules/unsubscribe/NotFound.astro";
+import { decodeUnsubscribeToken } from "../../modules/unsubscribe/token";
 import Layout from "../../layouts/layout.astro";
 
 export const prerender = false;
+
+const tokenResult = decodeUnsubscribeToken(Astro.params.token);
+
+if (Result.isFailure(tokenResult)) {
+  Astro.response.status = 404;
+  Astro.response.statusText = "Not Found";
+}
 ---
 
 <Layout
@@ -11,5 +22,10 @@ export const prerender = false;
 >
   <a class="header-cta" href="/" slot="header-action">Home</a>
 
-  <UnsubscribeConfirmation tokenParam={Astro.params.token} />
+  {
+    Result.match(tokenResult, {
+      onSuccess: (token) => <UnsubscribeConfirmation token={token} />,
+      onFailure: () => <UnsubscribeNotFound />,
+    })
+  }
 </Layout>
