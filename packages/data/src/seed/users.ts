@@ -3,12 +3,17 @@ import {
   SubscriptionInsert,
   Subscriptions,
   type User,
+  EmailAddressFromString,
   UserInsert,
   Users as UsersService,
 } from "@dtpt/core-v2";
-import { Effect, Schema, Struct } from "effect";
+import { Config, Effect, Schema, Struct } from "effect";
 
 import { Teams } from "../sports/nba/subjects.js";
+
+const SeedEmail = Config.schema(EmailAddressFromString, "SEED_EMAIL").pipe(
+  Config.withDefault("fan@example.com"),
+);
 
 const UserSeed = Schema.Struct({
   ...Struct.omit(UserInsert.fields, ["id", "unsubscribeToken"]),
@@ -18,17 +23,21 @@ const UserSeed = Schema.Struct({
 
 type UserSeed = typeof UserSeed.Type;
 
-export const Users = Schema.decodeUnknownSync(Schema.NonEmptyArray(UserSeed))([
-  {
-    email: "jackbisceglia2000@gmail.com",
-    timezone: "America/New_York",
-    subjectIds: [Teams.SanAntonioSpurs.id],
-    schedule: {
-      _tag: "fixed_local_time",
-      sendAtSecondsLocal: 9 * 60 * 60,
+const DefaultSeedUsers = Effect.gen(function* () {
+  const email = yield* SeedEmail;
+
+  return Schema.decodeUnknownSync(Schema.NonEmptyArray(UserSeed))([
+    {
+      email,
+      timezone: "America/New_York",
+      subjectIds: [Teams.SanAntonioSpurs.id],
+      schedule: {
+        _tag: "fixed_local_time",
+        sendAtSecondsLocal: 9 * 60 * 60,
+      },
     },
-  },
-]);
+  ]);
+});
 
 export const summarizeUsers = (users: readonly User[]) =>
   StringParts()
@@ -42,7 +51,7 @@ export const seedUsers = Effect.fn("Seed.Users")(function* (
   const users = yield* UsersService;
   const subscriptions = yield* Subscriptions;
 
-  const decodedUsers = input ?? Users;
+  const decodedUsers = input ?? (yield* DefaultSeedUsers);
 
   return yield* Effect.forEach(
     decodedUsers,
