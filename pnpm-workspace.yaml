@@ -2,11 +2,7 @@ packages:
   - packages/*
 
 catalog:
-  "@effect/cli": ^0.75.0
-  "@effect/platform": ^0.96.0
-  "@effect/platform-node": 0.106.0
   effect: ^3.21.0
-  ioredis: ^5.6.1
   resend: ^6.9.1
 
 catalogMode: manual
