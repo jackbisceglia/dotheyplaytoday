@@ -1,0 +1,92 @@
+---
+import { UnsubscribeToken } from "@dtpt/core-v2/modules/users/schema";
+import { Result, Schema } from "effect";
+
+interface Props {
+  readonly tokenParam: string | undefined;
+}
+
+const { tokenParam } = Astro.props;
+const decodeUnsubscribeToken = Schema.decodeUnknownResult(UnsubscribeToken);
+const tokenResult = decodeUnsubscribeToken(tokenParam);
+---
+
+<section
+  class="unsubscribe"
+  data-unsubscribe-root
+  data-token={Result.getOrUndefined(tokenResult)}
+>
+  {
+    Result.match(tokenResult, {
+      onSuccess: () => (
+        <>
+          <div class="unsubscribe-confirm" data-confirm-panel>
+            <h1 class="unsubscribe-title">
+              Take yourself<br />
+              <em>off the roster.</em>
+            </h1>
+            <p class="unsubscribe-copy">
+              This stops every dotheyplaytoday email for this address. Sign up
+              again any time with a fresh set of teams.
+            </p>
+
+            <form class="unsubscribe-actions" data-form>
+              <button class="btn btn-primary" type="submit" data-submit>
+                Stop receiving emails
+              </button>
+            </form>
+
+            <p
+              class="form-error unsubscribe-error"
+              data-form-error
+              role="alert"
+              hidden
+            >
+              We couldn't finish that request. Wait a moment and try again.
+            </p>
+          </div>
+
+          <div
+            class="unsubscribe-success"
+            data-success
+            role="status"
+            aria-atomic="true"
+            hidden
+          >
+            <p class="unsubscribe-success-mark" aria-hidden="true">
+              ✓
+            </p>
+            <h2 class="unsubscribe-title" tabindex="-1" data-success-title>
+              You're off<br />
+              <em>the roster.</em>
+            </h2>
+            <p class="unsubscribe-copy">
+              We processed this unsubscribe. If the link had already been used,
+              nothing else needed to happen.
+            </p>
+            <a class="btn btn-secondary" href="/">
+              Back home
+            </a>
+          </div>
+        </>
+      ),
+      onFailure: () => (
+        <div class="unsubscribe-confirm">
+          <h1 class="unsubscribe-title">
+            This link<br />
+            <em>can't be used.</em>
+          </h1>
+          <p class="unsubscribe-copy">
+            This unsubscribe link is invalid or expired. Grab a fresh one from a
+            dotheyplaytoday email to stop future messages.
+          </p>
+          <a class="btn btn-secondary" href="/">
+            Back home
+          </a>
+        </div>
+      ),
+    })
+  }
+</section>
+
+<script src="./client.ts"></script>

@@ -1,7 +1,7 @@
 import { UnsubscribeToken } from "@dtpt/core-v2/modules/users/schema";
 import { Match, Result, Schema } from "effect";
 
-import { withApiClient } from "../api.js";
+import { withApiClient } from "../../lib/api.js";
 
 const decodeUnsubscribeToken = Schema.decodeUnknownResult(UnsubscribeToken);
 

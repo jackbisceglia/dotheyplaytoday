@@ -3,8 +3,12 @@ import { SubscriptionPolicy } from "@dtpt/core-v2/modules/subscriptions/policy";
 import { EmailAddressFromString } from "@dtpt/core-v2/modules/users/schema";
 import { DateTime, Match, Option } from "effect";
 
-import { withApiClient } from "../api.js";
-import { defaultTimezone, detectTimezone, isValidSendTime } from "../time.js";
+import { withApiClient } from "../../lib/api.js";
+import {
+  defaultTimezone,
+  detectTimezone,
+  isValidSendTime,
+} from "../../lib/time.js";
 
 const emailPattern = /^\S+@\S+\.\S+$/;
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;

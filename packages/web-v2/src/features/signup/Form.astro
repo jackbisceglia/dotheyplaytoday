@@ -4,9 +4,9 @@ import {
   getTeams,
   leagues as sportsLeagues,
   sportsTeamSubjects,
-} from "../lib/catalog/sports.js";
-import { sendTime, sendTimeIntervals } from "../lib/time.js";
-import SignupSuccess from "./SignupSuccess.astro";
+} from "../../lib/catalog/sports.js";
+import { sendTime, sendTimeIntervals } from "../../lib/time.js";
+import SignupSuccess from "./Success.astro";
 
 const teams = getTeams(sportsTeamSubjects);
 const leagues = sportsLeagues.map((league) => ({
@@ -152,4 +152,4 @@ const leagues = sportsLeagues.map((league) => ({
   </form>
 </div>
 
-<script src="../lib/signup/client.ts"></script>
+<script src="./client.ts"></script>
