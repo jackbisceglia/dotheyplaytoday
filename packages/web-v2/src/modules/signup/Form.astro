@@ -4,8 +4,9 @@ import {
   getTeams,
   leagues as sportsLeagues,
   sportsTeamSubjects,
-} from "../lib/catalog/sports.js";
-import { sendTime, sendTimeIntervals } from "../lib/time.js";
+} from "../../lib/catalog/sports/index.js";
+import { sendTime, sendTimeIntervals } from "../../lib/time.js";
+import SignupSuccess from "./Success.astro";
 
 const teams = getTeams(sportsTeamSubjects);
 const leagues = sportsLeagues.map((league) => ({
@@ -15,26 +16,12 @@ const leagues = sportsLeagues.map((league) => ({
 ---
 
 <div class="signup-root" data-signup-root>
-  <div class="signup-success" data-success hidden style="display: none;" role="status">
-    <p class="signup-success-mark" aria-hidden="true">✓</p>
-    <h3 class="signup-success-title">You're on the roster</h3>
-    <p class="signup-success-copy">
-      Game-day emails for your teams will land at your chosen time, only on days
-      they play.
-    </p>
-    <p class="signup-success-copy">
-      Change your mind later? Sign up again with the same email and your new
-      picks replace the old ones.
-    </p>
-    <button class="btn btn-secondary" type="button" data-edit>
-      Edit my picks
-    </button>
-  </div>
+  <SignupSuccess />
 
   <form class="signup-form" data-form novalidate>
     <fieldset class="form-section">
       <legend class="visually-hidden">League</legend>
-      <div class="league-row" aria-label="League">
+      <div class="league-row">
         {
           leagues.map((league, index) => (
             <button
@@ -47,26 +34,18 @@ const leagues = sportsLeagues.map((league) => ({
             </button>
           ))
         }
-        <button
-          class="league-pill"
-          type="button"
-          disabled
-          title="More leagues on the way"
-        >
+        <button class="league-pill" type="button" disabled>
           MLB
+          <span class="visually-hidden"> coming soon</span>
         </button>
-        <button
-          class="league-pill"
-          type="button"
-          disabled
-          title="More leagues on the way"
-        >
+        <button class="league-pill" type="button" disabled>
           NHL
+          <span class="visually-hidden"> coming soon</span>
         </button>
       </div>
     </fieldset>
 
-    <fieldset class="form-section">
+    <fieldset class="form-section" aria-describedby="team-message">
       <legend class="visually-hidden">Teams</legend>
       {
         leagues.map((league, index) => (
@@ -96,30 +75,46 @@ const leagues = sportsLeagues.map((league) => ({
         ))
       }
       <div class="team-message-slot">
-        <p data-team-message hidden></p>
+        <p id="team-message" data-team-message hidden></p>
       </div>
     </fieldset>
 
     <fieldset class="form-section">
       <legend class="visually-hidden">Delivery</legend>
       <div class="form-fields">
-        <label class="form-field">
-          <span class="form-label">Email</span>
+        <div class="form-field">
+          <label class="form-label" for="signup-email">Email</label>
           <input
+            id="signup-email"
             class="form-input"
             type="email"
             name="email"
             autocomplete="email"
             placeholder="you@example.com"
+            required
+            aria-describedby="signup-email-error"
             data-email
           />
-          <span class="form-error" data-error-for="email" role="alert" hidden>
+          <span
+            id="signup-email-error"
+            class="form-error"
+            data-error-for="email"
+            role="alert"
+            hidden
+          >
           </span>
-        </label>
+        </div>
 
-        <label class="form-field">
-          <span class="form-label">Send time</span>
-          <select class="form-input" name="sendTime" data-send-time>
+        <div class="form-field">
+          <label class="form-label" for="signup-send-time">Send time</label>
+          <select
+            id="signup-send-time"
+            class="form-input"
+            name="sendTime"
+            required
+            aria-describedby="signup-send-time-error"
+            data-send-time
+          >
             {
               sendTimeIntervals.map((interval) => (
                 <option
@@ -132,13 +127,14 @@ const leagues = sportsLeagues.map((league) => ({
             }
           </select>
           <span
+            id="signup-send-time-error"
             class="form-error"
             data-error-for="sendTime"
             role="alert"
             hidden
           >
           </span>
-        </label>
+        </div>
       </div>
       <p class="form-error" data-error-for="timezone" role="alert" hidden></p>
     </fieldset>
@@ -156,4 +152,4 @@ const leagues = sportsLeagues.map((league) => ({
   </form>
 </div>
 
-<script src="../lib/signup/client.ts"></script>
+<script src="./client.ts"></script>

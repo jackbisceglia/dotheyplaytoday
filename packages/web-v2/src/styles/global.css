@@ -8,8 +8,8 @@
   --kelly-wash: #e2f3e7;
   --kelly-border: rgba(22, 155, 77, 0.35);
   --error: #ce3a26;
-  --muted: rgba(19, 23, 17, 0.55);
-  --rule: rgba(19, 23, 17, 0.12);
+  --muted: rgba(19, 23, 17, 0.72);
+  --rule: rgba(19, 23, 17, 0.5);
   --shadow: 4px 4px 0 var(--kelly);
 }
 
@@ -59,6 +59,26 @@ button {
 
 /* Header */
 
+.skip-link {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+  transform: translateY(calc(-100% - 24px));
+  padding: 10px 14px;
+  border: 2px solid var(--paper);
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 900;
+  font-stretch: 75%;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .site-header {
   max-width: 1060px;
   width: 100%;
@@ -75,11 +95,18 @@ button {
   font-stretch: 70%;
   font-size: 1.25rem;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .wordmark em {
   font-style: normal;
   color: var(--kelly);
+}
+
+.site-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-cta {
@@ -98,6 +125,19 @@ button {
 .header-cta:hover {
   background: var(--ink);
   color: var(--paper);
+}
+
+.wordmark:focus-visible,
+.header-cta:focus-visible,
+.skip-link:focus-visible,
+.form-input:focus-visible,
+.team-card:focus-visible,
+.btn:focus-visible,
+.league-pill:focus-visible,
+.signup-success-title:focus-visible,
+.unsubscribe-title:focus-visible {
+  outline: 3px solid var(--kelly);
+  outline-offset: 2px;
 }
 
 /* Hero */
@@ -206,6 +246,10 @@ button {
   animation: ticker-scroll 28s linear infinite;
 }
 
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
 .ticker-item {
   display: inline-flex;
   align-items: center;
@@ -274,6 +318,7 @@ button {
   width: 1px;
   height: 1px;
   padding: 0;
+  margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
@@ -300,7 +345,7 @@ button {
 
 .league-pill[aria-pressed="true"] {
   background: var(--kelly);
-  color: var(--paper);
+  color: var(--ink);
   box-shadow: var(--shadow);
 }
 
@@ -416,18 +461,6 @@ select.form-input {
   background-repeat: no-repeat;
 }
 
-.form-input:focus-visible {
-  outline: 3px solid var(--kelly);
-  outline-offset: 1px;
-}
-
-.team-card:focus-visible,
-.btn:focus-visible,
-.league-pill:focus-visible {
-  outline: 3px solid var(--kelly);
-  outline-offset: 2px;
-}
-
 /* Submit + messaging */
 
 .form-submit-row {
@@ -494,6 +527,99 @@ select.form-input {
   line-height: 1.55;
 }
 
+/* Unsubscribe */
+
+.unsubscribe {
+  min-height: 62vh;
+  padding: 96px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 28px;
+}
+
+.unsubscribe-confirm > *,
+.unsubscribe-success > * {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: unsubscribe-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+.unsubscribe-confirm > *:nth-child(1) { animation-delay: 0.05s; }
+.unsubscribe-confirm > *:nth-child(2) { animation-delay: 0.13s; }
+.unsubscribe-confirm > *:nth-child(3) { animation-delay: 0.21s; }
+
+.unsubscribe-success > *:nth-child(1) { animation-delay: 0.05s; }
+.unsubscribe-success > *:nth-child(2) { animation-delay: 0.13s; }
+.unsubscribe-success > *:nth-child(3) { animation-delay: 0.21s; }
+.unsubscribe-success > *:nth-child(4) { animation-delay: 0.29s; }
+
+@keyframes unsubscribe-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.unsubscribe-confirm,
+.unsubscribe-success {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.unsubscribe-title {
+  font-weight: 900;
+  font-stretch: 65%;
+  font-size: clamp(2.6rem, 6.5vw, 5rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+.unsubscribe-title em {
+  font-style: italic;
+  color: var(--kelly);
+}
+
+.unsubscribe-copy {
+  max-width: 52ch;
+  color: var(--muted);
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+.unsubscribe-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.unsubscribe-error {
+  padding: 14px 18px;
+  border-left: 3px solid var(--error);
+  background: rgba(206, 58, 38, 0.06);
+  max-width: 52ch;
+}
+
+.unsubscribe-success-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--ink);
+  background: var(--kelly);
+  color: var(--paper);
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
 /* Footer */
 
 .site-footer {
@@ -531,6 +657,21 @@ select.form-input {
     padding: 64px 0 48px;
   }
 
+  .unsubscribe {
+    min-height: 0;
+    justify-content: flex-start;
+    padding: 56px 0 48px;
+  }
+
+  .unsubscribe-title {
+    word-spacing: 0.08em;
+  }
+
+  .unsubscribe-actions .btn,
+  .unsubscribe-actions .btn-primary {
+    width: 100%;
+  }
+
   .ticker {
     margin: 0 -20px;
   }
@@ -550,7 +691,16 @@ select.form-input {
   }
 
   .btn,
+  .header-cta,
+  .skip-link,
   .team-card {
     transition: none;
+  }
+
+  .unsubscribe-confirm > *,
+  .unsubscribe-success > * {
+    opacity: 1;
+    transform: none;
+    animation: none;
   }
 }

@@ -3,8 +3,12 @@ import { SubscriptionPolicy } from "@dtpt/core-v2/modules/subscriptions/policy";
 import { EmailAddressFromString } from "@dtpt/core-v2/modules/users/schema";
 import { DateTime, Match, Option } from "effect";
 
-import { withApiClient } from "../api.js";
-import { defaultTimezone, detectTimezone, isValidSendTime } from "../time.js";
+import { withApiClient } from "../../lib/api.js";
+import {
+  defaultTimezone,
+  detectTimezone,
+  isValidSendTime,
+} from "../../lib/time.js";
 
 const emailPattern = /^\S+@\S+\.\S+$/;
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
@@ -39,6 +43,7 @@ const setHidden = (element: HTMLElement, isHidden: boolean) => {
 if (root instanceof HTMLElement) {
   const form = root.querySelector<HTMLFormElement>("[data-form]");
   const success = root.querySelector<HTMLElement>("[data-success]");
+  const successTitle = root.querySelector<HTMLElement>("[data-success-title]");
   const edit = root.querySelector<HTMLButtonElement>("[data-edit]");
   const email = root.querySelector<HTMLInputElement>("[data-email]");
   const sendTime = root.querySelector<HTMLSelectElement>("[data-send-time]");
@@ -60,6 +65,7 @@ if (root instanceof HTMLElement) {
   if (
     form !== null &&
     success !== null &&
+    successTitle !== null &&
     edit !== null &&
     email !== null &&
     sendTime !== null &&
@@ -73,6 +79,17 @@ if (root instanceof HTMLElement) {
     const setError = (field: string, message: string | undefined) => {
       const element = getFieldError(field);
       if (element === null) return;
+
+      const control =
+        field === "email" ? email : field === "sendTime" ? sendTime : undefined;
+      if (control !== undefined) {
+        if (message === undefined) {
+          control.removeAttribute("aria-invalid");
+        } else {
+          control.setAttribute("aria-invalid", "true");
+        }
+      }
+
       element.textContent = message ?? "";
       setHidden(element, message === undefined);
     };
@@ -94,10 +111,14 @@ if (root instanceof HTMLElement) {
       teamMessage.textContent = message?.text ?? "";
       teamMessage.className =
         message?.kind === "error" ? "form-error" : "form-hint";
-      teamMessage.setAttribute(
-        "role",
-        message?.kind === "error" ? "alert" : "status",
-      );
+      if (message === undefined) {
+        teamMessage.removeAttribute("role");
+      } else {
+        teamMessage.setAttribute(
+          "role",
+          message.kind === "error" ? "alert" : "status",
+        );
+      }
     };
 
     const syncTeamMessage = () => {
@@ -160,6 +181,18 @@ if (root instanceof HTMLElement) {
       return valid;
     };
 
+    const focusFirstInvalidControl = () => {
+      const invalid = root.querySelector<HTMLElement>('[aria-invalid="true"]');
+      if (invalid !== null) {
+        invalid.focus();
+        return;
+      }
+
+      if (selected.size === 0) {
+        teamButtons[0]?.focus();
+      }
+    };
+
     leagueButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const leagueId = button.dataset.leagueId;
@@ -205,6 +238,7 @@ if (root instanceof HTMLElement) {
     edit.addEventListener("click", () => {
       setHidden(success, true);
       setHidden(form, false);
+      email.focus();
     });
 
     form.addEventListener("submit", (event) => {
@@ -212,7 +246,10 @@ if (root instanceof HTMLElement) {
       setFormError(undefined);
       setError("timezone", undefined);
 
-      if (!validate()) return;
+      if (!validate()) {
+        focusFirstInvalidControl();
+        return;
+      }
 
       const subjectIds = [...selected].map((subjectId) =>
         Subject.fields.id.make(subjectId),
@@ -244,6 +281,7 @@ if (root instanceof HTMLElement) {
         .then(() => {
           setHidden(form, true);
           setHidden(success, false);
+          successTitle.focus();
         })
         .catch((error: unknown) => {
           setFormError(getSubmitErrorMessage(error));
