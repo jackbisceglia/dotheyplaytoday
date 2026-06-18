@@ -1,57 +1,35 @@
 ---
 import ScoreTicker from "../components/ScoreTicker.astro";
 import SignupForm from "../components/SignupForm.astro";
-import "../styles/global.css";
+import Layout from "../layouts/layout.astro";
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="Game-day emails for your teams. Pick your team, pick a time, and get an update on game day."
-    />
-    <title>dotheyplaytoday</title>
-  </head>
-  <body>
-    <header class="site-header">
-      <a class="wordmark" href="/" aria-label="DOTHEYPLAYTODAY home">
-        DOTHEY<em>PLAY</em>TODAY
-      </a>
-      <nav aria-label="Primary">
-        <a class="header-cta" href="#signup">Sign up</a>
-      </nav>
-    </header>
+<Layout
+  title="dotheyplaytoday"
+  description="Game-day emails for your teams. Pick your team, pick a time, and get an update on game day."
+>
+  <a class="header-cta" href="#signup" slot="header-action">Sign up</a>
 
-    <main>
-      <section class="hero" aria-labelledby="hero-title">
-        <h1 class="hero-headline" id="hero-title">
-          Your team plays<br />
-          <em>tonight.</em><br />
-          Now you know.
-        </h1>
-        <p class="hero-copy">
-          Pick your team, pick a time, and get an update on game day.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#signup">Get game-day updates</a>
-        </div>
-      </section>
+  <section class="hero">
+    <h1 class="hero-headline">
+      Your team plays<br />
+      <em>tonight.</em><br />
+      Now you know.
+    </h1>
+    <p class="hero-copy">
+      Pick your team, pick a time, and get an update on game day.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#signup">Get game-day updates</a>
+    </div>
+  </section>
 
-      <ScoreTicker />
+  <ScoreTicker />
 
-      <section class="signup" id="signup" aria-labelledby="signup-title">
-        <div class="signup-header">
-          <h2 class="signup-title" id="signup-title">Get on the roster</h2>
-        </div>
-        <SignupForm />
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <span>DOTHEYPLAYTODAY</span>
-    </footer>
-  </body>
-</html>
+  <section class="signup" id="signup">
+    <div class="signup-header">
+      <h2 class="signup-title">Get on the roster</h2>
+    </div>
+    <SignupForm />
+  </section>
+</Layout>

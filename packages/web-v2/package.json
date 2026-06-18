@@ -12,6 +12,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.7.0",
     "@dtpt/core-v2": "workspace:*",
     "astro": "^6.4.6",
     "effect": "4.0.0-beta.65"

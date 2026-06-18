@@ -1,9 +1,9 @@
 import { UnsubscribeToken } from "@dtpt/core-v2/modules/users/schema";
-import { Match, Schema } from "effect";
+import { Match, Result, Schema } from "effect";
 
 import { withApiClient } from "../api.js";
 
-const decodeToken = Schema.decodeUnknownSync(UnsubscribeToken);
+const decodeUnsubscribeToken = Schema.decodeUnknownResult(UnsubscribeToken);
 
 const getSubmitErrorMessage = (error: unknown) =>
   Match.value(error).pipe(
@@ -21,36 +21,24 @@ const setHidden = (element: HTMLElement, isHidden: boolean) => {
   element.style.display = isHidden ? "none" : "";
 };
 
-const submitUnsubscribe = (token: UnsubscribeToken) =>
-  withApiClient((client) =>
-    client.unsubscribe.submit({
-      payload: { token },
-    }),
-  );
-
 const root = document.querySelector("[data-unsubscribe-root]");
 
 if (root instanceof HTMLElement) {
   const form = root.querySelector<HTMLFormElement>("[data-form]");
   const confirmPanel = root.querySelector<HTMLElement>("[data-confirm-panel]");
   const success = root.querySelector<HTMLElement>("[data-success]");
+  const successTitle = root.querySelector<HTMLElement>("[data-success-title]");
   const submit = root.querySelector<HTMLButtonElement>("[data-submit]");
   const formError = root.querySelector<HTMLElement>("[data-form-error]");
-  const token = root.dataset.token;
-  let decodedToken: UnsubscribeToken | undefined;
-
-  if (token !== undefined) {
-    try {
-      decodedToken = decodeToken(token);
-    } catch {
-      decodedToken = undefined;
-    }
-  }
+  const decodedToken = Result.getOrUndefined(
+    decodeUnsubscribeToken(root.dataset.token),
+  );
 
   if (
     form !== null &&
     confirmPanel !== null &&
     success !== null &&
+    successTitle !== null &&
     submit !== null &&
     formError !== null &&
     decodedToken !== undefined
@@ -64,7 +52,9 @@ if (root instanceof HTMLElement) {
 
     const setSubmitting = (isSubmitting: boolean) => {
       submit.disabled = isSubmitting;
-      submit.textContent = isSubmitting ? "Stopping..." : "Stop emails";
+      submit.textContent = isSubmitting
+        ? "Stopping..."
+        : "Stop receiving emails";
     };
 
     form.addEventListener("submit", (event) => {
@@ -72,10 +62,15 @@ if (root instanceof HTMLElement) {
       setFormError(undefined);
       setSubmitting(true);
 
-      void submitUnsubscribe(decodedToken)
+      void withApiClient((client) =>
+        client.unsubscribe.submit({
+          payload: { token: decodedToken },
+        }),
+      )
         .then(() => {
           setHidden(confirmPanel, true);
           setHidden(success, false);
+          successTitle.focus();
         })
         .catch((error: unknown) => {
           setFormError(getSubmitErrorMessage(error));
