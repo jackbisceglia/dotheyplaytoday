@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "start:notify": "cd ../.. && node packages/jobs-v2/dist/notify/cli.js",
+    "start:notify": "node dist/notify/cli.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
