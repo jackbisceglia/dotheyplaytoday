@@ -18,14 +18,18 @@ const { subjects } = Astro.props;
 
 const teams = getTeams(subjects);
 const teamsByLeague = Object.groupBy(teams, (team) => team.details.leagueId);
-const leagues = sportsLeagues
-  .map((league) => ({
-    ...league,
-    teams: teamsByLeague[league.id] ?? [],
-  }))
-  .filter((league) => league.teams.length > 0);
-const leaguesOption =
-  leagues.length === 0 ? Option.none() : Option.some(leagues);
+const leaguesOption = (() => {
+  const availableLeagues = sportsLeagues
+    .map((league) => ({
+      ...league,
+      teams: teamsByLeague[league.id] ?? [],
+    }))
+    .filter((league) => league.teams.length > 0);
+
+  return availableLeagues.length === 0
+    ? Option.none()
+    : Option.some(availableLeagues);
+})();
 ---
 
 <div class="signup-root" data-signup-root>
