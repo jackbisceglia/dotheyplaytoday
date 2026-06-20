@@ -1,6 +1,6 @@
 ---
 import type { Subject } from "@dtpt/core-v2/modules/subjects/schema";
-import { Array as EffectArray } from "effect";
+import { Array } from "effect";
 
 import {
   getSportsLogo,
@@ -18,43 +18,30 @@ const { subjects } = Astro.props;
 
 const teams = getTeams(subjects);
 const teamsByLeague = Object.groupBy(teams, (team) => team.details.leagueId);
-const leagueIds = (
-  Object.keys(teamsByLeague) as Array<keyof typeof teamsByLeague>
-).filter((leagueId) => (teamsByLeague[leagueId]?.length ?? 0) > 0);
-const leagueMetadataById = Object.fromEntries(
-  sportsLeagues.map((league, sortIndex) => [
-    league.id,
-    { ...league, sortIndex },
-  ]),
-);
-const availableLeagues = leagueIds
-  .flatMap((leagueId) => {
-    const league = leagueMetadataById[leagueId];
-    const teams = teamsByLeague[leagueId];
-
-    return league === undefined || teams === undefined
-      ? []
-      : [{ ...league, teams }];
-  })
-  .toSorted((a, b) => a.sortIndex - b.sortIndex);
+const leagues = sportsLeagues
+  .map((league) => ({
+    ...league,
+    teams: teamsByLeague[league.id] ?? [],
+  }))
+  .filter((league) => league.teams.length > 0);
 ---
 
 <div class="signup-root" data-signup-root>
   <SignupSuccess />
 
   {
-    EffectArray.match(availableLeagues, {
+    Array.match(leagues, {
       onEmpty: () => (
         <p class="form-error form-error-banner" role="status">
           Team signup is temporarily unavailable. Check back soon.
         </p>
       ),
-      onNonEmpty: (availableLeagues) => (
+      onNonEmpty: (leagues) => (
         <form class="signup-form" data-form novalidate>
           <fieldset class="form-section">
             <legend class="visually-hidden">League</legend>
             <div class="league-row">
-              {availableLeagues.map((league, index) => (
+              {leagues.map((league, index) => (
                 <button
                   class="league-pill"
                   type="button"
@@ -77,7 +64,7 @@ const availableLeagues = leagueIds
 
           <fieldset class="form-section" aria-describedby="team-message">
             <legend class="visually-hidden">Teams</legend>
-            {availableLeagues.map((league, index) => (
+            {leagues.map((league, index) => (
               <div
                 class="team-grid"
                 data-team-grid={league.id}
