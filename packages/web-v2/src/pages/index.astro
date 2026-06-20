@@ -1,7 +1,14 @@
 ---
-import ScoreTicker from "../modules/ui/ticker.astro";
-import SignupForm from "../modules/signup/Form.astro";
 import Layout from "../layouts/layout.astro";
+import SignupForm from "../modules/signup/Form.astro";
+import ScoreTicker from "../modules/ui/ticker.astro";
+import { withApiClient } from "../lib/api.js";
+
+export const prerender = false;
+
+const subjects = await withApiClient((client) => client.subjects.list()).catch(
+  () => [],
+);
 ---
 
 <Layout
@@ -30,6 +37,6 @@ import Layout from "../layouts/layout.astro";
     <div class="signup-header">
       <h2 class="signup-title">Get on the roster</h2>
     </div>
-    <SignupForm />
+    <SignupForm subjects={subjects} />
   </section>
 </Layout>
