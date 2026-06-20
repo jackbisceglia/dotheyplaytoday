@@ -8,6 +8,7 @@ import {
   SubjectInsert,
   subjectsTable,
   SubscriptionsLayer,
+  SubjectsLayer,
   Users,
   UsersLayer,
 } from "@dtpt/core-v2";
@@ -26,6 +27,7 @@ import { HttpApiBuilder } from "effect/unstable/httpapi";
 import { makeRateLimiterLayer } from "./rate-limit/service.js";
 import { PingGroupLayer } from "./routes.ping.js";
 import { SignupGroupLayer } from "./routes.signup.js";
+import { SubjectsGroupLayer } from "./routes.subjects.js";
 import { UnsubscribeGroupLayer } from "./routes.unsubscribe.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -206,12 +208,18 @@ function makeUnsubscribeTestLayer(config: {
   const RuntimeLayer = Layer.mergeAll(
     makeRateLimiterLayer(Config.succeed(config)),
     SubscriptionsLayer,
+    SubjectsLayer,
     UsersLayer,
   ).pipe(Layer.provideMerge(layerTest));
 
   const ServerLayer = HttpRouter.serve(
     HttpApiBuilder.layer(Api).pipe(
-      Layer.provide([PingGroupLayer, SignupGroupLayer, UnsubscribeGroupLayer]),
+      Layer.provide([
+        PingGroupLayer,
+        SignupGroupLayer,
+        SubjectsGroupLayer,
+        UnsubscribeGroupLayer,
+      ]),
     ),
     { disableListenLog: true, disableLogger: true },
   ).pipe(

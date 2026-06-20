@@ -11,6 +11,7 @@ export {
   SignupRequest,
   SignupResponse,
 } from "./contracts/signup.js";
+export { SubjectsGroup, SubjectsResponse } from "./contracts/subjects.js";
 export {
   Request as UnsubscribeRequest,
   Response as UnsubscribeResponse,
