@@ -1,22 +1,19 @@
 import { ConfigProvider, Effect, Layer } from "effect";
 import { Path } from "effect/Path";
 
-type DotEnvPath = string | URL;
+const WORKSPACE_ROOT_URL = new URL("../../../../../", import.meta.url);
 
 /**
- * Installs a caller-selected `.env` config provider for Node runtimes.
- * URL paths are resolved independently from the current working directory.
+ * Installs the workspace-root `.env` config provider for Node runtimes.
+ * The path is anchored to this package so package scripts and root one-offs
+ * resolve the same file.
  */
 export const createConfigProviderFromDotEnv = Effect.fn(
-  function* (envPath: DotEnvPath) {
+  function* () {
     const path = yield* Path;
-
-    const resolvedDotEnvPath =
-      envPath instanceof URL
-        ? yield* path.fromFileUrl(envPath)
-        : path.isAbsolute(envPath)
-          ? envPath
-          : path.resolve(envPath);
+    const resolvedDotEnvPath = yield* path.fromFileUrl(
+      new URL(".env", WORKSPACE_ROOT_URL),
+    );
 
     const Provider = ConfigProvider.fromDotEnv({ path: resolvedDotEnvPath });
 

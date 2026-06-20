@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "cd ../.. && vitest run packages/core-v2/src"
+    "test": "pnpm -w exec vitest run packages/core-v2/src"
   },
   "dependencies": {
     "@effect/sql-sqlite-node": "4.0.0-beta.65",

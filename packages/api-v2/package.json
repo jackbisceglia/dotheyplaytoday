@@ -20,7 +20,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "pnpm --filter @dtpt/core-v2 build && cd ../.. && vitest run packages/api-v2/src"
+    "test": "pnpm --filter @dtpt/core-v2 build && pnpm -w exec vitest run packages/api-v2/src"
   },
   "dependencies": {
     "@dtpt/core-v2": "workspace:*",

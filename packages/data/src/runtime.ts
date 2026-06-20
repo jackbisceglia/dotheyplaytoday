@@ -9,9 +9,7 @@ import {
 import { createConfigProviderFromDotEnv } from "@dtpt/core-v2/lib/config/providers";
 import { Layer, ManagedRuntime, pipe } from "effect";
 
-export const DotEnvConfigProvider = createConfigProviderFromDotEnv(
-  new URL("../../../.env", import.meta.url),
-);
+export const DotEnvConfigProvider = createConfigProviderFromDotEnv();
 
 export const DataRuntime = ManagedRuntime.make(
   pipe(

@@ -5,9 +5,7 @@ import { Layer, ManagedRuntime, pipe } from "effect";
 
 import { RateLimiterLayer } from "./rate-limit/service.js";
 
-export const DotEnvConfigProvider = createConfigProviderFromDotEnv(
-  new URL("../../../.env", import.meta.url),
-);
+export const DotEnvConfigProvider = createConfigProviderFromDotEnv();
 
 export const ApiRuntime = ManagedRuntime.make(
   pipe(
