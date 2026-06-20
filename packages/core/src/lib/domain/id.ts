@@ -1,7 +1,15 @@
-import { Effect, Random, Schema } from "effect";
+import { Effect, Schema } from "effect";
 
 type BrandedIdSchema<A> = {
   readonly make: (value: string) => A;
+};
+
+type RuntimeCrypto = {
+  readonly randomUUID: () => string;
+};
+
+const runtimeCrypto = globalThis as typeof globalThis & {
+  readonly crypto: RuntimeCrypto;
 };
 
 export const Id = {
@@ -9,5 +17,5 @@ export const Id = {
     Schema.String.check(Schema.isUUID()).pipe(Schema.brand(brand)),
 
   createFromBrandedSchema: <A>(schema: BrandedIdSchema<A>): Effect.Effect<A> =>
-    Random.nextUUIDv4.pipe(Effect.map((id) => schema.make(id))),
+    Effect.sync(() => schema.make(runtimeCrypto.crypto.randomUUID())),
 } as const;

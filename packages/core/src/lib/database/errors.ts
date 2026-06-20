@@ -20,7 +20,7 @@ const utils = {
 
 const fields = {
   operation: Schema.String,
-  cause: Schema.optional(Schema.Defect),
+  cause: Schema.optional(Schema.Defect()),
   metadata: Schema.optional(Schema.Record(Schema.String, Schema.Unknown)),
 };
 

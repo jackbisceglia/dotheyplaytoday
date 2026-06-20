@@ -36,7 +36,11 @@ type EffectQuery<T> = QueryPromise<T> & EffectType.Effect<T, SqlError>;
 const QueryEffectPrototype = Effectable.Prototype({
   label: "DrizzleSqliteQuery",
   evaluate(this: EffectQuery<unknown>) {
-    return this.asEffect();
+    return (
+      this as EffectQuery<unknown> & {
+        readonly asEffect: () => EffectType.Effect<unknown, SqlError>;
+      }
+    ).asEffect();
   },
 });
 
