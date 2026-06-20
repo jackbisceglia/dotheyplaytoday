@@ -26,9 +26,9 @@ const leaguesOption = (() => {
     }))
     .filter((league) => league.teams.length > 0);
 
-  return availableLeagues.length === 0
-    ? Option.none()
-    : Option.some(availableLeagues);
+  return Option.fromIterable(
+    availableLeagues.length === 0 ? [] : [availableLeagues],
+  );
 })();
 ---
 
