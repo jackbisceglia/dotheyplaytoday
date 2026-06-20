@@ -15,11 +15,11 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "start:notify": "cd ../.. && node packages/jobs-v2/dist/notify/cli.js",
+    "start:notify": "node dist/notify/cli.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "pnpm --filter @dtpt/core-v2 build && cd ../.. && vitest run packages/jobs-v2/src"
+    "test": "pnpm --filter @dtpt/core-v2 build && pnpm -w exec vitest run packages/jobs-v2/src"
   },
   "dependencies": {
     "@dtpt/core-v2": "workspace:*",

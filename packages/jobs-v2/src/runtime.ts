@@ -4,9 +4,10 @@ import {
   EventsLayer,
   SubscriptionsLayer,
 } from "@dtpt/core-v2";
+import { createConfigProviderFromDotEnv } from "@dtpt/core-v2/lib/config/providers";
 import { Layer, ManagedRuntime, pipe } from "effect";
 
-import { DotEnvConfigProvider } from "./lib/env.js";
+export const DotEnvConfigProvider = createConfigProviderFromDotEnv();
 
 export const JobsRuntime = ManagedRuntime.make(
   pipe(

@@ -1,10 +1,6 @@
-import { ConfigProvider, Layer, ManagedRuntime } from "effect";
+import { createConfigProviderFromViteEnv } from "@dtpt/core-v2/lib/config/providers";
+import { Layer, ManagedRuntime } from "effect";
 import { FetchHttpClient } from "effect/unstable/http";
-
-// TODO: Move into core-v2 when v1/v2 env loading is unified.
-function createConfigProviderFromViteEnv(viteEnv: unknown) {
-  return ConfigProvider.layer(ConfigProvider.fromUnknown(viteEnv));
-}
 
 export const ViteEnvConfigProvider = createConfigProviderFromViteEnv(
   import.meta.env,

@@ -6,7 +6,7 @@
   "scripts": {
     "dev:web-v2": "pnpm @web-v2 dev",
     "dev:api-v2": "pnpm @api-v2 dev",
-    "initialize": "pnpm build && node packages/data/dist/seed/cli.js dev",
+    "initialize": "pnpm @data seed:dev",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
     "lint": "pnpm -r run lint",
