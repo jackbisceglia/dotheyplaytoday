@@ -1,6 +1,6 @@
 ---
 import type { Subject } from "@dtpt/core-v2/modules/subjects/schema";
-import { Option, pipe } from "effect";
+import { Array as EffectArray } from "effect";
 
 import {
   getSportsLogo,
@@ -18,16 +18,8 @@ const { subjects } = Astro.props;
 
 const teams = getTeams(subjects);
 const teamsByLeague = Object.groupBy(teams, (team) => team.details.leagueId);
-const leaguesOption = pipe(
-  sportsLeagues
-    .map((league) => ({
-      ...league,
-      teams: teamsByLeague[league.id] ?? [],
-    }))
-    .filter((league) => league.teams.length > 0),
-  (availableLeagues) =>
-    availableLeagues.length === 0 ? [] : [availableLeagues],
-  Option.fromIterable,
+const availableLeagues = sportsLeagues.filter(
+  (league) => (teamsByLeague[league.id]?.length ?? 0) > 0,
 );
 ---
 
@@ -35,13 +27,13 @@ const leaguesOption = pipe(
   <SignupSuccess />
 
   {
-    Option.match(leaguesOption, {
-      onNone: () => (
+    EffectArray.match(availableLeagues, {
+      onEmpty: () => (
         <p class="form-error form-error-banner" role="status">
           Team signup is temporarily unavailable. Check back soon.
         </p>
       ),
-      onSome: (availableLeagues) => (
+      onNonEmpty: (availableLeagues) => (
         <form class="signup-form" data-form novalidate>
           <fieldset class="form-section">
             <legend class="visually-hidden">League</legend>
@@ -76,7 +68,7 @@ const leaguesOption = pipe(
                 hidden={index !== 0}
                 style={index !== 0 ? "display: none;" : undefined}
               >
-                {league.teams.map((team) => (
+                {(teamsByLeague[league.id] ?? []).map((team) => (
                   <button
                     type="button"
                     class="team-card"
