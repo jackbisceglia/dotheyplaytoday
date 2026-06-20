@@ -28,12 +28,12 @@ The forward path is built around:
 
 ### Codebase Shape
 
-- `packages/core-v2`: current domain model, schemas, persistence, subscriptions,
+- `packages/core`: current domain model, schemas, persistence, subscriptions,
   event reads, and channel boundaries.
-- `packages/api-v2`: HTTP API built on top of `core-v2`.
-- `packages/jobs-v2`: notify job built on top of `core-v2`.
+- `packages/api`: HTTP API built on top of `core`.
+- `packages/jobs`: notify job built on top of `core`.
 - `packages/data`: seed/import data, including NBA subjects and events.
-- `packages/web-v2`: Astro signup frontend built on top of `core-v2`.
+- `packages/web`: Astro signup frontend built on top of `core`.
 - `docs/rewrite`: canonical product, domain, and rebuild notes.
 
 ## Coming Soon
@@ -56,9 +56,9 @@ pnpm build
 Package helpers:
 
 ```bash
-pnpm @core-v2 <cmd>
-pnpm @api-v2 <cmd>
-pnpm @web-v2 <cmd>
-pnpm @jobs-v2 <cmd>
+pnpm @core <cmd>
+pnpm @api <cmd>
+pnpm @web <cmd>
+pnpm @jobs <cmd>
 pnpm @data <cmd>
 ```

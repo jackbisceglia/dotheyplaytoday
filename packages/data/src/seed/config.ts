@@ -1,4 +1,4 @@
-import { EmailAddressFromString } from "@dtpt/core-v2";
+import { EmailAddressFromString } from "@dtpt/core";
 import { Config } from "effect";
 
 export const SeedConfig = Config.all({

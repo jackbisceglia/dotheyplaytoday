@@ -3,7 +3,7 @@ import {
   EventSourceId,
   ParticipantInsert,
   SubjectInsert,
-} from "@dtpt/core-v2";
+} from "@dtpt/core";
 import { HashSet, Schema } from "effect";
 
 import { SeedCollectionId } from "./seed.js";

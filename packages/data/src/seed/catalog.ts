@@ -4,7 +4,7 @@ import {
   Events,
   StringParts,
   Subjects,
-} from "@dtpt/core-v2";
+} from "@dtpt/core";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { Effect, HashMap, Option, Schema } from "effect";
 

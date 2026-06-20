@@ -1,7 +1,6 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import {
   DatabaseLayer,
-  EventsLayer,
   SubjectsLayer,
   SubscriptionsLayer,
   UsersLayer,
@@ -9,11 +8,18 @@ import {
 import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/config/providers";
 import { Layer, ManagedRuntime, pipe } from "effect";
 
+import { RateLimiterLayer } from "./rate-limit/service.js";
+
 export const DotEnvConfigProvider = createConfigProviderFromDotEnv();
 
-export const DataRuntime = ManagedRuntime.make(
+export const ApiRuntime = ManagedRuntime.make(
   pipe(
-    Layer.mergeAll(SubjectsLayer, EventsLayer, UsersLayer, SubscriptionsLayer),
+    Layer.mergeAll(
+      SubjectsLayer,
+      SubscriptionsLayer,
+      UsersLayer,
+      RateLimiterLayer,
+    ),
     Layer.provideMerge(DatabaseLayer),
     Layer.provideMerge(DotEnvConfigProvider),
     Layer.provideMerge(NodeServices.layer),

@@ -1,5 +1,5 @@
 {
-  "name": "@dtpt/data",
+  "name": "@dtpt/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,14 +18,14 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "pnpm --filter @dtpt/core build && pnpm -w exec vitest run packages/data/src",
-    "seed:dev": "pnpm --filter @dtpt/core build && pnpm build && node dist/seed/cli.js dev",
-    "seed:prod": "pnpm --filter @dtpt/core build && pnpm build && node dist/seed/cli.js prod"
+    "test": "pnpm -w exec vitest run packages/core/src"
   },
   "dependencies": {
-    "@dtpt/core": "workspace:*",
-    "@effect/platform-node": "4.0.0-beta.65",
-    "effect": "4.0.0-beta.65"
+    "@effect/sql-sqlite-node": "4.0.0-beta.65",
+    "better-sqlite3": "^12.4.1",
+    "drizzle-orm": "1.0.0-rc.3",
+    "effect": "4.0.0-beta.65",
+    "resend": "catalog:"
   },
   "devDependencies": {
     "@effect/vitest": "4.0.0-beta.65"

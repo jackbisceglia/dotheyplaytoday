@@ -5,7 +5,7 @@ import {
   type User,
   UserInsert,
   Users as UsersService,
-} from "@dtpt/core-v2";
+} from "@dtpt/core";
 import { Effect, Schema, Struct } from "effect";
 
 import { Teams } from "../sports/nba/subjects.js";
