@@ -1,0 +1,181 @@
+---
+import type { Subject } from "@dtpt/core/modules/subjects/schema";
+import { Array } from "effect";
+
+import {
+  getSportsLogo,
+  getTeams,
+  leagues as sportsLeagues,
+} from "../../lib/catalog/sports/index.js";
+import { sendTime, sendTimeIntervals } from "../../lib/time.js";
+import SignupSuccess from "./Success.astro";
+
+interface Props {
+  readonly subjects: readonly Subject[];
+}
+
+const { subjects } = Astro.props;
+
+const teams = getTeams(subjects);
+const teamsByLeague = Object.groupBy(teams, (team) => team.details.leagueId);
+const leagues = sportsLeagues
+  .map((league) => ({
+    ...league,
+    teams: teamsByLeague[league.id] ?? [],
+  }))
+  .filter((league) => league.teams.length > 0);
+---
+
+<div class="signup-root" data-signup-root>
+  <SignupSuccess />
+
+  {
+    Array.match(leagues, {
+      onEmpty: () => (
+        <p class="form-error form-error-banner" role="status">
+          Team signup is temporarily unavailable. Check back soon.
+        </p>
+      ),
+      onNonEmpty: (leagues) => (
+        <form class="signup-form" data-form novalidate>
+          <fieldset class="form-section">
+            <legend class="visually-hidden">League</legend>
+            <div class="league-row">
+              {leagues.map((league, index) => (
+                <button
+                  class="league-pill"
+                  type="button"
+                  aria-pressed={index === 0 ? "true" : "false"}
+                  data-league-id={league.id}
+                >
+                  {league.label}
+                </button>
+              ))}
+              <button class="league-pill" type="button" disabled>
+                MLB
+                <span class="visually-hidden"> coming soon</span>
+              </button>
+              <button class="league-pill" type="button" disabled>
+                NHL
+                <span class="visually-hidden"> coming soon</span>
+              </button>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section" aria-describedby="team-message">
+            <legend class="visually-hidden">Teams</legend>
+            {leagues.map((league, index) => (
+              <div
+                class="team-grid"
+                data-team-grid={league.id}
+                hidden={index !== 0}
+                style={index !== 0 ? "display: none;" : undefined}
+              >
+                {league.teams.map((team) => (
+                  <button
+                    type="button"
+                    class="team-card"
+                    aria-pressed="false"
+                    data-team-id={team.id}
+                  >
+                    <span class="team-glyph" aria-hidden="true">
+                      {getSportsLogo(team.details)}
+                    </span>
+                    <span class="team-abbr">{team.details.abbreviation}</span>
+                    <span class="team-name">{team.details.display}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            <div class="team-message-slot">
+              <p id="team-message" data-team-message hidden />
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend class="visually-hidden">Delivery</legend>
+            <div class="form-fields">
+              <div class="form-field">
+                <label class="form-label" for="signup-email">
+                  Email
+                </label>
+                <input
+                  id="signup-email"
+                  class="form-input"
+                  type="email"
+                  name="email"
+                  autocomplete="email"
+                  placeholder="you@example.com"
+                  required
+                  aria-describedby="signup-email-error"
+                  data-email
+                />
+                <span
+                  id="signup-email-error"
+                  class="form-error"
+                  data-error-for="email"
+                  role="alert"
+                  hidden
+                />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="signup-send-time">
+                  Send time
+                </label>
+                <select
+                  id="signup-send-time"
+                  class="form-input"
+                  name="sendTime"
+                  required
+                  aria-describedby="signup-send-time-error"
+                  data-send-time
+                >
+                  {sendTimeIntervals.map((interval) => (
+                    <option
+                      value={interval.value}
+                      selected={interval.value === sendTime.default}
+                    >
+                      {interval.label}
+                    </option>
+                  ))}
+                </select>
+                <span
+                  id="signup-send-time-error"
+                  class="form-error"
+                  data-error-for="sendTime"
+                  role="alert"
+                  hidden
+                />
+              </div>
+            </div>
+            <p
+              class="form-error"
+              data-error-for="timezone"
+              role="alert"
+              hidden
+            />
+          </fieldset>
+
+          <div class="form-submit-row">
+            <button class="btn btn-primary" type="submit" data-submit>
+              Sign up
+            </button>
+          </div>
+
+          <p
+            class="form-error form-error-banner"
+            data-form-error
+            role="alert"
+            hidden
+          >
+            Something went wrong on our end. Your picks are still here; try
+            submitting again.
+          </p>
+        </form>
+      ),
+    })
+  }
+</div>
+
+<script src="./client.ts"></script>

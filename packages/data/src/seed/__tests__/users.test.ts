@@ -9,11 +9,11 @@ import {
   subscriptionsTable,
   UsersLayer,
   usersTable,
-} from "@dtpt/core-v2";
+} from "@dtpt/core";
 import {
   createTables,
   layerTest,
-} from "@dtpt/core-v2/lib/database/__tests__/setup";
+} from "@dtpt/core/lib/database/__tests__/setup";
 import { ConfigProvider, Effect, Layer, Schema } from "effect";
 
 import { SportsSeed } from "../../schema/sports.js";

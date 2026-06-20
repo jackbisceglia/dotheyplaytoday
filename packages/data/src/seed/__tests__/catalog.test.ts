@@ -12,13 +12,13 @@ import {
   subscriptionsTable,
   usersTable,
   eventsTable,
-} from "@dtpt/core-v2";
+} from "@dtpt/core";
 import {
   createTables,
   layerTest,
-} from "@dtpt/core-v2/lib/database/__tests__/setup";
-import { SubscriptionInsert } from "@dtpt/core-v2/modules/subscriptions/schema";
-import { User, UserInsert } from "@dtpt/core-v2/modules/users/schema";
+} from "@dtpt/core/lib/database/__tests__/setup";
+import { SubscriptionInsert } from "@dtpt/core/modules/subscriptions/schema";
+import { User, UserInsert } from "@dtpt/core/modules/users/schema";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
 import { SportsSeed } from "../../schema/sports.js";
@@ -523,7 +523,7 @@ describe("data seed catalog", () => {
     }).pipe(Effect.provide(layerSeedTest)),
   );
 
-  it.effect("reset clears all current v2 seed tables", () =>
+  it.effect("reset clears all current seed tables", () =>
     Effect.gen(function* () {
       yield* createTables;
 

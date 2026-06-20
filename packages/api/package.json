@@ -1,5 +1,5 @@
 {
-  "name": "@dtpt/data",
+  "name": "@dtpt/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,12 +15,12 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "dev": "pnpm --filter @dtpt/core build && tsx watch src/index.ts",
+    "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "pnpm --filter @dtpt/core build && pnpm -w exec vitest run packages/data/src",
-    "seed:dev": "pnpm --filter @dtpt/core build && pnpm build && node dist/seed/cli.js dev",
-    "seed:prod": "pnpm --filter @dtpt/core build && pnpm build && node dist/seed/cli.js prod"
+    "test": "pnpm --filter @dtpt/core build && pnpm -w exec vitest run packages/api/src"
   },
   "dependencies": {
     "@dtpt/core": "workspace:*",
@@ -28,6 +28,7 @@
     "effect": "4.0.0-beta.65"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0-beta.65"
+    "@effect/vitest": "4.0.0-beta.65",
+    "tsx": "^4.21.0"
   }
 }

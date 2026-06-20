@@ -1,5 +1,5 @@
 {
-  "name": "@dtpt/data",
+  "name": "@dtpt/jobs",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,12 +15,11 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "start:notify": "node dist/notify/cli.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "pnpm --filter @dtpt/core build && pnpm -w exec vitest run packages/data/src",
-    "seed:dev": "pnpm --filter @dtpt/core build && pnpm build && node dist/seed/cli.js dev",
-    "seed:prod": "pnpm --filter @dtpt/core build && pnpm build && node dist/seed/cli.js prod"
+    "test": "pnpm --filter @dtpt/core build && pnpm -w exec vitest run packages/jobs/src"
   },
   "dependencies": {
     "@dtpt/core": "workspace:*",

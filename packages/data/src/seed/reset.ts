@@ -8,7 +8,7 @@ import {
   subjectsTable,
   subscriptionsTable,
   usersTable,
-} from "@dtpt/core-v2";
+} from "@dtpt/core";
 import { Effect } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 

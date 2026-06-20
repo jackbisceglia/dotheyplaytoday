@@ -62,11 +62,11 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
 
-  packages/api-v2:
+  packages/api:
     dependencies:
-      '@dtpt/core-v2':
+      '@dtpt/core':
         specifier: workspace:*
-        version: link:../core-v2
+        version: link:../core
       '@effect/platform-node':
         specifier: 4.0.0-beta.65
         version: 4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)
@@ -81,7 +81,7 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
 
-  packages/core-v2:
+  packages/core:
     dependencies:
       '@effect/sql-sqlite-node':
         specifier: 4.0.0-beta.65
@@ -105,9 +105,9 @@ importers:
 
   packages/data:
     dependencies:
-      '@dtpt/core-v2':
+      '@dtpt/core':
         specifier: workspace:*
-        version: link:../core-v2
+        version: link:../core
       '@effect/platform-node':
         specifier: 4.0.0-beta.65
         version: 4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)
@@ -119,11 +119,11 @@ importers:
         specifier: 4.0.0-beta.65
         version: 4.0.0-beta.65(effect@4.0.0-beta.65)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  packages/jobs-v2:
+  packages/jobs:
     dependencies:
-      '@dtpt/core-v2':
+      '@dtpt/core':
         specifier: workspace:*
-        version: link:../core-v2
+        version: link:../core
       '@effect/platform-node':
         specifier: 4.0.0-beta.65
         version: 4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)
@@ -135,14 +135,14 @@ importers:
         specifier: 4.0.0-beta.65
         version: 4.0.0-beta.65(effect@4.0.0-beta.65)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
-  packages/web-v2:
+  packages/web:
     dependencies:
       '@astrojs/cloudflare':
         specifier: ^13.7.0
         version: 13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)
-      '@dtpt/core-v2':
+      '@dtpt/core':
         specifier: workspace:*
-        version: link:../core-v2
+        version: link:../core
       astro:
         specifier: ^6.4.6
         version: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
@@ -283,16 +283,8 @@ packages:
     resolution: {integrity: sha512-71grXU6+5hl+3CL3joOxlj/AW6rmhthuTlG0fRqsTrhPArQBpZuUFzCIlKOGdcafLUa/i1hBdV78ZxJdlvRA+g==}
     engines: {node: '>=20'}
 
-  '@babel/helper-string-parser@7.27.1':
-    resolution: {integrity: sha512-qMlSxKbpRlAridDExk92nSobyDdpPijUq2DW6oDnUqd0iOGxmQjyqhMIihI9+zv4LPyZdRje2cavWPbCbWm3eA==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/helper-string-parser@7.29.7':
     resolution: {integrity: sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/helper-validator-identifier@7.28.5':
-    resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
     engines: {node: '>=6.9.0'}
 
   '@babel/helper-validator-identifier@7.29.7':
@@ -303,10 +295,6 @@ packages:
     resolution: {integrity: sha512-hnORnjP/1P/zFEndoeX+n+t1RwWRJiJpM/jO7FW32Kn9r5+sJB2JWOdYo4L6k78j15eCwY3Gm/7364B1EMwtNg==}
     engines: {node: '>=6.0.0'}
     hasBin: true
-
-  '@babel/types@7.29.0':
-    resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
-    engines: {node: '>=6.9.0'}
 
   '@babel/types@7.29.7':
     resolution: {integrity: sha512-4zBIxpPzowiZpusoFkyGVwakdRJUyuH5PxQ/PrqghfdFWWasvnCdPfQXHrenDai+gyLARulZjZowCOj6fjT4pA==}
@@ -4103,22 +4091,13 @@ snapshots:
       uuid: 8.3.2
     optional: true
 
-  '@babel/helper-string-parser@7.27.1': {}
-
   '@babel/helper-string-parser@7.29.7': {}
-
-  '@babel/helper-validator-identifier@7.28.5': {}
 
   '@babel/helper-validator-identifier@7.29.7': {}
 
   '@babel/parser@7.29.7':
     dependencies:
       '@babel/types': 7.29.7
-
-  '@babel/types@7.29.0':
-    dependencies:
-      '@babel/helper-string-parser': 7.27.1
-      '@babel/helper-validator-identifier': 7.28.5
 
   '@babel/types@7.29.7':
     dependencies:
@@ -5177,7 +5156,7 @@ snapshots:
       svgo: 4.0.1
       tinyclip: 0.1.14
       tinyexec: 1.2.4
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.17
       ultrahtml: 1.6.0
       unifont: 0.7.4
       unist-util-visit: 5.1.0
@@ -6137,7 +6116,7 @@ snapshots:
   magicast@0.5.3:
     dependencies:
       '@babel/parser': 7.29.7
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.7
       source-map-js: 1.2.1
 
   mailparser@3.9.1:
@@ -6552,7 +6531,7 @@ snapshots:
 
   node-abi@3.89.0:
     dependencies:
-      semver: 7.7.3
+      semver: 7.8.4
 
   node-fetch-native@1.6.7: {}
 
@@ -7164,7 +7143,7 @@ snapshots:
 
   tsx@4.21.0:
     dependencies:
-      esbuild: 0.27.2
+      esbuild: 0.27.7
       get-tsconfig: 4.13.6
     optionalDependencies:
       fsevents: 2.3.3
@@ -7181,7 +7160,7 @@ snapshots:
 
   typescript-auto-import-cache@0.3.6:
     dependencies:
-      semver: 7.7.3
+      semver: 7.8.4
 
   typescript-eslint@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
@@ -7453,7 +7432,7 @@ snapshots:
   volar-service-typescript@0.0.70(@volar/language-service@2.4.28):
     dependencies:
       path-browserify: 1.0.1
-      semver: 7.7.3
+      semver: 7.8.4
       typescript-auto-import-cache: 0.3.6
       vscode-languageserver-textdocument: 1.0.12
       vscode-nls: 5.2.0
