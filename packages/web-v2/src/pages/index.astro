@@ -6,7 +6,7 @@ import { withApiClient } from "../lib/api.js";
 
 export const prerender = false;
 
-const subjects = await withApiClient((client) => client.subjects.list()).catch(
+const subjects = await withApiClient((api) => api.subjects.list()).catch(
   () => [],
 );
 ---
