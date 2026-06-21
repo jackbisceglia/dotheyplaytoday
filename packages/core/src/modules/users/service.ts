@@ -9,7 +9,7 @@ import {
   mapToWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
-import { Id } from "../../lib/domain/id.js";
+import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
 
 export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
@@ -62,6 +62,7 @@ export const UsersLayer = Layer.effect(
   Users,
   Effect.gen(function* () {
     const database = yield* Database;
+    const id = yield* Id;
 
     const get: Users["Service"]["get"] = Effect.fn("Users.get")(function* (
       userId: User["id"],
@@ -148,8 +149,8 @@ export const UsersLayer = Layer.effect(
       "Users.upsertForSignup",
     )(function* (email: User["email"], timezone: User["timezone"]) {
       const insertable = yield* encodeUser({
-        id: yield* Id.createFromBrandedSchema(User.fields.id),
-        unsubscribeToken: yield* Id.createFromBrandedSchema(
+        id: yield* id.makeFromBrandedSchema(User.fields.id),
+        unsubscribeToken: yield* id.makeFromBrandedSchema(
           User.fields.unsubscribeToken,
         ),
         email,

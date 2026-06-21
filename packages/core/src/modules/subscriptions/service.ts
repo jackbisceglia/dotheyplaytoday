@@ -19,7 +19,7 @@ import {
   toWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
-import { Id } from "../../lib/domain/id.js";
+import { Id } from "../../lib/id/service.js";
 import { Subject, SubjectId } from "../subjects/schema.js";
 import { User } from "../users/schema.js";
 import { InvalidSubjectSelection, SubjectCapacityReached } from "./errors.js";
@@ -87,6 +87,7 @@ export const SubscriptionsLayer = Layer.effect(
   Effect.gen(function* () {
     const database = yield* Database;
     const sql = yield* SqlClient;
+    const id = yield* Id;
     const SubjectPolicy = SubscriptionPolicy.subject;
 
     const assertSubjectsExist = Effect.fn(function* (
@@ -166,10 +167,11 @@ export const SubscriptionsLayer = Layer.effect(
           subjectIds,
           (subjectId) =>
             Effect.gen(function* () {
-              const id = yield* Id.createFromBrandedSchema(SubscriptionId);
+              const subscriptionId =
+                yield* id.makeFromBrandedSchema(SubscriptionId);
 
               return yield* encodeSubscription({
-                id,
+                id: subscriptionId,
                 userId: input.user.id,
                 subjectId,
                 schedule: input.schedule,

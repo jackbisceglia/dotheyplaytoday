@@ -51,7 +51,7 @@ Scope:
 - Implement the `Users` service.
 - Keep decode DB reads / encode DB writes at service boundaries.
 - Keep service inputs as decoded domain values; raw API/input normalization belongs at route, job, seed, or importer boundaries.
-- Use the shared `Id.SchemaBranded` / `Id.createFromBrandedSchema(EntityId)` pattern for generated ids.
+- Use the shared `Id.SchemaBranded` pattern and the `Id` service's `makeFromBrandedSchema(EntityId)` helper for generated ids.
 - Implement `Users` methods needed by later flows: primary read, email read, unsubscribe-token read, signup upsert, and remove.
 - Generate `unsubscribeToken` for new users and preserve it on signup resubmission.
 - Map database failures to shared infrastructure errors with operation metadata.

@@ -11,7 +11,7 @@ import type {
   Check,
   TableSchemasMatch,
 } from "../../lib/database/utils.js";
-import { Id } from "../../lib/domain/id.js";
+import { Id } from "../../lib/id/service.js";
 
 export type UserSchemasMatchTable = Check<
   TableSchemasMatch<typeof usersTable, typeof User, typeof UserInsert>

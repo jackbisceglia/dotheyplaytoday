@@ -31,7 +31,10 @@ declare module "drizzle-orm" {
   interface QueryPromise<T> extends EffectType.Effect<T, SqlError> {}
 }
 
-type EffectQuery<T> = QueryPromise<T> & EffectType.Effect<T, SqlError>;
+type EffectQuery<T> = QueryPromise<T> &
+  EffectType.Effect<T, SqlError> & {
+    asEffect(): EffectType.Effect<T, SqlError>;
+  };
 
 const QueryEffectPrototype = Effectable.Prototype({
   label: "DrizzleSqliteQuery",
