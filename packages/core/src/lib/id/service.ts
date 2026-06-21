@@ -7,7 +7,7 @@ export type BrandedIdSchema<A> = {
 export class Id extends Context.Service<
   Id,
   {
-    readonly generate: Effect.Effect<string>;
+    readonly generate: () => Effect.Effect<string>;
     readonly makeFromBrandedSchema: <A>(
       schema: BrandedIdSchema<A>,
     ) => Effect.Effect<A>;
@@ -22,11 +22,13 @@ export const IdLayer = Layer.effect(
   Effect.gen(function* () {
     const crypto = yield* Crypto.Crypto;
 
-    const generate = crypto.randomUUIDv4.pipe(Effect.orDie);
+    const generate: Id["Service"]["generate"] = Effect.fn("Id.generate")(() =>
+      crypto.randomUUIDv4.pipe(Effect.orDie),
+    );
 
     const makeFromBrandedSchema: Id["Service"]["makeFromBrandedSchema"] =
       Effect.fn("Id.makeFromBrandedSchema")((schema) =>
-        generate.pipe(Effect.map(schema.make)),
+        generate().pipe(Effect.map(schema.make)),
       );
 
     return Id.of({ generate, makeFromBrandedSchema });
