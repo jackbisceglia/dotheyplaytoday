@@ -19,7 +19,7 @@ import {
   toWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
-import { Id } from "../../lib/domain/id.js";
+import { Id } from "../../lib/id/service.js";
 import type { WithOptionalKeys } from "../../lib/types.js";
 import { SubjectId } from "../subjects/schema.js";
 import { EventNotFound } from "./errors.js";
@@ -92,6 +92,7 @@ export const EventsLayer = Layer.effect(
   Effect.gen(function* () {
     const database = yield* Database;
     const sql = yield* SqlClient;
+    const id = yield* Id;
 
     const get: Events["Service"]["get"] = Effect.fn("Events.get")(
       function* (eventId) {
@@ -156,11 +157,12 @@ export const EventsLayer = Layer.effect(
 
     const upsert: Events["Service"]["upsert"] = Effect.fn("Events.upsert")(
       function* (event) {
-        const id =
-          event.id ?? (yield* Id.createFromBrandedSchema(Event.fields.id));
+        const eventId =
+          event.id ?? (yield* id.makeFromBrandedSchema(Event.fields.id));
+
         const insertable = yield* encodeEvent({
           ...event,
-          id,
+          id: eventId,
         });
 
         const rows = yield* database
@@ -197,11 +199,12 @@ export const EventsLayer = Layer.effect(
       const insertableParticipants = yield* Effect.forEach(
         participants,
         Effect.fn(function* (participant) {
-          const id = yield* Id.createFromBrandedSchema(Participant.fields.id);
+          const participantId =
+            yield* id.makeFromBrandedSchema(Participant.fields.id);
 
           const insertable = yield* encodeParticipant({
             ...participant,
-            id,
+            id: participantId,
             eventId,
           });
 

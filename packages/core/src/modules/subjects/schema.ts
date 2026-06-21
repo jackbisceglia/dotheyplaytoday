@@ -10,7 +10,7 @@ import type {
   Check,
   TableSchemasMatch,
 } from "../../lib/database/utils.js";
-import { Id } from "../../lib/domain/id.js";
+import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
 import { SportTeamSubject } from "./variants/sport.schema.js";
 

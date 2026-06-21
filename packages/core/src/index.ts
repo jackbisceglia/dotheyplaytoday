@@ -29,6 +29,7 @@ export {
   DatabaseWriteError,
 } from "./lib/database/errors.js";
 export { createTablesIfMissing } from "./lib/database/schema-setup.js";
+export { Id, IdLayer } from "./lib/id/service.js";
 export { StringPart, StringParts } from "./lib/string.js";
 export { buildUnsubscribeUrl } from "./lib/unsubscribe.js";
 export type {

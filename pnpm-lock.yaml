@@ -68,15 +68,15 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@effect/platform-node':
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)(ioredis@5.9.1)
       effect:
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -84,24 +84,27 @@ importers:
   packages/core:
     dependencies:
       '@effect/sql-sqlite-node':
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65(effect@4.0.0-beta.65)
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)
       better-sqlite3:
         specifier: ^12.4.1
         version: 12.8.0
       drizzle-orm:
         specifier: 1.0.0-rc.3
-        version: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.65)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3)
+        version: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.73)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3)
       effect:
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73
       resend:
         specifier: 'catalog:'
         version: 6.9.1
     devDependencies:
+      '@effect/platform-node':
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)(ioredis@5.9.1)
       '@effect/vitest':
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
   packages/data:
     dependencies:
@@ -109,15 +112,15 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@effect/platform-node':
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)(ioredis@5.9.1)
       effect:
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
   packages/jobs:
     dependencies:
@@ -125,30 +128,30 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@effect/platform-node':
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)(ioredis@5.9.1)
       effect:
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65(effect@4.0.0-beta.65)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
 
   packages/web:
     dependencies:
       '@astrojs/cloudflare':
         specifier: ^13.7.0
-        version: 13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)
+        version: 13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)
       '@dtpt/core':
         specifier: workspace:*
         version: link:../core
       astro:
         specifier: ^6.4.6
-        version: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
+        version: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
       effect:
-        specifier: 4.0.0-beta.65
-        version: 4.0.0-beta.65
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.9
@@ -376,17 +379,17 @@ packages:
     peerDependencies:
       effect: ^4.0.0-beta.73
 
-  '@effect/platform-node@4.0.0-beta.65':
-    resolution: {integrity: sha512-QQy3KRcMwP0TngQdfQGl2u1zp03B7k7DuF5SNS8aZhD0dDBpKZpCwFad1ODY5qdY3ycPgMwBwKRRK7y/aw0C9w==}
+  '@effect/platform-node@4.0.0-beta.73':
+    resolution: {integrity: sha512-YYkUnmcs6EiRk8K/xNCU3l3jl1YbrhCHCJp+y32DWlKhhZot24/hvw0zYw0aymAtuI9dzAdPryVZkksH4+7ovw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.0-beta.65
+      effect: ^4.0.0-beta.73
       ioredis: ^5.7.0
 
-  '@effect/sql-sqlite-node@4.0.0-beta.65':
-    resolution: {integrity: sha512-NGyAZrpjQ70S6bGLC5vX0GudU8HHHnfqZwxFTMN/hAHDIm7oLcgG5GaOs70rYL4VuOiStsxYklYYVZwdgsfWmw==}
+  '@effect/sql-sqlite-node@4.0.0-beta.73':
+    resolution: {integrity: sha512-3hQ2dApoHgMzKKmilUmHuFlVCtw0mWMne6xm7X1bub1mx0V1uMK4aCwv1HeCnkD/NurqyDU4GNCubW0BU1OOKg==}
     peerDependencies:
-      effect: ^4.0.0-beta.65
+      effect: ^4.0.0-beta.73
 
   '@effect/vitest@0.29.0':
     resolution: {integrity: sha512-DvWr1aeEcaZ8mtu8hNVb4e3rEYvGEwQSr7wsNrW53t6nKYjkmjRICcvVEsXUhjoCblRHSxRsRV0TOt0+UmcvaQ==}
@@ -394,10 +397,10 @@ packages:
       effect: ^3.21.0
       vitest: ^3.2.0
 
-  '@effect/vitest@4.0.0-beta.65':
-    resolution: {integrity: sha512-dJdZlQhB+AtMlSgrJ0QiprRhDnGVTcKmPe699+f5qkQjCKauogaAKekWV3xEM1envAMntwqeFUD4QHVnE+cFPg==}
+  '@effect/vitest@4.0.0-beta.73':
+    resolution: {integrity: sha512-HIZa0aekh0ak1YfzCv8GTN75Vbvxp8g+W+z9KczvtUT+LvitX3i9nhLWZLKRrUP1LaJFLPJS2UG9ZGXjxgbjBg==}
     peerDependencies:
-      effect: ^4.0.0-beta.65
+      effect: ^4.0.0-beta.73
       vitest: ^3.0.0 || ^4.0.0
 
   '@emmetio/abbreviation@2.3.3':
@@ -1099,33 +1102,33 @@ packages:
   '@js-joda/core@5.7.0':
     resolution: {integrity: sha512-WBu4ULVVxySLLzK1Ppq+OdfP+adRS4ntmDQT915rzDJ++i95gc2jZkM5B6LWEAwN3lGXpfie3yPABozdD3K3Vg==}
 
-  '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
-    resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
+  '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
+    resolution: {integrity: sha512-LCkGo6JDfaBhgST7UpPWgNgLINpcpabaHfyz5OBx75nUYxBsaEPxjnyNjWpeb/xBup/682QnBfRBy2/LvPutZQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@msgpackr-extract/msgpackr-extract-darwin-x64@3.0.3':
-    resolution: {integrity: sha512-mdzd3AVzYKuUmiWOQ8GNhl64/IoFGol569zNRdkLReh6LRLHOXxU4U8eq0JwaD8iFHdVGqSy4IjFL4reoWCDFw==}
+  '@msgpackr-extract/msgpackr-extract-darwin-x64@3.0.4':
+    resolution: {integrity: sha512-zExlW9zUJKZH/tOtVMttwjKa4Xm/3KcNjnE3dPN92uCktwavMxpgCA3MoJK/DOnTWsQgo224OaST27/mPNAf+w==}
     cpu: [x64]
     os: [darwin]
 
-  '@msgpackr-extract/msgpackr-extract-linux-arm64@3.0.3':
-    resolution: {integrity: sha512-YxQL+ax0XqBJDZiKimS2XQaf+2wDGVa1enVRGzEvLLVFeqa5kx2bWbtcSXgsxjQB7nRqqIGFIcLteF/sHeVtQg==}
+  '@msgpackr-extract/msgpackr-extract-linux-arm64@3.0.4':
+    resolution: {integrity: sha512-dgX0P/9wGPJeHFBG+ZmhgE6bmtMt7NP5CRBGyyktpopdk/mW4POnrpQsSLtKI1dwpc+pPLuXHDh6vvskyQE/sw==}
     cpu: [arm64]
     os: [linux]
 
-  '@msgpackr-extract/msgpackr-extract-linux-arm@3.0.3':
-    resolution: {integrity: sha512-fg0uy/dG/nZEXfYilKoRe7yALaNmHoYeIoJuJ7KJ+YyU2bvY8vPv27f7UKhGRpY6euFYqEVhxCFZgAUNQBM3nw==}
+  '@msgpackr-extract/msgpackr-extract-linux-arm@3.0.4':
+    resolution: {integrity: sha512-Tg3yX65f5GbtXLkrYEHE5oibZG9epyYWas7FogTTEJeDEF9JlXJzKgXaNhT3UXlTOeA+AfZpYZYZ0uPj7Cfquw==}
     cpu: [arm]
     os: [linux]
 
-  '@msgpackr-extract/msgpackr-extract-linux-x64@3.0.3':
-    resolution: {integrity: sha512-cvwNfbP07pKUfq1uH+S6KJ7dT9K8WOE4ZiAcsrSes+UY55E/0jLYc+vq+DO7jlmqRb5zAggExKm0H7O/CBaesg==}
+  '@msgpackr-extract/msgpackr-extract-linux-x64@3.0.4':
+    resolution: {integrity: sha512-8TNXMEjJc3QEy7R/x1INhgiU+XakDAFUzBhaz7+Rbrs8NH5UQeHQxxmzsSBJGyV6I1jW79undiQm8tOI+D+8FQ==}
     cpu: [x64]
     os: [linux]
 
-  '@msgpackr-extract/msgpackr-extract-win32-x64@3.0.3':
-    resolution: {integrity: sha512-x0fWaQtYp4E6sktbsdAqnehxDgEc/VwM7uLsRCYWaiGu0ykYdZPiS8zCWdnjHwyiumousxfBm4SO31eXqwEZhQ==}
+  '@msgpackr-extract/msgpackr-extract-win32-x64@3.0.4':
+    resolution: {integrity: sha512-CmCXPQrkbwExx3j946/PtHWHbYJiCRBRDl4BlkRQcJB/YOwQxJRTpoo7aTsortjgoJ1x7opzTSxn7C+ASSLVjQ==}
     cpu: [x64]
     os: [win32]
 
@@ -1576,6 +1579,10 @@ packages:
 
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
+
+  better-sqlite3@12.11.1:
+    resolution: {integrity: sha512-dq9AtApgg5PGFtBzPFSBl3HZQjHok5gaQCM6zh2Yk0aSmDCs1CbnVI8/HgASQkNKsWFpseIO9beg5xxpYhbIfA==}
+    engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x || 26.x}
 
   better-sqlite3@12.8.0:
     resolution: {integrity: sha512-RxD2Vd96sQDjQr20kdP+F+dK/1OUNiVOl200vKBZY8u0vTwysfolF6Hq+3ZK2+h8My9YvZhHsF+RSGZW2VYrPQ==}
@@ -2056,8 +2063,8 @@ packages:
   effect@3.21.0:
     resolution: {integrity: sha512-PPN80qRokCd1f015IANNhrwOnLO7GrrMQfk4/lnZRE/8j7UPWrNNjPV0uBrZutI/nHzernbW+J0hdqQysHiSnQ==}
 
-  effect@4.0.0-beta.65:
-    resolution: {integrity: sha512-QYKvQPAj3CmtsvWkHQww15wX4KG2gNsszDWEcOO5sZCMknp66u6Si/Opmt3wwWCwsyvRmDAdIg+JIz5qzbbFIw==}
+  effect@4.0.0-beta.73:
+    resolution: {integrity: sha512-rL7jjpT31JhxNiZ0X4sgu+WSJi7uwKTX2jz2OW7PrPLfz5DPjT9iXxxVrekxwpfGdgo92bvxbCc5kBlXgusQJw==}
 
   emmet@2.4.11:
     resolution: {integrity: sha512-23QPJB3moh/U9sT4rQzGgeyyGIrcM+GH5uVYg2C6wZIxAIJq7Ng3QLT79tl8FUwDXhyq9SusfknOrofAKqvgyQ==}
@@ -2396,9 +2403,9 @@ packages:
   ini@1.3.8:
     resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
 
-  ini@6.0.0:
-    resolution: {integrity: sha512-IBTdIkzZNOpqm7q3dRqJvMaldXjDHWkEDfrwGEQTs5eaQMWV+djAhR+wahyNNMAa+qpbDUhBMVt4ZKNwpPm7xQ==}
-    engines: {node: ^20.17.0 || >=22.9.0}
+  ini@7.0.0:
+    resolution: {integrity: sha512-ifK0CgjALofS5bkrcTy4RaQ9Vx2Knf/eLeIO+NaswQEpH1UblrtTSCIvN71qQDMq0PeQ/SSPojvEJp9vvvfr+w==}
+    engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
   ioredis@5.9.1:
     resolution: {integrity: sha512-BXNqFQ66oOsR82g9ajFFsR8ZKrjVvYCLyeML9IvSMAsP56XH2VXBdZjmI11p65nXXJxTEt1hie3J2QeFJVgrtQ==}
@@ -2735,12 +2742,12 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  msgpackr-extract@3.0.3:
-    resolution: {integrity: sha512-P0efT1C9jIdVRefqjzOQ9Xml57zpOXnIuS+csaB4MdZbTdmGDLo8XhzBG1N7aO11gKDDkJvBLULeFTo46wwreA==}
+  msgpackr-extract@3.0.4:
+    resolution: {integrity: sha512-4kmO/MdyUIkLIvTPr8VHLil4AtoKIoniWPIEk5+CDy0xnWC84azhSFmuJ7PxZdsYtiP5kEeQsORAVIeMgxT+Hw==}
     hasBin: true
 
-  msgpackr@1.11.12:
-    resolution: {integrity: sha512-RBdJ1Un7yGlXWajrkxcSa93nvQ0w4zBf60c0yYv7YtBelP8H2FA7XsfBbMHtXKXUMUxH7zV3Zuozh+kUQWhHvg==}
+  msgpackr@2.0.4:
+    resolution: {integrity: sha512-o1C5KRmuRt+apqMr1HuGSqWStZoRBUpEsCsl15uM9VdAF1qHLtvMOU2En747EnTyEl6c4pzPewRMFF31s1CNbA==}
 
   mssql@11.0.1:
     resolution: {integrity: sha512-KlGNsugoT90enKlR8/G36H0kTxPthDhmtNUCwEHvgRza5Cjpjoj+P2X6eMpFUDN7pFrJZsKadL4x990G8RBE1w==}
@@ -3445,8 +3452,8 @@ packages:
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
-  uuid@13.0.2:
-    resolution: {integrity: sha512-vzi9uRZ926x4XV73S/4qQaTwPXM2JBj6/6lI/byHH1jOpCzb0zDbfytgA9LcN/hzb2l7WQSQnxITOVx5un/wGw==}
+  uuid@14.0.1:
+    resolution: {integrity: sha512-6ZxzVpzDXDa3bJWaHilVayA+BH/1zmxCJoVgvmqJnid/gPoKHxUrS/aC/T6LGQtNHT+XHG9fXPJB4d+IrU30Ew==}
     hasBin: true
 
   uuid@8.3.2:
@@ -3823,12 +3830,12 @@ snapshots:
       - prettier
       - prettier-plugin-astro
 
-  '@astrojs/cloudflare@13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)':
+  '@astrojs/cloudflare@13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)':
     dependencies:
       '@astrojs/internal-helpers': 0.10.0
       '@astrojs/underscore-redirects': 1.0.3
       '@cloudflare/vite-plugin': 1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0)
-      astro: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
+      astro: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
       piccolore: 0.1.3
       tinyglobby: 0.2.17
       vite: 7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
@@ -4162,19 +4169,19 @@ snapshots:
 
   '@effect/language-service@0.81.0': {}
 
-  '@effect/platform-node-shared@4.0.0-beta.73(effect@4.0.0-beta.65)':
+  '@effect/platform-node-shared@4.0.0-beta.73(effect@4.0.0-beta.73)':
     dependencies:
       '@types/ws': 8.18.1
-      effect: 4.0.0-beta.65
+      effect: 4.0.0-beta.73
       ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0-beta.65(effect@4.0.0-beta.65)(ioredis@5.9.1)':
+  '@effect/platform-node@4.0.0-beta.73(effect@4.0.0-beta.73)(ioredis@5.9.1)':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0-beta.73(effect@4.0.0-beta.65)
-      effect: 4.0.0-beta.65
+      '@effect/platform-node-shared': 4.0.0-beta.73(effect@4.0.0-beta.73)
+      effect: 4.0.0-beta.73
       ioredis: 5.9.1
       mime: 4.1.0
       undici: 8.3.0
@@ -4182,19 +4189,19 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/sql-sqlite-node@4.0.0-beta.65(effect@4.0.0-beta.65)':
+  '@effect/sql-sqlite-node@4.0.0-beta.73(effect@4.0.0-beta.73)':
     dependencies:
-      better-sqlite3: 12.8.0
-      effect: 4.0.0-beta.65
+      better-sqlite3: 12.11.1
+      effect: 4.0.0-beta.73
 
   '@effect/vitest@0.29.0(effect@3.21.0)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))':
     dependencies:
       effect: 3.21.0
       vitest: 3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
 
-  '@effect/vitest@4.0.0-beta.65(effect@4.0.0-beta.65)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))':
+  '@effect/vitest@4.0.0-beta.73(effect@4.0.0-beta.73)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))':
     dependencies:
-      effect: 4.0.0-beta.65
+      effect: 4.0.0-beta.73
       vitest: 3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
 
   '@emmetio/abbreviation@2.3.3':
@@ -4626,22 +4633,22 @@ snapshots:
   '@js-joda/core@5.7.0':
     optional: true
 
-  '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
+  '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     optional: true
 
-  '@msgpackr-extract/msgpackr-extract-darwin-x64@3.0.3':
+  '@msgpackr-extract/msgpackr-extract-darwin-x64@3.0.4':
     optional: true
 
-  '@msgpackr-extract/msgpackr-extract-linux-arm64@3.0.3':
+  '@msgpackr-extract/msgpackr-extract-linux-arm64@3.0.4':
     optional: true
 
-  '@msgpackr-extract/msgpackr-extract-linux-arm@3.0.3':
+  '@msgpackr-extract/msgpackr-extract-linux-arm@3.0.4':
     optional: true
 
-  '@msgpackr-extract/msgpackr-extract-linux-x64@3.0.3':
+  '@msgpackr-extract/msgpackr-extract-linux-x64@3.0.4':
     optional: true
 
-  '@msgpackr-extract/msgpackr-extract-win32-x64@3.0.3':
+  '@msgpackr-extract/msgpackr-extract-win32-x64@3.0.4':
     optional: true
 
   '@oslojs/encoding@1.1.0': {}
@@ -5110,7 +5117,7 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0):
+  astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0):
     dependencies:
       '@astrojs/compiler': 4.0.0
       '@astrojs/internal-helpers': 0.10.0
@@ -5160,7 +5167,7 @@ snapshots:
       ultrahtml: 1.6.0
       unifont: 0.7.4
       unist-util-visit: 5.1.0
-      unstorage: 1.17.5(@azure/identity@4.13.1)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1)
+      unstorage: 1.17.5(@azure/identity@4.13.1)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)
       vfile: 6.0.3
       vite: 7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
       vitefu: 1.1.2(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
@@ -5210,6 +5217,11 @@ snapshots:
   balanced-match@1.0.2: {}
 
   base64-js@1.5.1: {}
+
+  better-sqlite3@12.11.1:
+    dependencies:
+      bindings: 1.5.0
+      prebuild-install: 7.1.3
 
   better-sqlite3@12.8.0:
     dependencies:
@@ -5371,10 +5383,10 @@ snapshots:
     dependencies:
       css-tree: 2.2.1
 
-  db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)):
+  db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)):
     optionalDependencies:
-      better-sqlite3: 12.8.0
-      drizzle-orm: 0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)
+      better-sqlite3: 12.11.1
+      drizzle-orm: 0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)
     optional: true
 
   debug@4.4.3:
@@ -5445,18 +5457,18 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
-  drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5):
+  drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5):
     optionalDependencies:
-      better-sqlite3: 12.8.0
+      better-sqlite3: 12.11.1
       bun-types: 1.3.5
     optional: true
 
-  drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.65)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3):
+  drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.73)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3):
     optionalDependencies:
       '@types/mssql': 9.1.9(@azure/core-client@1.10.1)
       better-sqlite3: 12.8.0
       bun-types: 1.3.5
-      effect: 4.0.0-beta.65
+      effect: 4.0.0-beta.73
       mssql: 11.0.1(@azure/core-client@1.10.1)
       zod: 4.4.3
 
@@ -5472,17 +5484,17 @@ snapshots:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
 
-  effect@4.0.0-beta.65:
+  effect@4.0.0-beta.73:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 4.8.0
       find-my-way-ts: 0.1.6
-      ini: 6.0.0
+      ini: 7.0.0
       kubernetes-types: 1.30.0
-      msgpackr: 1.11.12
+      msgpackr: 2.0.4
       multipasta: 0.2.7
       toml: 4.1.1
-      uuid: 13.0.2
+      uuid: 14.0.1
       yaml: 2.9.0
 
   emmet@2.4.11:
@@ -5949,7 +5961,7 @@ snapshots:
 
   ini@1.3.8: {}
 
-  ini@6.0.0: {}
+  ini@7.0.0: {}
 
   ioredis@5.9.1:
     dependencies:
@@ -6481,21 +6493,21 @@ snapshots:
 
   ms@2.1.3: {}
 
-  msgpackr-extract@3.0.3:
+  msgpackr-extract@3.0.4:
     dependencies:
       node-gyp-build-optional-packages: 5.2.2
     optionalDependencies:
-      '@msgpackr-extract/msgpackr-extract-darwin-arm64': 3.0.3
-      '@msgpackr-extract/msgpackr-extract-darwin-x64': 3.0.3
-      '@msgpackr-extract/msgpackr-extract-linux-arm': 3.0.3
-      '@msgpackr-extract/msgpackr-extract-linux-arm64': 3.0.3
-      '@msgpackr-extract/msgpackr-extract-linux-x64': 3.0.3
-      '@msgpackr-extract/msgpackr-extract-win32-x64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-darwin-arm64': 3.0.4
+      '@msgpackr-extract/msgpackr-extract-darwin-x64': 3.0.4
+      '@msgpackr-extract/msgpackr-extract-linux-arm': 3.0.4
+      '@msgpackr-extract/msgpackr-extract-linux-arm64': 3.0.4
+      '@msgpackr-extract/msgpackr-extract-linux-x64': 3.0.4
+      '@msgpackr-extract/msgpackr-extract-win32-x64': 3.0.4
     optional: true
 
-  msgpackr@1.11.12:
+  msgpackr@2.0.4:
     optionalDependencies:
-      msgpackr-extract: 3.0.3
+      msgpackr-extract: 3.0.4
 
   mssql@11.0.1(@azure/core-client@1.10.1):
     dependencies:
@@ -7251,7 +7263,7 @@ snapshots:
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
 
-  unstorage@1.17.5(@azure/identity@4.13.1)(db0@0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5)))(ioredis@5.9.1):
+  unstorage@1.17.5(@azure/identity@4.13.1)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1):
     dependencies:
       anymatch: 3.1.3
       chokidar: 5.0.0
@@ -7263,7 +7275,7 @@ snapshots:
       ufo: 1.6.4
     optionalDependencies:
       '@azure/identity': 4.13.1
-      db0: 0.3.4(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(better-sqlite3@12.8.0)(bun-types@1.3.5))
+      db0: 0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5))
       ioredis: 5.9.1
 
   uri-js@4.4.1:
@@ -7274,7 +7286,7 @@ snapshots:
 
   uuid@10.0.0: {}
 
-  uuid@13.0.2: {}
+  uuid@14.0.1: {}
 
   uuid@8.3.2:
     optional: true

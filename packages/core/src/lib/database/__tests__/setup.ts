@@ -1,9 +1,14 @@
+import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 
 import { createDatabaseLayer } from "../service.js";
+import { IdLayer } from "../../id/service.js";
 
-export const layerTest = createDatabaseLayer(":memory:");
+export const layerTest = Layer.mergeAll(
+  createDatabaseLayer(":memory:"),
+  IdLayer.pipe(Layer.provide(NodeCrypto.layer)),
+);
 
 export const createTables = Effect.gen(function* () {
   const sql = yield* SqlClient;

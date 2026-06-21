@@ -1,6 +1,7 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import {
   DatabaseLayer,
+  IdLayer,
   SubjectsLayer,
   SubscriptionsLayer,
   UsersLayer,
@@ -21,6 +22,7 @@ export const ApiRuntime = ManagedRuntime.make(
       RateLimiterLayer,
     ),
     Layer.provideMerge(DatabaseLayer),
+    Layer.provide(IdLayer),
     Layer.provideMerge(DotEnvConfigProvider),
     Layer.provideMerge(NodeServices.layer),
   ),

@@ -21,13 +21,14 @@
     "test": "pnpm -w exec vitest run packages/core/src"
   },
   "dependencies": {
-    "@effect/sql-sqlite-node": "4.0.0-beta.65",
+    "@effect/sql-sqlite-node": "4.0.0-beta.73",
     "better-sqlite3": "^12.4.1",
     "drizzle-orm": "1.0.0-rc.3",
-    "effect": "4.0.0-beta.65",
+    "effect": "4.0.0-beta.73",
     "resend": "catalog:"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0-beta.65"
+    "@effect/platform-node": "4.0.0-beta.73",
+    "@effect/vitest": "4.0.0-beta.73"
   }
 }

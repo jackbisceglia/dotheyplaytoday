@@ -24,11 +24,11 @@
   },
   "dependencies": {
     "@dtpt/core": "workspace:*",
-    "@effect/platform-node": "4.0.0-beta.65",
-    "effect": "4.0.0-beta.65"
+    "@effect/platform-node": "4.0.0-beta.73",
+    "effect": "4.0.0-beta.73"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0-beta.65",
+    "@effect/vitest": "4.0.0-beta.73",
     "tsx": "^4.21.0"
   }
 }

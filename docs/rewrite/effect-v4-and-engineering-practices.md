@@ -87,7 +87,7 @@ Do not export `decodeX`, `decodeXs`, or `encodeXInsert` helpers by default. Use 
 
 Use schema `.make(...)` for trusted internal construction of decoded insert/domain objects. Use `.makeEffect(...)` when construction input is untrusted and validation failure should remain in the Effect error channel.
 
-Use `Id.SchemaBranded("Brand")` for branded ids and `Id.createFromBrandedSchema(EntityId)` for effectful id generation. The ID module owns the UUID implementation detail so domain modules can speak in branded domain ids. Do not use raw `crypto.randomUUID()` in Effect workflows by default.
+Use `Id.SchemaBranded("Brand")` for branded ids. For effectful id generation, acquire the `Id` service and call `id.makeFromBrandedSchema(EntityId)`. The ID module owns the UUID implementation detail so domain modules can speak in branded domain ids. Do not use raw `crypto.randomUUID()` in Effect workflows by default.
 
 `makeEffect` does not replace effectful field generation. Generate effectful fields first, then pass the completed object to `.make(...)` or `.makeEffect(...)`.
 
@@ -98,12 +98,16 @@ For writes, prefer the simplest shape that matches row construction. If construc
 When row construction is effectful, keep build-then-encode local to the write method:
 
 ```ts
+const id = yield* Id;
+
 const inserts =
   yield *
   Effect.forEach(subjectIds, (subjectId) =>
     Effect.gen(function* () {
+      const subscriptionId = yield* id.makeFromBrandedSchema(SubscriptionId);
+
       return yield* encodeSubscription({
-        id: yield* Id.createFromBrandedSchema(SubscriptionId),
+        id: subscriptionId,
         userId: input.user.id,
         subjectId,
         schedule: input.schedule,
@@ -118,7 +122,7 @@ Example:
 ```ts
 import { Schema } from "effect";
 
-import { Id } from "../../lib/domain/id.js";
+import { Id } from "../../lib/id/service.js";
 
 export type SubjectId = typeof SubjectId.Type;
 export const SubjectId = Id.SchemaBranded("SubjectId");
@@ -261,10 +265,14 @@ const replaceForUser = Effect.fn("Subscriptions.replaceForUser")(
     );
     yield* assertSubjectsExist(subjectIds);
 
+    const id = yield* Id;
+
     const inserts = yield* Effect.forEach(subjectIds, (subjectId) =>
       Effect.gen(function* () {
+        const subscriptionId = yield* id.makeFromBrandedSchema(SubscriptionId);
+
         return yield* Schema.encodeEffect(SubscriptionInsert)({
-          id: yield* Id.createFromBrandedSchema(SubscriptionId),
+          id: subscriptionId,
           userId: input.user.id,
           subjectId,
           schedule: input.schedule,
