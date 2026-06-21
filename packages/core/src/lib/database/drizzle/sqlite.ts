@@ -22,13 +22,17 @@ const EffectTypeId = "~effect/Effect";
 const queryContextStorage = new AsyncLocalStorage<Context.Context<never>>();
 
 declare module "drizzle-orm/query-promise" {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type
-  interface QueryPromise<T> extends EffectType.Effect<T, SqlError> {}
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+  interface QueryPromise<T> extends EffectType.Effect<T, SqlError> {
+    asEffect(): EffectType.Effect<T, SqlError>;
+  }
 }
 
 declare module "drizzle-orm" {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type
-  interface QueryPromise<T> extends EffectType.Effect<T, SqlError> {}
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+  interface QueryPromise<T> extends EffectType.Effect<T, SqlError> {
+    asEffect(): EffectType.Effect<T, SqlError>;
+  }
 }
 
 type EffectQuery<T> = QueryPromise<T> &
