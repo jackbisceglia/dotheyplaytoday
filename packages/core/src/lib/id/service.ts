@@ -17,6 +17,10 @@ export class Id extends Context.Service<
     ) => Effect.Effect<A>;
   }
 >()("@dtpt/core/Id") {
+  /**
+   * Pure helper for defining branded UUID schemas while keeping ID schema
+   * construction under the same module-level `Id` API as runtime generation.
+   */
   static SchemaBranded = <TBrand extends string>(brand: TBrand) =>
     Schema.String.check(Schema.isUUID()).pipe(Schema.brand(brand));
 }
