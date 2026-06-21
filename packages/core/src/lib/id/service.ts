@@ -1,5 +1,9 @@
 import { Context, Crypto, Effect, Layer, Schema } from "effect";
 
+/**
+ * Accepts branded ID schemas by their construction surface only, without
+ * forcing the full Schema type/inference machinery into the service contract.
+ */
 export type BrandedIdSchema<A> = {
   readonly make: (value: string) => A;
 };
