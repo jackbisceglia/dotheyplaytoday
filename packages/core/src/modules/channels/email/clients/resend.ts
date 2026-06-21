@@ -39,12 +39,12 @@ const isRetriableError = (error: ChannelClientError) =>
 
 export class ResendInstantiationError extends Schema.TaggedErrorClass<ResendInstantiationError>()(
   "ResendInstantiationError",
-  { cause: Schema.Defect },
+  { cause: Schema.Defect() },
 ) {}
 
 export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestError>()(
   "ResendRequestError",
-  { cause: Schema.Defect },
+  { cause: Schema.Defect() },
 ) {}
 
 export const EmailChannelClientLayerResend = Layer.effect(
