@@ -12,14 +12,14 @@ import {
 import { Effect } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 
-export const reset = Effect.fn("DataSeed.reset")(function* () {
-  yield* createTablesIfMissing();
+export const reset = Effect.fn("DataSeed.reset")(
+  function* () {
+    yield* createTablesIfMissing();
 
-  const database = yield* Database;
-  const sql = yield* SqlClient;
+    const database = yield* Database;
+    const sql = yield* SqlClient;
 
-  yield* sql
-    .withTransaction(
+    yield* sql.withTransaction(
       Effect.gen(function* () {
         yield* database.delete(subscriptionsTable);
         yield* database.delete(usersTable);
@@ -28,16 +28,15 @@ export const reset = Effect.fn("DataSeed.reset")(function* () {
         yield* database.delete(eventsTable);
         yield* database.delete(subjectsTable);
       }),
-    )
-    .pipe(
-      Effect.catchTag("SqlError", (cause) =>
-        Effect.fail(
-          new DatabaseWriteError({
-            operation: "DataSeed.reset",
-            cause,
-            metadata: { mode: "dev" },
-          }),
-        ),
-      ),
     );
-});
+  },
+  Effect.catchTag("SqlError", (cause) =>
+    Effect.fail(
+      new DatabaseWriteError({
+        operation: "DataSeed.reset",
+        cause,
+        metadata: { mode: "dev" },
+      }),
+    ),
+  ),
+);

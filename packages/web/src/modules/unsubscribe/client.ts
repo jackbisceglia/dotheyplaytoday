@@ -1,6 +1,7 @@
 import { Match, Result } from "effect";
 
 import { withApiClient } from "../../lib/api.js";
+import { setHidden } from "../../lib/dom.js";
 import { decodeUnsubscribeToken } from "./token.js";
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -13,11 +14,6 @@ const getSubmitErrorMessage = (error: unknown) =>
       () => "We couldn't finish that request. Wait a moment and try again.",
     ),
   );
-
-const setHidden = (element: HTMLElement, isHidden: boolean) => {
-  element.hidden = isHidden;
-  element.style.display = isHidden ? "none" : "";
-};
 
 const root = document.querySelector("[data-unsubscribe-root]");
 

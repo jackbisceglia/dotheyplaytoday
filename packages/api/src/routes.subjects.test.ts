@@ -1,32 +1,18 @@
 import { describe, expect, it } from "@effect/vitest";
-import * as NodeHttpServer from "@effect/platform-node/NodeHttpServer";
 import {
-  Api,
   Database,
   Subject,
   SubjectInsert,
-  SubscriptionsLayer,
-  SubjectsLayer,
   subjectsTable,
-  UsersLayer,
 } from "@dtpt/core";
-import {
-  createTables,
-  layerTest,
-} from "@dtpt/core/lib/database/__tests__/setup";
-import { Config, Effect, Layer, Schema } from "effect";
+import { createTables } from "@dtpt/core/lib/database/__tests__/setup";
+import { Effect, Schema } from "effect";
 import {
   HttpClient,
   HttpClientRequest,
-  HttpRouter,
 } from "effect/unstable/http";
-import { HttpApiBuilder } from "effect/unstable/httpapi";
 
-import { makeRateLimiterLayer } from "./rate-limit/service.js";
-import { PingGroupLayer } from "./routes.ping.js";
-import { SignupGroupLayer } from "./routes.signup.js";
-import { SubjectsGroupLayer } from "./routes.subjects.js";
-import { UnsubscribeGroupLayer } from "./routes.unsubscribe.js";
+import { makeApiTestLayer } from "./__tests__/helpers.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -46,6 +32,8 @@ const secondSubjectInput = makeSubjectInput({
   name: "Celtics",
   abbreviation: "BOS",
 });
+
+const layerSubjectsTest = makeApiTestLayer({ limit: 100, window: 60 });
 
 describe("subjects route handler", () => {
   it.effect("returns decoded subjects ordered by id", () =>
@@ -95,27 +83,3 @@ function seedSubjects(subjects: readonly (typeof subjectInput)[]) {
     yield* database.insert(subjectsTable).values(inserts);
   });
 }
-
-const RuntimeLayer = Layer.mergeAll(
-  makeRateLimiterLayer(Config.succeed({ limit: 100, window: 60 })),
-  SubscriptionsLayer,
-  SubjectsLayer,
-  UsersLayer,
-).pipe(Layer.provideMerge(layerTest));
-
-const ServerLayer = HttpRouter.serve(
-  HttpApiBuilder.layer(Api).pipe(
-    Layer.provide([
-      PingGroupLayer,
-      SignupGroupLayer,
-      SubjectsGroupLayer,
-      UnsubscribeGroupLayer,
-    ]),
-  ),
-  { disableListenLog: true, disableLogger: true },
-).pipe(
-  Layer.provideMerge(NodeHttpServer.layerTest),
-  Layer.provide(RuntimeLayer),
-);
-
-const layerSubjectsTest = Layer.mergeAll(RuntimeLayer, ServerLayer);
