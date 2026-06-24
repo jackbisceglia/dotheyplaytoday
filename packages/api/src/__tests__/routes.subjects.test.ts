@@ -12,7 +12,7 @@ import {
   HttpClientRequest,
 } from "effect/unstable/http";
 
-import { makeApiTestLayer } from "./__tests__/helpers.js";
+import { makeApiTestLayer } from "./helpers.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;

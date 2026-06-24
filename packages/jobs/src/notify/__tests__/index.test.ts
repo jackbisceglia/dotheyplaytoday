@@ -15,7 +15,7 @@ import {
 } from "@dtpt/core";
 import { DateTime, Effect, Exit, Layer, Schema } from "effect";
 
-import { notify } from "./index.js";
+import { notify } from "../index.js";
 
 const decode = Schema.decodeUnknownSync;
 const utc = decode(Schema.DateTimeUtcFromString);
