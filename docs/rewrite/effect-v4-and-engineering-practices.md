@@ -455,7 +455,7 @@ A `service.ts` file may define either an abstract injectable service boundary or
 
 Keep table definitions in the owning domain module `schema.ts`. `lib/database/schema.ts` may re-export tables for Drizzle composition when needed.
 
-Preserve the existing database composition pattern unless a concrete rewrite need forces a change: a database schema module bulk-imports/re-exports table definitions, a relations module defines Drizzle relations in one place, and a database service module composes the SQLite client and Drizzle layer. Keep the existing database layer naming style, such as `createDatabaseLayer` and `DatabaseLayer`, unless there is a concrete reason to change it. Update names/locations and Effect v4 compatibility as needed, but do not redesign this layering by default.
+Preserve the existing database composition pattern unless a concrete rewrite need forces a change: a database schema module bulk-imports/re-exports table definitions, a relations module defines Drizzle relations in one place, and a database service module composes the SQLite client and Drizzle layer. Keep database layer naming specific to the runtime, such as `createNodeDatabaseLayer`, `createD1DatabaseLayer`, and `DatabaseLayer`, unless there is a concrete reason to change it. Update names/locations and Effect v4 compatibility as needed, but do not redesign this layering by default.
 
 If `@effect/sql-drizzle` still needs a cast for relation-aware `.query` typing, isolate that cast inside `lib/database/service.ts` only. Domain services should consume the typed `Database` service without casts.
 

@@ -23,7 +23,7 @@ export const DatabaseClientLayer = Layer.effect(
   }),
 );
 
-export const createDatabaseLayer = (connection: string) => {
+export const createNodeDatabaseLayer = (connection: string) => {
   const SqliteClientLayer = SqliteClient.layer({ filename: connection });
 
   return Layer.provideMerge(DatabaseClientLayer, SqliteClientLayer);
@@ -32,12 +32,16 @@ export const createDatabaseLayer = (connection: string) => {
 export const createD1DatabaseLayer = (
   db: D1Client.D1ClientConfig["db"],
   config?: Omit<D1Client.D1ClientConfig, "db">,
-) => Layer.provideMerge(DatabaseClientLayer, D1Client.layer({ db, ...config }));
+) => {
+  const D1ClientLayer = D1Client.layer({ db, ...config });
+
+  return Layer.provideMerge(DatabaseClientLayer, D1ClientLayer);
+};
 
 export const DatabaseLayer = Layer.unwrap(
   Effect.gen(function* () {
     const connection = yield* DatabaseConnection;
 
-    return createDatabaseLayer(connection);
+    return createNodeDatabaseLayer(connection);
   }),
 );
