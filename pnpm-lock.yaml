@@ -83,6 +83,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@effect/sql-d1':
+        specifier: 4.0.0-beta.73
+        version: 4.0.0-beta.73(effect@4.0.0-beta.73)
       '@effect/sql-sqlite-node':
         specifier: 4.0.0-beta.73
         version: 4.0.0-beta.73(effect@4.0.0-beta.73)
@@ -91,7 +94,7 @@ importers:
         version: 12.8.0
       drizzle-orm:
         specifier: 1.0.0-rc.3
-        version: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.73)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3)
+        version: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@cloudflare/workers-types@4.20260624.1)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.73)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3)
       effect:
         specifier: 4.0.0-beta.73
         version: 4.0.0-beta.73
@@ -142,13 +145,13 @@ importers:
     dependencies:
       '@astrojs/cloudflare':
         specifier: ^13.7.0
-        version: 13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)
+        version: 13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260624.1))(yaml@2.9.0)
       '@dtpt/core':
         specifier: workspace:*
         version: link:../core
       astro:
         specifier: ^6.4.6
-        version: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
+        version: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
       effect:
         specifier: 4.0.0-beta.73
         version: 4.0.0-beta.73
@@ -365,6 +368,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@cloudflare/workers-types@4.20260624.1':
+    resolution: {integrity: sha512-o8i70Nycnm6KpPPfdjHek09IkG3hoIAv88d1pn90Djn2oXcQ35dYuzKYZUBd0eE2Tpsd5yz8L/a6FvI6CKFBQw==}
+
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
@@ -385,6 +391,11 @@ packages:
     peerDependencies:
       effect: ^4.0.0-beta.73
       ioredis: ^5.7.0
+
+  '@effect/sql-d1@4.0.0-beta.73':
+    resolution: {integrity: sha512-VCdjTfOiAOcnuT1SvTfklENERWa74TLcytJAIFEmCV+FivXIIcOLPzAo1QEaD+eVkuHhXjpaqxwEz0XzaX/fWA==}
+    peerDependencies:
+      effect: ^4.0.0-beta.73
 
   '@effect/sql-sqlite-node@4.0.0-beta.73':
     resolution: {integrity: sha512-3hQ2dApoHgMzKKmilUmHuFlVCtw0mWMne6xm7X1bub1mx0V1uMK4aCwv1HeCnkD/NurqyDU4GNCubW0BU1OOKg==}
@@ -3830,16 +3841,16 @@ snapshots:
       - prettier
       - prettier-plugin-astro
 
-  '@astrojs/cloudflare@13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)':
+  '@astrojs/cloudflare@13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260624.1))(yaml@2.9.0)':
     dependencies:
       '@astrojs/internal-helpers': 0.10.0
       '@astrojs/underscore-redirects': 1.0.3
-      '@cloudflare/vite-plugin': 1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0)
-      astro: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
+      '@cloudflare/vite-plugin': 1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260624.1))
+      astro: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
       piccolore: 0.1.3
       tinyglobby: 0.2.17
       vite: 7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
-      wrangler: 4.101.0
+      wrangler: 4.101.0(@cloudflare/workers-types@4.20260624.1)
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
@@ -4135,13 +4146,13 @@ snapshots:
     optionalDependencies:
       workerd: 1.20260616.1
 
-  '@cloudflare/vite-plugin@1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0)':
+  '@cloudflare/vite-plugin@1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260624.1))':
     dependencies:
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260616.1)
       miniflare: 4.20260616.0
       unenv: 2.0.0-rc.24
       vite: 7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
-      wrangler: 4.101.0
+      wrangler: 4.101.0(@cloudflare/workers-types@4.20260624.1)
       ws: 8.20.1
     transitivePeerDependencies:
       - bufferutil
@@ -4162,6 +4173,8 @@ snapshots:
 
   '@cloudflare/workerd-windows-64@1.20260616.1':
     optional: true
+
+  '@cloudflare/workers-types@4.20260624.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -4188,6 +4201,11 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  '@effect/sql-d1@4.0.0-beta.73(effect@4.0.0-beta.73)':
+    dependencies:
+      '@cloudflare/workers-types': 4.20260624.1
+      effect: 4.0.0-beta.73
 
   '@effect/sql-sqlite-node@4.0.0-beta.73(effect@4.0.0-beta.73)':
     dependencies:
@@ -5117,7 +5135,7 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0):
+  astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0):
     dependencies:
       '@astrojs/compiler': 4.0.0
       '@astrojs/internal-helpers': 0.10.0
@@ -5167,7 +5185,7 @@ snapshots:
       ultrahtml: 1.6.0
       unifont: 0.7.4
       unist-util-visit: 5.1.0
-      unstorage: 1.17.5(@azure/identity@4.13.1)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)
+      unstorage: 1.17.5(@azure/identity@4.13.1)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1)
       vfile: 6.0.3
       vite: 7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
       vitefu: 1.1.2(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
@@ -5383,10 +5401,10 @@ snapshots:
     dependencies:
       css-tree: 2.2.1
 
-  db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)):
+  db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)):
     optionalDependencies:
       better-sqlite3: 12.11.1
-      drizzle-orm: 0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)
+      drizzle-orm: 0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)
     optional: true
 
   debug@4.4.3:
@@ -5457,14 +5475,16 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
-  drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5):
+  drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5):
     optionalDependencies:
+      '@cloudflare/workers-types': 4.20260624.1
       better-sqlite3: 12.11.1
       bun-types: 1.3.5
     optional: true
 
-  drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.73)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3):
+  drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@cloudflare/workers-types@4.20260624.1)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.73)(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.4.3):
     optionalDependencies:
+      '@cloudflare/workers-types': 4.20260624.1
       '@types/mssql': 9.1.9(@azure/core-client@1.10.1)
       better-sqlite3: 12.8.0
       bun-types: 1.3.5
@@ -7263,7 +7283,7 @@ snapshots:
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
 
-  unstorage@1.17.5(@azure/identity@4.13.1)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1):
+  unstorage@1.17.5(@azure/identity@4.13.1)(db0@0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5)))(ioredis@5.9.1):
     dependencies:
       anymatch: 3.1.3
       chokidar: 5.0.0
@@ -7275,7 +7295,7 @@ snapshots:
       ufo: 1.6.4
     optionalDependencies:
       '@azure/identity': 4.13.1
-      db0: 0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(better-sqlite3@12.11.1)(bun-types@1.3.5))
+      db0: 0.3.4(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260624.1)(better-sqlite3@12.11.1)(bun-types@1.3.5))
       ioredis: 5.9.1
 
   uri-js@4.4.1:
@@ -7532,7 +7552,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20260616.1
       '@cloudflare/workerd-windows-64': 1.20260616.1
 
-  wrangler@4.101.0:
+  wrangler@4.101.0(@cloudflare/workers-types@4.20260624.1):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260616.1)
@@ -7543,6 +7563,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       workerd: 1.20260616.1
     optionalDependencies:
+      '@cloudflare/workers-types': 4.20260624.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil
