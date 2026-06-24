@@ -13,8 +13,8 @@ export {
 } from "./contracts/signup.js";
 export { SubjectsGroup, SubjectsResponse } from "./contracts/subjects.js";
 export {
-  Request as UnsubscribeRequest,
-  Response as UnsubscribeResponse,
+  UnsubscribeRequest,
+  UnsubscribeResponse,
   UnsubscribeGroup,
   UnsubscribeRateLimited,
 } from "./contracts/unsubscribe.js";

@@ -1,7 +1,6 @@
 import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 
 import { StringParts } from "../../../lib/string.js";
-import { isTaggedAs } from "../../../lib/tagged.js";
 import type { ExtractFromTag } from "../../../lib/types.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
 import { EventId } from "../../events/schema.js";
@@ -14,6 +13,13 @@ import { EmailChannelClientLayerResend } from "./clients/resend.js";
 import { EmailChannelClient } from "./clients/service.js";
 import { EmailDelivery } from "./delivery.js";
 import { EmailView, type EmailRendered } from "./render.js";
+
+const isTaggedAs =
+  <const TTag extends PropertyKey>(tag: TTag) =>
+  <TValue extends { readonly _tag: PropertyKey }>(
+    value: TValue,
+  ): value is Extract<TValue, { readonly _tag: TTag }> =>
+    value._tag === tag;
 
 export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>()(
   "EmailRenderError",

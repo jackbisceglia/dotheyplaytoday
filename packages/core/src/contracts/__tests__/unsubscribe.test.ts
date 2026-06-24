@@ -1,9 +1,9 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 
-import { Request } from "../unsubscribe.js";
+import { UnsubscribeRequest } from "../unsubscribe.js";
 
-const decodeUnsubscribe = Schema.decodeUnknownSync(Request);
+const decodeUnsubscribe = Schema.decodeUnknownSync(UnsubscribeRequest);
 
 describe("unsubscribe contract", () => {
   it("decodes a token-shaped request", () => {
@@ -16,7 +16,7 @@ describe("unsubscribe contract", () => {
 
   it.effect("rejects malformed token shapes", () =>
     Effect.gen(function* () {
-      const error = yield* Schema.decodeUnknownEffect(Request)({
+      const error = yield* Schema.decodeUnknownEffect(UnsubscribeRequest)({
         token: "not-a-token",
       }).pipe(Effect.flip);
 

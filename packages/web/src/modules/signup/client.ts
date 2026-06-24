@@ -4,6 +4,7 @@ import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { DateTime, Match, Option } from "effect";
 
 import { withApiClient } from "../../lib/api.js";
+import { setHidden } from "../../lib/dom.js";
 import {
   defaultTimezone,
   detectTimezone,
@@ -34,11 +35,6 @@ const root = document.querySelector("[data-signup-root]");
 const hasSelectedSubjects = <SubjectId>(
   subjectIds: readonly SubjectId[],
 ): subjectIds is readonly [SubjectId, ...SubjectId[]] => subjectIds.length > 0;
-
-const setHidden = (element: HTMLElement, isHidden: boolean) => {
-  element.hidden = isHidden;
-  element.style.display = isHidden ? "none" : "";
-};
 
 if (root instanceof HTMLElement) {
   const form = root.querySelector<HTMLFormElement>("[data-form]");

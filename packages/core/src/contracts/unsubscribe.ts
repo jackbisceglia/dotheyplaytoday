@@ -7,9 +7,9 @@ import {
 
 import { UnsubscribeToken } from "../modules/users/schema.js";
 
-export const Request = Schema.Struct({ token: UnsubscribeToken });
+export const UnsubscribeRequest = Schema.Struct({ token: UnsubscribeToken });
 
-export const Response = Schema.Struct({ ok: Schema.Literal(true) });
+export const UnsubscribeResponse = Schema.Struct({ ok: Schema.Literal(true) });
 
 export class UnsubscribeRateLimited extends Schema.TaggedErrorClass<UnsubscribeRateLimited>()(
   "UnsubscribeRateLimited",
@@ -19,8 +19,8 @@ export class UnsubscribeRateLimited extends Schema.TaggedErrorClass<UnsubscribeR
 
 export const UnsubscribeGroup = HttpApiGroup.make("unsubscribe").add(
   HttpApiEndpoint.post("submit", "/unsubscribe", {
-    payload: Request,
-    success: Response,
+    payload: UnsubscribeRequest,
+    success: UnsubscribeResponse,
     error: [HttpApiError.InternalServerError, UnsubscribeRateLimited],
   }),
 );
