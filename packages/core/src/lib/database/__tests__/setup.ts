@@ -2,7 +2,7 @@ import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { Effect, Layer } from "effect";
 
-import { createDatabaseLayer } from "../sqlite-node.js";
+import { createDatabaseLayer } from "../service.js";
 import { IdLayer } from "../../id/service.js";
 
 export const layerTest = Layer.mergeAll(

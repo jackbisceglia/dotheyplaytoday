@@ -1,14 +1,25 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
 
-import { createD1DatabaseLayer } from "../d1.js";
-import { Database } from "../service.js";
+import { createD1DatabaseLayer, Database } from "../service.js";
 
 type D1DatabaseBinding = Parameters<typeof createD1DatabaseLayer>[0];
 
 const binding = {
-  prepare() {
-    throw new Error("Unexpected D1 statement execution");
+  prepare(sql: string) {
+    return {
+      bind() {
+        return {
+          all() {
+            if (sql !== "PRAGMA foreign_keys = ON") {
+              throw new Error(`Unexpected D1 statement execution: ${sql}`);
+            }
+
+            return Promise.resolve({ results: [] });
+          },
+        };
+      },
+    };
   },
 } as unknown as D1DatabaseBinding;
 
