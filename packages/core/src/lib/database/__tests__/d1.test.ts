@@ -7,19 +7,7 @@ type D1DatabaseBinding = Parameters<typeof createD1DatabaseLayer>[0];
 
 const binding = {
   prepare(sql: string) {
-    return {
-      bind() {
-        return {
-          all() {
-            if (sql !== "PRAGMA foreign_keys = ON") {
-              throw new Error(`Unexpected D1 statement execution: ${sql}`);
-            }
-
-            return Promise.resolve({ results: [] });
-          },
-        };
-      },
-    };
+    throw new Error(`Unexpected D1 statement execution: ${sql}`);
   },
 } as unknown as D1DatabaseBinding;
 
