@@ -1,4 +1,3 @@
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { eq } from "drizzle-orm";
 import {
   Array,
@@ -91,7 +90,6 @@ export const EventsLayer = Layer.effect(
   Events,
   Effect.gen(function* () {
     const database = yield* Database;
-    const sql = yield* SqlClient;
     const id = yield* Id;
 
     const get: Events["Service"]["get"] = Effect.fn("Events.get")(
@@ -212,20 +210,22 @@ export const EventsLayer = Layer.effect(
         }),
       );
 
-      yield* sql
-        .withTransaction(
-          Effect.gen(function* () {
-            yield* database
-              .delete(participantsTable)
-              .where(eq(participantsTable.eventId, eventId));
+      // TODO(database): restore atomic replace semantics with D1 batch support.
+      yield* database
+        .delete(participantsTable)
+        .where(eq(participantsTable.eventId, eventId))
+        .pipe(
+          Effect.catchTag(
+            "SqlError",
+            toWriteError("Events.setParticipants", { eventId }),
+          ),
+        );
 
-            if (Array.isReadonlyArrayEmpty(insertableParticipants)) return;
+      if (Array.isReadonlyArrayEmpty(insertableParticipants)) return;
 
-            yield* database
-              .insert(participantsTable)
-              .values(insertableParticipants);
-          }),
-        )
+      yield* database
+        .insert(participantsTable)
+        .values(insertableParticipants)
         .pipe(
           Effect.catchTag(
             "SqlError",

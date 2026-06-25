@@ -1,7 +1,6 @@
 import { SignupRateLimited, Subscriptions, Users } from "@dtpt/core";
 import { Api } from "@dtpt/core/contracts/api";
 import { Effect } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
@@ -10,7 +9,6 @@ const UnexpectedErrorTags = [
   "DatabaseReadError",
   "DatabaseWriteError",
   "SchemaError",
-  "SqlError",
 ] as const;
 
 export const SignupGroupLayer = HttpApiBuilder.group(
@@ -19,7 +17,6 @@ export const SignupGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
-      const sql = yield* SqlClient;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
 
@@ -29,22 +26,19 @@ export const SignupGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            return yield* sql.withTransaction(
-              Effect.gen(function* () {
-                const user = yield* users.upsertForSignup(
-                  ctx.payload.email,
-                  ctx.payload.timezone,
-                );
-
-                yield* subscriptions.replaceForUser({
-                  user,
-                  subjectIds: ctx.payload.subjectIds,
-                  schedule: ctx.payload.schedule,
-                });
-
-                return { ok: true as const };
-              }),
+            // TODO(database): restore atomic signup with D1 batch support.
+            const user = yield* users.upsertForSignup(
+              ctx.payload.email,
+              ctx.payload.timezone,
             );
+
+            yield* subscriptions.replaceForUser({
+              user,
+              subjectIds: ctx.payload.subjectIds,
+              schedule: ctx.payload.schedule,
+            });
+
+            return { ok: true as const };
           },
           Effect.tapErrorTag(UnexpectedErrorTags, (e) =>
             Effect.logError("signup: unexpected failure", { error: e.message }),

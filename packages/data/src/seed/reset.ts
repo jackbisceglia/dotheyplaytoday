@@ -10,25 +10,21 @@ import {
   usersTable,
 } from "@dtpt/core";
 import { Effect } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 export const reset = Effect.fn("DataSeed.reset")(function* () {
   yield* createTablesIfMissing();
 
   const database = yield* Database;
-  const sql = yield* SqlClient;
 
-  yield* sql
-    .withTransaction(
-      Effect.gen(function* () {
-        yield* database.delete(subscriptionsTable);
-        yield* database.delete(usersTable);
-        yield* database.delete(subjectEventsTable);
-        yield* database.delete(participantsTable);
-        yield* database.delete(eventsTable);
-        yield* database.delete(subjectsTable);
-      }),
-    )
+  // TODO(database): restore atomic reset with D1 batch support.
+  yield* Effect.gen(function* () {
+    yield* database.delete(subscriptionsTable);
+    yield* database.delete(usersTable);
+    yield* database.delete(subjectEventsTable);
+    yield* database.delete(participantsTable);
+    yield* database.delete(eventsTable);
+    yield* database.delete(subjectsTable);
+  })
     .pipe(
       Effect.catchTag("SqlError", (cause) =>
         Effect.fail(

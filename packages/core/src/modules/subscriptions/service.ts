@@ -1,4 +1,3 @@
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { eq } from "drizzle-orm";
 import {
   Array,
@@ -86,7 +85,6 @@ export const SubscriptionsLayer = Layer.effect(
   Subscriptions,
   Effect.gen(function* () {
     const database = yield* Database;
-    const sql = yield* SqlClient;
     const id = yield* Id;
     const SubjectPolicy = SubscriptionPolicy.subject;
 
@@ -180,20 +178,25 @@ export const SubscriptionsLayer = Layer.effect(
             }),
         );
 
-        yield* sql
-          .withTransaction(
-            Effect.gen(function* () {
-              yield* database
-                .delete(subscriptionsTable)
-                .where(eq(subscriptionsTable.userId, input.user.id));
+        // TODO(database): restore atomic replace semantics with D1 batch support.
+        yield* database
+          .delete(subscriptionsTable)
+          .where(eq(subscriptionsTable.userId, input.user.id))
+          .pipe(
+            Effect.catchTag(
+              "SqlError",
+              toWriteError("Subscriptions.replaceForUser", {
+                userId: input.user.id,
+                subscriptionCount: insertableSubscriptions.length,
+              }),
+            ),
+          );
 
-              if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) return;
+        if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) return;
 
-              yield* database
-                .insert(subscriptionsTable)
-                .values(insertableSubscriptions);
-            }),
-          )
+        yield* database
+          .insert(subscriptionsTable)
+          .values(insertableSubscriptions)
           .pipe(
             Effect.catchTag(
               "SqlError",
