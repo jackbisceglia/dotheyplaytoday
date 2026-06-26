@@ -13,7 +13,7 @@ export class ChannelError extends Schema.TaggedErrorClass<ChannelError>()(
   {
     channel: ChannelName,
     message: Schema.String,
-    cause: Schema.optional(Schema.Defect),
+    cause: Schema.optional(Schema.Defect()),
   },
 ) {}
 
@@ -21,7 +21,7 @@ export class ChannelClientRequestError extends Schema.TaggedErrorClass<ChannelCl
   "ChannelClientRequestError",
   {
     ...channelClientErrorFields,
-    cause: Schema.Defect,
+    cause: Schema.Defect(),
   },
 ) {}
 

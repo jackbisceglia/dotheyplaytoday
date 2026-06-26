@@ -22,7 +22,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
 
       return handlers.handle(
         "submit",
-        Effect.fn(
+        Effect.fn("SignupHttpApi.submit")(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 

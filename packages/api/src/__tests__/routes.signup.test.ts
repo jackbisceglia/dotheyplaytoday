@@ -1,36 +1,22 @@
 import { describe, expect, it } from "@effect/vitest";
-import * as NodeHttpServer from "@effect/platform-node/NodeHttpServer";
 import {
-  Api,
   Database,
   Subject,
   SubjectId,
   SubjectInsert,
   subjectsTable,
   Subscriptions,
-  SubscriptionsLayer,
-  SubjectsLayer,
   Users,
-  UsersLayer,
 } from "@dtpt/core";
 import { SignupRequest } from "@dtpt/core/contracts/signup";
-import {
-  createTables,
-  layerTest,
-} from "@dtpt/core/lib/database/__tests__/setup";
-import { Config, Effect, Layer, Schema } from "effect";
+import { createTables } from "@dtpt/core/lib/database/__tests__/setup";
+import { Effect, Schema } from "effect";
 import {
   HttpClient,
   HttpClientRequest,
-  HttpRouter,
 } from "effect/unstable/http";
-import { HttpApiBuilder } from "effect/unstable/httpapi";
 
-import { makeRateLimiterLayer } from "./rate-limit/service.js";
-import { PingGroupLayer } from "./routes.ping.js";
-import { SignupGroupLayer } from "./routes.signup.js";
-import { SubjectsGroupLayer } from "./routes.subjects.js";
-import { UnsubscribeGroupLayer } from "./routes.unsubscribe.js";
+import { makeApiTestLayer } from "./helpers.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -38,8 +24,8 @@ const decodeSignup = Schema.decodeUnknownSync(SignupRequest);
 const utc = decode(Schema.DateTimeUtcFromString);
 const timezone = decode(Schema.TimeZoneNamedFromString);
 
-const layerSignupTest = makeSignupTestLayer({ limit: 100, window: 60 });
-const layerSignupRateLimitedTest = makeSignupTestLayer({
+const layerSignupTest = makeApiTestLayer({ limit: 100, window: 60 });
+const layerSignupRateLimitedTest = makeApiTestLayer({
   limit: 1,
   window: 60,
 });
@@ -241,35 +227,6 @@ function submit(input: {
 
     return { payload, response };
   });
-}
-
-function makeSignupTestLayer(config: {
-  readonly limit: number;
-  readonly window: number;
-}) {
-  const RuntimeLayer = Layer.mergeAll(
-    makeRateLimiterLayer(Config.succeed(config)),
-    SubscriptionsLayer,
-    SubjectsLayer,
-    UsersLayer,
-  ).pipe(Layer.provideMerge(layerTest));
-
-  const ServerLayer = HttpRouter.serve(
-    HttpApiBuilder.layer(Api).pipe(
-      Layer.provide([
-        PingGroupLayer,
-        SignupGroupLayer,
-        SubjectsGroupLayer,
-        UnsubscribeGroupLayer,
-      ]),
-    ),
-    { disableListenLog: true, disableLogger: true },
-  ).pipe(
-    Layer.provideMerge(NodeHttpServer.layerTest),
-    Layer.provide(RuntimeLayer),
-  );
-
-  return Layer.mergeAll(RuntimeLayer, ServerLayer);
 }
 
 function seedSubjects(subjects: readonly (typeof subjectInput)[]) {

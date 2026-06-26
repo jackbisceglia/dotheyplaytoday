@@ -1,44 +1,30 @@
 import { describe, expect, it } from "@effect/vitest";
-import * as NodeHttpServer from "@effect/platform-node/NodeHttpServer";
 import {
-  Api,
   Database,
   EmailAddressFromString,
   Subject,
   SubjectInsert,
   subjectsTable,
-  SubscriptionsLayer,
-  SubjectsLayer,
   Users,
-  UsersLayer,
 } from "@dtpt/core";
-import {
-  createTables,
-  layerTest,
-} from "@dtpt/core/lib/database/__tests__/setup";
-import { Config, Effect, Layer, Schema } from "effect";
+import { createTables } from "@dtpt/core/lib/database/__tests__/setup";
+import { Effect, Schema } from "effect";
 import {
   HttpClient,
   HttpClientRequest,
-  HttpRouter,
 } from "effect/unstable/http";
-import { HttpApiBuilder } from "effect/unstable/httpapi";
 
-import { makeRateLimiterLayer } from "./rate-limit/service.js";
-import { PingGroupLayer } from "./routes.ping.js";
-import { SignupGroupLayer } from "./routes.signup.js";
-import { SubjectsGroupLayer } from "./routes.subjects.js";
-import { UnsubscribeGroupLayer } from "./routes.unsubscribe.js";
+import { makeApiTestLayer } from "./helpers.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
 const email = decode(EmailAddressFromString);
 
-const layerUnsubscribeTest = makeUnsubscribeTestLayer({
+const layerUnsubscribeTest = makeApiTestLayer({
   limit: 100,
   window: 60,
 });
-const layerUnsubscribeRateLimitedTest = makeUnsubscribeTestLayer({
+const layerUnsubscribeRateLimitedTest = makeApiTestLayer({
   limit: 1,
   window: 60,
 });
@@ -200,32 +186,3 @@ const seedSubject = Effect.gen(function* () {
     .insert(subjectsTable)
     .values(encode(SubjectInsert)(decode(Subject)(subjectInput)));
 });
-
-function makeUnsubscribeTestLayer(config: {
-  readonly limit: number;
-  readonly window: number;
-}) {
-  const RuntimeLayer = Layer.mergeAll(
-    makeRateLimiterLayer(Config.succeed(config)),
-    SubscriptionsLayer,
-    SubjectsLayer,
-    UsersLayer,
-  ).pipe(Layer.provideMerge(layerTest));
-
-  const ServerLayer = HttpRouter.serve(
-    HttpApiBuilder.layer(Api).pipe(
-      Layer.provide([
-        PingGroupLayer,
-        SignupGroupLayer,
-        SubjectsGroupLayer,
-        UnsubscribeGroupLayer,
-      ]),
-    ),
-    { disableListenLog: true, disableLogger: true },
-  ).pipe(
-    Layer.provideMerge(NodeHttpServer.layerTest),
-    Layer.provide(RuntimeLayer),
-  );
-
-  return Layer.mergeAll(RuntimeLayer, ServerLayer);
-}

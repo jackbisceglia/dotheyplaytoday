@@ -21,7 +21,7 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
 
       return handlers.handle(
         "submit",
-        Effect.fn(
+        Effect.fn("UnsubscribeHttpApi.submit")(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 

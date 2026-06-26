@@ -2,7 +2,12 @@ packages:
   - packages/*
 
 catalog:
-  effect: ^3.21.0
+  "@effect/language-service": 0.86.2
+  "@effect/platform-node": 4.0.0-beta.85
+  "@effect/sql-d1": 4.0.0-beta.85
+  "@effect/sql-sqlite-node": 4.0.0-beta.85
+  "@effect/vitest": 4.0.0-beta.85
+  effect: 4.0.0-beta.85
   resend: ^6.9.1
 
 catalogMode: manual
