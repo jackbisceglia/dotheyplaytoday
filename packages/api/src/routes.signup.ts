@@ -1,4 +1,10 @@
-import { SignupRateLimited, Subscriptions, Users } from "@dtpt/core";
+import {
+  SignupRateLimited,
+  SubjectCapacityReached,
+  SubscriptionPolicy,
+  Subscriptions,
+  Users,
+} from "@dtpt/core";
 import { Api } from "@dtpt/core/contracts/api";
 import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
@@ -25,6 +31,20 @@ export const SignupGroupLayer = HttpApiBuilder.group(
         Effect.fn("SignupHttpApi.submit")(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
+
+            // TODO(signup): move this into a signup domain service once D1
+            // batch restores atomicity. This is only a static pre-user guard;
+            // user-dependent policy and subject existence checks still happen
+            // after the user write.
+            const received = new Set(ctx.payload.subjectIds).size;
+            const { max } = SubscriptionPolicy.subject.constraints;
+
+            if (received > max) {
+              return yield* new SubjectCapacityReached({
+                limit: max,
+                received,
+              });
+            }
 
             // TODO(database): restore atomic signup with D1 batch support.
             const user = yield* users.upsertForSignup(
