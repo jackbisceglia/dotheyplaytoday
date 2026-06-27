@@ -609,7 +609,7 @@ Shared `HttpApi` contracts belong under top-level `contracts/`, not `lib/contrac
 
 Checked-in seed data belongs in private `@dtpt/data`, not inside core source. Use explicit collection registration instead of filesystem scanning or dynamic import discovery. Collection folders use generic product-model filenames such as `subjects.ts` and `events.ts`; seed scripts import the registry directly and write through domain services.
 
-Preserve the existing database composition pattern during the rewrite: bulk table exports for Drizzle schema composition, one relations module, and one database service/layer module that composes SQLite plus Drizzle. Keep existing database layer naming such as `createDatabaseLayer` and `DatabaseLayer` unless a concrete rewrite need forces a change. Any relation-aware Drizzle type cast belongs inside the database service module, not domain services.
+Preserve the existing database composition pattern during the rewrite: bulk table exports for Drizzle schema composition, one relations module, and one database service/layer module that composes SQLite plus Drizzle. Keep database layer naming specific to the runtime, such as `createNodeDatabaseLayer`, `createD1DatabaseLayer`, and `DatabaseLayer`, unless a concrete rewrite need forces a change. Any relation-aware Drizzle type cast belongs inside the database service module, not domain services.
 
 Until official Drizzle SQLite Effect support is available in the pinned Drizzle version, any temporary SQLite/Effect compatibility shim belongs under `lib/database` and must be invisible to domain modules. The desired consumer shape is the official-driver shape: query builders are yieldable Effects and callers depend on the injected `Database` service, not shim internals.
 
@@ -620,6 +620,8 @@ Initial V1 relations support `Subscriptions.listNotificationRecipients()` and `E
 Domain services always decode database reads through the relevant Effect schema before returning domain values and always encode schema-backed writes before passing values to Drizzle. This preserves truthful app-level values such as `DateTimeUtc`, branded ids, and tagged JSON rather than relying on raw Drizzle inference field by field.
 
 Use `sql.withTransaction` at every multi-step write boundary that needs atomicity. Effect SQL composes nested transactions through context/savepoints, so higher-level workflows can also wrap service calls without passing transaction handles manually.
+
+TODO(database): D1 cannot map `SqlClient.withTransaction` to a connection-scoped transaction. Restore atomic multi-step write boundaries, including signup, subscription replacement, participant replacement, and catalog seeding, with D1 batch semantics or a dedicated domain workflow boundary.
 
 ## Testing
 

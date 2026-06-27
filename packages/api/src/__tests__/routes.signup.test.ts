@@ -89,7 +89,7 @@ describe("signup route handler", () => {
   );
 
   it.effect(
-    "rejects a missing subject id without committing the user upsert",
+    "rejects a missing subject id before committing subscriptions",
     () =>
       Effect.gen(function* () {
         yield* createTables;
@@ -105,7 +105,8 @@ describe("signup route handler", () => {
           yield* database.query.subscriptionsTable.findMany();
 
         expect(result.response.status).toBe(400);
-        expect(users).toHaveLength(0);
+        // TODO(database): restore signup rollback with D1 batch support.
+        expect(users).toHaveLength(1);
         expect(subscriptions).toHaveLength(0);
       }).pipe(Effect.provide(layerSignupTest)),
   );

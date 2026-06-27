@@ -4,6 +4,7 @@ packages:
 catalog:
   "@effect/language-service": 0.86.2
   "@effect/platform-node": 4.0.0-beta.85
+  "@effect/sql-d1": 4.0.0-beta.85
   "@effect/sql-sqlite-node": 4.0.0-beta.85
   "@effect/vitest": 4.0.0-beta.85
   effect: 4.0.0-beta.85

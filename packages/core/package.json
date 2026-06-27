@@ -21,6 +21,7 @@
     "test": "pnpm -w exec vitest run packages/core/src"
   },
   "dependencies": {
+    "@effect/sql-d1": "catalog:",
     "@effect/sql-sqlite-node": "catalog:",
     "better-sqlite3": "^12.4.1",
     "drizzle-orm": "1.0.0-rc.3",

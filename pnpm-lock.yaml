@@ -12,6 +12,9 @@ catalogs:
     '@effect/platform-node':
       specifier: 4.0.0-beta.85
       version: 4.0.0-beta.85
+    '@effect/sql-d1':
+      specifier: 4.0.0-beta.85
+      version: 4.0.0-beta.85
     '@effect/sql-sqlite-node':
       specifier: 4.0.0-beta.85
       version: 4.0.0-beta.85
@@ -54,7 +57,7 @@ importers:
         version: 1.3.5
       alchemy:
         specifier: 2.0.0-beta.57
-        version: 2.0.0-beta.57(@effect/platform-node@4.0.0-beta.85(effect@4.0.0-beta.85)(ioredis@5.9.1))(@types/node@20.19.27)(drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3))(effect@4.0.0-beta.85)(vite@7.3.1(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(ws@8.21.0)
+        version: 2.0.0-beta.57(@effect/platform-node@4.0.0-beta.85(effect@4.0.0-beta.85)(ioredis@5.9.1))(@types/node@20.19.27)(drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3))(effect@4.0.0-beta.85)(vite@7.3.1(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(ws@8.21.0)
       effect:
         specifier: 'catalog:'
         version: 4.0.0-beta.85
@@ -98,15 +101,18 @@ importers:
 
   packages/core:
     dependencies:
+      '@effect/sql-d1':
+        specifier: 'catalog:'
+        version: 4.0.0-beta.85(effect@4.0.0-beta.85)
       '@effect/sql-sqlite-node':
         specifier: 'catalog:'
         version: 4.0.0-beta.85(effect@4.0.0-beta.85)
       better-sqlite3:
         specifier: ^12.4.1
-        version: 12.8.0
+        version: 12.11.1
       drizzle-orm:
         specifier: 1.0.0-rc.3
-        version: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3)
+        version: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3)
       effect:
         specifier: 'catalog:'
         version: 4.0.0-beta.85
@@ -157,13 +163,13 @@ importers:
     dependencies:
       '@astrojs/cloudflare':
         specifier: ^13.7.0
-        version: 13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)
+        version: 13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260626.1))(yaml@2.9.0)
       '@dtpt/core':
         specifier: workspace:*
         version: link:../core
       astro:
         specifier: ^6.4.6
-        version: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
+        version: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
       effect:
         specifier: 'catalog:'
         version: 4.0.0-beta.85
@@ -516,6 +522,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@cloudflare/workers-types@4.20260626.1':
+    resolution: {integrity: sha512-fBnpQyFRS3Ce1l2IUd3k+aUxgy/7VMlVXF4F672/eSrpXFeezCy3Ha6Z2uTyGgqu9sGvQPOj8nqKBv2yeI+ciw==}
+
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
@@ -605,6 +614,11 @@ packages:
     peerDependencies:
       effect: ^4.0.0-beta.85
       ioredis: ^5.7.0
+
+  '@effect/sql-d1@4.0.0-beta.85':
+    resolution: {integrity: sha512-yuJzR60btHOLW5HI2ewYDUQ//ZOhWk9gxZ0cDAwCdG+L3uBpLj4J8+viYA6u1zyh2E57r3qjGYm0iECrtijtOQ==}
+    peerDependencies:
+      effect: ^4.0.0-beta.85
 
   '@effect/sql-sqlite-node@4.0.0-beta.85':
     resolution: {integrity: sha512-yDGzqK3XtwClktkQLl3eLDjadSywlSJVlQlB6g/iV6PfzkBfwI/3CTVU146O04s69yguw2M9rG8uLync7BvayA==}
@@ -2156,10 +2170,6 @@ packages:
   better-sqlite3@12.11.1:
     resolution: {integrity: sha512-dq9AtApgg5PGFtBzPFSBl3HZQjHok5gaQCM6zh2Yk0aSmDCs1CbnVI8/HgASQkNKsWFpseIO9beg5xxpYhbIfA==}
     engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x || 26.x}
-
-  better-sqlite3@12.8.0:
-    resolution: {integrity: sha512-RxD2Vd96sQDjQr20kdP+F+dK/1OUNiVOl200vKBZY8u0vTwysfolF6Hq+3ZK2+h8My9YvZhHsF+RSGZW2VYrPQ==}
-    engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x}
 
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
@@ -4782,16 +4792,16 @@ snapshots:
       - prettier
       - prettier-plugin-astro
 
-  '@astrojs/cloudflare@13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0)(yaml@2.9.0)':
+  '@astrojs/cloudflare@13.7.0(@types/node@20.19.27)(astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0))(jiti@2.6.1)(tsx@4.21.0)(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260626.1))(yaml@2.9.0)':
     dependencies:
       '@astrojs/internal-helpers': 0.10.0
       '@astrojs/underscore-redirects': 1.0.3
-      '@cloudflare/vite-plugin': 1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0)
-      astro: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
+      '@cloudflare/vite-plugin': 1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260626.1))
+      astro: 6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0)
       piccolore: 0.1.3
       tinyglobby: 0.2.17
       vite: 7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
-      wrangler: 4.101.0
+      wrangler: 4.101.0(@cloudflare/workers-types@4.20260626.1)
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
@@ -5312,13 +5322,13 @@ snapshots:
     optionalDependencies:
       workerd: 1.20260616.1
 
-  '@cloudflare/vite-plugin@1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0)':
+  '@cloudflare/vite-plugin@1.41.0(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260626.1))':
     dependencies:
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260616.1)
       miniflare: 4.20260616.0
       unenv: 2.0.0-rc.24
       vite: 7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
-      wrangler: 4.101.0
+      wrangler: 4.101.0(@cloudflare/workers-types@4.20260626.1)
       ws: 8.20.1
     transitivePeerDependencies:
       - bufferutil
@@ -5354,6 +5364,8 @@ snapshots:
 
   '@cloudflare/workerd-windows-64@1.20260616.1':
     optional: true
+
+  '@cloudflare/workers-types@4.20260626.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -5451,6 +5463,11 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  '@effect/sql-d1@4.0.0-beta.85(effect@4.0.0-beta.85)':
+    dependencies:
+      '@cloudflare/workers-types': 4.20260626.1
+      effect: 4.0.0-beta.85
 
   '@effect/sql-sqlite-node@4.0.0-beta.85(effect@4.0.0-beta.85)':
     dependencies:
@@ -6649,7 +6666,7 @@ snapshots:
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
-  alchemy@2.0.0-beta.57(@effect/platform-node@4.0.0-beta.85(effect@4.0.0-beta.85)(ioredis@5.9.1))(@types/node@20.19.27)(drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3))(effect@4.0.0-beta.85)(vite@7.3.1(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(ws@8.21.0):
+  alchemy@2.0.0-beta.57(@effect/platform-node@4.0.0-beta.85(effect@4.0.0-beta.85)(ioredis@5.9.1))(@types/node@20.19.27)(drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3))(effect@4.0.0-beta.85)(vite@7.3.1(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))(workerd@1.20260616.1)(ws@8.21.0):
     dependencies:
       '@alchemy.run/node-utils': 0.0.5
       '@aws-sdk/credential-providers': 3.1073.0
@@ -6690,7 +6707,7 @@ snapshots:
       yaml: 2.9.0
     optionalDependencies:
       '@effect/platform-node': 4.0.0-beta.85(effect@4.0.0-beta.85)(ioredis@5.9.1)
-      drizzle-orm: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3)
+      drizzle-orm: 1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3)
       vite: 7.3.1(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
       ws: 8.21.0
     transitivePeerDependencies:
@@ -6732,7 +6749,7 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0):
+  astro@6.4.6(@azure/identity@4.13.1)(@types/node@20.19.27)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)(jiti@2.6.1)(rollup@4.57.1)(tsx@4.21.0)(yaml@2.9.0):
     dependencies:
       '@astrojs/compiler': 4.0.0
       '@astrojs/internal-helpers': 0.10.0
@@ -6782,7 +6799,7 @@ snapshots:
       ultrahtml: 1.6.0
       unifont: 0.7.4
       unist-util-visit: 5.1.0
-      unstorage: 1.17.5(@azure/identity@4.13.1)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)
+      unstorage: 1.17.5(@azure/identity@4.13.1)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1)
       vfile: 6.0.3
       vite: 7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
       vitefu: 1.1.2(vite@7.3.5(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0))
@@ -6842,11 +6859,6 @@ snapshots:
   before-after-hook@4.0.0: {}
 
   better-sqlite3@12.11.1:
-    dependencies:
-      bindings: 1.5.0
-      prebuild-install: 7.1.3
-
-  better-sqlite3@12.8.0:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.3
@@ -7037,11 +7049,11 @@ snapshots:
     dependencies:
       css-tree: 2.2.1
 
-  db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)):
+  db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)):
     optionalDependencies:
       '@libsql/client': 0.17.4
       better-sqlite3: 12.11.1
-      drizzle-orm: 0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)
+      drizzle-orm: 0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)
       mysql2: 3.22.5(@types/node@20.19.27)
     optional: true
 
@@ -7115,8 +7127,9 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
-  drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0):
+  drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0):
     optionalDependencies:
+      '@cloudflare/workers-types': 4.20260626.1
       '@libsql/client': 0.17.4
       better-sqlite3: 12.11.1
       bun-types: 1.3.5
@@ -7124,24 +7137,12 @@ snapshots:
       pg: 8.22.0
     optional: true
 
-  drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3):
+  drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.11.1)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3):
     optionalDependencies:
+      '@cloudflare/workers-types': 4.20260626.1
       '@libsql/client': 0.17.4
       '@types/mssql': 9.1.9(@azure/core-client@1.10.1)
       better-sqlite3: 12.11.1
-      bun-types: 1.3.5
-      effect: 4.0.0-beta.85
-      mssql: 11.0.1(@azure/core-client@1.10.1)
-      mysql2: 3.22.5(@types/node@20.19.27)
-      pg: 8.22.0
-      zod: 4.4.3
-    optional: true
-
-  drizzle-orm@1.0.0-rc.3(patch_hash=9f01c83ed8aab0d63e0a592db0b02b9bd592d5e5a289112884cb5e93693227b7)(@libsql/client@0.17.4)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(better-sqlite3@12.8.0)(bun-types@1.3.5)(effect@4.0.0-beta.85)(mssql@11.0.1(@azure/core-client@1.10.1))(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0)(zod@4.4.3):
-    optionalDependencies:
-      '@libsql/client': 0.17.4
-      '@types/mssql': 9.1.9(@azure/core-client@1.10.1)
-      better-sqlite3: 12.8.0
       bun-types: 1.3.5
       effect: 4.0.0-beta.85
       mssql: 11.0.1(@azure/core-client@1.10.1)
@@ -9099,7 +9100,7 @@ snapshots:
       '@js-joda/core': 5.7.0
       '@types/node': 20.19.27
       bl: 6.1.6
-      iconv-lite: 0.7.0
+      iconv-lite: 0.7.2
       js-md4: 0.3.2
       native-duplexpair: 1.0.0
       sprintf-js: 1.1.3
@@ -9270,7 +9271,7 @@ snapshots:
 
   universal-user-agent@7.0.3: {}
 
-  unstorage@1.17.5(@azure/identity@4.13.1)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1):
+  unstorage@1.17.5(@azure/identity@4.13.1)(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27)))(ioredis@5.9.1):
     dependencies:
       anymatch: 3.1.3
       chokidar: 5.0.0
@@ -9283,7 +9284,7 @@ snapshots:
     optionalDependencies:
       '@azure/identity': 4.13.1
       aws4fetch: 1.0.20
-      db0: 0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27))
+      db0: 0.3.4(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260626.1)(@libsql/client@0.17.4)(better-sqlite3@12.11.1)(bun-types@1.3.5)(mysql2@3.22.5(@types/node@20.19.27))(pg@8.22.0))(mysql2@3.22.5(@types/node@20.19.27))
       ioredis: 5.9.1
 
   uri-js@4.4.1:
@@ -9552,7 +9553,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20260616.1
       '@cloudflare/workerd-windows-64': 1.20260616.1
 
-  wrangler@4.101.0:
+  wrangler@4.101.0(@cloudflare/workers-types@4.20260626.1):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260616.1)
@@ -9563,6 +9564,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       workerd: 1.20260616.1
     optionalDependencies:
+      '@cloudflare/workers-types': 4.20260626.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil

@@ -1,7 +1,6 @@
 import { UnsubscribeRateLimited, Users } from "@dtpt/core";
 import { Api } from "@dtpt/core/contracts/api";
 import { Effect } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
@@ -10,7 +9,6 @@ const UnexpectedErrorTags = [
   "DatabaseDeleteError",
   "DatabaseReadError",
   "SchemaError",
-  "SqlError",
 ] as const;
 
 export const UnsubscribeGroupLayer = HttpApiBuilder.group(
@@ -19,7 +17,6 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
-      const sql = yield* SqlClient;
       const users = yield* Users;
 
       return handlers.handle(
@@ -28,20 +25,15 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            const removed = yield* sql.withTransaction(
-              Effect.gen(function* () {
-                const user = yield* users.getByUnsubscribeToken(
-                  ctx.payload.token,
-                );
-
-                yield* users.remove(user.id);
-
-                return user;
-              }),
+            // TODO(database): restore atomic unsubscribe with D1 batch support.
+            const user = yield* users.getByUnsubscribeToken(
+              ctx.payload.token,
             );
 
+            yield* users.remove(user.id);
+
             yield* Effect.logInfo("unsubscribe: user removed", {
-              userId: removed.id,
+              userId: user.id,
             });
 
             return { ok: true as const };
