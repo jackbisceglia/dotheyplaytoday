@@ -621,6 +621,8 @@ Domain services always decode database reads through the relevant Effect schema 
 
 Use `sql.withTransaction` at every multi-step write boundary that needs atomicity. Effect SQL composes nested transactions through context/savepoints, so higher-level workflows can also wrap service calls without passing transaction handles manually.
 
+TODO(database): D1 cannot map `SqlClient.withTransaction` to a connection-scoped transaction. Restore atomic multi-step write boundaries, including signup, subscription replacement, participant replacement, and catalog seeding, with D1 batch semantics or a dedicated domain workflow boundary.
+
 ## Testing
 
 Use `@effect/vitest` as the test harness for Effect code. Prefer `it.effect` for effectful assertions and `it.layer` for suites that need shared services.
