@@ -1,12 +1,12 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import {
-  DatabaseLayer,
   IdLayer,
   SubjectsLayer,
   SubscriptionsLayer,
   UsersLayer,
 } from "@dtpt/core";
 import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/config/providers";
+import { DatabaseLayer } from "@dtpt/core/lib/database/node";
 import { Layer, ManagedRuntime, pipe } from "effect";
 
 import { RateLimiterLayer } from "./rate-limit/service.js";

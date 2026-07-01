@@ -1,7 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
 import { createConfigProviderFromCloudflareEnv } from "@dtpt/core/lib/config/providers";
-import { createD1DatabaseLayer } from "@dtpt/core/lib/database/service";
+import { createD1DatabaseLayer } from "@dtpt/core/lib/database/d1";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";

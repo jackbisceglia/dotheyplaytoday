@@ -1,11 +1,7 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import {
-  DatabaseLayer,
-  EventsLayer,
-  IdLayer,
-  SubscriptionsLayer,
-} from "@dtpt/core";
+import { EventsLayer, IdLayer, SubscriptionsLayer } from "@dtpt/core";
 import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/config/providers";
+import { DatabaseLayer } from "@dtpt/core/lib/database/node";
 import { Layer, ManagedRuntime, pipe } from "effect";
 
 export const DotEnvConfigProvider = createConfigProviderFromDotEnv();
