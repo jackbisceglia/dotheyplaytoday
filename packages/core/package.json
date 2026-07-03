@@ -21,6 +21,7 @@
     "test": "pnpm -w exec vitest run packages/core/src"
   },
   "dependencies": {
+    "@effect/platform-browser": "catalog:",
     "@effect/sql-d1": "catalog:",
     "@effect/sql-sqlite-node": "catalog:",
     "better-sqlite3": "^12.4.1",

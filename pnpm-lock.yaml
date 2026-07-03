@@ -9,6 +9,9 @@ catalogs:
     '@effect/language-service':
       specifier: 0.86.2
       version: 0.86.2
+    '@effect/platform-browser':
+      specifier: 4.0.0-beta.85
+      version: 4.0.0-beta.85
     '@effect/platform-node':
       specifier: 4.0.0-beta.85
       version: 4.0.0-beta.85
@@ -37,6 +40,9 @@ importers:
 
   .:
     devDependencies:
+      '@cloudflare/workers-types':
+        specifier: 4.20260626.1
+        version: 4.20260626.1
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.2
@@ -79,6 +85,9 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.0)
+      ws:
+        specifier: ^8.21.0
+        version: 8.21.0
 
   packages/api:
     dependencies:
@@ -101,6 +110,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@effect/platform-browser':
+        specifier: 'catalog:'
+        version: 4.0.0-beta.85(effect@4.0.0-beta.85)
       '@effect/sql-d1':
         specifier: 'catalog:'
         version: 4.0.0-beta.85(effect@4.0.0-beta.85)
@@ -601,6 +613,11 @@ packages:
   '@effect/language-service@0.86.2':
     resolution: {integrity: sha512-SaPln+8srOqDJDUwNTDmP5e+IYpEDr9+1epGznnsLqu8xvo6VnxyWARdeLpqvZJlb0Pgy9ca7ppqvvdWbHPXAg==}
     hasBin: true
+
+  '@effect/platform-browser@4.0.0-beta.85':
+    resolution: {integrity: sha512-gZYoesdxhJ3Qabor5yKSKIij2Hq3PuKyrzDRXuybipS/hXX0Jb0NjfSxZ+pVZyLJMV6M/WyHk5CWlXdoMp5+Sg==}
+    peerDependencies:
+      effect: ^4.0.0-beta.85
 
   '@effect/platform-node-shared@4.0.0-beta.85':
     resolution: {integrity: sha512-JXM5f2j2L2oGxuQG12sysPJeFYKtB388BruyHb/IfxJ/5Wx8KDo3eKLRe6tmg7y7BNeZTxEb14tPKC853+mqeg==}
@@ -5443,6 +5460,11 @@ snapshots:
       effect: 4.0.0-beta.85
 
   '@effect/language-service@0.86.2': {}
+
+  '@effect/platform-browser@4.0.0-beta.85(effect@4.0.0-beta.85)':
+    dependencies:
+      effect: 4.0.0-beta.85
+      multipasta: 0.2.7
 
   '@effect/platform-node-shared@4.0.0-beta.85(effect@4.0.0-beta.85)':
     dependencies:

@@ -1,9 +1,6 @@
-export {
-  Database,
-  DatabaseLayer,
-  createD1DatabaseLayer,
-  createNodeDatabaseLayer,
-} from "./lib/database/service.js";
+export { Database } from "./lib/database/service.js";
+export { DatabaseLayer, createNodeDatabaseLayer } from "./lib/database/node.js";
+export { createD1DatabaseLayer } from "./lib/database/d1.js";
 export { Api } from "./contracts/api.js";
 export { PingGroup, PingResponse } from "./contracts/ping.js";
 export {

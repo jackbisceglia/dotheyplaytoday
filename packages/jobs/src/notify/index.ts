@@ -1,14 +1,16 @@
+import { Channel } from "@dtpt/core/modules/channels/service";
+import { Notification } from "@dtpt/core/modules/channels/notification/schema";
 import {
   Events,
   type EventWithParticipants,
-  Channel,
-  Notification,
+} from "@dtpt/core/modules/events/service";
+import {
   type NotificationRecipient,
-  Subscription,
   Subscriptions,
-  SubscriptionTiming,
-  type User,
-} from "@dtpt/core";
+} from "@dtpt/core/modules/subscriptions/service";
+import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
+import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
+import type { User } from "@dtpt/core/modules/users/schema";
 import { Array, Data, DateTime, Effect, Option } from "effect";
 
 type WorkflowStep = "send" | "mark-sent";

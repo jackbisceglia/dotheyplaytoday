@@ -6,6 +6,9 @@
   "scripts": {
     "dev:web": "pnpm @web dev",
     "dev:api": "pnpm @api dev",
+    "dev:infra": "alchemy dev alchemy.run.ts",
+    "deploy": "alchemy deploy alchemy.run.ts",
+    "destroy": "alchemy destroy alchemy.run.ts",
     "initialize": "pnpm @data seed:dev",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
@@ -21,8 +24,9 @@
     "prepare": "pnpm exec effect-language-service patch"
   },
   "devDependencies": {
-    "@effect/vitest": "catalog:",
+    "@cloudflare/workers-types": "4.20260626.1",
     "@effect/language-service": "catalog:",
+    "@effect/vitest": "catalog:",
     "@eslint/js": "^9.36.0",
     "@tsconfig/bun": "^1.0.7",
     "@tsconfig/strictest": "^2.0.6",
@@ -32,9 +36,10 @@
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "3.6.2",
-    "vitest": "^3.2.4",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.44.1"
+    "typescript-eslint": "^8.44.1",
+    "vitest": "^3.2.4",
+    "ws": "^8.21.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
