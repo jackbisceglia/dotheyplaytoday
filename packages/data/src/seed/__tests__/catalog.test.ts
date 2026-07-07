@@ -1,18 +1,14 @@
 import { describe, expect, it } from "@effect/vitest";
-import {
-  Database,
-  DatabaseWriteError,
-  Events,
-  EventsLayer,
-  participantsTable,
-  SubjectId,
-  subjectEventsTable,
-  subjectsTable,
-  SubjectsLayer,
-  subscriptionsTable,
-  usersTable,
-  eventsTable,
-} from "@dtpt/core";
+import { DatabaseWriteError } from "@dtpt/core/lib/database/errors";
+import { Database } from "@dtpt/core/lib/database/service";
+import { participantsTable } from "@dtpt/core/modules/events/participants/schema";
+import { eventsTable } from "@dtpt/core/modules/events/schema";
+import { Events, EventsLayer } from "@dtpt/core/modules/events/service";
+import { subjectEventsTable } from "@dtpt/core/modules/subjects/feed/schema";
+import { SubjectId, subjectsTable } from "@dtpt/core/modules/subjects/schema";
+import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
+import { subscriptionsTable } from "@dtpt/core/modules/subscriptions/schema";
+import { usersTable } from "@dtpt/core/modules/users/schema";
 import {
   createTables,
   layerTest,

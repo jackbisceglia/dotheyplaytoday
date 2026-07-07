@@ -1,9 +1,6 @@
-import {
-  EventInsert,
-  EventSourceId,
-  ParticipantInsert,
-  SubjectInsert,
-} from "@dtpt/core";
+import { ParticipantInsert } from "@dtpt/core/modules/events/participants/schema";
+import { EventInsert, EventSourceId } from "@dtpt/core/modules/events/schema";
+import { SubjectInsert } from "@dtpt/core/modules/subjects/schema";
 import { HashSet, Schema } from "effect";
 
 import { SeedCollectionId } from "./seed.js";

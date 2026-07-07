@@ -1,11 +1,8 @@
-import {
-  StringParts,
-  SubscriptionInsert,
-  Subscriptions,
-  type User,
-  UserInsert,
-  Users as UsersService,
-} from "@dtpt/core";
+import { StringParts } from "@dtpt/core/lib/string";
+import { SubscriptionInsert } from "@dtpt/core/modules/subscriptions/schema";
+import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
+import { type User, UserInsert } from "@dtpt/core/modules/users/schema";
+import { Users as UsersService } from "@dtpt/core/modules/users/service";
 import { Effect, Schema, Struct } from "effect";
 
 import { Teams } from "../sports/nba/subjects.js";

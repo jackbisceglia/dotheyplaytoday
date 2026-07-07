@@ -1,14 +1,12 @@
-import {
-  createTablesIfMissing,
-  Database,
-  DatabaseWriteError,
-  eventsTable,
-  participantsTable,
-  subjectEventsTable,
-  subjectsTable,
-  subscriptionsTable,
-  usersTable,
-} from "@dtpt/core";
+import { DatabaseWriteError } from "@dtpt/core/lib/database/errors";
+import { createTablesIfMissing } from "@dtpt/core/lib/database/schema-setup";
+import { Database } from "@dtpt/core/lib/database/service";
+import { participantsTable } from "@dtpt/core/modules/events/participants/schema";
+import { eventsTable } from "@dtpt/core/modules/events/schema";
+import { subjectEventsTable } from "@dtpt/core/modules/subjects/feed/schema";
+import { subjectsTable } from "@dtpt/core/modules/subjects/schema";
+import { subscriptionsTable } from "@dtpt/core/modules/subscriptions/schema";
+import { usersTable } from "@dtpt/core/modules/users/schema";
 import { Effect } from "effect";
 
 export const reset = Effect.fn("DataSeed.reset")(

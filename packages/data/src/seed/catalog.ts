@@ -1,10 +1,7 @@
-import {
-  EventId,
-  EventSourceId,
-  Events,
-  StringParts,
-  Subjects,
-} from "@dtpt/core";
+import { StringParts } from "@dtpt/core/lib/string";
+import { EventId, EventSourceId } from "@dtpt/core/modules/events/schema";
+import { Events } from "@dtpt/core/modules/events/service";
+import { Subjects } from "@dtpt/core/modules/subjects/service";
 import { Effect, HashMap, Option, Schema } from "effect";
 
 import { SportsSeed } from "../schema/sports.js";

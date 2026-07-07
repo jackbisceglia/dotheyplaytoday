@@ -1,15 +1,15 @@
 import { describe, expect, it } from "@effect/vitest";
+import { Database } from "@dtpt/core/lib/database/service";
+import { EventsLayer } from "@dtpt/core/modules/events/service";
+import { SubjectId } from "@dtpt/core/modules/subjects/schema";
+import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
+import { subscriptionsTable } from "@dtpt/core/modules/subscriptions/schema";
+import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import {
-  Database,
   EmailAddressFromString,
-  EventsLayer,
-  SubjectId,
-  SubjectsLayer,
-  SubscriptionsLayer,
-  subscriptionsTable,
-  UsersLayer,
   usersTable,
-} from "@dtpt/core";
+} from "@dtpt/core/modules/users/schema";
+import { UsersLayer } from "@dtpt/core/modules/users/service";
 import {
   createTables,
   layerTest,
