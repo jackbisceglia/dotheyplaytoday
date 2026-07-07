@@ -143,11 +143,11 @@ export default {
           Response.json({ error: error.message }, { status: 400 }),
         ),
       ),
-      Effect.catchAll((error) =>
+      Effect.catchCause((cause) =>
         Effect.gen(function* () {
-          yield* Effect.logError("notify worker: local run failed", { error });
+          yield* Effect.logError("notify worker: local run failed", { cause });
 
-          return Response.json({ error: serialize(error) }, { status: 500 });
+          return Response.json({ error: serialize(cause) }, { status: 500 });
         }),
       ),
     );

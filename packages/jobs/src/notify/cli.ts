@@ -7,7 +7,7 @@ import {
   HttpClientRequest,
 } from "effect/unstable/http";
 
-import { NotifyRunOptions } from "./index.js";
+import { NotifyRunOptionFields } from "./index.js";
 
 const NotifyWorkerDevUrl = "http://localhost:8788/local/notify";
 
@@ -19,23 +19,23 @@ const NotifyCliRuntime = ManagedRuntime.make(
 );
 
 const UserFlag = Flag.string("user").pipe(
-  Flag.withSchema(NotifyRunOptions.fields.user.schema),
+  Flag.withSchema(NotifyRunOptionFields.user),
   Flag.optional,
   Flag.withDescription("Process only recipients for this email address"),
 );
 
 const NowFlag = Flag.string("now").pipe(
-  Flag.withSchema(NotifyRunOptions.fields.now.schema),
+  Flag.withSchema(NotifyRunOptionFields.now),
   Flag.optional,
   Flag.withDescription("Override the run time as an ISO UTC instant"),
 );
 
 const DryRunFlag = Flag.boolean("dry-run").pipe(
-  Flag.withSchema(NotifyRunOptions.fields.dryRun),
+  Flag.withSchema(NotifyRunOptionFields.dryRun),
 );
 
 const ForceFlag = Flag.boolean("force").pipe(
-  Flag.withSchema(NotifyRunOptions.fields.force),
+  Flag.withSchema(NotifyRunOptionFields.force),
 );
 
 const NotifyCommand = Command.make(

@@ -185,11 +185,22 @@ export type NotifyOptions = {
   readonly now?: DateTime.Utc;
 };
 
+export const NotifyRunOptionFields = {
+  dryRun: Schema.Boolean,
+  force: Schema.Boolean,
+  user: EmailAddressFromString,
+  now: Schema.DateTimeUtcFromString,
+} as const;
+
 export const NotifyRunOptions = Schema.Struct({
-  dryRun: Schema.optionalWith(Schema.Boolean, { default: () => false }),
-  force: Schema.optionalWith(Schema.Boolean, { default: () => false }),
-  user: Schema.optional(EmailAddressFromString),
-  now: Schema.optional(Schema.DateTimeUtcFromString),
+  dryRun: NotifyRunOptionFields.dryRun.pipe(
+    Schema.withDecodingDefault(Effect.succeed(false)),
+  ),
+  force: NotifyRunOptionFields.force.pipe(
+    Schema.withDecodingDefault(Effect.succeed(false)),
+  ),
+  user: Schema.optional(NotifyRunOptionFields.user),
+  now: Schema.optional(NotifyRunOptionFields.now),
 });
 
 export const decodeNotifyRunOptions =
