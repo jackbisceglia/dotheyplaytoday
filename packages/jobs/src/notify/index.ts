@@ -10,8 +10,11 @@ import {
 } from "@dtpt/core/modules/subscriptions/service";
 import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
-import type { User } from "@dtpt/core/modules/users/schema";
-import { Array, Data, DateTime, Effect, Option } from "effect";
+import {
+  EmailAddressFromString,
+  type User,
+} from "@dtpt/core/modules/users/schema";
+import { Array, Data, DateTime, Effect, Option, Schema } from "effect";
 
 type WorkflowStep = "send" | "mark-sent";
 
@@ -181,6 +184,16 @@ export type NotifyOptions = {
   readonly userEmail?: User["email"];
   readonly now?: DateTime.Utc;
 };
+
+export const NotifyRunOptions = Schema.Struct({
+  dryRun: Schema.optionalWith(Schema.Boolean, { default: () => false }),
+  force: Schema.optionalWith(Schema.Boolean, { default: () => false }),
+  user: Schema.optional(EmailAddressFromString),
+  now: Schema.optional(Schema.DateTimeUtcFromString),
+});
+
+export const decodeNotifyRunOptions =
+  Schema.decodeUnknownEffect(NotifyRunOptions);
 
 export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
   const subscriptions = yield* Subscriptions;

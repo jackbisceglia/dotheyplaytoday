@@ -8,6 +8,7 @@ import * as Effect from "effect/Effect";
 
 const RootDir = fileURLToPath(new URL(".", import.meta.url));
 const NotifyCron = "*/15 * * * *";
+const NotifyWorkerDevPort = 8788;
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -16,6 +17,8 @@ export default Alchemy.Stack(
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
+    const context = yield* Alchemy.AlchemyContext;
+
     const database = yield* Cloudflare.D1Database("Database", {
       migrationsDir: path.join(RootDir, "packages/data/migrations"),
       primaryLocationHint: "wnam",
@@ -24,15 +27,17 @@ export default Alchemy.Stack(
     const notifyWorker = yield* Cloudflare.Worker("NotifyWorker", {
       main: path.join(RootDir, "packages/jobs/src/notify/worker.ts"),
       compatibility: {
-        date: "2026-06-21",
-        flags: ["nodejs_als"],
+        date: "2026-06-02",
+        flags: ["nodejs_compat"],
       },
       crons: [NotifyCron],
+      dev: { port: NotifyWorkerDevPort },
       env: {
         Database: database,
         PUBLIC_WEB_URL_BASE: Config.string("PUBLIC_WEB_URL_BASE"),
         RESEND_API_KEY: Config.redacted("RESEND_API_KEY"),
         RESEND_FROM_EMAIL: Config.string("RESEND_FROM_EMAIL"),
+        ENVIRONMENT: context.dev ? "development" : "production",
       },
     });
 
@@ -40,6 +45,7 @@ export default Alchemy.Stack(
       databaseName: database.databaseName,
       notifyCron: NotifyCron,
       notifyWorkerName: notifyWorker.workerName,
+      notifyWorkerUrl: notifyWorker.url,
     };
   }),
 );
