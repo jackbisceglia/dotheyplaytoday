@@ -1,20 +1,46 @@
-import { spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { Effect, ManagedRuntime, Schema } from "effect";
+import {
+  EventsLayer,
+  IdLayer,
+  SubjectsLayer,
+  SubscriptionsLayer,
+  UsersLayer,
+} from "@dtpt/core";
+import * as CloudflareCredentials from "@distilled.cloud/cloudflare/Credentials";
+import { Effect, Layer, ManagedRuntime, pipe, Schema } from "effect";
 import { Command, Prompt } from "effect/unstable/cli";
+import * as FetchHttpClient from "effect/unstable/http/FetchHttpClient";
 
-import { type SeedRunOptions } from "./run.js";
+import { createD1ApiDatabaseLayer } from "./d1-api.js";
+import { runSeed, type SeedRunOptions } from "./run.js";
 
 class SeedCliError extends Schema.TaggedErrorClass<SeedCliError>()(
   "SeedCliError",
   { message: Schema.String },
 ) {}
 
-const SeedCliRuntime = ManagedRuntime.make(NodeServices.layer);
 const RootDir = fileURLToPath(new URL("../../../..", import.meta.url));
+const StackName = "dotheyplaytoday";
+const DatabaseFqn = "Database";
+
+const D1ApiLayer = pipe(
+  Layer.mergeAll(CloudflareCredentials.fromEnv(), FetchHttpClient.layer),
+  Layer.provideMerge(NodeServices.layer),
+);
+
+const SeedCliRuntime = ManagedRuntime.make(D1ApiLayer);
+
+const D1Target = Schema.Struct({
+  accountId: Schema.String,
+  databaseId: Schema.String,
+});
+
+const D1ResourceState = Schema.Struct({
+  attr: D1Target,
+});
 
 const ConfirmProduction = Prompt.text({
   message: "Type yes to run production seed:",
@@ -27,61 +53,81 @@ const ConfirmProduction = Prompt.text({
 const resolveStage = () =>
   process.env.ALCHEMY_STAGE ?? `dev_${process.env.USER ?? "local"}`;
 
-const runAlchemySeed = Effect.fn("Seed.Cli.runAlchemySeed")(function* (
-  mode: SeedRunOptions["mode"],
-) {
-  const exitCode = yield* Effect.tryPromise({
+const readD1Target = Effect.fn("Seed.Cli.readD1Target")(function* () {
+  const stdout = yield* Effect.try({
     try: () =>
-      new Promise<number>((resolve, reject) => {
-        const child = spawn(
-          "pnpm",
-          [
-            "exec",
-            "alchemy",
-            "deploy",
-            "alchemy.run.ts",
-            "--stage",
-            resolveStage(),
-            "--yes",
-          ],
-          {
-            cwd: RootDir,
-            env: {
-              ...process.env,
-              DTPT_SEED_MODE: mode,
-              DTPT_SEED_RUN_ID: randomUUID(),
-            },
-            stdio: "inherit",
-          },
-        );
-
-        child.on("error", reject);
-        child.on("close", (code) => {
-          resolve(code ?? 1);
-        });
-      }),
+      execFileSync(
+        "pnpm",
+        [
+          "exec",
+          "alchemy",
+          "state",
+          "get",
+          "--stack",
+          StackName,
+          "--stage",
+          resolveStage(),
+          "--fqn",
+          DatabaseFqn,
+          "alchemy.run.ts",
+        ],
+        {
+          cwd: RootDir,
+          encoding: "utf8",
+          env: process.env,
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      ),
     catch: (error) =>
       new SeedCliError({
-        message: `Failed to start Alchemy seed: ${String(error)}`,
+        message: `Failed to read Alchemy D1 state: ${String(error)}`,
       }),
   });
 
-  if (exitCode !== 0) {
-    return yield* new SeedCliError({
-      message: `Alchemy seed failed with exit code ${exitCode.toString()}`,
-    });
-  }
+  const resource = yield* Effect.try({
+    try: () => JSON.parse(stdout) as unknown,
+    catch: (error) =>
+      new SeedCliError({
+        message: `Alchemy D1 state was not JSON: ${String(error)}`,
+      }),
+  });
+
+  const decoded = yield* Schema.decodeUnknownEffect(D1ResourceState)(
+    resource,
+  ).pipe(
+    Effect.mapError(
+      (error) =>
+        new SeedCliError({
+          message: `Alchemy D1 state is missing accountId/databaseId: ${error.message}`,
+        }),
+    ),
+  );
+
+  return decoded.attr;
+});
+
+const runD1Seed = Effect.fn("Seed.Cli.runD1Seed")(function* (
+  mode: SeedRunOptions["mode"],
+) {
+  const target = yield* readD1Target();
+  const SeedLayer = pipe(
+    Layer.mergeAll(SubjectsLayer, EventsLayer, UsersLayer, SubscriptionsLayer),
+    Layer.provideMerge(createD1ApiDatabaseLayer(target)),
+    Layer.provide(IdLayer),
+  );
+
+  yield* runSeed({ mode }).pipe(Effect.provide(SeedLayer));
 });
 
 const DevCommand = Command.make("dev").pipe(
-  Command.withHandler(() => runAlchemySeed("dev")),
+  Command.withHandler(() => runD1Seed("dev")),
 );
 
 const ProdCommand = Command.make("prod").pipe(
   Command.withHandler(() =>
     Effect.gen(function* () {
       yield* ConfirmProduction;
-      yield* runAlchemySeed("prod");
+      yield* runD1Seed("prod");
     }),
   ),
 );
