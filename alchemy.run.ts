@@ -37,7 +37,7 @@ export default Alchemy.Stack(
         PUBLIC_WEB_URL_BASE: Config.string("PUBLIC_WEB_URL_BASE"),
         RESEND_API_KEY: Config.redacted("RESEND_API_KEY"),
         RESEND_FROM_EMAIL: Config.string("RESEND_FROM_EMAIL"),
-        ENVIRONMENT: context.dev ? "development" : "production",
+        ENV: context.dev ? "development" : "production",
       },
     });
 
