@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@dtpt/core": "workspace:*",
+    "@dtpt/data": "workspace:*",
     "@effect/platform-node": "catalog:",
     "effect": "catalog:"
   },

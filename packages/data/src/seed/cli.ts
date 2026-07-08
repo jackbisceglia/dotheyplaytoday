@@ -1,10 +1,19 @@
-import { Effect } from "effect";
+import * as NodeServices from "@effect/platform-node/NodeServices";
+import { Effect, Layer, ManagedRuntime, pipe } from "effect";
 import { Command, Prompt } from "effect/unstable/cli";
+import {
+  FetchHttpClient,
+  HttpClient,
+  HttpClientRequest,
+} from "effect/unstable/http";
 
-import { DataRuntime } from "../runtime.js";
-import { seedCatalog, summarizeCatalog } from "./catalog.js";
-import { reset } from "./reset.js";
-import { seedUsers, summarizeUsers } from "./users.js";
+import { type SeedRunOptions } from "./run.js";
+
+const SeedWorkerDevUrl = "http://localhost:8788/local/seed";
+
+const SeedCliRuntime = ManagedRuntime.make(
+  pipe(FetchHttpClient.layer, Layer.provideMerge(NodeServices.layer)),
+);
 
 const ConfirmProduction = Prompt.text({
   message: "Type yes to run production seed:",
@@ -14,41 +23,46 @@ const ConfirmProduction = Prompt.text({
       : Effect.fail("Cannot execute production seed, confirmation rejected"),
 });
 
+const postSeed = Effect.fn("Seed.Cli")(function* (
+  mode: SeedRunOptions["mode"],
+) {
+  const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
+  const response = yield* client.execute(
+    HttpClientRequest.post(SeedWorkerDevUrl).pipe(
+      HttpClientRequest.bodyJsonUnsafe({ mode }),
+    ),
+  );
+
+  yield* Effect.log("seed: ok", { response: yield* response.text });
+});
+
 const DevCommand = Command.make("dev").pipe(
-  Command.withHandler(
-    Effect.fn("Seed.Dev")(function* () {
-      yield* reset();
-
-      const collections = yield* seedCatalog();
-      yield* Effect.log(summarizeCatalog(collections));
-
-      const users = yield* seedUsers();
-      yield* Effect.log(summarizeUsers(users));
-    }),
-  ),
+  Command.withHandler(() => postSeed("dev")),
 );
 
 const ProdCommand = Command.make("prod").pipe(
-  Command.withHandler(
-    Effect.fn("Seed.Prod")(function* () {
+  Command.withHandler(() =>
+    Effect.gen(function* () {
       yield* ConfirmProduction;
-      const collections = yield* seedCatalog();
-      yield* Effect.log(summarizeCatalog(collections));
+      yield* postSeed("prod");
     }),
   ),
 );
 
 const SeedCli = Command.run(
-  Command.make("seed").pipe(Command.withSubcommands([DevCommand, ProdCommand])),
+  Command.make("seed").pipe(
+    Command.withSubcommands([DevCommand, ProdCommand]),
+    Command.withDescription(
+      "Run the seed on the local NotifyWorker (requires `pnpm dev:infra`)",
+    ),
+  ),
   { version: "0.0.0" },
 );
 
-const SeedProgram = SeedCli.pipe(
-  Effect.catchTag("SeedDuplicateEventSourceIdError", Effect.die),
-);
-
 async function main() {
-  await DataRuntime.runPromise(SeedProgram).finally(() => DataRuntime.dispose());
+  await SeedCliRuntime.runPromise(SeedCli).finally(() =>
+    SeedCliRuntime.dispose(),
+  );
 }
 
 if (import.meta.main) {
