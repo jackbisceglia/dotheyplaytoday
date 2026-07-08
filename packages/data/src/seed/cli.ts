@@ -1,19 +1,20 @@
+import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { fileURLToPath } from "node:url";
+
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { Effect, Layer, ManagedRuntime, pipe } from "effect";
+import { Effect, ManagedRuntime, Schema } from "effect";
 import { Command, Prompt } from "effect/unstable/cli";
-import {
-  FetchHttpClient,
-  HttpClient,
-  HttpClientRequest,
-} from "effect/unstable/http";
 
 import { type SeedRunOptions } from "./run.js";
 
-const SeedWorkerDevUrl = "http://localhost:8788/local/seed";
+class SeedCliError extends Schema.TaggedErrorClass<SeedCliError>()(
+  "SeedCliError",
+  { message: Schema.String },
+) {}
 
-const SeedCliRuntime = ManagedRuntime.make(
-  pipe(FetchHttpClient.layer, Layer.provideMerge(NodeServices.layer)),
-);
+const SeedCliRuntime = ManagedRuntime.make(NodeServices.layer);
+const RootDir = fileURLToPath(new URL("../../../..", import.meta.url));
 
 const ConfirmProduction = Prompt.text({
   message: "Type yes to run production seed:",
@@ -23,39 +24,70 @@ const ConfirmProduction = Prompt.text({
       : Effect.fail("Cannot execute production seed, confirmation rejected"),
 });
 
-const postSeed = Effect.fn("Seed.Cli")(function* (
+const resolveStage = () =>
+  process.env.ALCHEMY_STAGE ?? `dev_${process.env.USER ?? "local"}`;
+
+const runAlchemySeed = Effect.fn("Seed.Cli.runAlchemySeed")(function* (
   mode: SeedRunOptions["mode"],
 ) {
-  const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
-  const response = yield* client.execute(
-    HttpClientRequest.post(SeedWorkerDevUrl).pipe(
-      HttpClientRequest.bodyJsonUnsafe({ mode }),
-    ),
-  );
+  const exitCode = yield* Effect.tryPromise({
+    try: () =>
+      new Promise<number>((resolve, reject) => {
+        const child = spawn(
+          "pnpm",
+          [
+            "exec",
+            "alchemy",
+            "deploy",
+            "alchemy.run.ts",
+            "--stage",
+            resolveStage(),
+            "--yes",
+          ],
+          {
+            cwd: RootDir,
+            env: {
+              ...process.env,
+              DTPT_SEED_MODE: mode,
+              DTPT_SEED_RUN_ID: randomUUID(),
+            },
+            stdio: "inherit",
+          },
+        );
 
-  yield* Effect.log("seed: ok", { response: yield* response.text });
+        child.on("error", reject);
+        child.on("close", (code) => {
+          resolve(code ?? 1);
+        });
+      }),
+    catch: (error) =>
+      new SeedCliError({
+        message: `Failed to start Alchemy seed: ${String(error)}`,
+      }),
+  });
+
+  if (exitCode !== 0) {
+    return yield* new SeedCliError({
+      message: `Alchemy seed failed with exit code ${exitCode.toString()}`,
+    });
+  }
 });
 
 const DevCommand = Command.make("dev").pipe(
-  Command.withHandler(() => postSeed("dev")),
+  Command.withHandler(() => runAlchemySeed("dev")),
 );
 
 const ProdCommand = Command.make("prod").pipe(
   Command.withHandler(() =>
     Effect.gen(function* () {
       yield* ConfirmProduction;
-      yield* postSeed("prod");
+      yield* runAlchemySeed("prod");
     }),
   ),
 );
 
 const SeedCli = Command.run(
-  Command.make("seed").pipe(
-    Command.withSubcommands([DevCommand, ProdCommand]),
-    Command.withDescription(
-      "Run the seed on the local NotifyWorker (requires `pnpm dev:infra`)",
-    ),
-  ),
+  Command.make("seed").pipe(Command.withSubcommands([DevCommand, ProdCommand])),
   { version: "0.0.0" },
 );
 

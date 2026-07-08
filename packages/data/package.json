@@ -23,6 +23,7 @@
     "seed:prod": "pnpm --filter @dtpt/core build && pnpm build && node dist/seed/cli.js prod"
   },
   "dependencies": {
+    "@distilled.cloud/cloudflare": "^0.26.1",
     "@dtpt/core": "workspace:*",
     "@effect/platform-node": "catalog:",
     "effect": "catalog:"

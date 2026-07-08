@@ -141,6 +141,9 @@ importers:
 
   packages/data:
     dependencies:
+      '@distilled.cloud/cloudflare':
+        specifier: ^0.26.1
+        version: 0.26.1(effect@4.0.0-beta.85)
       '@dtpt/core':
         specifier: workspace:*
         version: link:../core
@@ -160,9 +163,6 @@ importers:
       '@dtpt/core':
         specifier: workspace:*
         version: link:../core
-      '@dtpt/data':
-        specifier: workspace:*
-        version: link:../data
       '@effect/platform-node':
         specifier: 'catalog:'
         version: 4.0.0-beta.85(effect@4.0.0-beta.85)(ioredis@5.9.1)
