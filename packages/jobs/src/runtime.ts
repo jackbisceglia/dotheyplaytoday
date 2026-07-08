@@ -25,11 +25,12 @@ export const JobsRuntime = ManagedRuntime.make(
 export const JobsCliRuntime = ManagedRuntime.make(
   pipe(
     FetchHttpClient.layer,
+    Layer.provideMerge(DotEnvConfigProvider),
     Layer.provideMerge(NodeServices.layer),
   ),
 );
 
-export function makeJobWorkerRuntime(env: { readonly Database: D1Database }) {
+export function makeJobsWorkerRuntime(env: { readonly Database: D1Database }) {
   const JobWorkerLayer = pipe(
     Layer.mergeAll(SubscriptionsLayer, EventsLayer),
     Layer.provide(IdLayer),

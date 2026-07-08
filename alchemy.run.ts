@@ -8,7 +8,9 @@ import * as Effect from "effect/Effect";
 
 const RootDir = fileURLToPath(new URL(".", import.meta.url));
 const NotifyCron = "*/15 * * * *";
-const NotifyWorkerDevPort = 8788;
+const NotifyWorkerDevPort = Config.port("NOTIFY_WORKER_DEV_PORT").pipe(
+  Config.withDefault(8788),
+);
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -18,6 +20,7 @@ export default Alchemy.Stack(
   },
   Effect.gen(function* () {
     const context = yield* Alchemy.AlchemyContext;
+    const notifyWorkerDevPort = yield* NotifyWorkerDevPort;
 
     const database = yield* Cloudflare.D1Database("Database", {
       migrationsDir: path.join(RootDir, "packages/data/migrations"),
@@ -31,7 +34,7 @@ export default Alchemy.Stack(
         flags: ["nodejs_compat"],
       },
       crons: [NotifyCron],
-      dev: { port: NotifyWorkerDevPort },
+      dev: { port: notifyWorkerDevPort },
       env: {
         Database: database,
         PUBLIC_WEB_URL_BASE: Config.string("PUBLIC_WEB_URL_BASE"),

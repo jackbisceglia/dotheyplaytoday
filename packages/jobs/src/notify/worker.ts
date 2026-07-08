@@ -5,7 +5,7 @@ import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service
 import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";
 import { DateTime, Effect, Match, Schema } from "effect";
 
-import { makeJobWorkerRuntime } from "../runtime.js";
+import { makeJobsWorkerRuntime } from "../runtime.js";
 import {
   decodeNotifyOptions,
   notify,
@@ -44,9 +44,9 @@ const decodeRequestBody = Effect.fn(
 
 export default {
   async scheduled(controller, env) {
-    const runtime = makeJobWorkerRuntime(env);
+    const Runtime = makeJobsWorkerRuntime(env);
 
-    const worker = Effect.gen(function* () {
+    const Worker = Effect.gen(function* () {
       const now = makeDateTimeFromController(controller.scheduledTime);
 
       yield* Effect.logInfo("notify worker: scheduled", {
@@ -57,13 +57,13 @@ export default {
       yield* notify({ now });
     }).pipe(Effect.provide(EmailChannelLayer));
 
-    await runtime.runPromise(worker).finally(runtime.dispose);
+    await Runtime.runPromise(Worker).finally(Runtime.dispose);
   },
 
   async fetch(request, env) {
-    const runtime = makeJobWorkerRuntime(env);
+    const Runtime = makeJobsWorkerRuntime(env);
 
-    const worker = Effect.gen(function* () {
+    const Worker = Effect.gen(function* () {
       if (env.ENV !== "development") {
         return Response.json({ error: "not found" }, { status: 404 });
       }
@@ -124,6 +124,6 @@ export default {
       ),
     );
 
-    return await runtime.runPromise(worker).finally(runtime.dispose);
+    return await Runtime.runPromise(Worker).finally(Runtime.dispose);
   },
 } satisfies ExportedHandler<NotifyWorkerEnv>;
