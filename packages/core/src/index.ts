@@ -1,6 +1,10 @@
 export { Database } from "./lib/database/service.js";
 export { DatabaseLayer, createNodeDatabaseLayer } from "./lib/database/node.js";
 export { createD1DatabaseLayer } from "./lib/database/d1.js";
+export {
+  createD1HttpDatabaseLayer,
+  D1HttpDatabaseResolutionError,
+} from "./lib/database/d1-http.js";
 export { Api } from "./contracts/api.js";
 export { PingGroup, PingResponse } from "./contracts/ping.js";
 export {
