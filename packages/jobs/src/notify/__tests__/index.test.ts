@@ -15,7 +15,7 @@ import {
 } from "@dtpt/core";
 import { DateTime, Effect, Exit, Layer, Schema } from "effect";
 
-import { notify } from "../index.js";
+import { decodeNotifyOptions, notify } from "../index.js";
 
 const decode = Schema.decodeUnknownSync;
 const utc = decode(Schema.DateTimeUtcFromString);
@@ -36,6 +36,24 @@ const ids = {
 };
 
 const now = utc("2026-05-24T13:00:00.000Z");
+
+describe("notify option decoding", () => {
+  it.effect("defaults missing boolean flags", () =>
+    Effect.gen(function* () {
+      const opts = yield* decodeNotifyOptions({
+        now: "2026-05-24T13:00:00.000Z",
+        user: "fan@example.com",
+      });
+
+      expect(opts.dryRun).toBe(false);
+      expect(opts.force).toBe(false);
+      expect(opts.now).toBeDefined();
+      if (!opts.now) return;
+      expect(DateTime.formatIso(opts.now)).toBe("2026-05-24T13:00:00.000Z");
+      expect(opts.user).toBe("fan@example.com");
+    }),
+  );
+});
 
 const makeRecipient = (
   opts: {
@@ -279,9 +297,7 @@ describe("notify orchestration", () => {
   });
 
   it.effect("console channel layer does not require Resend config", () =>
-    Effect.gen(function* () {
-      yield* Channel;
-    }).pipe(Effect.provide(ConsoleChannelLayer)),
+    Channel.pipe(Effect.provide(ConsoleChannelLayer), Effect.asVoid),
   );
 
   it.effect(
@@ -322,7 +338,7 @@ describe("notify orchestration", () => {
         subscriptionId: ids.subscriptionB,
         subjectName: "Knicks",
       });
-      const userEmail = decode(EmailAddress)("target@example.com");
+      const user = decode(EmailAddress)("target@example.com");
       const harness = makeHarness({
         recipients: [target, other],
         eventsBySubject: new Map([
@@ -331,7 +347,7 @@ describe("notify orchestration", () => {
         ]),
       });
 
-      yield* notify({ userEmail, now }).pipe(Effect.provide(harness.layer));
+      yield* notify({ user, now }).pipe(Effect.provide(harness.layer));
 
       expect(harness.deliveries).toHaveLength(1);
       expect(harness.deliveries[0]?.user.email).toBe("target@example.com");

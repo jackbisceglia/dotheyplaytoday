@@ -14,7 +14,14 @@ import {
   EmailAddressFromString,
   type User,
 } from "@dtpt/core/modules/users/schema";
-import { Array, Data, DateTime, Effect, Option, Schema } from "effect";
+import {
+  Array,
+  Data,
+  DateTime,
+  Effect,
+  Option,
+  Schema,
+} from "effect";
 
 type WorkflowStep = "send" | "mark-sent";
 
@@ -181,42 +188,34 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
 export type NotifyOptions = {
   readonly dryRun?: boolean;
   readonly force?: boolean;
-  readonly userEmail?: User["email"];
+  readonly user?: User["email"];
   readonly now?: DateTime.Utc;
 };
 
-export const NotifyRunOptionFields = {
-  dryRun: Schema.Boolean,
-  force: Schema.Boolean,
-  user: EmailAddressFromString,
-  now: Schema.DateTimeUtcFromString,
-} as const;
-
-export const NotifyRunOptions = Schema.Struct({
-  dryRun: NotifyRunOptionFields.dryRun.pipe(
+export const NotifyOptions = Schema.Struct({
+  dryRun: Schema.Boolean.pipe(
     Schema.withDecodingDefault(Effect.succeed(false)),
   ),
-  force: NotifyRunOptionFields.force.pipe(
+  force: Schema.Boolean.pipe(
     Schema.withDecodingDefault(Effect.succeed(false)),
   ),
-  user: Schema.optional(NotifyRunOptionFields.user),
-  now: Schema.optional(NotifyRunOptionFields.now),
+  user: Schema.optional(EmailAddressFromString),
+  now: Schema.optional(Schema.DateTimeUtcFromString),
 });
 
-export const decodeNotifyRunOptions =
-  Schema.decodeUnknownEffect(NotifyRunOptions);
+export const decodeNotifyOptions = Schema.decodeUnknownEffect(NotifyOptions);
 
 export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
   const subscriptions = yield* Subscriptions;
 
-  const targetUser = Option.fromNullishOr(opts.userEmail);
+  const targetUser = Option.fromNullishOr(opts.user);
   const now = opts.now ?? (yield* DateTime.now);
 
   yield* Effect.logInfo("notify: start", {
     dryRun: opts.dryRun ?? false,
     force: opts.force ?? false,
     now: DateTime.formatIso(now),
-    userEmail: opts.userEmail,
+    userEmail: opts.user,
   });
 
   const recipients = yield* subscriptions.listNotificationRecipients();

@@ -20,7 +20,7 @@ import {
 } from "effect";
 
 import {
-  decodeNotifyRunOptions,
+  decodeNotifyOptions,
   notify,
 } from "./index.js";
 
@@ -69,7 +69,7 @@ const decodeRequestBody = Effect.fn(
     catch: (error) => new BadRequest({ message: serialize(error) }),
   });
 
-  return yield* decodeNotifyRunOptions(body).pipe(
+  return yield* decodeNotifyOptions(body).pipe(
     Effect.mapError((error) => new BadRequest({ message: error.message })),
   );
 });
@@ -126,7 +126,7 @@ export default {
             dryRun: opts.dryRun,
             force: opts.force,
             ...(opts.now && { now: opts.now }),
-            ...(opts.user && { userEmail: opts.user }),
+            ...(opts.user && { user: opts.user }),
           }).pipe(Effect.provide(ChannelLayer));
 
           return Response.json({ ok: true });
@@ -145,7 +145,7 @@ export default {
       ),
       Effect.catchCause((cause) =>
         Effect.gen(function* () {
-          yield* Effect.logError("notify worker: local run failed", { cause });
+          yield* Effect.logError("notify worker run failed", { cause });
 
           return Response.json({ error: serialize(cause) }, { status: 500 });
         }),
