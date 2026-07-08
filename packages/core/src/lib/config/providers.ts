@@ -30,9 +30,3 @@ export const createConfigProviderFromDotEnv = Effect.fn(
  */
 export const createConfigProviderFromViteEnv = (viteEnv: unknown) =>
   ConfigProvider.layer(ConfigProvider.fromUnknown(viteEnv));
-
-/**
- * Installs a config provider backed by Cloudflare's Worker `env` object.
- */
-export const createConfigProviderFromCloudflareEnv = (env: unknown) =>
-  ConfigProvider.layer(ConfigProvider.fromUnknown(env));

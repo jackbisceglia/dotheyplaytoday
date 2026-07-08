@@ -160,9 +160,6 @@ importers:
       '@dtpt/core':
         specifier: workspace:*
         version: link:../core
-      '@effect/platform-node':
-        specifier: 'catalog:'
-        version: 4.0.0-beta.85(effect@4.0.0-beta.85)(ioredis@5.9.1)
       effect:
         specifier: 'catalog:'
         version: 4.0.0-beta.85

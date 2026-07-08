@@ -15,7 +15,6 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "start:notify": "node dist/notify/cli.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -23,7 +22,6 @@
   },
   "dependencies": {
     "@dtpt/core": "workspace:*",
-    "@effect/platform-node": "catalog:",
     "effect": "catalog:"
   },
   "devDependencies": {
