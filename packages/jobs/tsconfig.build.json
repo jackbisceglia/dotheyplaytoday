@@ -10,7 +10,7 @@
     "src/**/*.test.ts",
     "src/**/tests/**",
     "src/**/__tests__/**",
-    "src/notify/database.ts",
+    "src/cloudflare.ts",
     "src/notify/worker.ts"
   ]
 }
