@@ -5,9 +5,12 @@ import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 import { JobsCliRuntime } from "../runtime.js";
 import { NotifyOptions } from "./index.js";
 
-const NotifyWorkerDevPort = Config.port("NOTIFY_WORKER_DEV_PORT").pipe(
+const NotifyWorkerDevPort = Config.port("NOTIFY_DEV_PORT").pipe(
   Config.withDefault(8788),
 );
+
+const buildNotifyWorkerDevUrl = (port: number) =>
+  `http://localhost:${String(port)}/local/notify`;
 
 const Flags = {
   dryRun: Flag.boolean("dry-run").pipe(
@@ -39,8 +42,9 @@ const NotifyCommand = Command.make(
   Effect.fn("Notify.Cli")(function* (opts) {
     const now = Option.getOrUndefined(opts.now);
     const user = Option.getOrUndefined(opts.user);
+
     const port = yield* NotifyWorkerDevPort;
-    const notifyWorkerDevUrl = `http://localhost:${String(port)}/local/notify`;
+    const notifyWorkerDevUrl = buildNotifyWorkerDevUrl(port);
 
     const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
 

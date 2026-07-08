@@ -44,7 +44,7 @@ const decodeRequestBody = Effect.fn(
 
 export default {
   async scheduled(controller, env) {
-    const Runtime = makeJobsWorkerRuntime(env);
+    const Runtime = makeJobsWorkerRuntime(env, env.Database);
 
     const Worker = Effect.gen(function* () {
       const now = makeDateTimeFromController(controller.scheduledTime);
@@ -61,7 +61,7 @@ export default {
   },
 
   async fetch(request, env) {
-    const Runtime = makeJobsWorkerRuntime(env);
+    const Runtime = makeJobsWorkerRuntime(env, env.Database);
 
     const Worker = Effect.gen(function* () {
       if (env.ENV !== "development") {

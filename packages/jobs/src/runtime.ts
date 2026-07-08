@@ -30,13 +30,13 @@ export const JobsCliRuntime = ManagedRuntime.make(
   ),
 );
 
-export function makeJobsWorkerRuntime(env: { readonly Database: D1Database }) {
+export function makeJobsWorkerRuntime(env: unknown, database: D1Database) {
   const JobWorkerLayer = pipe(
     Layer.mergeAll(SubscriptionsLayer, EventsLayer),
     Layer.provide(IdLayer),
     Layer.provideMerge(CloudflareCryptoLayer),
   );
-  const DatabaseLayer = createD1DatabaseLayer(env.Database);
+  const DatabaseLayer = createD1DatabaseLayer(database);
   const ConfigProviderLayer = createConfigProviderFromCloudflareEnv(env);
 
   return ManagedRuntime.make(
