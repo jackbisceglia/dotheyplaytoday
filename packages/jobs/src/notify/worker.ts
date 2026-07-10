@@ -57,7 +57,7 @@ export default Cloudflare.Worker(
         function* () {
           yield* Effect.logInfo("notify job: scheduled");
 
-          yield* notify({ dryRun: false, force: false }).pipe(
+          yield* notify({}).pipe(
             Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
           );
         },
@@ -82,35 +82,35 @@ export default Cloudflare.Worker(
           return HttpServerResponse.empty({ status: 404 });
         }
 
-        const body = yield* Effect.result(
+        const bodyResult = yield* Effect.result(
           HttpServerRequest.schemaBodyJson(NotifyOptions),
         );
 
-        if (Result.isFailure(body)) {
-          return yield* body.failure;
+        if (Result.isFailure(bodyResult)) {
+          return yield* bodyResult.failure;
         }
 
+        const body = bodyResult.success;
         const NotifyRunLayer = Layer.merge(
           NotifyLayer,
-          Boolean.match(body.success.dryRun, {
+          Boolean.match(body.dryRun, {
             onFalse: () => EmailChannelLayer,
             onTrue: () => ConsoleChannelLayer,
           }),
         );
 
-        yield* notify(body.success).pipe(Effect.provide(NotifyRunLayer));
+        yield* notify(body).pipe(Effect.provide(NotifyRunLayer));
 
         return yield* HttpServerResponse.json({ ok: true });
       }).pipe(
         Effect.catchTag("SchemaError", (error) =>
           HttpServerResponse.json({ error: error.message }, { status: 400 }),
         ),
-        Effect.catchCause(
-          Effect.fn(function* (cause) {
-            yield* Effect.logError("notify job: fetch failed", cause);
-
-            return HttpServerResponse.empty({ status: 500 });
-          }),
+        Effect.tapCause((cause) =>
+          Effect.logError("notify job: fetch failed", cause),
+        ),
+        Effect.catchCause(() =>
+          Effect.succeed(HttpServerResponse.empty({ status: 500 })),
         ),
       ),
     };
