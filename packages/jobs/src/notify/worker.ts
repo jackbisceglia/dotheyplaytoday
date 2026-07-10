@@ -1,3 +1,4 @@
+import { ALCHEMY_DEV } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Effect, Layer, pipe } from "effect";
 import { HttpServerRequest } from "effect/unstable/http/HttpServerRequest";
@@ -8,8 +9,8 @@ import { createD1DatabaseLayer } from "@dtpt/core/lib/database/clients/d1/layer"
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
-import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
 import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service";
+import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
 import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
@@ -24,7 +25,7 @@ const NotifyDomainsLayer = pipe(
 );
 
 export default Cloudflare.Worker(
-  "NotifyWorker",
+  "NotifyJobWorker",
   {
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
@@ -34,6 +35,7 @@ export default Cloudflare.Worker(
 
     yield* ResendConfig;
     yield* WebConfig;
+    const isDev = yield* ALCHEMY_DEV;
 
     const DatabaseLayer = Layer.unwrap(
       database.raw.pipe(Effect.map(createD1DatabaseLayer)),
@@ -44,14 +46,14 @@ export default Cloudflare.Worker(
       NotifySchedule,
       Effect.fn(
         function* () {
-          yield* Effect.logInfo("notify worker: scheduled");
+          yield* Effect.logInfo("notify job: scheduled");
 
           yield* notify({}).pipe(
             Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
           );
         },
-        Effect.catchCause((cause) =>
-          Effect.logError("notify worker: cron failed", cause),
+        Effect.tapCause((cause) =>
+          Effect.logError("notify job: cron failed", cause),
         ),
       ),
     );
@@ -61,12 +63,17 @@ export default Cloudflare.Worker(
         const request = yield* HttpServerRequest;
         const pathname = new URL(request.url).pathname;
 
-        if (request.method !== "POST")
+        if (request.method !== "POST") {
           return HttpServerResponse.empty({ status: 404 });
-        if (pathname !== "/test/notify")
+        }
+        if (pathname !== "/test/notify") {
           return HttpServerResponse.empty({ status: 404 });
+        }
+        if (!isDev) {
+          return HttpServerResponse.empty({ status: 404 });
+        }
 
-        yield* notify({}).pipe(
+        yield* notify({ dryRun: true }).pipe(
           Effect.provide(Layer.merge(NotifyLayer, ConsoleChannelLayer)),
         );
 
@@ -74,7 +81,7 @@ export default Cloudflare.Worker(
       }).pipe(
         Effect.catchCause(
           Effect.fn(function* (cause) {
-            yield* Effect.logError("notify worker: fetch failed", cause);
+            yield* Effect.logError("notify job: fetch failed", cause);
 
             return HttpServerResponse.text("error", { status: 500 });
           }),

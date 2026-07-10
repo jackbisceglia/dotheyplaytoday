@@ -3,7 +3,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as Effect from "effect/Effect";
 
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
-import NotifyWorker from "./packages/jobs/src/notify/worker.ts";
+import NotifyJobWorker from "./packages/jobs/src/notify/worker.ts";
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -13,12 +13,12 @@ export default Alchemy.Stack(
   },
   Effect.gen(function* () {
     const database = yield* D1DatabaseResource;
-    const notifyWorker = yield* NotifyWorker;
+    const notifyJobWorker = yield* NotifyJobWorker;
 
     return {
       databaseName: database.databaseName,
-      notifyWorkerName: notifyWorker.workerName,
-      notifyWorkerUrl: notifyWorker.url,
+      notifyJobWorkerName: notifyJobWorker.workerName,
+      notifyJobWorkerUrl: notifyJobWorker.url,
     };
   }),
 );

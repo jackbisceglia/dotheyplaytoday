@@ -2,10 +2,13 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "allowImportingTsExtensions": true,
+    "allowImportingTsExtensions": false,
     "outDir": "dist",
-    "rewriteRelativeImportExtensions": true,
     "sourceMap": true
   },
-  "exclude": ["src/**/*.test.ts", "src/**/tests/**"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/tests/**",
+    "src/notify/worker.ts"
+  ]
 }
