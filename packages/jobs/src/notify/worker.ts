@@ -1,7 +1,7 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Stack } from "alchemy/Stack";
-import { Effect, Layer, pipe } from "effect";
-import { HttpServerRequest } from "effect/unstable/http/HttpServerRequest";
+import { Effect, Layer, Option, pipe } from "effect";
+import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
@@ -61,8 +61,10 @@ export default Cloudflare.Worker(
 
     return {
       fetch: Effect.gen(function* () {
-        const request = yield* HttpServerRequest;
-        const pathname = new URL(request.url).pathname;
+        const request = yield* HttpServerRequest.HttpServerRequest;
+
+        const url = HttpServerRequest.toURL(request);
+        const pathname = Option.getOrUndefined(url)?.pathname;
 
         if (request.method !== "POST") {
           return HttpServerResponse.empty({ status: 404 });
@@ -74,6 +76,7 @@ export default Cloudflare.Worker(
           return HttpServerResponse.empty({ status: 404 });
         }
 
+        // TODO: pass through params from req body so we can opt in to dry run
         yield* notify({ dryRun: true }).pipe(
           Effect.provide(Layer.merge(NotifyLayer, ConsoleChannelLayer)),
         );
