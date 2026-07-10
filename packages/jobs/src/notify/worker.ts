@@ -1,6 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Stack } from "alchemy/Stack";
-import { Effect, Layer, Option, pipe, Result } from "effect";
+import { Boolean, Effect, Layer, Option, pipe, Result } from "effect";
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
@@ -57,7 +57,7 @@ export default Cloudflare.Worker(
         function* () {
           yield* Effect.logInfo("notify job: scheduled");
 
-          yield* notify({}).pipe(
+          yield* notify({ dryRun: false, force: false }).pipe(
             Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
           );
         },
@@ -74,50 +74,42 @@ export default Cloudflare.Worker(
         const url = HttpServerRequest.toURL(request);
         const pathname = Option.getOrUndefined(url)?.pathname;
 
-        if (
-          request.method !== "POST" ||
-          pathname !== Trigger.path ||
-          !isDevStage(stack.stage)
-        ) {
+        if (!isDevStage(stack.stage)) {
+          return HttpServerResponse.empty({ status: 401 });
+        }
+
+        if (request.method !== "POST" || pathname !== Trigger.path) {
           return HttpServerResponse.empty({ status: 404 });
         }
 
-        const decoded = yield* HttpServerRequest.schemaBodyJson(
-          NotifyOptions,
-        ).pipe(Effect.result);
-
-        if (Result.isFailure(decoded)) {
-          if (decoded.failure._tag === "SchemaError") {
-            return yield* HttpServerResponse.json(
-              { ok: false, error: decoded.failure.message },
-              { status: 400 },
-            );
-          }
-
-          return yield* decoded.failure;
-        }
-
-        const opts = decoded.success;
-        const dryRun = opts.dryRun === true;
-        const ChannelLayer = dryRun ? ConsoleChannelLayer : EmailChannelLayer;
-
-        yield* notify(opts).pipe(
-          Effect.provide(Layer.merge(NotifyLayer, ChannelLayer)),
+        const body = yield* Effect.result(
+          HttpServerRequest.schemaBodyJson(NotifyOptions),
         );
 
-        return yield* HttpServerResponse.json({
-          ok: true,
-          dryRun,
-        });
+        if (Result.isFailure(body)) {
+          return yield* body.failure;
+        }
+
+        const NotifyRunLayer = Layer.merge(
+          NotifyLayer,
+          Boolean.match(body.success.dryRun, {
+            onFalse: () => EmailChannelLayer,
+            onTrue: () => ConsoleChannelLayer,
+          }),
+        );
+
+        yield* notify(body.success).pipe(Effect.provide(NotifyRunLayer));
+
+        return yield* HttpServerResponse.json({ ok: true });
       }).pipe(
+        Effect.catchTag("SchemaError", (error) =>
+          HttpServerResponse.json({ error: error.message }, { status: 400 }),
+        ),
         Effect.catchCause(
           Effect.fn(function* (cause) {
             yield* Effect.logError("notify job: fetch failed", cause);
 
-            return yield* HttpServerResponse.json(
-              { ok: false },
-              { status: 500 },
-            );
+            return HttpServerResponse.empty({ status: 500 });
           }),
         ),
       ),

@@ -180,8 +180,10 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
 
 export type NotifyOptions = typeof NotifyOptions.Type;
 export const NotifyOptions = Schema.Struct({
-  dryRun: Schema.optional(Schema.Boolean),
-  force: Schema.optional(Schema.Boolean),
+  dryRun: Schema.Boolean.pipe(
+    Schema.withDecodingDefault(Effect.succeed(false)),
+  ),
+  force: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
   userEmail: Schema.optional(EmailAddressFromString),
   now: Schema.optional(Schema.DateTimeUtcFromString),
 });
@@ -191,12 +193,10 @@ export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
 
   const targetUser = Option.fromNullishOr(opts.userEmail);
   const now = opts.now ?? (yield* DateTime.now);
-  const dryRun = opts.dryRun ?? false;
-  const force = opts.force ?? false;
 
   yield* Effect.logInfo("notify: start", {
-    dryRun,
-    force,
+    dryRun: opts.dryRun,
+    force: opts.force,
     now: DateTime.formatIso(now),
     userEmail: opts.userEmail,
   });
@@ -222,8 +222,8 @@ export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
 
   yield* Effect.forEach(toProcess, (recipient) =>
     notifyOneRecipient(recipient, now, {
-      dryRun,
-      force,
+      dryRun: opts.dryRun,
+      force: opts.force,
     }),
   );
 

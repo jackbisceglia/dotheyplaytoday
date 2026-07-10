@@ -218,7 +218,9 @@ describe("notify orchestration", () => {
     });
 
     return Effect.gen(function* () {
-      yield* notify({ now }).pipe(Effect.provide(harness.layer));
+      yield* notify({ dryRun: false, force: false, now }).pipe(
+        Effect.provide(harness.layer),
+      );
 
       expect(harness.deliveries).toHaveLength(1);
       const [delivery] = harness.deliveries;
@@ -244,7 +246,9 @@ describe("notify orchestration", () => {
     });
 
     return Effect.gen(function* () {
-      yield* notify({ dryRun: true, now }).pipe(Effect.provide(harness.layer));
+      yield* notify({ dryRun: true, force: false, now }).pipe(
+        Effect.provide(harness.layer),
+      );
 
       expect(harness.eventQueries).toHaveLength(1);
       const [eventQuery] = harness.eventQueries;
@@ -271,7 +275,9 @@ describe("notify orchestration", () => {
     });
 
     return Effect.gen(function* () {
-      yield* notify({ dryRun: true, now }).pipe(Effect.provide(harness.layer));
+      yield* notify({ dryRun: true, force: false, now }).pipe(
+        Effect.provide(harness.layer),
+      );
 
       expect(harness.deliveries).toHaveLength(1);
       expect(harness.markSentCalls).toHaveLength(0);
@@ -299,7 +305,9 @@ describe("notify orchestration", () => {
       });
 
       return Effect.gen(function* () {
-        yield* notify({ force: true, now }).pipe(Effect.provide(harness.layer));
+        yield* notify({ dryRun: false, force: true, now }).pipe(
+          Effect.provide(harness.layer),
+        );
 
         expect(harness.deliveries).toHaveLength(1);
         expect(harness.markSentCalls).toHaveLength(1);
@@ -331,7 +339,9 @@ describe("notify orchestration", () => {
         ]),
       });
 
-      yield* notify({ userEmail, now }).pipe(Effect.provide(harness.layer));
+      yield* notify({ dryRun: false, force: false, userEmail, now }).pipe(
+        Effect.provide(harness.layer),
+      );
 
       expect(harness.deliveries).toHaveLength(1);
       expect(harness.deliveries[0]?.user.email).toBe("target@example.com");
@@ -348,7 +358,9 @@ describe("notify orchestration", () => {
       });
 
       return Effect.gen(function* () {
-        yield* notify({ force: true, now }).pipe(Effect.provide(harness.layer));
+        yield* notify({ dryRun: false, force: true, now }).pipe(
+          Effect.provide(harness.layer),
+        );
 
         expect(harness.deliveries).toHaveLength(0);
         expect(harness.markSentCalls).toHaveLength(0);
@@ -398,7 +410,9 @@ describe("notify orchestration", () => {
       });
 
       return Effect.gen(function* () {
-        yield* notify({ now }).pipe(Effect.provide(harness.layer));
+        yield* notify({ dryRun: false, force: false, now }).pipe(
+          Effect.provide(harness.layer),
+        );
 
         expect(harness.deliveries).toHaveLength(2);
         expect(harness.markSentCalls).toHaveLength(0);
@@ -438,7 +452,9 @@ describe("notify orchestration", () => {
     });
 
     return Effect.gen(function* () {
-      yield* notify({ now }).pipe(Effect.provide(harness.layer));
+      yield* notify({ dryRun: false, force: false, now }).pipe(
+        Effect.provide(harness.layer),
+      );
 
       expect(harness.deliveries).toHaveLength(2);
       expect(harness.markSentCalls).toHaveLength(2);
@@ -458,7 +474,7 @@ describe("notify orchestration", () => {
     });
 
     return Effect.gen(function* () {
-      const error = yield* notify({ now }).pipe(
+      const error = yield* notify({ dryRun: false, force: false, now }).pipe(
         Effect.provide(harness.layer),
         Effect.flip,
       );
@@ -493,7 +509,7 @@ describe("notify orchestration", () => {
     });
 
     return Effect.gen(function* () {
-      const exit = yield* notify({ now }).pipe(
+      const exit = yield* notify({ dryRun: false, force: false, now }).pipe(
         Effect.provide(harness.layer),
         Effect.exit,
       );

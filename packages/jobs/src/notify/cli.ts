@@ -31,6 +31,7 @@ const NotifyCommand = Command.make(
   Effect.fn("Notify.Cli")(function* (opts) {
     const now = Option.getOrUndefined(opts.now);
     const userEmail = Option.getOrUndefined(opts.user);
+
     const triggerUrl = Trigger.getLocalUrl();
 
     const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
