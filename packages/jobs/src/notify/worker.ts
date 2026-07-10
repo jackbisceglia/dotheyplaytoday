@@ -14,7 +14,7 @@ import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
 import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
-import { notify } from "./index.ts";
+import { notify } from "./index.js";
 
 const NotifySchedule = "*/15 * * * *";
 
