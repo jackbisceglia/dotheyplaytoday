@@ -1,8 +1,8 @@
 import type { SqliteRemoteDatabase } from "drizzle-orm/sqlite-proxy";
 import { Context, Effect } from "effect";
 
-import { relations } from "./relations.js";
-import * as schema from "./schema.js";
+import { relations } from "./definitions/relations.js";
+import * as schema from "./definitions/schema.js";
 import * as Drizzle from "./drizzle/sqlite.js";
 
 export type Database = SqliteRemoteDatabase<typeof schema, typeof relations>;

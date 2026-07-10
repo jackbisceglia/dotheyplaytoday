@@ -1,47 +1,92 @@
-/// <reference types="@cloudflare/workers-types" />
+import * as Cloudflare from "alchemy/Cloudflare";
+import { Effect, Layer, pipe } from "effect";
+import { HttpServerRequest } from "effect/unstable/http/HttpServerRequest";
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
-import { createConfigProviderFromCloudflareEnv } from "@dtpt/core/lib/config/providers";
-import { createD1DatabaseLayer } from "@dtpt/core/lib/database/d1";
+import { WebConfig } from "@dtpt/core/lib/config/web";
+import { createD1DatabaseLayer } from "@dtpt/core/lib/database/clients/d1/layer";
+import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
+import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
+import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service";
 import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
-import { DateTime, Effect, Layer, ManagedRuntime, pipe } from "effect";
+import { notify } from "./index.ts";
 
-import { notify } from "./index.js";
+const NotifySchedule = "*/15 * * * *";
 
-export type NotifyWorkerEnv = {
-  readonly Database: D1Database;
-};
-
-const NotifyWorkerLayer = pipe(
-  Layer.mergeAll(SubscriptionsLayer, EventsLayer, EmailChannelLayer),
+const NotifyDomainsLayer = pipe(
+  Layer.mergeAll(SubscriptionsLayer, EventsLayer),
   Layer.provide(IdLayer),
-  Layer.provideMerge(CloudflareCryptoLayer),
+  Layer.provide(CloudflareCryptoLayer),
 );
 
-export default {
-  async scheduled(controller, env) {
-    const DatabaseLayer = createD1DatabaseLayer(env.Database);
-    const ConfigProviderLayer = createConfigProviderFromCloudflareEnv(env);
-    const runtime = ManagedRuntime.make(
-      pipe(
-        NotifyWorkerLayer,
-        Layer.provideMerge(DatabaseLayer),
-        Layer.provideMerge(ConfigProviderLayer),
+export default Cloudflare.Worker(
+  "NotifyWorker",
+  {
+    main: import.meta.url,
+    compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+  },
+  Effect.gen(function* () {
+    const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+
+    yield* ResendConfig;
+    yield* WebConfig;
+
+    const DatabaseLayer = Layer.unwrap(
+      database.raw.pipe(Effect.map(createD1DatabaseLayer)),
+    );
+    const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));
+
+    yield* Cloudflare.Workers.cron(
+      NotifySchedule,
+      Effect.fn(
+        function* () {
+          yield* Effect.logInfo("notify worker: scheduled");
+
+          yield* notify({}).pipe(
+            Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
+          );
+        },
+        Effect.catchCause((cause) =>
+          Effect.logError("notify worker: cron failed", cause),
+        ),
       ),
     );
-    const now = DateTime.makeUnsafe(new Date(controller.scheduledTime));
-    const worker = Effect.gen(function* () {
-      yield* Effect.logInfo("notify worker: scheduled", {
-        cron: controller.cron,
-        scheduledTime: DateTime.formatIso(now),
-      });
 
-      yield* notify({ now });
-    });
+    return {
+      fetch: Effect.gen(function* () {
+        const request = yield* HttpServerRequest;
+        const pathname = new URL(request.url).pathname;
 
-    await runtime.runPromise(worker).finally(() => runtime.dispose());
-  },
-} satisfies ExportedHandler<NotifyWorkerEnv>;
+        if (request.method !== "POST")
+          return HttpServerResponse.empty({ status: 404 });
+        if (pathname !== "/test/notify")
+          return HttpServerResponse.empty({ status: 404 });
+
+        yield* notify({}).pipe(
+          Effect.provide(Layer.merge(NotifyLayer, ConsoleChannelLayer)),
+        );
+
+        return HttpServerResponse.text("ok");
+      }).pipe(
+        Effect.catchCause(
+          Effect.fn(function* (cause) {
+            yield* Effect.logError("notify worker: fetch failed", cause);
+
+            return HttpServerResponse.text("error", { status: 500 });
+          }),
+        ),
+      ),
+    };
+  }).pipe(
+    Effect.provide(
+      Layer.merge(
+        Cloudflare.D1.QueryDatabaseBinding,
+        Cloudflare.Workers.CronEventSourceLive,
+      ),
+    ),
+  ),
+);

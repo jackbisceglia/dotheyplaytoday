@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 export const createTablesIfMissing = Effect.fn(
-  "Database.createTablesIfMissing",
+  "DataSeed.createTablesIfMissing",
 )(function* () {
   const sql = yield* SqlClient;
 
