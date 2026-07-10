@@ -6,9 +6,9 @@
   "scripts": {
     "dev:web": "pnpm @web dev",
     "dev:api": "pnpm @api dev",
-    "dev:infra": "pnpm @core build && alchemy dev alchemy.run.ts",
-    "deploy": "pnpm @core build && alchemy deploy alchemy.run.ts",
-    "destroy": "pnpm @core build && alchemy destroy alchemy.run.ts",
+    "dev:infra": "alchemy dev alchemy.run.ts",
+    "deploy": "alchemy deploy alchemy.run.ts",
+    "destroy": "alchemy destroy alchemy.run.ts",
     "initialize": "pnpm @data seed:dev",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
