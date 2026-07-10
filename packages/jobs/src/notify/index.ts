@@ -188,22 +188,19 @@ export const NotifyOptions = Schema.Struct({
   now: Schema.optional(Schema.DateTimeUtcFromString),
 });
 
-export const notify = Effect.fn("Notify")(function* ({
-  dryRun = false,
-  force = false,
-  userEmail,
-  now: inputNow,
-}: NotifyOptions) {
+export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
   const subscriptions = yield* Subscriptions;
 
-  const targetUser = Option.fromNullishOr(userEmail);
-  const now = inputNow ?? (yield* DateTime.now);
+  const targetUser = Option.fromNullishOr(opts.userEmail);
+  const now = opts.now ?? (yield* DateTime.now);
+  const dryRun = opts.dryRun ?? false;
+  const force = opts.force ?? false;
 
   yield* Effect.logInfo("notify: start", {
     dryRun,
     force,
     now: DateTime.formatIso(now),
-    userEmail,
+    userEmail: opts.userEmail,
   });
 
   const recipients = yield* subscriptions.listNotificationRecipients();
