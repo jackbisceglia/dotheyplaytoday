@@ -4,6 +4,7 @@ import { Effect, Layer, pipe } from "effect";
 import { HttpServerRequest } from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
+import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
 import { WebConfig } from "@dtpt/core/lib/config/web";
 import { createD1DatabaseLayer } from "@dtpt/core/lib/database/clients/d1/layer";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
@@ -69,7 +70,7 @@ export default Cloudflare.Worker(
         if (pathname !== "/test/notify") {
           return HttpServerResponse.empty({ status: 404 });
         }
-        if (stack.stage === "production") {
+        if (!isDevStage(stack.stage)) {
           return HttpServerResponse.empty({ status: 404 });
         }
 
