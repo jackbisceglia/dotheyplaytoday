@@ -1,5 +1,4 @@
 import {
-  createTablesIfMissing,
   Database,
   DatabaseWriteError,
   eventsTable,
@@ -10,6 +9,8 @@ import {
   usersTable,
 } from "@dtpt/core";
 import { Effect } from "effect";
+
+import { createTablesIfMissing } from "./schema-setup.js";
 
 export const reset = Effect.fn("DataSeed.reset")(
   function* () {

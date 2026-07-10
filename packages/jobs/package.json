@@ -24,6 +24,7 @@
   "dependencies": {
     "@dtpt/core": "workspace:*",
     "@effect/platform-node": "catalog:",
+    "alchemy": "catalog:",
     "effect": "catalog:"
   },
   "devDependencies": {

@@ -1,6 +1,9 @@
 export { Database } from "./lib/database/service.js";
-export { DatabaseLayer, createNodeDatabaseLayer } from "./lib/database/node.js";
-export { createD1DatabaseLayer } from "./lib/database/d1.js";
+export {
+  DatabaseLayer,
+  createNodeDatabaseLayer,
+} from "./lib/database/clients/node/layer.js";
+export { createD1DatabaseLayer } from "./lib/database/clients/d1/layer.js";
 export { Api } from "./contracts/api.js";
 export { PingGroup, PingResponse } from "./contracts/ping.js";
 export {
@@ -26,7 +29,6 @@ export {
   DatabaseTransactionError,
   DatabaseWriteError,
 } from "./lib/database/errors.js";
-export { createTablesIfMissing } from "./lib/database/schema-setup.js";
 export { Id, IdLayer } from "./lib/id/service.js";
 export { StringPart, StringParts } from "./lib/string.js";
 export { buildUnsubscribeUrl } from "./lib/unsubscribe.js";

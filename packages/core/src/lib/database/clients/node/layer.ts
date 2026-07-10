@@ -2,8 +2,8 @@ import * as SqliteNodeClient from "@effect/sql-sqlite-node/SqliteClient";
 import { Effect, Layer } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 
-import { DatabaseConnection } from "./config.js";
-import { Database, makeDatabaseClientLayer } from "./service.js";
+import { DatabaseConnection } from "../../config.js";
+import { Database, makeDatabaseClientLayer } from "../../service.js";
 
 /**
  * Creates the Node SQLite database layer for local, test, and server runtimes.

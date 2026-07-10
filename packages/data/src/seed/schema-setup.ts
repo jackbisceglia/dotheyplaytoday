@@ -1,12 +1,11 @@
 import { Effect } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 
-export const createTablesIfMissing = Effect.fn(
-  "Database.createTablesIfMissing",
-)(function* () {
-  const sql = yield* SqlClient;
+export const createTablesIfMissing = Effect.fn("Seed.createTablesIfMissing")(
+  function* () {
+    const sql = yield* SqlClient;
 
-  yield* sql`
+    yield* sql`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY NOT NULL,
       email TEXT NOT NULL,
@@ -15,17 +14,17 @@ export const createTablesIfMissing = Effect.fn(
     )
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE UNIQUE INDEX IF NOT EXISTS users_email_idx
     ON users (email)
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE UNIQUE INDEX IF NOT EXISTS users_unsubscribe_token_idx
     ON users (unsubscribe_token)
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE TABLE IF NOT EXISTS subjects (
       id TEXT PRIMARY KEY NOT NULL,
       _tag TEXT NOT NULL,
@@ -33,7 +32,7 @@ export const createTablesIfMissing = Effect.fn(
     )
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE TABLE IF NOT EXISTS events (
       id TEXT PRIMARY KEY NOT NULL,
       _tag TEXT NOT NULL,
@@ -44,17 +43,17 @@ export const createTablesIfMissing = Effect.fn(
     )
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE UNIQUE INDEX IF NOT EXISTS events_tag_source_id_idx
     ON events (_tag, source_id)
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE INDEX IF NOT EXISTS events_starts_at_idx
     ON events (starts_at)
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE TABLE IF NOT EXISTS subject_events (
       event_id TEXT NOT NULL,
       subject_id TEXT NOT NULL,
@@ -64,12 +63,12 @@ export const createTablesIfMissing = Effect.fn(
     )
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE INDEX IF NOT EXISTS subject_events_subject_id_idx
     ON subject_events (subject_id)
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE TABLE IF NOT EXISTS participants (
       id TEXT PRIMARY KEY NOT NULL,
       event_id TEXT NOT NULL,
@@ -79,12 +78,12 @@ export const createTablesIfMissing = Effect.fn(
     )
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE INDEX IF NOT EXISTS participants_event_id_idx
     ON participants (event_id)
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE TABLE IF NOT EXISTS subscriptions (
       id TEXT PRIMARY KEY NOT NULL,
       user_id TEXT NOT NULL,
@@ -96,18 +95,19 @@ export const createTablesIfMissing = Effect.fn(
     )
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE INDEX IF NOT EXISTS subscriptions_user_id_idx
     ON subscriptions (user_id)
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE INDEX IF NOT EXISTS subscriptions_subject_id_idx
     ON subscriptions (subject_id)
   `;
 
-  yield* sql`
+    yield* sql`
     CREATE UNIQUE INDEX IF NOT EXISTS subscriptions_user_subject_idx
     ON subscriptions (user_id, subject_id)
   `;
-});
+  },
+);
