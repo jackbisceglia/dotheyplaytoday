@@ -1,5 +1,5 @@
-import { ALCHEMY_DEV } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
+import { Stack } from "alchemy/Stack";
 import { Effect, Layer, pipe } from "effect";
 import { HttpServerRequest } from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
@@ -35,7 +35,7 @@ export default Cloudflare.Worker(
 
     yield* ResendConfig;
     yield* WebConfig;
-    const isDev = yield* ALCHEMY_DEV;
+    const stack = yield* Stack;
 
     const DatabaseLayer = Layer.unwrap(
       database.raw.pipe(Effect.map(createD1DatabaseLayer)),
@@ -69,7 +69,7 @@ export default Cloudflare.Worker(
         if (pathname !== "/test/notify") {
           return HttpServerResponse.empty({ status: 404 });
         }
-        if (!isDev) {
+        if (stack.stage === "production") {
           return HttpServerResponse.empty({ status: 404 });
         }
 
