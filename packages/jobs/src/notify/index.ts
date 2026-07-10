@@ -10,8 +10,11 @@ import {
 } from "@dtpt/core/modules/subscriptions/service";
 import { Subscription } from "@dtpt/core/modules/subscriptions/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
-import type { User } from "@dtpt/core/modules/users/schema";
-import { Array, Data, DateTime, Effect, Option } from "effect";
+import {
+  EmailAddressFromString,
+  type User,
+} from "@dtpt/core/modules/users/schema";
+import { Array, Data, DateTime, Effect, Option, Schema } from "effect";
 
 type WorkflowStep = "send" | "mark-sent";
 
@@ -175,22 +178,25 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
   }),
 );
 
-export type NotifyOptions = {
-  readonly dryRun?: boolean;
-  readonly force?: boolean;
-  readonly userEmail?: User["email"];
-  readonly now?: DateTime.Utc;
-};
+export type NotifyOptions = typeof NotifyOptions.Type;
+export const NotifyOptions = Schema.Struct({
+  dryRun: Schema.optional(Schema.Boolean),
+  force: Schema.optional(Schema.Boolean),
+  userEmail: Schema.optional(EmailAddressFromString),
+  now: Schema.optional(Schema.DateTimeUtcFromString),
+});
 
 export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
   const subscriptions = yield* Subscriptions;
 
   const targetUser = Option.fromNullishOr(opts.userEmail);
   const now = opts.now ?? (yield* DateTime.now);
+  const dryRun = opts.dryRun ?? false;
+  const force = opts.force ?? false;
 
   yield* Effect.logInfo("notify: start", {
-    dryRun: opts.dryRun ?? false,
-    force: opts.force ?? false,
+    dryRun,
+    force,
     now: DateTime.formatIso(now),
     userEmail: opts.userEmail,
   });
@@ -216,8 +222,8 @@ export const notify = Effect.fn("Notify")(function* (opts: NotifyOptions) {
 
   yield* Effect.forEach(toProcess, (recipient) =>
     notifyOneRecipient(recipient, now, {
-      dryRun: opts.dryRun ?? false,
-      force: opts.force ?? false,
+      dryRun,
+      force,
     }),
   );
 
