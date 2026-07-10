@@ -103,11 +103,11 @@ export default Cloudflare.Worker(
 
         return yield* HttpServerResponse.json({ ok: true });
       }).pipe(
-        Effect.catchTag("SchemaError", (error) =>
-          HttpServerResponse.json({ error: error.message }, { status: 400 }),
-        ),
         Effect.tapCause((cause) =>
           Effect.logError("notify job: fetch failed", cause),
+        ),
+        Effect.catchTag("SchemaError", (error) =>
+          HttpServerResponse.json({ error: error.message }, { status: 400 }),
         ),
         Effect.catchCause(() =>
           Effect.succeed(HttpServerResponse.empty({ status: 500 })),

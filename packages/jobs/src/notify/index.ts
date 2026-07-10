@@ -178,7 +178,7 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
   }),
 );
 
-export type NotifyOptions = typeof NotifyOptions.Type;
+export type NotifyOptions = Partial<typeof NotifyOptions.Type>;
 export const NotifyOptions = Schema.Struct({
   dryRun: Schema.Boolean.pipe(
     Schema.withDecodingDefault(Effect.succeed(false)),
@@ -188,21 +188,22 @@ export const NotifyOptions = Schema.Struct({
   now: Schema.optional(Schema.DateTimeUtcFromString),
 });
 
-export const notify = Effect.fn("Notify")(function* (
-  opts: Partial<NotifyOptions>,
-) {
+export const notify = Effect.fn("Notify")(function* ({
+  dryRun = false,
+  force = false,
+  userEmail,
+  now: inputNow,
+}: NotifyOptions) {
   const subscriptions = yield* Subscriptions;
 
-  const targetUser = Option.fromNullishOr(opts.userEmail);
-  const now = opts.now ?? (yield* DateTime.now);
-  const dryRun = opts.dryRun ?? false;
-  const force = opts.force ?? false;
+  const targetUser = Option.fromNullishOr(userEmail);
+  const now = inputNow ?? (yield* DateTime.now);
 
   yield* Effect.logInfo("notify: start", {
     dryRun,
     force,
     now: DateTime.formatIso(now),
-    userEmail: opts.userEmail,
+    userEmail,
   });
 
   const recipients = yield* subscriptions.listNotificationRecipients();
