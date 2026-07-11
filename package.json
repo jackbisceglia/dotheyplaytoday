@@ -6,7 +6,8 @@
   "scripts": {
     "dev:web": "pnpm @web dev",
     "dev:api": "pnpm @api dev",
-    "dev:infra": "alchemy dev alchemy.run.ts",
+    "dev:infra": "node --env-file-if-exists=.env node_modules/alchemy/bin/cli.js dev alchemy.run.ts",
+    "dev:infra:no-seed": "DTPT_SKIP_DEV_SEED=1 node --env-file-if-exists=.env node_modules/alchemy/bin/cli.js dev alchemy.run.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
     "build": "pnpm -r run build",

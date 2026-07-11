@@ -147,6 +147,7 @@ export const Teams = {
       Games.GroupB.Matchday1.QatarVsSwitzerland.sourceId,
       Games.GroupB.Matchday2.SwitzerlandVsBosniaAndHerzegovina.sourceId,
       Games.GroupB.Matchday3.SwitzerlandVsCanada.sourceId,
+      Games.Quarterfinals.July11.ArgentinaVsSwitzerland.sourceId,
     ],
   },
   Brazil: {
@@ -651,6 +652,7 @@ export const Teams = {
       Games.GroupI.Matchday1.IraqVsNorway.sourceId,
       Games.GroupI.Matchday2.NorwayVsSenegal.sourceId,
       Games.GroupI.Matchday3.NorwayVsFrance.sourceId,
+      Games.Quarterfinals.July11.NorwayVsEngland.sourceId,
     ],
   },
   Argentina: {
@@ -669,6 +671,7 @@ export const Teams = {
       Games.GroupJ.Matchday1.ArgentinaVsAlgeria.sourceId,
       Games.GroupJ.Matchday2.ArgentinaVsAustria.sourceId,
       Games.GroupJ.Matchday3.JordanVsArgentina.sourceId,
+      Games.Quarterfinals.July11.ArgentinaVsSwitzerland.sourceId,
     ],
   },
   Algeria: {
@@ -813,6 +816,7 @@ export const Teams = {
       Games.GroupL.Matchday1.EnglandVsCroatia.sourceId,
       Games.GroupL.Matchday2.EnglandVsGhana.sourceId,
       Games.GroupL.Matchday3.PanamaVsEngland.sourceId,
+      Games.Quarterfinals.July11.NorwayVsEngland.sourceId,
     ],
   },
   Croatia: {

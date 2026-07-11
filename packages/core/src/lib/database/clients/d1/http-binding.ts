@@ -8,19 +8,18 @@ import { createD1DatabaseLayer, type DatabaseBinding } from "./layer.js";
 
 /**
  * TODO(alchemy): delete this file once Alchemy supports D1 bindings inside
- * Actions (per maintainers, planned). It emulates the native `D1Database`
- * binding over the Cloudflare REST API so deploy-time code can reuse
- * `createD1DatabaseLayer` unchanged. Only the surface `@effect/sql-d1`
- * exercises is emulated: `prepare` / `bind` / `all` / `raw`.
+ * Actions. It emulates the native `D1Database` binding over the Cloudflare
+ * REST API so deploy-time code can reuse `createD1DatabaseLayer` unchanged.
+ * Only the surface `@effect/sql-d1` exercises is emulated:
+ * `prepare` / `bind` / `all` / `raw`.
  *
- * Requests go through plain fetch rather than alchemy's D1 REST client:
+ * Requests go through plain fetch rather than Alchemy's D1 REST client:
  * its request schema rejects non-string params, but the API accepts and
  * round-trips typed JSON values (numbers, null), which prepared statements
  * rely on. Credentials still come from the Alchemy stack context.
  *
  * Kept out of `layer.ts` so Worker bundles never pull in the REST client.
  */
-
 export type D1HttpDatabaseConfig = {
   accountId: string;
   databaseId: string;
@@ -32,7 +31,7 @@ type D1HttpEnvelope<Results> = {
   result: { results?: Results | null }[];
 };
 
-export const makeD1HttpDatabaseLayer = Effect.gen(function* () {
+export const D1HttpDatabaseLayer = Effect.gen(function* () {
   const resolveCredentials = yield* Credentials;
 
   return (config: D1HttpDatabaseConfig) => {
@@ -51,6 +50,7 @@ export const makeD1HttpDatabaseLayer = Effect.gen(function* () {
               ...formatHeaders(credentials),
             },
             body: JSON.stringify({ sql, params }),
+            signal: AbortSignal.timeout(30_000),
           });
 
           const envelope = (await response.json()) as D1HttpEnvelope<Results>;

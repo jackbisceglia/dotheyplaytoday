@@ -7,6 +7,8 @@ import { D1DatabaseResource } from "./packages/core/dist/lib/database/clients/d1
 import Seed from "./packages/data/dist/seed/action.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 
+const skipDevSeed = process.env.DTPT_SKIP_DEV_SEED === "1";
+
 export default Alchemy.Stack(
   "dotheyplaytoday",
   {
@@ -14,11 +16,11 @@ export default Alchemy.Stack(
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
+    const context = yield* AlchemyContext;
     const database = yield* D1DatabaseResource;
     const notifyJobWorker = yield* NotifyJobWorker;
 
-    const context = yield* AlchemyContext;
-    if (context.dev) {
+    if (context.dev && !skipDevSeed) {
       yield* Seed("Dev", {
         accountId: database.accountId,
         databaseId: database.databaseId,
