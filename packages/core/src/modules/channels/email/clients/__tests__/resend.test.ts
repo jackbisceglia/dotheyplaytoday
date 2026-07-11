@@ -76,15 +76,6 @@ const ResendConfigLayerTest = ConfigProvider.layer(
   }),
 );
 
-const ResendSerializedConfigLayerTest = ConfigProvider.layer(
-  ConfigProvider.fromEnv({
-    env: {
-      RESEND_API_KEY: '{"_tag":"Redacted","value":"re_test_key"}',
-      RESEND_FROM_EMAIL: '{"_tag":"Redacted","value":"sender@example.com"}',
-    },
-  }),
-);
-
 const EmailChannelClientLayerTest = EmailChannelClientLayerResend.pipe(
   Layer.provideMerge(ResendConfigLayerTest),
 );
@@ -103,19 +94,6 @@ describe("EmailChannelClientLayerResend", () => {
     resendMock.constructor.mockReset();
     resendMock.send.mockReset();
   });
-
-  it.effect("unwraps Alchemy's serialized redacted config", () =>
-    Effect.gen(function* () {
-      yield* EmailChannelClient;
-      expect(resendMock.constructor).toHaveBeenCalledWith("re_test_key");
-    }).pipe(
-      Effect.provide(
-        EmailChannelClientLayerResend.pipe(
-          Layer.provideMerge(ResendSerializedConfigLayerTest),
-        ),
-      ),
-    ),
-  );
 
   it.effect("maps rendered email content to the Resend payload", () =>
     Effect.gen(function* () {

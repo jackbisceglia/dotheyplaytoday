@@ -1,13 +1,16 @@
 import * as Alchemy from "alchemy";
 import { AlchemyContext } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
+import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 
 import { D1DatabaseResource } from "./packages/core/dist/lib/database/clients/d1/resource.js";
 import Seed from "./packages/data/dist/seed/action.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 
-const skipDevSeed = process.env.DTPT_SKIP_DEV_SEED === "1";
+const SeedStrategy = Config.string("SEED_STRATEGY").pipe(
+  Config.withDefault("dev"),
+);
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -17,14 +20,14 @@ export default Alchemy.Stack(
   },
   Effect.gen(function* () {
     const context = yield* AlchemyContext;
+    const seedStrategy = yield* SeedStrategy;
     const database = yield* D1DatabaseResource;
     const notifyJobWorker = yield* NotifyJobWorker;
 
-    if (context.dev && !skipDevSeed) {
+    if (context.dev && seedStrategy !== "skip") {
       yield* Seed("Dev", {
         accountId: database.accountId,
         databaseId: database.databaseId,
-        // Actions rerun only when input diffs; a fresh timestamp seeds on every dev apply
         appliedAt: Date.now().toString(),
       });
     }

@@ -5,7 +5,7 @@ import {
   SubscriptionsLayer,
   UsersLayer,
 } from "@dtpt/core";
-import { D1HttpDatabaseLayer } from "@dtpt/core/lib/database/clients/d1/http-binding";
+import { createD1HttpDatabaseLayer } from "@dtpt/core/lib/database/clients/d1/http-binding";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { Action } from "alchemy";
 import { Effect, Layer, pipe } from "effect";
@@ -20,6 +20,9 @@ const SeedDependenciesLayer = pipe(
   Layer.provide(CloudflareCryptoLayer),
 );
 
+// TODO(alchemy): once Actions can bind D1 directly, replace the HTTP layer
+// with Cloudflare.D1.QueryDatabase(D1DatabaseResource) +
+// createD1DatabaseLayerFromResource and drop the accountId/databaseId inputs.
 export default Action(
   "Seed",
   Effect.succeed(
@@ -28,9 +31,8 @@ export default Action(
       databaseId: string;
       appliedAt: string;
     }) {
-      const makeDatabaseLayer = yield* D1HttpDatabaseLayer;
       const SeedLayer = SeedDependenciesLayer.pipe(
-        Layer.provideMerge(makeDatabaseLayer(input)),
+        Layer.provideMerge(createD1HttpDatabaseLayer(input)),
       );
 
       yield* Effect.gen(function* () {

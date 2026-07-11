@@ -62,26 +62,6 @@ describe("url config", () => {
     ),
   );
 
-  it.effect("unwraps Alchemy-redacted web URL config", () =>
-    Effect.gen(function* () {
-      const webUrl = yield* WebUrl;
-
-      expect(webUrl).toBe("http://localhost:4321");
-    }).pipe(
-      Effect.provide(
-        ConfigProvider.layer(
-          ConfigProvider.fromEnv({
-            env: {
-              PUBLIC_WEB_URL_BASE:
-                '{"_tag":"Redacted","value":"http://localhost"}',
-              PUBLIC_WEB_URL_PORT: '{"_tag":"Redacted","value":"4321"}',
-            },
-          }),
-        ),
-      ),
-    ),
-  );
-
   it.effect("requires api and web URL bases", () =>
     Effect.gen(function* () {
       const apiExit = yield* ApiUrl.pipe(Effect.exit);

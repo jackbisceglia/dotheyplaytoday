@@ -2,7 +2,7 @@ import {
   Credentials,
   formatHeaders,
 } from "@distilled.cloud/cloudflare/Credentials";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 
 import { createD1DatabaseLayer, type DatabaseBinding } from "./layer.js";
 
@@ -31,10 +31,15 @@ type D1HttpEnvelope<Results> = {
   result: { results?: Results | null }[];
 };
 
-export const D1HttpDatabaseLayer = Effect.gen(function* () {
-  const resolveCredentials = yield* Credentials;
+/**
+ * Creates a Cloudflare D1-backed database layer that talks to the D1 REST
+ * API instead of a Worker binding. Requires `Credentials` from the Alchemy
+ * stack context.
+ */
+export function createD1HttpDatabaseLayer(config: D1HttpDatabaseConfig) {
+  const BindingEffect = Effect.gen(function* () {
+    const resolveCredentials = yield* Credentials;
 
-  return (config: D1HttpDatabaseConfig) => {
     const post = <Results>(
       endpoint: "query" | "raw",
       sql: string,
@@ -87,5 +92,7 @@ export const D1HttpDatabaseLayer = Effect.gen(function* () {
 
     const binding = { prepare: (sql: string) => statement(sql) };
     return createD1DatabaseLayer(binding as unknown as DatabaseBinding);
-  };
-});
+  });
+
+  return Layer.unwrap(BindingEffect);
+}

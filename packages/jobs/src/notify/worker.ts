@@ -5,6 +5,7 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
+import { createConfigProviderFromAlchemyWorkerEnv } from "@dtpt/core/lib/config/providers";
 import { WebConfig } from "@dtpt/core/lib/config/web";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/clients/d1/layer";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
@@ -32,6 +33,8 @@ const NotifyDomainsLayer = pipe(
   Layer.provide(CloudflareCryptoLayer),
 );
 
+const AlchemyEnvConfigProvider = createConfigProviderFromAlchemyWorkerEnv();
+
 export default Cloudflare.Worker(
   "NotifyJobWorker",
   {
@@ -56,7 +59,11 @@ export default Cloudflare.Worker(
           yield* Effect.logInfo("notify job: scheduled");
 
           yield* notify({}).pipe(
-            Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
+            Effect.provide(
+              Layer.merge(NotifyLayer, EmailChannelLayer).pipe(
+                Layer.provideMerge(AlchemyEnvConfigProvider),
+              ),
+            ),
           );
         },
         Effect.tapCause((cause) =>
@@ -97,7 +104,11 @@ export default Cloudflare.Worker(
           }),
         );
 
-        yield* notify(body).pipe(Effect.provide(NotifyRunLayer));
+        yield* notify(body).pipe(
+          Effect.provide(
+            NotifyRunLayer.pipe(Layer.provideMerge(AlchemyEnvConfigProvider)),
+          ),
+        );
 
         return yield* HttpServerResponse.json({ ok: true });
       }).pipe(
@@ -114,9 +125,10 @@ export default Cloudflare.Worker(
     };
   }).pipe(
     Effect.provide(
-      Layer.merge(
+      Layer.mergeAll(
         Cloudflare.D1.QueryDatabaseBinding,
         Cloudflare.Workers.CronEventSourceLive,
+        AlchemyEnvConfigProvider,
       ),
     ),
   ),
