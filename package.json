@@ -9,7 +9,6 @@
     "dev:infra": "alchemy dev alchemy.run.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
-    "initialize": "pnpm @data seed:dev",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
     "lint": "pnpm -r run lint",

@@ -21,6 +21,7 @@
     "test": "pnpm -w exec vitest run packages/core/src"
   },
   "dependencies": {
+    "@distilled.cloud/cloudflare": "0.28.2",
     "@effect/platform-browser": "catalog:",
     "@effect/sql-d1": "catalog:",
     "@effect/sql-sqlite-node": "catalog:",
