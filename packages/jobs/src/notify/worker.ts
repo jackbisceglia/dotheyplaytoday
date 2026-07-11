@@ -6,7 +6,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
 import { WebConfig } from "@dtpt/core/lib/config/web";
-import { createD1DatabaseLayer } from "@dtpt/core/lib/database/clients/d1/layer";
+import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/clients/d1/layer";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
@@ -46,9 +46,7 @@ export default Cloudflare.Worker(
     yield* WebConfig;
     const stack = yield* Stack;
 
-    const DatabaseLayer = Layer.unwrap(
-      database.raw.pipe(Effect.map(createD1DatabaseLayer)),
-    );
+    const DatabaseLayer = createD1DatabaseLayerFromResource(database);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));
 
     yield* Cloudflare.Workers.cron(
