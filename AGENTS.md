@@ -14,9 +14,8 @@
 
 - Current source, tests, manifests, and the active diff are authoritative.
 - `docs/product.md` defines intended product behavior; `docs/architecture.md` provides the current system overview.
-- When documentation conflicts with implementation, investigate the mismatch instead of blindly following either one.
-- Use nearby current code before inventing a pattern. Consult `reference/` only for a concrete implementation question.
-- Verify dependency APIs against the pinned version or its source.
+- Use nearby current code before inventing a pattern.
+- Consult `reference/` when a concrete implementation question justifies it.
 - Keep changes scoped and preserve unrelated tracked and untracked work.
 - Update current documentation when behavior or architecture changes.
 - Run relevant tests while editing.

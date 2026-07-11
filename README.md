@@ -2,7 +2,7 @@
 
 `dotheyplaytoday` is a sports notification app for a simple recurring question: does my team play today?
 
-Users subscribe to supported teams and receive a notification when their team has a game on their local calendar date. Teams and games are current implementations of the reusable **Subject** and **Event** concepts, allowing the product to support other sports and event sources over time.
+Users subscribe to teams and receive a notification when their team has a game on their local calendar day. Teams and games are current implementations of the reusable **Subject** and **Event** concepts, allowing the product to support other subjects and event sources over time.
 
 See [Product](docs/product.md) for intended behavior and [Architecture](docs/architecture.md) for the current system overview.
 
@@ -10,9 +10,8 @@ See [Product](docs/product.md) for intended behavior and [Architecture](docs/arc
 
 - TypeScript and Effect
 - Astro
-- SQLite and Drizzle, with Cloudflare D1 in production
+- SQLite and Drizzle
 - Alchemy and Cloudflare Workers
-- Resend email delivery
 
 ## Packages
 
