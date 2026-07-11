@@ -2,55 +2,34 @@
 
 `dotheyplaytoday` is a sports notification app for a simple recurring question: does my team play today?
 
-Users subscribe to teams and get notified only when their team has a game that day.
+Users subscribe to supported teams and receive a notification when their team has a game on their local calendar date. Teams and games are current implementations of the reusable **Subject** and **Event** concepts, allowing the product to support other sports and event sources over time.
 
-## What It Does
+See [Product](docs/product.md) for intended behavior and [Architecture](docs/architecture.md) for the current system overview.
 
-- Allows a user to subscribe to supported sports teams.
-- Sends a notification when their subscribed team has an event that day.
+## Tech stack
 
-## Designed To Extend
-
-Sports are the initial scope, but teams and games are implementations of generic **Subject** and **Event** concepts.
-
-Thus, the app can extend to more leagues, tournaments, campus groups, venues, clubs, shows, artists, or other recurring event sources.
-
-## State Of The Monorepo
-
-### Tech Stack
-
-The forward path is built around:
-
-- TypeScript
-- Effect
+- TypeScript and Effect
 - Astro
-- SQLite + Drizzle
+- SQLite and Drizzle, with Cloudflare D1 in production
+- Alchemy and Cloudflare Workers
+- Resend email delivery
 
-### Codebase Shape
+## Packages
 
-- `packages/core`: current domain model, schemas, persistence, subscriptions,
-  event reads, and channel boundaries.
-- `packages/api`: HTTP API built on top of `core`.
-- `packages/jobs`: notify job built on top of `core`.
-- `packages/data`: seed/import data, including NBA subjects and events.
-- `packages/web`: Astro signup frontend built on top of `core`.
-- `docs/rewrite`: canonical product, domain, and rebuild notes.
-
-## Coming Soon
-
-- Finish the end-to-end V2 path for signup, notify, and unsubscribe.
-- Move the frontend surface toward Astro.
-- Expand sports data imports beyond the initial NBA seed path.
-- Document production environment variables, deploy shape, and cron setup.
+- `packages/core`: domain models, contracts, persistence, scheduling, and channels.
+- `packages/api`: public HTTP API.
+- `packages/jobs`: scheduled notification worker and notify orchestration.
+- `packages/data`: catalog, event, and development seed data.
+- `packages/web`: Astro frontend.
 
 ## Commands
 
 ```bash
 pnpm install
+pnpm build
+pnpm test
 pnpm lint
 pnpm typecheck
-pnpm test
-pnpm build
 ```
 
 Package helpers:
@@ -58,7 +37,7 @@ Package helpers:
 ```bash
 pnpm @core <cmd>
 pnpm @api <cmd>
-pnpm @web <cmd>
 pnpm @jobs <cmd>
 pnpm @data <cmd>
+pnpm @web <cmd>
 ```

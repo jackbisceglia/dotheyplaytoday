@@ -1,9 +1,23 @@
 # AGENTS.md
 
-This repo is dotheyplaytoday: a small app for subscribing to subjects, like NBA teams or campus groups, and getting notified when relevant events are happening today.
+`dotheyplaytoday` lets users subscribe to supported sports subjects and receive notifications when matching events happen today in their timezone.
 
-The live implementation is the `core`, `api`, `jobs`, `web`, and `data` packages. For domain and engineering context, read the canonical docs in `docs/rewrite/` first, especially `GLOSSARY.md`, `spec.md`, `prototype-lessons.md`, `effect-v4-and-engineering-practices.md`, and `rebuild-plan.md`.
+## Packages
 
-When implementing, read reference code often for patterns before inventing new ones. Prefer source references in this order: current repo code and diff, `reference/opencode/`, `reference/t3code/`, then `reference/effectv4/`. Copy principles, not structure by default.
+- `packages/core`: domain models, contracts, persistence, scheduling, and channels.
+- `packages/api`: public HTTP API.
+- `packages/jobs`: scheduled notification worker and notify orchestration.
+- `packages/data`: catalog, event, and development seed data.
+- `packages/web`: Astro frontend.
 
-Keep changes small and specific. Run relevant checks while editing, then run `pnpm lint` and `pnpm typecheck` before calling implementation work done.
+## Working agreements
+
+- Current source, tests, manifests, and the active diff are authoritative.
+- `docs/product.md` defines intended product behavior; `docs/architecture.md` provides the current system overview.
+- When documentation conflicts with implementation, investigate the mismatch instead of blindly following either one.
+- Use nearby current code before inventing a pattern. Consult `reference/` only for a concrete implementation question.
+- Verify dependency APIs against the pinned version or its source.
+- Keep changes scoped and preserve unrelated tracked and untracked work.
+- Update current documentation when behavior or architecture changes.
+- Run relevant tests while editing.
+- Run `pnpm lint` and `pnpm typecheck` before declaring implementation work complete.
