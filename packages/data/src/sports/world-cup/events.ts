@@ -570,22 +570,6 @@ export const Games = {
       ),
     },
   },
-  Quarterfinals: {
-    July11: {
-      NorwayVsEngland: makeWorldCupGame(
-        999,
-        "2026-07-11T21:00:00Z",
-        "Norway",
-        "England",
-      ),
-      ArgentinaVsSwitzerland: makeWorldCupGame(
-        1000,
-        "2026-07-12T01:00:00Z",
-        "Argentina",
-        "Switzerland",
-      ),
-    },
-  },
 } as const satisfies Record<
   string,
   Record<string, Record<string, WorldCupSportEventSeed>>
@@ -628,5 +612,4 @@ export const events = [
   ...Object.values(Games.GroupL.Matchday1),
   ...Object.values(Games.GroupL.Matchday2),
   ...Object.values(Games.GroupL.Matchday3),
-  ...Object.values(Games.Quarterfinals.July11),
 ] satisfies readonly WorldCupSportEventSeed[];

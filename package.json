@@ -7,7 +7,6 @@
     "dev:web": "pnpm @web dev",
     "dev:api": "pnpm @api dev",
     "dev:infra": "alchemy dev alchemy.run.ts",
-    "dev:infra:no-seed": "SEED_STRATEGY=skip alchemy dev alchemy.run.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
     "build": "pnpm -r run build",

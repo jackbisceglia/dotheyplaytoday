@@ -10,9 +10,9 @@ import { Effect, HashMap, Option, Schema } from "effect";
 import { SportsSeed } from "../schema/sports.js";
 import { SeedCollections } from "./index.js";
 
-// Keeps in-flight writes low enough for Cloudflare API rate limits while
-// seeding goes through the temporary D1 HTTP path.
-const SeedWriteConcurrency = 4;
+const Constants = {
+  WriteConcurrency: 4,
+} as const;
 
 export class SeedEventResolutionError extends Schema.TaggedErrorClass<SeedEventResolutionError>()(
   "SeedEventResolutionError",
@@ -153,7 +153,7 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
       return subjects.upsert(subject);
     },
-    { discard: true, concurrency: SeedWriteConcurrency },
+    { discard: true, concurrency: Constants.WriteConcurrency },
   );
 
   const importedEvents = yield* Effect.forEach(
@@ -167,7 +167,7 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
         return [event.sourceId, event.id] as const;
       }),
-    { concurrency: SeedWriteConcurrency },
+    { concurrency: Constants.WriteConcurrency },
   );
 
   const eventIndex = HashMap.fromIterable(importedEvents);
@@ -191,7 +191,7 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
   yield* Effect.forEach(feedEdges, subjects.addEventToFeed, {
     discard: true,
-    concurrency: SeedWriteConcurrency,
+    concurrency: Constants.WriteConcurrency,
   });
 
   return collections;

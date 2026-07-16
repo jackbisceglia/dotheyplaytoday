@@ -212,10 +212,10 @@ describe("data seed catalog", () => {
     ).toBe(true);
   });
 
-  it("registers World Cup seed data explicitly", () => {
+  it("registers World Cup group stage seed data explicitly", () => {
     expect(worldCupCollection.id).toBe("sports.world-cup");
     expect(worldCupCollection.subjects).toHaveLength(48);
-    expect(worldCupCollection.events).toHaveLength(74);
+    expect(worldCupCollection.events).toHaveLength(72);
 
     const eventSourceIds = new Set(
       worldCupCollection.events.map((event) => event.sourceId),
@@ -226,18 +226,17 @@ describe("data seed catalog", () => {
     const unitedStates = worldCupCollection.subjects.find(
       (subject) => subject.details.slug === "united-states",
     );
-    const argentina = worldCupCollection.subjects.find(
-      (subject) => subject.details.slug === "argentina",
-    );
 
-    expect(feedIds).toHaveLength(148);
-    expect(eventSourceIds.size).toBe(74);
+    expect(feedIds).toHaveLength(144);
+    expect(eventSourceIds.size).toBe(72);
     expect(feedIds.every((sourceId) => eventSourceIds.has(sourceId))).toBe(
       true,
     );
-    expect(argentina?.feedIds).toContain(
-      "sports_game:seed:00000000-0000-4000-8000-000000001000",
-    );
+    expect(
+      worldCupCollection.subjects.every(
+        (subject) => subject.feedIds.length === 3,
+      ),
+    ).toBe(true);
     expect(unitedStates?.feedIds).toEqual([
       "sports_game:seed:00000000-0000-4000-8000-000000000919",
       "sports_game:seed:00000000-0000-4000-8000-000000000921",

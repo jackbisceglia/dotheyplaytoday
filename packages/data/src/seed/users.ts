@@ -8,7 +8,7 @@ import {
 } from "@dtpt/core";
 import { Effect, Schema, Struct } from "effect";
 
-import { Teams } from "../sports/world-cup/subjects.js";
+import { Teams } from "../sports/nba/subjects.js";
 import { SeedConfig } from "./config.js";
 
 const UserSeed = Schema.Struct({
@@ -26,7 +26,7 @@ const DefaultSeedUsers = Effect.gen(function* () {
     {
       email: config.email,
       timezone: "America/New_York",
-      subjectIds: [Teams.Argentina.id],
+      subjectIds: [Teams.SanAntonioSpurs.id],
       schedule: {
         _tag: "fixed_local_time",
         sendAtSecondsLocal: 9 * 60 * 60,
@@ -49,20 +49,22 @@ export const seedUsers = Effect.fn("Seed.Users")(function* (
 
   const decodedUsers = input ?? (yield* DefaultSeedUsers);
 
-  return yield* Effect.forEach(decodedUsers, (seedUser) =>
-    Effect.gen(function* () {
-      const user = yield* users.upsertForSignup(
-        seedUser.email,
-        seedUser.timezone,
-      );
+  return yield* Effect.forEach(
+    decodedUsers,
+    (seedUser) =>
+      Effect.gen(function* () {
+        const user = yield* users.upsertForSignup(
+          seedUser.email,
+          seedUser.timezone,
+        );
 
-      yield* subscriptions.replaceForUser({
-        user,
-        subjectIds: seedUser.subjectIds,
-        schedule: seedUser.schedule,
-      });
+        yield* subscriptions.replaceForUser({
+          user,
+          subjectIds: seedUser.subjectIds,
+          schedule: seedUser.schedule,
+        });
 
-      return user;
-    }),
+        return user;
+      }),
   );
 });

@@ -19,7 +19,6 @@ import { ConfigProvider, Effect, Layer, Schema } from "effect";
 import { SportsSeed } from "../../schema/sports.js";
 import { nbaCollection } from "../../sports/nba/index.js";
 import { Teams } from "../../sports/nba/subjects.js";
-import { worldCupCollection } from "../../sports/world-cup/index.js";
 import { seedCatalog } from "../catalog.js";
 import { seedUsers, summarizeUsers } from "../users.js";
 
@@ -33,10 +32,6 @@ const layerSeedTest = Layer.mergeAll(
 ).pipe(Layer.provideMerge(layerTest));
 
 const seedNbaCatalog = seedCatalog([nbaCollection satisfies SportsSeedInput]);
-const seedDefaultCatalog = seedCatalog([
-  nbaCollection satisfies SportsSeedInput,
-  worldCupCollection satisfies SportsSeedInput,
-]);
 
 const layerSeedConfig = (env: Record<string, string>) =>
   ConfigProvider.layer(ConfigProvider.fromEnv({ env }));
@@ -65,7 +60,7 @@ describe("seed users", () => {
   it.effect("seeds users with one or more subject subscriptions", () =>
     Effect.gen(function* () {
       yield* createTables;
-      yield* seedDefaultCatalog;
+      yield* seedNbaCatalog;
 
       const seededUsers = yield* seedUsers([
         makeSeedUser({
@@ -96,7 +91,7 @@ describe("seed users", () => {
   it.effect("uses the safe fake recipient by default", () =>
     Effect.gen(function* () {
       yield* createTables;
-      yield* seedDefaultCatalog;
+      yield* seedNbaCatalog;
 
       const seededUsers = yield* seedUsers();
 
@@ -112,7 +107,7 @@ describe("seed users", () => {
   it.effect("uses SEED_EMAIL for the default dev seed user", () =>
     Effect.gen(function* () {
       yield* createTables;
-      yield* seedDefaultCatalog;
+      yield* seedNbaCatalog;
 
       const seededUsers = yield* seedUsers();
 
@@ -129,32 +124,30 @@ describe("seed users", () => {
     ),
   );
 
-  it.effect(
-    "does not read SEED_EMAIL when explicit seed users are provided",
-    () =>
-      Effect.gen(function* () {
-        yield* createTables;
-        yield* seedNbaCatalog;
+  it.effect("does not read SEED_EMAIL when explicit seed users are provided", () =>
+    Effect.gen(function* () {
+      yield* createTables;
+      yield* seedNbaCatalog;
 
-        const seededUsers = yield* seedUsers([
-          makeSeedUser({
-            email: Schema.decodeUnknownSync(EmailAddressFromString)(
-              "manual@example.com",
-            ),
-          }),
-        ]);
+      const seededUsers = yield* seedUsers([
+        makeSeedUser({
+          email: Schema.decodeUnknownSync(EmailAddressFromString)(
+            "manual@example.com",
+          ),
+        }),
+      ]);
 
-        const database = yield* Database;
-        const users = yield* database.select().from(usersTable);
+      const database = yield* Database;
+      const users = yield* database.select().from(usersTable);
 
-        expect(users).toHaveLength(1);
-        expect(users[0]?.email).toBe("manual@example.com");
-        expect(seededUsers[0]?.email).toBe("manual@example.com");
-      }).pipe(
-        Effect.provide(
-          layerSeedTestWithConfig({ SEED_EMAIL: "real@example.com" }),
-        ),
+      expect(users).toHaveLength(1);
+      expect(users[0]?.email).toBe("manual@example.com");
+      expect(seededUsers[0]?.email).toBe("manual@example.com");
+    }).pipe(
+      Effect.provide(
+        layerSeedTestWithConfig({ SEED_EMAIL: "real@example.com" }),
       ),
+    ),
   );
 
   it.effect("replaces subscriptions when a seeded user changes", () =>
