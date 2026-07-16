@@ -27,7 +27,9 @@ export default Action(
   Effect.gen(function* () {
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
 
-    return Effect.fn("DataSeed.dev")(function* (_input: { now: string }) {
+    return Effect.fn("Seed.Dev")(function* ({ now }: { now: string }) {
+      yield* Effect.log("Seeding...", { now });
+
       const SeedLayer = SeedBaseLayer.pipe(
         Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
       );

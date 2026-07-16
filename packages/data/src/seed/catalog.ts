@@ -10,8 +10,8 @@ import { Effect, HashMap, Option, Schema } from "effect";
 import { SportsSeed } from "../schema/sports.js";
 import { SeedCollections } from "./index.js";
 
-const Constants = {
-  WriteConcurrency: 4,
+const constants = {
+  concurrency: 4,
 } as const;
 
 export class SeedEventResolutionError extends Schema.TaggedErrorClass<SeedEventResolutionError>()(
@@ -153,7 +153,7 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
       return subjects.upsert(subject);
     },
-    { discard: true, concurrency: Constants.WriteConcurrency },
+    { discard: true, concurrency: constants.concurrency },
   );
 
   const importedEvents = yield* Effect.forEach(
@@ -167,7 +167,7 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
         return [event.sourceId, event.id] as const;
       }),
-    { concurrency: Constants.WriteConcurrency },
+    { concurrency: constants.concurrency },
   );
 
   const eventIndex = HashMap.fromIterable(importedEvents);
@@ -191,7 +191,7 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
   yield* Effect.forEach(feedEdges, subjects.addEventToFeed, {
     discard: true,
-    concurrency: Constants.WriteConcurrency,
+    concurrency: constants.concurrency,
   });
 
   return collections;
