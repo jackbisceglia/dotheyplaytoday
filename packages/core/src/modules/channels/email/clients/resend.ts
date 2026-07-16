@@ -12,7 +12,7 @@ import { ResendConfig } from "./config.js";
 const constraints = { retry: { max: 2 } };
 
 const retryPolicy = Schedule.exponential("250 millis").pipe(
-  Schedule.both(Schedule.recurs(constraints.retry.max)),
+  Schedule.upTo({ times: constraints.retry.max }),
 );
 
 const isRetriableError = (error: ChannelClientError) =>

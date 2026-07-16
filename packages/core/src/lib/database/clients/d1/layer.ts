@@ -1,5 +1,6 @@
+import * as Cloudflare from "alchemy/Cloudflare";
 import { D1Client } from "@effect/sql-d1";
-import { Layer } from "effect";
+import { Effect, Layer } from "effect";
 
 import { Database, makeDatabaseClientLayer } from "../../service.js";
 
@@ -17,4 +18,16 @@ export function createD1DatabaseLayer(
   const DatabaseClientLayer = Layer.effect(Database, makeDatabaseClientLayer());
 
   return Layer.provideMerge(DatabaseClientLayer, D1ClientLayer);
+}
+
+/**
+ * Creates a Cloudflare D1-backed database layer from a Worker's bound
+ * `QueryDatabase` client.
+ */
+export function createD1DatabaseLayerFromResource(
+  database: Cloudflare.D1.QueryDatabaseClient,
+) {
+  return Layer.unwrap(
+    database.raw.pipe(Effect.map((binding) => createD1DatabaseLayer(binding))),
+  );
 }
