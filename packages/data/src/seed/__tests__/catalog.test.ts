@@ -22,6 +22,7 @@ import { User, UserInsert } from "@dtpt/core/modules/users/schema";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
 import { SportsSeed } from "../../schema/sports.js";
+import { mlbCollection } from "../../sports/mlb/index.js";
 import { nbaCollection } from "../../sports/nba/index.js";
 import { nflCollection } from "../../sports/nfl/index.js";
 import { worldCupCollection } from "../../sports/world-cup/index.js";
@@ -210,6 +211,32 @@ describe("data seed catalog", () => {
     expect(
       nflCollection.subjects.every((subject) => subject.feedIds.length === 17),
     ).toBe(true);
+  });
+
+  it("registers the remaining MLB regular season seed data explicitly", () => {
+    const decoded = decode(SportsSeed)(mlbCollection);
+
+    expect(mlbCollection.id).toBe("sports.mlb");
+    expect(mlbCollection.subjects).toHaveLength(30);
+    expect(mlbCollection.events).toHaveLength(985);
+    expect(decoded.events).toHaveLength(985);
+
+    const eventSourceIds = new Set(
+      mlbCollection.events.map((event) => event.sourceId),
+    );
+    const feedIds = mlbCollection.subjects.flatMap(
+      (subject) => subject.feedIds,
+    );
+    const redSox = mlbCollection.subjects.find(
+      (subject) => subject.details.slug === "boston-red-sox",
+    );
+
+    expect(eventSourceIds.size).toBe(985);
+    expect(feedIds).toHaveLength(1_970);
+    expect(feedIds.every((sourceId) => eventSourceIds.has(sourceId))).toBe(
+      true,
+    );
+    expect(redSox?.feedIds).toHaveLength(68);
   });
 
   it("registers World Cup group stage seed data explicitly", () => {

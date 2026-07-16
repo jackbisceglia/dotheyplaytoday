@@ -27,21 +27,28 @@ export default Action(
   Effect.gen(function* () {
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
 
-    return Effect.fn("Seed.Dev")(function* ({ now }: { now: string }) {
-      yield* Effect.log("Seeding...", { now });
+    return Effect.fn("Seed.Run")(function* (input: {
+      mode: "dev" | "prod";
+      version: string;
+    }) {
+      yield* Effect.log("Seeding...", input);
 
       const SeedLayer = SeedBaseLayer.pipe(
         Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
       );
 
       yield* Effect.gen(function* () {
-        yield* reset();
+        if (input.mode === "dev") {
+          yield* reset();
+        }
 
         const collections = yield* seedCatalog();
         yield* Effect.log(summarizeCatalog(collections));
 
-        const users = yield* seedUsers();
-        yield* Effect.log(summarizeUsers(users));
+        if (input.mode === "dev") {
+          const users = yield* seedUsers();
+          yield* Effect.log(summarizeUsers(users));
+        }
       }).pipe(Effect.provide(SeedLayer));
     });
   }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseLocal)),

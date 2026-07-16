@@ -1,11 +1,14 @@
 import * as Alchemy from "alchemy";
-import { AlchemyContext } from "alchemy";
+import { AlchemyContext, Stage } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Effect from "effect/Effect";
 
 import { D1DatabaseResource } from "./packages/core/dist/lib/database/clients/d1/resource.js";
 import Seed from "./packages/data/dist/seed/action.js";
-import { SeedStrategy } from "./packages/data/dist/seed/config.js";
+import {
+  CatalogSeedVersion,
+  SeedStrategy,
+} from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 
 export default Alchemy.Stack(
@@ -16,13 +19,22 @@ export default Alchemy.Stack(
   },
   Effect.gen(function* () {
     const context = yield* AlchemyContext;
+    const stage = yield* Stage;
     const seedStrategy = yield* SeedStrategy;
 
     const database = yield* D1DatabaseResource;
     const notifyJobWorker = yield* NotifyJobWorker;
 
-    if (context.dev && seedStrategy !== "skip") {
-      yield* Seed("Dev", { now: Date.now().toString() });
+    if (stage === "prod") {
+      yield* Seed("Prod", {
+        mode: "prod",
+        version: CatalogSeedVersion,
+      });
+    } else if (context.dev && seedStrategy !== "skip") {
+      yield* Seed("Dev", {
+        mode: "dev",
+        version: Date.now().toString(),
+      });
     }
 
     return {

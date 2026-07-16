@@ -198,7 +198,7 @@ describe("Subjects service", () => {
         VALUES (
           '00000000-0000-4000-8000-000000000301',
           'sports_team',
-          '{"_tag":"sports_team","leagueId":"mlb","location":"Boston","name":"Celtics","abbreviation":"BOS","slug":"boston-celtics"}'
+          '{"_tag":"sports_team","leagueId":"nhl","location":"Boston","name":"Celtics","display":"Boston Celtics","abbreviation":"BOS","slug":"boston-celtics"}'
         )
       `;
 

@@ -1,6 +1,9 @@
 import { EmailAddressFromString } from "@dtpt/core";
 import { Config, Schema } from "effect";
 
+// Bump when checked-in production catalog data changes.
+export const CatalogSeedVersion = "2026-07-16";
+
 export const SeedStrategy = Config.schema(
   Schema.Literals(["dev", "skip"]),
   "SEED_STRATEGY",

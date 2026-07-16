@@ -29,7 +29,7 @@ const subjectInput = {
 
 describe("Subject model", () => {
   it("lists supported league ids", () => {
-    expect(SportLeagueIds).toEqual(["nba", "nfl", "world-cup"]);
+    expect(SportLeagueIds).toEqual(["nba", "nfl", "mlb", "world-cup"]);
   });
 
   it("rejects malformed subject-owned fields and details", () => {
@@ -42,7 +42,7 @@ describe("Subject model", () => {
     expect(() =>
       decode(Subject)({
         ...subjectInput,
-        details: { ...subjectInput.details, leagueId: "mlb" },
+        details: { ...subjectInput.details, leagueId: "nhl" },
       }),
     ).toThrow();
     expect(() =>
