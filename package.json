@@ -8,7 +8,6 @@
     "dev:api": "pnpm @api dev",
     "dev:infra": "alchemy dev alchemy.run.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
-    "deploy:production": "alchemy deploy alchemy.run.ts --stage production --env-file .env.production",
     "destroy": "alchemy destroy alchemy.run.ts",
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
