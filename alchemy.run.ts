@@ -26,13 +26,9 @@ export default Alchemy.Stack(
     const notifyJobWorker = yield* NotifyJobWorker;
 
     if (stage === "production") {
-      yield* SeedProduction("SeedProduction", {
-        version: CatalogSeedVersion,
-      });
+      yield* SeedProduction("SeedProduction", { version: CatalogSeedVersion });
     } else if (context.dev && seedStrategy !== "skip") {
-      yield* SeedDev("SeedDev", {
-        version: Date.now().toString(),
-      });
+      yield* SeedDev("SeedDev", { version: Date.now().toString() });
     }
 
     return {
