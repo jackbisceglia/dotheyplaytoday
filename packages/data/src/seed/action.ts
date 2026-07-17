@@ -22,7 +22,7 @@ const SeedDevLayer = pipe(
   Layer.provide(CloudflareCryptoLayer),
 );
 
-const SeedProdLayer = pipe(
+const SeedProductionLayer = pipe(
   Layer.mergeAll(SubjectsLayer, EventsLayer),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
@@ -53,15 +53,17 @@ export const SeedDev = Action(
   }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseLocal)),
 );
 
-export const SeedProd = Action(
-  "SeedProd",
+export const SeedProduction = Action(
+  "SeedProduction",
   Effect.gen(function* () {
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
 
-    return Effect.fn("SeedProd.Run")(function* (input: { version: string }) {
+    return Effect.fn("SeedProduction.Run")(function* (input: {
+      version: string;
+    }) {
       yield* Effect.log("Seeding production catalog...", input);
 
-      const SeedLayer = SeedProdLayer.pipe(
+      const SeedLayer = SeedProductionLayer.pipe(
         Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
       );
 

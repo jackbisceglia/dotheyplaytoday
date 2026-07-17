@@ -138,7 +138,7 @@ const collection = {
 } as const satisfies SportsSeedInput;
 
 const runSeedForTest = Effect.fn("DataSeedTest.runSeed")(function* (input: {
-  readonly mode: "dev" | "prod";
+  readonly mode: "dev" | "production";
   readonly collections: readonly SportsSeedInput[];
 }) {
   if (input.mode === "dev") {
@@ -293,7 +293,7 @@ describe("data seed catalog", () => {
 
         const database = yield* Database;
         const result = yield* runSeedForTest({
-          mode: "prod",
+          mode: "production",
           collections: [collection],
         });
 
@@ -304,7 +304,7 @@ describe("data seed catalog", () => {
         ]);
 
         expect(result).toEqual({
-          mode: "prod",
+          mode: "production",
           summary:
             "seed:catalog collections=1 subjects=2 events=1 feedEdges=2 participants=2",
         });
@@ -325,14 +325,14 @@ describe("data seed catalog", () => {
         const events = yield* Events;
 
         yield* runSeedForTest({
-          mode: "prod",
+          mode: "production",
           collections: [collection],
         });
 
         const homeSubjectId = yield* getHomeSubjectId;
         const firstRows = yield* database.select().from(eventsTable);
         yield* runSeedForTest({
-          mode: "prod",
+          mode: "production",
           collections: [changedCollection],
         });
         const secondRows = yield* database.select().from(eventsTable);
@@ -383,7 +383,7 @@ describe("data seed catalog", () => {
       } as const satisfies SportsSeedInput;
 
       const error = yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [duplicateSourceCollection],
       }).pipe(Effect.flip);
       const eventRows = yield* database.select().from(eventsTable);
@@ -416,7 +416,7 @@ describe("data seed catalog", () => {
         } as const satisfies SportsSeedInput;
 
         const error = yield* runSeedForTest({
-          mode: "prod",
+          mode: "production",
           collections: [unresolvedCollection],
         }).pipe(Effect.flip);
         const eventRows = yield* database.select().from(eventsTable);
@@ -455,7 +455,7 @@ describe("data seed catalog", () => {
       } as const satisfies SportsSeedInput;
 
       const error = yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [collidingEventIdCollection],
       }).pipe(Effect.flip);
       const [subjectRows, eventRows, feedRows, participantRows] =
@@ -480,7 +480,7 @@ describe("data seed catalog", () => {
 
       const database = yield* Database;
       yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [collection],
       });
       const homeSubjectId = yield* getHomeSubjectId;
@@ -506,7 +506,7 @@ describe("data seed catalog", () => {
         .insert(subscriptionsTable)
         .values(encode(SubscriptionInsert)(subscription));
       yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [changedCollection],
       });
 
@@ -528,7 +528,7 @@ describe("data seed catalog", () => {
 
       const database = yield* Database;
       yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [collection],
       });
       const homeSubjectId = yield* getHomeSubjectId;
