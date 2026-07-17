@@ -25,7 +25,6 @@ import { SportsSeed } from "../../schema/sports.js";
 import { mlbCollection } from "../../sports/mlb/index.js";
 import { nbaCollection } from "../../sports/nba/index.js";
 import { nflCollection } from "../../sports/nfl/index.js";
-import { worldCupCollection } from "../../sports/world-cup/index.js";
 import {
   decodeSportsSeedCollections,
   SeedDuplicateEventSourceIdError,
@@ -33,6 +32,7 @@ import {
   seedCatalog,
   summarizeCatalog,
 } from "../catalog.js";
+import { SeedCollections } from "../index.js";
 import { reset } from "../reset.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -176,19 +176,21 @@ const changedCollection = {
 } as const satisfies SportsSeedInput;
 
 describe("data seed catalog", () => {
-  it("registers NBA seed data explicitly", () => {
+  it("registers only the current league catalogs", () => {
+    expect(SeedCollections.map((collection) => collection.id)).toEqual([
+      "sports.nba",
+      "sports.nfl",
+      "sports.mlb",
+    ]);
+  });
+
+  it("registers NBA teams without expired games", () => {
     expect(nbaCollection.id).toBe("sports.nba");
     expect(nbaCollection.subjects).toHaveLength(30);
-    expect(nbaCollection.events).toHaveLength(3);
-
-    const spurs = nbaCollection.subjects.find(
-      (subject) => subject.details.slug === "san-antonio-spurs",
-    );
-
-    expect(spurs?.feedIds).toEqual([
-      "sports_game:seed:00000000-0000-4000-8000-000000000702",
-      "sports_game:seed:00000000-0000-4000-8000-000000000703",
-    ]);
+    expect(nbaCollection.events).toHaveLength(0);
+    expect(
+      nbaCollection.subjects.every((subject) => subject.feedIds.length === 0),
+    ).toBe(true);
   });
 
   it("registers NFL regular season seed data explicitly", () => {
@@ -237,38 +239,6 @@ describe("data seed catalog", () => {
       true,
     );
     expect(redSox?.feedIds).toHaveLength(68);
-  });
-
-  it("registers World Cup group stage seed data explicitly", () => {
-    expect(worldCupCollection.id).toBe("sports.world-cup");
-    expect(worldCupCollection.subjects).toHaveLength(48);
-    expect(worldCupCollection.events).toHaveLength(72);
-
-    const eventSourceIds = new Set(
-      worldCupCollection.events.map((event) => event.sourceId),
-    );
-    const feedIds = worldCupCollection.subjects.flatMap(
-      (subject) => subject.feedIds,
-    );
-    const unitedStates = worldCupCollection.subjects.find(
-      (subject) => subject.details.slug === "united-states",
-    );
-
-    expect(feedIds).toHaveLength(144);
-    expect(eventSourceIds.size).toBe(72);
-    expect(feedIds.every((sourceId) => eventSourceIds.has(sourceId))).toBe(
-      true,
-    );
-    expect(
-      worldCupCollection.subjects.every(
-        (subject) => subject.feedIds.length === 3,
-      ),
-    ).toBe(true);
-    expect(unitedStates?.feedIds).toEqual([
-      "sports_game:seed:00000000-0000-4000-8000-000000000919",
-      "sports_game:seed:00000000-0000-4000-8000-000000000921",
-      "sports_game:seed:00000000-0000-4000-8000-000000000923",
-    ]);
   });
 
   it.effect(

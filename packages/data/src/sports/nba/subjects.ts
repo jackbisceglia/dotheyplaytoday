@@ -1,5 +1,4 @@
 import type { SportsSeedEncoded } from "../../schema/sports.js";
-import { Games } from "./events.js";
 
 type NbaSportSubjectSeed = SportsSeedEncoded["subjects"][number];
 
@@ -44,7 +43,7 @@ export const Teams = {
       abbreviation: "BOS",
       slug: "boston-celtics",
     },
-    feedIds: [Games.celticsKnicks.sourceId],
+    feedIds: [],
   },
   CharlotteHornets: {
     id: "00000000-0000-4000-8000-000000000104",
@@ -282,11 +281,7 @@ export const Teams = {
       abbreviation: "NYK",
       slug: "new-york-knicks",
     },
-    feedIds: [
-      Games.celticsKnicks.sourceId,
-      Games.finalsGame3SpursKnicks.sourceId,
-      Games.finalsGame4SpursKnicks.sourceId,
-    ],
+    feedIds: [],
   },
   OklahomaCityThunder: {
     id: "00000000-0000-4000-8000-000000000121",
@@ -384,10 +379,7 @@ export const Teams = {
       abbreviation: "SAS",
       slug: "san-antonio-spurs",
     },
-    feedIds: [
-      Games.finalsGame3SpursKnicks.sourceId,
-      Games.finalsGame4SpursKnicks.sourceId,
-    ],
+    feedIds: [],
   },
   TorontoRaptors: {
     id: "00000000-0000-4000-8000-000000000128",
