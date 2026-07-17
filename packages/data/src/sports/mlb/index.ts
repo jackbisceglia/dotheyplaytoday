@@ -2,8 +2,8 @@ import { SportsSeedEncoded } from "../../schema/sports.js";
 import { events } from "./events.js";
 import { subjects } from "./subjects.js";
 
-export const worldCupCollection = SportsSeedEncoded.make({
-  id: "sports.world-cup",
+export const mlbCollection = SportsSeedEncoded.make({
+  id: "sports.mlb",
   subjects,
   events,
 });

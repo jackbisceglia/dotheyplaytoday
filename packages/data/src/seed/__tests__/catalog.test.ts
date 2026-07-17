@@ -22,9 +22,9 @@ import { User, UserInsert } from "@dtpt/core/modules/users/schema";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
 import { SportsSeed } from "../../schema/sports.js";
+import { mlbCollection } from "../../sports/mlb/index.js";
 import { nbaCollection } from "../../sports/nba/index.js";
 import { nflCollection } from "../../sports/nfl/index.js";
-import { worldCupCollection } from "../../sports/world-cup/index.js";
 import {
   decodeSportsSeedCollections,
   SeedDuplicateEventSourceIdError,
@@ -32,6 +32,7 @@ import {
   seedCatalog,
   summarizeCatalog,
 } from "../catalog.js";
+import { SeedCollections } from "../index.js";
 import { reset } from "../reset.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -137,7 +138,7 @@ const collection = {
 } as const satisfies SportsSeedInput;
 
 const runSeedForTest = Effect.fn("DataSeedTest.runSeed")(function* (input: {
-  readonly mode: "dev" | "prod";
+  readonly mode: "dev" | "production";
   readonly collections: readonly SportsSeedInput[];
 }) {
   if (input.mode === "dev") {
@@ -175,19 +176,21 @@ const changedCollection = {
 } as const satisfies SportsSeedInput;
 
 describe("data seed catalog", () => {
-  it("registers NBA seed data explicitly", () => {
+  it("registers only the current league catalogs", () => {
+    expect(SeedCollections.map((collection) => collection.id)).toEqual([
+      "sports.nba",
+      "sports.nfl",
+      "sports.mlb",
+    ]);
+  });
+
+  it("registers NBA teams without expired games", () => {
     expect(nbaCollection.id).toBe("sports.nba");
     expect(nbaCollection.subjects).toHaveLength(30);
-    expect(nbaCollection.events).toHaveLength(3);
-
-    const spurs = nbaCollection.subjects.find(
-      (subject) => subject.details.slug === "san-antonio-spurs",
-    );
-
-    expect(spurs?.feedIds).toEqual([
-      "sports_game:seed:00000000-0000-4000-8000-000000000702",
-      "sports_game:seed:00000000-0000-4000-8000-000000000703",
-    ]);
+    expect(nbaCollection.events).toHaveLength(0);
+    expect(
+      nbaCollection.subjects.every((subject) => subject.feedIds.length === 0),
+    ).toBe(true);
   });
 
   it("registers NFL regular season seed data explicitly", () => {
@@ -212,36 +215,30 @@ describe("data seed catalog", () => {
     ).toBe(true);
   });
 
-  it("registers World Cup group stage seed data explicitly", () => {
-    expect(worldCupCollection.id).toBe("sports.world-cup");
-    expect(worldCupCollection.subjects).toHaveLength(48);
-    expect(worldCupCollection.events).toHaveLength(72);
+  it("registers the remaining MLB regular season seed data explicitly", () => {
+    const decoded = decode(SportsSeed)(mlbCollection);
+
+    expect(mlbCollection.id).toBe("sports.mlb");
+    expect(mlbCollection.subjects).toHaveLength(30);
+    expect(mlbCollection.events).toHaveLength(985);
+    expect(decoded.events).toHaveLength(985);
 
     const eventSourceIds = new Set(
-      worldCupCollection.events.map((event) => event.sourceId),
+      mlbCollection.events.map((event) => event.sourceId),
     );
-    const feedIds = worldCupCollection.subjects.flatMap(
+    const feedIds = mlbCollection.subjects.flatMap(
       (subject) => subject.feedIds,
     );
-    const unitedStates = worldCupCollection.subjects.find(
-      (subject) => subject.details.slug === "united-states",
+    const redSox = mlbCollection.subjects.find(
+      (subject) => subject.details.slug === "boston-red-sox",
     );
 
-    expect(feedIds).toHaveLength(144);
-    expect(eventSourceIds.size).toBe(72);
+    expect(eventSourceIds.size).toBe(985);
+    expect(feedIds).toHaveLength(1_970);
     expect(feedIds.every((sourceId) => eventSourceIds.has(sourceId))).toBe(
       true,
     );
-    expect(
-      worldCupCollection.subjects.every(
-        (subject) => subject.feedIds.length === 3,
-      ),
-    ).toBe(true);
-    expect(unitedStates?.feedIds).toEqual([
-      "sports_game:seed:00000000-0000-4000-8000-000000000919",
-      "sports_game:seed:00000000-0000-4000-8000-000000000921",
-      "sports_game:seed:00000000-0000-4000-8000-000000000923",
-    ]);
+    expect(redSox?.feedIds).toHaveLength(68);
   });
 
   it.effect(
@@ -296,7 +293,7 @@ describe("data seed catalog", () => {
 
         const database = yield* Database;
         const result = yield* runSeedForTest({
-          mode: "prod",
+          mode: "production",
           collections: [collection],
         });
 
@@ -307,7 +304,7 @@ describe("data seed catalog", () => {
         ]);
 
         expect(result).toEqual({
-          mode: "prod",
+          mode: "production",
           summary:
             "seed:catalog collections=1 subjects=2 events=1 feedEdges=2 participants=2",
         });
@@ -328,14 +325,14 @@ describe("data seed catalog", () => {
         const events = yield* Events;
 
         yield* runSeedForTest({
-          mode: "prod",
+          mode: "production",
           collections: [collection],
         });
 
         const homeSubjectId = yield* getHomeSubjectId;
         const firstRows = yield* database.select().from(eventsTable);
         yield* runSeedForTest({
-          mode: "prod",
+          mode: "production",
           collections: [changedCollection],
         });
         const secondRows = yield* database.select().from(eventsTable);
@@ -386,7 +383,7 @@ describe("data seed catalog", () => {
       } as const satisfies SportsSeedInput;
 
       const error = yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [duplicateSourceCollection],
       }).pipe(Effect.flip);
       const eventRows = yield* database.select().from(eventsTable);
@@ -419,7 +416,7 @@ describe("data seed catalog", () => {
         } as const satisfies SportsSeedInput;
 
         const error = yield* runSeedForTest({
-          mode: "prod",
+          mode: "production",
           collections: [unresolvedCollection],
         }).pipe(Effect.flip);
         const eventRows = yield* database.select().from(eventsTable);
@@ -458,7 +455,7 @@ describe("data seed catalog", () => {
       } as const satisfies SportsSeedInput;
 
       const error = yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [collidingEventIdCollection],
       }).pipe(Effect.flip);
       const [subjectRows, eventRows, feedRows, participantRows] =
@@ -483,7 +480,7 @@ describe("data seed catalog", () => {
 
       const database = yield* Database;
       yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [collection],
       });
       const homeSubjectId = yield* getHomeSubjectId;
@@ -509,7 +506,7 @@ describe("data seed catalog", () => {
         .insert(subscriptionsTable)
         .values(encode(SubscriptionInsert)(subscription));
       yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [changedCollection],
       });
 
@@ -531,7 +528,7 @@ describe("data seed catalog", () => {
 
       const database = yield* Database;
       yield* runSeedForTest({
-        mode: "prod",
+        mode: "production",
         collections: [collection],
       });
       const homeSubjectId = yield* getHomeSubjectId;
