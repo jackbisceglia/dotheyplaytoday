@@ -109,6 +109,9 @@ describe("seed users", () => {
       expect(users[0]?.email).toBe("fan@example.com");
       expect(seededUsers[0]?.email).toBe("fan@example.com");
       expect(subscriptions[0]?.subjectId).toBe(MlbTeams.BostonRedSox.id);
+      expect(subscriptions[0]?.schedule.sendAtSecondsLocal).toBe(
+        11 * 60 * 60 + 45 * 60,
+      );
     }).pipe(Effect.provide(layerSeedTestWithConfig({}))),
   );
 

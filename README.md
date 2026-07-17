@@ -40,3 +40,17 @@ pnpm @jobs <cmd>
 pnpm @data <cmd>
 pnpm @web <cmd>
 ```
+
+## Production deployment
+
+Production configuration is separate from the development `.env`. Copy
+`.env.production.template` to `.env.production`, provide production-scoped
+credentials, build, and deploy:
+
+```bash
+pnpm build
+pnpm run deploy:production --yes
+```
+
+The `dotheyplay.today` domain must be verified in Resend before using
+`updates@dotheyplay.today` as `RESEND_FROM_EMAIL`.

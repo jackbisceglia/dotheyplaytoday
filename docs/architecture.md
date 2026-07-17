@@ -21,6 +21,11 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Resend email delivery and console dry runs.
 - Typed Effect config at runtime boundaries.
 
+Production deploys load `.env.production` explicitly through
+`pnpm run deploy:production`; local development continues to load `.env`. This
+keeps production Resend credentials, sender identity, and public URLs separate
+from development configuration.
+
 ## Testing and validation
 
 - Persistence and domain tests use the real lightweight SQLite path where practical.
