@@ -16,40 +16,57 @@ import { seedCatalog, summarizeCatalog } from "./catalog.js";
 import { reset } from "./reset.js";
 import { seedUsers, summarizeUsers } from "./users.js";
 
-const SeedBaseLayer = pipe(
+const SeedDevLayer = pipe(
   Layer.mergeAll(SubjectsLayer, EventsLayer, UsersLayer, SubscriptionsLayer),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );
 
-export default Action(
-  "Seed",
+const SeedProdLayer = pipe(
+  Layer.mergeAll(SubjectsLayer, EventsLayer),
+  Layer.provide(IdLayer),
+  Layer.provide(CloudflareCryptoLayer),
+);
+
+export const SeedDev = Action(
+  "SeedDev",
   Effect.gen(function* () {
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
 
-    return Effect.fn("Seed.Run")(function* (input: {
-      mode: "dev" | "prod";
-      version: string;
-    }) {
-      yield* Effect.log("Seeding...", input);
+    return Effect.fn("SeedDev.Run")(function* (input: { version: string }) {
+      yield* Effect.log("Seeding development data...", input);
 
-      const SeedLayer = SeedBaseLayer.pipe(
+      const SeedLayer = SeedDevLayer.pipe(
         Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
       );
 
       yield* Effect.gen(function* () {
-        if (input.mode === "dev") {
-          yield* reset();
-        }
+        yield* reset();
 
         const collections = yield* seedCatalog();
         yield* Effect.log(summarizeCatalog(collections));
 
-        if (input.mode === "dev") {
-          const users = yield* seedUsers();
-          yield* Effect.log(summarizeUsers(users));
-        }
+        const users = yield* seedUsers();
+        yield* Effect.log(summarizeUsers(users));
       }).pipe(Effect.provide(SeedLayer));
+    });
+  }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseLocal)),
+);
+
+export const SeedProd = Action(
+  "SeedProd",
+  Effect.gen(function* () {
+    const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+
+    return Effect.fn("SeedProd.Run")(function* (input: { version: string }) {
+      yield* Effect.log("Seeding production catalog...", input);
+
+      const SeedLayer = SeedProdLayer.pipe(
+        Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
+      );
+
+      const collections = yield* seedCatalog().pipe(Effect.provide(SeedLayer));
+      yield* Effect.log(summarizeCatalog(collections));
     });
   }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseLocal)),
 );

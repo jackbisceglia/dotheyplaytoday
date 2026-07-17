@@ -4,7 +4,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as Effect from "effect/Effect";
 
 import { D1DatabaseResource } from "./packages/core/dist/lib/database/clients/d1/resource.js";
-import Seed from "./packages/data/dist/seed/action.js";
+import { SeedDev, SeedProd } from "./packages/data/dist/seed/action.js";
 import {
   CatalogSeedVersion,
   SeedStrategy,
@@ -25,14 +25,12 @@ export default Alchemy.Stack(
     const database = yield* D1DatabaseResource;
     const notifyJobWorker = yield* NotifyJobWorker;
 
-    if (stage === "prod") {
-      yield* Seed("Prod", {
-        mode: "prod",
+    if (stage === "production") {
+      yield* SeedProd("SeedProd", {
         version: CatalogSeedVersion,
       });
     } else if (context.dev && seedStrategy !== "skip") {
-      yield* Seed("Dev", {
-        mode: "dev",
+      yield* SeedDev("SeedDev", {
         version: Date.now().toString(),
       });
     }
