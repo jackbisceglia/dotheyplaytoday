@@ -1,10 +1,5 @@
 import * as NodeHttpServer from "@effect/platform-node/NodeHttpServer";
-import {
-  Api,
-  SubscriptionsLayer,
-  SubjectsLayer,
-  UsersLayer,
-} from "@dtpt/core";
+import { SubscriptionsLayer, SubjectsLayer, UsersLayer } from "@dtpt/core";
 import {
   createTables,
   layerTest,
@@ -15,13 +10,9 @@ import {
   HttpClientRequest,
   HttpRouter,
 } from "effect/unstable/http";
-import { HttpApiBuilder } from "effect/unstable/httpapi";
 
+import { HttpApiLayer } from "../index.js";
 import { makeRateLimiterLayer } from "../rate-limit/service.js";
-import { PingGroupLayer } from "../routes.ping.js";
-import { SignupGroupLayer } from "../routes.signup.js";
-import { SubjectsGroupLayer } from "../routes.subjects.js";
-import { UnsubscribeGroupLayer } from "../routes.unsubscribe.js";
 
 export function makeApiTestLayer(config: {
   readonly limit: number;
@@ -35,14 +26,7 @@ export function makeApiTestLayer(config: {
   ).pipe(Layer.provideMerge(layerTest));
 
   const ServerLayer = HttpRouter.serve(
-    HttpApiBuilder.layer(Api).pipe(
-      Layer.provide([
-        PingGroupLayer,
-        SignupGroupLayer,
-        SubjectsGroupLayer,
-        UnsubscribeGroupLayer,
-      ]),
-    ),
+    HttpApiLayer,
     { disableListenLog: true, disableLogger: true },
   ).pipe(
     Layer.provideMerge(NodeHttpServer.layerTest),

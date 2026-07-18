@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev:web": "pnpm @web dev",
-    "dev:api": "pnpm @api dev",
     "dev:infra": "alchemy dev alchemy.run.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",

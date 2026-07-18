@@ -15,7 +15,8 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - TypeScript and Effect v4 beta.
 - Astro on Cloudflare.
 - SQLite and Drizzle, with Cloudflare D1 when deployed.
-- Alchemy-provisioned D1 and notification worker.
+- Alchemy-provisioned D1, public API worker, and notification worker.
+- The API worker serves the shared Effect `HttpApi` contracts against D1.
 - Alchemy seed Actions import the registered catalog collections at deploy time. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
 - Resend email delivery and console dry runs.
