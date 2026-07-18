@@ -29,7 +29,7 @@ const DefaultSeedUsers = Effect.gen(function* () {
       subjectIds: [Teams.BostonRedSox.id],
       schedule: {
         _tag: "fixed_local_time",
-        sendAtSecondsLocal: 9 * 60 * 60,
+        sendAtSecondsLocal: 11 * 60 * 60 + 45 * 60,
       },
     },
   ]);

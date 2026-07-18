@@ -41,10 +41,6 @@
     "ws": "^8.21.0"
   },
   "pnpm": {
-    "overrides": {
-      "@distilled.cloud/cloudflare": "https://pkg.distilled.cloud/cloudflare/ef9c953",
-      "@distilled.cloud/core": "https://pkg.distilled.cloud/core/ef9c953"
-    },
     "onlyBuiltDependencies": [
       "better-sqlite3",
       "esbuild"

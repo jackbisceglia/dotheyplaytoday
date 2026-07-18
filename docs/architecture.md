@@ -21,6 +21,8 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Resend email delivery and console dry runs.
 - Typed Effect config at runtime boundaries.
 
+Production deploys load `.env.production` through `--env-file .env.production`.
+
 ## Testing and validation
 
 - Persistence and domain tests use the real lightweight SQLite path where practical.

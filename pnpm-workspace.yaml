@@ -8,7 +8,7 @@ catalog:
   "@effect/sql-d1": 4.0.0-beta.98
   "@effect/sql-sqlite-node": 4.0.0-beta.98
   "@effect/vitest": 4.0.0-beta.98
-  alchemy: https://pkg.ing/alchemy/1eef6b5
+  alchemy: 2.0.0-beta.63
   effect: 4.0.0-beta.98
   resend: ^6.9.1
 
