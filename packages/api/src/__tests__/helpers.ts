@@ -14,6 +14,10 @@ import {
 import { HttpApiLayer } from "../index.js";
 import { makeRateLimiterLayer } from "../rate-limit/service.js";
 
+const TestConfigLayer = ConfigProvider.layer(
+  ConfigProvider.fromUnknown({ PUBLIC_WEB_URL_BASE: "http://localhost" }),
+);
+
 export function makeApiTestLayer(config: {
   readonly limit: number;
   readonly window: number;
@@ -31,13 +35,7 @@ export function makeApiTestLayer(config: {
   ).pipe(
     Layer.provideMerge(NodeHttpServer.layerTest),
     Layer.provide(RuntimeLayer),
-    Layer.provide(
-      ConfigProvider.layer(
-        ConfigProvider.fromUnknown({
-          PUBLIC_WEB_URL_BASE: "http://localhost",
-        }),
-      ),
-    ),
+    Layer.provide(TestConfigLayer),
   );
 
   return Layer.mergeAll(RuntimeLayer, ServerLayer);
