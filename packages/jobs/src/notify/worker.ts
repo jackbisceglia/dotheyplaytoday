@@ -40,12 +40,15 @@ export default Cloudflare.Worker(
     dev: { port: Trigger.port, strictPort: true },
   },
   Effect.gen(function* () {
+    // Resources
+    const stack = yield* Stack;
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
 
+    // Configs
     yield* ResendConfig;
     yield* WebConfig;
-    const stack = yield* Stack;
 
+    // Layers
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));
 

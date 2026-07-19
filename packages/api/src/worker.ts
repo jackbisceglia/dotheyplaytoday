@@ -27,6 +27,7 @@ const WorkerLayer = Layer.merge(
   RateLimiterLayer,
 );
 
+// TODO: go back to function definition once fix lands
 export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   "ApiWorker",
   {
@@ -34,7 +35,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
   },
   Effect.gen(function* () {
-    // Cloudflare Resources
+    // Resources
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
 
     // Configs
