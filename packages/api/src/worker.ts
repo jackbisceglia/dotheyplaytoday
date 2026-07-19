@@ -10,19 +10,21 @@ import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/clien
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
 
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
-const ApiServicesLayer = Layer.mergeAll(
-  SubjectsLayer,
-  SubscriptionsLayer,
-  UsersLayer,
-).pipe(
+const ApiBaseLayer = pipe(
+  Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
+);
+
+const WorkerLayer = Layer.merge(
+  Cloudflare.D1.QueryDatabaseBinding,
+  RateLimiterLayer,
 );
 
 export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
@@ -32,35 +34,30 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
   },
   Effect.gen(function* () {
+    // Cloudflare Resources
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
 
+    // Configs
     yield* WebConfig;
 
-    // fetch rebuilds its layers per request; the rate limiter is built once
-    // here so its in-memory windows persist across requests.
-    const rateLimiter = yield* RateLimiter;
-
+    // Layers
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);
-    const ApiServicesLive = ApiServicesLayer.pipe(
-      Layer.provideMerge(DatabaseLayer),
-    );
-    const WorkerApiLayer = HttpApiLayer.pipe(
-      Layer.provide(ApiServicesLive),
+
+    const ApiWorkerLayer = HttpApiLayer.pipe(
+      Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
       Layer.provide(CloudflareHttpApiPlatformLayer),
     );
 
+    const rateLimiter = yield* RateLimiter;
+
     return {
       fetch: Effect.gen(function* () {
-        const handler = yield* HttpRouter.toHttpEffect(WorkerApiLayer).pipe(
-          Effect.orDie,
+        const handler = yield* Effect.orDie(
+          HttpRouter.toHttpEffect(ApiWorkerLayer),
         );
 
         return yield* handler;
       }).pipe(Effect.provideService(RateLimiter, rateLimiter)),
     };
-  }).pipe(
-    Effect.provide(
-      Layer.merge(Cloudflare.D1.QueryDatabaseBinding, RateLimiterLayer),
-    ),
-  ),
+  }).pipe(Effect.provide(WorkerLayer)),
 ) {}
