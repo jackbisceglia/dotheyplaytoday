@@ -1,27 +1,22 @@
 import * as NodeHttpServer from "@effect/platform-node/NodeHttpServer";
-import {
-  Api,
-  SubscriptionsLayer,
-  SubjectsLayer,
-  UsersLayer,
-} from "@dtpt/core";
+import { SubscriptionsLayer, SubjectsLayer, UsersLayer } from "@dtpt/core";
 import {
   createTables,
   layerTest,
 } from "@dtpt/core/lib/database/__tests__/setup";
-import { Config, Effect, Layer } from "effect";
+import { Config, ConfigProvider, Effect, Layer } from "effect";
 import {
   HttpClient,
   HttpClientRequest,
   HttpRouter,
 } from "effect/unstable/http";
-import { HttpApiBuilder } from "effect/unstable/httpapi";
 
+import { HttpApiLayer } from "../index.js";
 import { makeRateLimiterLayer } from "../rate-limit/service.js";
-import { PingGroupLayer } from "../routes.ping.js";
-import { SignupGroupLayer } from "../routes.signup.js";
-import { SubjectsGroupLayer } from "../routes.subjects.js";
-import { UnsubscribeGroupLayer } from "../routes.unsubscribe.js";
+
+const TestConfigLayer = ConfigProvider.layer(
+  ConfigProvider.fromUnknown({ PUBLIC_WEB_URL_BASE: "http://localhost" }),
+);
 
 export function makeApiTestLayer(config: {
   readonly limit: number;
@@ -35,18 +30,12 @@ export function makeApiTestLayer(config: {
   ).pipe(Layer.provideMerge(layerTest));
 
   const ServerLayer = HttpRouter.serve(
-    HttpApiBuilder.layer(Api).pipe(
-      Layer.provide([
-        PingGroupLayer,
-        SignupGroupLayer,
-        SubjectsGroupLayer,
-        UnsubscribeGroupLayer,
-      ]),
-    ),
+    HttpApiLayer,
     { disableListenLog: true, disableLogger: true },
   ).pipe(
     Layer.provideMerge(NodeHttpServer.layerTest),
     Layer.provide(RuntimeLayer),
+    Layer.provide(TestConfigLayer),
   );
 
   return Layer.mergeAll(RuntimeLayer, ServerLayer);

@@ -15,8 +15,6 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "pnpm --filter @dtpt/core build && tsx watch src/index.ts",
-    "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -24,11 +22,11 @@
   },
   "dependencies": {
     "@dtpt/core": "workspace:*",
-    "@effect/platform-node": "catalog:",
+    "alchemy": "catalog:",
     "effect": "catalog:"
   },
   "devDependencies": {
-    "@effect/vitest": "catalog:",
-    "tsx": "^4.21.0"
+    "@effect/platform-node": "catalog:",
+    "@effect/vitest": "catalog:"
   }
 }

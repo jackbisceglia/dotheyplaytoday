@@ -1,5 +1,5 @@
-import { Subjects } from "@dtpt/core";
 import { Api } from "@dtpt/core/contracts/api";
+import { Subjects } from "@dtpt/core/modules/subjects/service";
 import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 

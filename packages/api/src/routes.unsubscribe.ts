@@ -1,5 +1,6 @@
-import { UnsubscribeRateLimited, Users } from "@dtpt/core";
 import { Api } from "@dtpt/core/contracts/api";
+import { UnsubscribeRateLimited } from "@dtpt/core/contracts/unsubscribe";
+import { Users } from "@dtpt/core/modules/users/service";
 import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 

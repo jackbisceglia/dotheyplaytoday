@@ -1,11 +1,9 @@
-import {
-  SignupRateLimited,
-  SubjectCapacityReached,
-  SubscriptionPolicy,
-  Subscriptions,
-  Users,
-} from "@dtpt/core";
 import { Api } from "@dtpt/core/contracts/api";
+import { SignupRateLimited } from "@dtpt/core/contracts/signup";
+import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
+import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
+import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
+import { Users } from "@dtpt/core/modules/users/service";
 import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
