@@ -20,7 +20,7 @@ const CorsLayer = Layer.unwrap(
   }),
 );
 
-export const HttpApiLayer = HttpApiBuilder.layer(Api).pipe(
+const ApiHandlersLayer = HttpApiBuilder.layer(Api).pipe(
   Layer.provide([
     PingGroupLayer,
     SignupGroupLayer,
@@ -29,4 +29,4 @@ export const HttpApiLayer = HttpApiBuilder.layer(Api).pipe(
   ]),
 );
 
-export const ApiRouterLayer = Layer.mergeAll(HttpApiLayer, CorsLayer);
+export const HttpApiLayer = Layer.mergeAll(ApiHandlersLayer, CorsLayer);

@@ -4,7 +4,7 @@ import {
   createTables,
   layerTest,
 } from "@dtpt/core/lib/database/__tests__/setup";
-import { Config, Effect, Layer } from "effect";
+import { Config, ConfigProvider, Effect, Layer } from "effect";
 import {
   HttpClient,
   HttpClientRequest,
@@ -31,6 +31,13 @@ export function makeApiTestLayer(config: {
   ).pipe(
     Layer.provideMerge(NodeHttpServer.layerTest),
     Layer.provide(RuntimeLayer),
+    Layer.provide(
+      ConfigProvider.layer(
+        ConfigProvider.fromUnknown({
+          PUBLIC_WEB_URL_BASE: "http://localhost",
+        }),
+      ),
+    ),
   );
 
   return Layer.mergeAll(RuntimeLayer, ServerLayer);

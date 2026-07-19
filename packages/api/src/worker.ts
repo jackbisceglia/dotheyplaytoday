@@ -9,11 +9,11 @@ import {
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/clients/d1/layer";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
-import { makeCloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { Effect, Layer } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
 
-import { ApiRouterLayer } from "./index.js";
+import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
 const ApiDomainLayer = Layer.mergeAll(
@@ -40,26 +40,30 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
 
     // fetch rebuilds its layers per request; the rate limiter is built once
     // here so its in-memory windows persist across requests.
-    const rateLimiter = yield* RateLimiter.pipe(
-      Effect.provide(RateLimiterLayer),
-    );
+    const rateLimiter = yield* RateLimiter;
 
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);
+    const ApiServicesLayer = Layer.merge(
+      ApiDomainServicesLayer.pipe(Layer.provideMerge(DatabaseLayer)),
+      Layer.succeed(RateLimiter, rateLimiter),
+    );
+    const WorkerApiLayer = HttpApiLayer.pipe(
+      Layer.provide(ApiServicesLayer),
+      Layer.provide(CloudflareHttpApiPlatformLayer),
+    );
 
     return {
       fetch: Effect.gen(function* () {
-        const handler = yield* HttpRouter.toHttpEffect(
-          ApiRouterLayer.pipe(
-            Layer.provide([
-              ApiDomainServicesLayer.pipe(Layer.provideMerge(DatabaseLayer)),
-              Layer.succeed(RateLimiter, rateLimiter),
-            ]),
-            Layer.provide(makeCloudflareHttpApiPlatformLayer()),
-          ),
-        ).pipe(Effect.orDie);
+        const handler = yield* HttpRouter.toHttpEffect(WorkerApiLayer).pipe(
+          Effect.orDie,
+        );
 
         return yield* handler;
       }),
     };
-  }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseBinding)),
+  }).pipe(
+    Effect.provide(
+      Layer.merge(Cloudflare.D1.QueryDatabaseBinding, RateLimiterLayer),
+    ),
+  ),
 ) {}
