@@ -4,6 +4,7 @@ import {
   SubjectsLayer,
   SubscriptionsLayer,
   UsersLayer,
+  WebConfig,
 } from "@dtpt/core";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/clients/d1/layer";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
@@ -34,6 +35,8 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   },
   Effect.gen(function* () {
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+
+    yield* WebConfig;
 
     // fetch rebuilds its layers per request; the rate limiter is built once
     // here so its in-memory windows persist across requests.
