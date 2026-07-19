@@ -16,13 +16,11 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter";
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
-const ApiDomainLayer = Layer.mergeAll(
+const ApiServicesLayer = Layer.mergeAll(
   SubjectsLayer,
   SubscriptionsLayer,
   UsersLayer,
-);
-
-const ApiDomainServicesLayer = ApiDomainLayer.pipe(
+).pipe(
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );
@@ -43,12 +41,11 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     const rateLimiter = yield* RateLimiter;
 
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);
-    const ApiServicesLayer = Layer.merge(
-      ApiDomainServicesLayer.pipe(Layer.provideMerge(DatabaseLayer)),
-      Layer.succeed(RateLimiter, rateLimiter),
+    const ApiServicesLive = ApiServicesLayer.pipe(
+      Layer.provideMerge(DatabaseLayer),
     );
     const WorkerApiLayer = HttpApiLayer.pipe(
-      Layer.provide(ApiServicesLayer),
+      Layer.provide(ApiServicesLive),
       Layer.provide(CloudflareHttpApiPlatformLayer),
     );
 
@@ -59,7 +56,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
         );
 
         return yield* handler;
-      }),
+      }).pipe(Effect.provideService(RateLimiter, rateLimiter)),
     };
   }).pipe(
     Effect.provide(

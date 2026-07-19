@@ -20,13 +20,14 @@ const CorsLayer = Layer.unwrap(
   }),
 );
 
-const ApiHandlersLayer = HttpApiBuilder.layer(Api).pipe(
-  Layer.provide([
-    PingGroupLayer,
-    SignupGroupLayer,
-    SubjectsGroupLayer,
-    UnsubscribeGroupLayer,
-  ]),
+export const HttpApiLayer = Layer.mergeAll(
+  HttpApiBuilder.layer(Api).pipe(
+    Layer.provide([
+      PingGroupLayer,
+      SignupGroupLayer,
+      SubjectsGroupLayer,
+      UnsubscribeGroupLayer,
+    ]),
+  ),
+  CorsLayer,
 );
-
-export const HttpApiLayer = Layer.mergeAll(ApiHandlersLayer, CorsLayer);
