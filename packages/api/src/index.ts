@@ -1,4 +1,5 @@
-import { Api, WebUrl } from "@dtpt/core";
+import { Api } from "@dtpt/core/contracts/api";
+import { WebUrl } from "@dtpt/core/lib/config/web";
 import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { HttpApiBuilder } from "effect/unstable/httpapi";

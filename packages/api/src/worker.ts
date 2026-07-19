@@ -1,15 +1,13 @@
 import * as Cloudflare from "alchemy/Cloudflare";
-import {
-  IdLayer,
-  SubjectsLayer,
-  SubscriptionsLayer,
-  UsersLayer,
-  WebConfig,
-} from "@dtpt/core";
+import { WebConfig } from "@dtpt/core/lib/config/web";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/clients/d1/layer";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import { IdLayer } from "@dtpt/core/lib/id/service";
+import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
+import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
+import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
 
@@ -33,6 +31,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   {
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+    dev: { port: 3001, strictPort: true },
   },
   Effect.gen(function* () {
     // Resources
