@@ -6,8 +6,8 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
 import { WebConfig } from "@dtpt/core/lib/config/web";
-import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/clients/d1/layer";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
+import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service";

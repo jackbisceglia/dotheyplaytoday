@@ -1,8 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
 
-import { createD1DatabaseLayer } from "../clients/d1/layer.js";
-import { Database } from "../service.js";
+import { createD1DatabaseLayer, Database } from "../service.js";
 
 type D1DatabaseBinding = Parameters<typeof createD1DatabaseLayer>[0];
 

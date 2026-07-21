@@ -1,12 +1,27 @@
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
+import * as SqliteNodeClient from "@effect/sql-sqlite-node/SqliteClient";
+import * as SQLiteNodeDrizzle from "drizzle-orm/effect-sqlite-node";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { Effect, Layer } from "effect";
 
-import { createNodeDatabaseLayer } from "../clients/node/layer.js";
+import { relations } from "../definitions/relations.js";
+import { Database } from "../service.js";
 import { IdLayer } from "../../id/service.js";
 
+const SqliteClientLayer = SqliteNodeClient.layer({ filename: ":memory:" });
+const DatabaseLayer = Layer.effect(
+  Database,
+  Effect.gen(function* () {
+    const sql = yield* SqlClient;
+
+    yield* sql`PRAGMA foreign_keys = ON`;
+
+    return yield* SQLiteNodeDrizzle.makeWithDefaults({ relations });
+  }),
+).pipe(Layer.provideMerge(SqliteClientLayer));
+
 export const layerTest = Layer.mergeAll(
-  createNodeDatabaseLayer(":memory:"),
+  DatabaseLayer,
   IdLayer.pipe(Layer.provide(NodeCrypto.layer)),
 );
 
