@@ -1,5 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
-import { WebConfig } from "@dtpt/core/lib/config/web";
+import { AlchemyContext, Stack } from "alchemy";
+import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -32,13 +33,18 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: 3001, strictPort: true },
+    domain: Stack.useSync((stack) => getServiceDomain("api", stack.stage)),
+    // TODO: Use the Alchemy web URL directly instead of threading it through env
+    // once the web app is managed by Alchemy.
+    env: AlchemyContext.useSync((context) => ({
+      PUBLIC_WEB_URL_BASE: context.dev
+        ? "http://localhost:3000"
+        : "https://dotheyplay.today",
+    })),
   },
   Effect.gen(function* () {
     // Resources
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
-
-    // Configs
-    yield* WebConfig;
 
     // Layers
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);

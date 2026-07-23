@@ -1,11 +1,12 @@
 import * as Cloudflare from "alchemy/Cloudflare";
+import { AlchemyContext } from "alchemy";
 import { Stack } from "alchemy/Stack";
 import { Boolean, Effect, Layer, Option, pipe, Result } from "effect";
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
-import { WebConfig } from "@dtpt/core/lib/config/web";
+import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -38,6 +39,12 @@ export default Cloudflare.Worker(
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: Trigger.port, strictPort: true },
+    domain: Stack.useSync((stack) => getServiceDomain("jobs", stack.stage)),
+    env: AlchemyContext.useSync((context) => ({
+      PUBLIC_WEB_URL_BASE: context.dev
+        ? "http://localhost:3000"
+        : "https://dotheyplay.today",
+    })),
   },
   Effect.gen(function* () {
     // Resources
@@ -46,7 +53,6 @@ export default Cloudflare.Worker(
 
     // Configs
     yield* ResendConfig;
-    yield* WebConfig;
 
     // Layers
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);
