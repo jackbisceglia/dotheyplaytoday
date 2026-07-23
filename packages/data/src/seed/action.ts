@@ -5,8 +5,8 @@ import {
   SubscriptionsLayer,
   UsersLayer,
 } from "@dtpt/core";
-import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/clients/d1/layer";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
+import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { Action } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";

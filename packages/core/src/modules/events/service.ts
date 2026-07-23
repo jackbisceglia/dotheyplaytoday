@@ -216,7 +216,7 @@ export const EventsLayer = Layer.effect(
         .where(eq(participantsTable.eventId, eventId))
         .pipe(
           Effect.catchTag(
-            "SqlError",
+            "EffectDrizzleQueryError",
             toWriteError("Events.setParticipants", { eventId }),
           ),
         );
@@ -228,7 +228,7 @@ export const EventsLayer = Layer.effect(
         .values(insertableParticipants)
         .pipe(
           Effect.catchTag(
-            "SqlError",
+            "EffectDrizzleQueryError",
             toWriteError("Events.setParticipants", { eventId }),
           ),
         );

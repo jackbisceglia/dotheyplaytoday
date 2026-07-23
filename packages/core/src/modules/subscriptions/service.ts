@@ -184,7 +184,7 @@ export const SubscriptionsLayer = Layer.effect(
           .where(eq(subscriptionsTable.userId, input.user.id))
           .pipe(
             Effect.catchTag(
-              "SqlError",
+              "EffectDrizzleQueryError",
               toWriteError("Subscriptions.replaceForUser", {
                 userId: input.user.id,
                 subscriptionCount: insertableSubscriptions.length,
@@ -199,7 +199,7 @@ export const SubscriptionsLayer = Layer.effect(
           .values(insertableSubscriptions)
           .pipe(
             Effect.catchTag(
-              "SqlError",
+              "EffectDrizzleQueryError",
               toWriteError("Subscriptions.replaceForUser", {
                 userId: input.user.id,
                 subscriptionCount: insertableSubscriptions.length,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { eq } from "drizzle-orm";
+import { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Array, DateTime, Effect, Layer, Schema } from "effect";
 
 import { DatabaseWriteError } from "../../../lib/database/errors.js";
@@ -301,6 +302,10 @@ describe("Events service", () => {
         }
         expect(error.operation).toBe("Events.setParticipants");
         expect(error.metadata).toEqual({ eventId: missingEventId });
+        expect(error.cause).toBeInstanceOf(EffectDrizzleQueryError);
+        if (!(error.cause instanceof EffectDrizzleQueryError)) return;
+        expect(error.cause.query).toContain("insert into");
+        expect(error.cause.params).toBeInstanceOf(globalThis.Array);
         expect(rows).toHaveLength(0);
       }).pipe(Effect.provide(layerEventsTest)),
   );
