@@ -26,13 +26,15 @@ export const reset = Effect.fn("DataSeed.reset")(
     yield* database.delete(eventsTable);
     yield* database.delete(subjectsTable);
   },
-  Effect.catchTag("SqlError", (cause) =>
-    Effect.fail(
-      new DatabaseWriteError({
-        operation: "DataSeed.reset",
-        cause,
-        metadata: { mode: "dev" },
-      }),
-    ),
+  Effect.catchTag(
+    ["SqlError", "EffectDrizzleQueryError"],
+    (cause) =>
+      Effect.fail(
+        new DatabaseWriteError({
+          operation: "DataSeed.reset",
+          cause,
+          metadata: { mode: "dev" },
+        }),
+      ),
   ),
 );
