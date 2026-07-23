@@ -39,7 +39,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     env: AlchemyContext.useSync((context) => ({
       PUBLIC_WEB_URL_BASE: context.dev
         ? "http://localhost"
-        : "https://dotheyplay.today",
+        : `https://${getServiceDomain("web", "production")}`,
     })),
   },
   Effect.gen(function* () {

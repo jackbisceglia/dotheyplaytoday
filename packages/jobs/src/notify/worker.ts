@@ -43,7 +43,7 @@ export default Cloudflare.Worker(
     env: AlchemyContext.useSync((context) => ({
       PUBLIC_WEB_URL_BASE: context.dev
         ? "http://localhost"
-        : "https://dotheyplay.today",
+        : `https://${getServiceDomain("web", "production")}`,
     })),
   },
   Effect.gen(function* () {
