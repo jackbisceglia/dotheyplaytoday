@@ -38,7 +38,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // once the web app is managed by Alchemy.
     env: AlchemyContext.useSync((context) => ({
       PUBLIC_WEB_URL_BASE: context.dev
-        ? "http://localhost:3000"
+        ? "http://localhost"
         : "https://dotheyplay.today",
     })),
   },

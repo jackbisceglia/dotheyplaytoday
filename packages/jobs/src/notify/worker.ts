@@ -42,7 +42,7 @@ export default Cloudflare.Worker(
     domain: Stack.useSync((stack) => getServiceDomain("jobs", stack.stage)),
     env: AlchemyContext.useSync((context) => ({
       PUBLIC_WEB_URL_BASE: context.dev
-        ? "http://localhost:3000"
+        ? "http://localhost"
         : "https://dotheyplay.today",
     })),
   },
