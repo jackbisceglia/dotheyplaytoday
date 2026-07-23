@@ -1,6 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { AlchemyContext, Stack } from "alchemy";
-import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
+import { getServiceDomain, url } from "@dtpt/core/lib/alchemy/domain";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -38,8 +38,8 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // once the web app is managed by Alchemy.
     env: AlchemyContext.useSync((context) => ({
       PUBLIC_WEB_URL_BASE: context.dev
-        ? "http://localhost"
-        : `https://${getServiceDomain("web", "production")}`,
+        ? url("localhost", "local")
+        : url(getServiceDomain("web", "production")),
     })),
   },
   Effect.gen(function* () {

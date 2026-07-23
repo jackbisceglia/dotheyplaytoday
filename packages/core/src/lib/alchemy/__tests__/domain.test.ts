@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getServiceDomain } from "../domain.js";
+import { getServiceDomain, url } from "../domain.js";
 
 describe("service domains", () => {
   it("uses stable production domains", () => {
@@ -22,5 +22,10 @@ describe("service domains", () => {
 
   it("keeps the web app on the root domain outside local Vite development", () => {
     expect(getServiceDomain("web", "staging")).toBe("dotheyplay.today");
+  });
+
+  it("builds secure deployed and local service URLs", () => {
+    expect(url("dotheyplay.today")).toBe("https://dotheyplay.today");
+    expect(url("localhost", "local")).toBe("http://localhost");
   });
 });

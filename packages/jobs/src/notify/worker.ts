@@ -6,7 +6,7 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
-import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
+import { getServiceDomain, url } from "@dtpt/core/lib/alchemy/domain";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -42,8 +42,8 @@ export default Cloudflare.Worker(
     domain: Stack.useSync((stack) => getServiceDomain("jobs", stack.stage)),
     env: AlchemyContext.useSync((context) => ({
       PUBLIC_WEB_URL_BASE: context.dev
-        ? "http://localhost"
-        : `https://${getServiceDomain("web", "production")}`,
+        ? url("localhost", "local")
+        : url(getServiceDomain("web", "production")),
     })),
   },
   Effect.gen(function* () {

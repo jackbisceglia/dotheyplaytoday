@@ -9,11 +9,15 @@ type Service = "api" | "jobs" | "web";
 
 export const getServiceDomain = (service: Service, stage: string) => {
   const isWeb = service === "web";
+  const subdomainPrefix = isWeb ? undefined : getSubdomainPrefix(stage);
 
   // The Vite job will not have a domain in dev; deployed web uses the root domain.
   return StringParts()
-    .addNullable(isWeb ? undefined : getSubdomainPrefix(stage))
-    .addNullable(isWeb ? undefined : service)
+    .addNullable(subdomainPrefix)
+    .addIf(!isWeb, service)
     .add(domain)
     .make(".");
 };
+
+export const url = (domain: string, mode?: "local") =>
+  `${mode === "local" ? "http" : "https"}://${domain}`;
