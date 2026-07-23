@@ -1,4 +1,5 @@
 import * as Cloudflare from "alchemy/Cloudflare";
+import * as Output from "alchemy/Output";
 import { AlchemyContext } from "alchemy";
 import { Stack } from "alchemy/Stack";
 import { Boolean, Effect, Layer, Option, pipe, Result } from "effect";
@@ -39,12 +40,18 @@ export default Cloudflare.Worker(
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: Trigger.port, strictPort: true },
-    domain: Stack.useSync((stack) => getServiceDomain("jobs", stack.stage)),
-    env: AlchemyContext.useSync((context) => ({
-      PUBLIC_WEB_URL_BASE: context.dev
-        ? url("localhost", "http")
-        : url(getServiceDomain("web", "production")),
-    })),
+    domain: new Output.EffectExpr(Output.VoidExpr, () =>
+      Stack.useSync((stack) => getServiceDomain("jobs", stack.stage)),
+    ),
+    env: {
+      PUBLIC_WEB_URL_BASE: new Output.EffectExpr(Output.VoidExpr, () =>
+        AlchemyContext.useSync((context) =>
+          context.dev
+            ? url("localhost", "http")
+            : url(getServiceDomain("web", "production")),
+        ),
+      ),
+    },
   },
   Effect.gen(function* () {
     // Resources

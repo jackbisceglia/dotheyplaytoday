@@ -1,4 +1,5 @@
 import * as Cloudflare from "alchemy/Cloudflare";
+import * as Output from "alchemy/Output";
 import { AlchemyContext, Stack } from "alchemy";
 import { getServiceDomain, url } from "@dtpt/core/lib/alchemy/domain";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
@@ -26,21 +27,26 @@ const WorkerLayer = Layer.merge(
   RateLimiterLayer,
 );
 
-// TODO: go back to function definition once fix lands
 export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   "ApiWorker",
   {
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: 3001, strictPort: true },
-    domain: Stack.useSync((stack) => getServiceDomain("api", stack.stage)),
-    // TODO: Use the Alchemy web URL directly instead of threading it through env
-    // once the web app is managed by Alchemy.
-    env: AlchemyContext.useSync((context) => ({
-      PUBLIC_WEB_URL_BASE: context.dev
-        ? url("localhost", "http")
-        : url(getServiceDomain("web", "production")),
-    })),
+    domain: new Output.EffectExpr(Output.VoidExpr, () =>
+      Stack.useSync((stack) => getServiceDomain("api", stack.stage)),
+    ),
+    // TODO: Use the Alchemy web URL directly instead of threading it through
+    // env once the web app is managed by Alchemy.
+    env: {
+      PUBLIC_WEB_URL_BASE: new Output.EffectExpr(Output.VoidExpr, () =>
+        AlchemyContext.useSync((context) =>
+          context.dev
+            ? url("localhost", "http")
+            : url(getServiceDomain("web", "production")),
+        ),
+      ),
+    },
   },
   Effect.gen(function* () {
     // Resources
