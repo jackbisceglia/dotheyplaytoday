@@ -19,5 +19,5 @@ export const getServiceDomain = (service: Service, stage: string) => {
     .make(".");
 };
 
-export const url = (domain: string, mode?: "local") =>
-  `${mode === "local" ? "http" : "https"}://${domain}`;
+export const url = (domain: string, protocol: "http" | "https" = "https") =>
+  `${protocol}://${domain}`;

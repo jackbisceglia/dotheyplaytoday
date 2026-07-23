@@ -26,6 +26,6 @@ describe("service domains", () => {
 
   it("builds secure deployed and local service URLs", () => {
     expect(url("dotheyplay.today")).toBe("https://dotheyplay.today");
-    expect(url("localhost", "local")).toBe("http://localhost");
+    expect(url("localhost", "http")).toBe("http://localhost");
   });
 });
