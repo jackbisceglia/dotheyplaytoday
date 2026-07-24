@@ -7,10 +7,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
 import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
-import {
-  WebConfigAlchemy,
-  WebConfigAlchemyLayer,
-} from "@dtpt/core/lib/config/web";
+import { WebConfigAlchemy } from "@dtpt/core/lib/config/web";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -67,13 +64,7 @@ export default Cloudflare.Worker(
           yield* Effect.logInfo("notify job: scheduled");
 
           yield* notify({}).pipe(
-            Effect.provide(
-              Layer.mergeAll(
-                NotifyLayer,
-                EmailChannelLayer,
-                WebConfigAlchemyLayer,
-              ),
-            ),
+            Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
           );
         },
         Effect.tapCause((cause) =>
@@ -114,9 +105,7 @@ export default Cloudflare.Worker(
           }),
         );
 
-        yield* notify(body).pipe(
-          Effect.provide(Layer.merge(NotifyRunLayer, WebConfigAlchemyLayer)),
-        );
+        yield* notify(body).pipe(Effect.provide(NotifyRunLayer));
 
         return yield* HttpServerResponse.json({ ok: true });
       }).pipe(

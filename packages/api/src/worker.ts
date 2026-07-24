@@ -2,10 +2,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as Output from "alchemy/Output";
 import { Stack } from "alchemy";
 import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
-import {
-  WebConfigAlchemy,
-  WebConfigAlchemyLayer,
-} from "@dtpt/core/lib/config/web";
+import { WebConfigAlchemy } from "@dtpt/core/lib/config/web";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -54,7 +51,6 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     const ApiWorkerLayer = HttpApiLayer.pipe(
       Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
       Layer.provide(CloudflareHttpApiPlatformLayer),
-      Layer.provide(WebConfigAlchemyLayer),
     );
 
     const rateLimiter = yield* RateLimiter;
