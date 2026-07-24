@@ -1,13 +1,16 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Output from "alchemy/Output";
-import { AlchemyContext } from "alchemy";
 import { Stack } from "alchemy/Stack";
 import { Boolean, Effect, Layer, Option, pipe, Result } from "effect";
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
-import { getServiceDomain, url } from "@dtpt/core/lib/alchemy/domain";
+import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
+import {
+  WebConfigAlchemy,
+  WebConfigAlchemyLayer,
+} from "@dtpt/core/lib/config/web";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -43,15 +46,6 @@ export default Cloudflare.Worker(
     domain: new Output.EffectExpr(Output.VoidExpr, () =>
       Stack.useSync((stack) => getServiceDomain("jobs", stack.stage)),
     ),
-    env: {
-      PUBLIC_WEB_URL_BASE: new Output.EffectExpr(Output.VoidExpr, () =>
-        AlchemyContext.useSync((context) =>
-          context.dev
-            ? url("localhost", "http")
-            : url(getServiceDomain("web", "production")),
-        ),
-      ),
-    },
   },
   Effect.gen(function* () {
     // Resources
@@ -60,6 +54,7 @@ export default Cloudflare.Worker(
 
     // Configs
     yield* ResendConfig;
+    yield* WebConfigAlchemy;
 
     // Layers
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);
@@ -72,7 +67,13 @@ export default Cloudflare.Worker(
           yield* Effect.logInfo("notify job: scheduled");
 
           yield* notify({}).pipe(
-            Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
+            Effect.provide(
+              Layer.mergeAll(
+                NotifyLayer,
+                EmailChannelLayer,
+                WebConfigAlchemyLayer,
+              ),
+            ),
           );
         },
         Effect.tapCause((cause) =>
@@ -113,7 +114,9 @@ export default Cloudflare.Worker(
           }),
         );
 
-        yield* notify(body).pipe(Effect.provide(NotifyRunLayer));
+        yield* notify(body).pipe(
+          Effect.provide(Layer.merge(NotifyRunLayer, WebConfigAlchemyLayer)),
+        );
 
         return yield* HttpServerResponse.json({ ok: true });
       }).pipe(

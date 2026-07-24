@@ -1,5 +1,8 @@
-import { Config, Effect } from "effect";
+import { Stack } from "alchemy";
+import { Config, ConfigProvider, Effect, Layer } from "effect";
 
+import { getServiceDomain, url } from "../alchemy/domain.js";
+import { isDevStage } from "../alchemy/stage.js";
 import { buildServiceUrl } from "../url.js";
 
 export type WebConfig = Config.Success<typeof WebConfig>;
@@ -7,6 +10,24 @@ export const WebConfig = Config.all({
   baseUrl: Config.string("PUBLIC_WEB_URL_BASE"),
   port: Config.port("PUBLIC_WEB_URL_PORT").pipe(Config.option),
 });
+
+export const WebConfigAlchemyLayer = Layer.unwrap(
+  Effect.gen(function* () {
+    const stack = yield* Stack;
+    const baseUrl = isDevStage(stack.stage)
+      ? url("localhost", "http")
+      : url(getServiceDomain("web", stack.stage));
+
+    return ConfigProvider.layerAdd(
+      ConfigProvider.fromUnknown({ PUBLIC_WEB_URL_BASE: baseUrl }),
+      { asPrimary: true },
+    );
+  }),
+);
+
+export const WebConfigAlchemy = WebConfig.pipe(
+  Effect.provide(WebConfigAlchemyLayer),
+);
 
 export const WebUrl = Effect.gen(function* () {
   const config = yield* WebConfig;

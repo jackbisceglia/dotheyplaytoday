@@ -1,7 +1,11 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Output from "alchemy/Output";
-import { AlchemyContext, Stack } from "alchemy";
-import { getServiceDomain, url } from "@dtpt/core/lib/alchemy/domain";
+import { Stack } from "alchemy";
+import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
+import {
+  WebConfigAlchemy,
+  WebConfigAlchemyLayer,
+} from "@dtpt/core/lib/config/web";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -36,21 +40,13 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     domain: new Output.EffectExpr(Output.VoidExpr, () =>
       Stack.useSync((stack) => getServiceDomain("api", stack.stage)),
     ),
-    // TODO: Use the Alchemy web URL directly instead of threading it through
-    // env once the web app is managed by Alchemy.
-    env: {
-      PUBLIC_WEB_URL_BASE: new Output.EffectExpr(Output.VoidExpr, () =>
-        AlchemyContext.useSync((context) =>
-          context.dev
-            ? url("localhost", "http")
-            : url(getServiceDomain("web", "production")),
-        ),
-      ),
-    },
   },
   Effect.gen(function* () {
     // Resources
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+
+    // Configs
+    yield* WebConfigAlchemy;
 
     // Layers
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);
@@ -58,6 +54,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     const ApiWorkerLayer = HttpApiLayer.pipe(
       Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
       Layer.provide(CloudflareHttpApiPlatformLayer),
+      Layer.provide(WebConfigAlchemyLayer),
     );
 
     const rateLimiter = yield* RateLimiter;

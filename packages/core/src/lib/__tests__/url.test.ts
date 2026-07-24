@@ -1,9 +1,27 @@
+import { Stack } from "alchemy";
 import { describe, expect, it } from "@effect/vitest";
-import { ConfigProvider, Effect, Option } from "effect";
+import { ConfigProvider, Effect, Layer, Option } from "effect";
 
 import { ApiUrl, ServerBoundPort } from "../config/api.js";
-import { WebUrl } from "../config/web.js";
+import { WebConfigAlchemyLayer, WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
+
+const webConfigAlchemyLayer = (
+  stage: string,
+  env: Record<string, string> = {},
+) =>
+  WebConfigAlchemyLayer.pipe(
+    Layer.provide(ConfigProvider.layer(ConfigProvider.fromUnknown(env))),
+    Layer.provide(
+      Layer.succeed(Stack, {
+        name: "dotheyplaytoday",
+        stage,
+        resources: {},
+        bindings: {},
+        actions: {},
+      }),
+    ),
+  );
 
 describe("url config", () => {
   it("builds service urls from base urls and optional ports", () => {
@@ -60,6 +78,24 @@ describe("url config", () => {
         ),
       ),
     ),
+  );
+
+  it.effect("uses the Alchemy stage for the web base and configured port", () =>
+    Effect.gen(function* () {
+      const devUrl = yield* WebUrl.pipe(
+        Effect.provide(
+          webConfigAlchemyLayer("dev_jack", {
+            PUBLIC_WEB_URL_PORT: "4321",
+          }),
+        ),
+      );
+      const productionUrl = yield* WebUrl.pipe(
+        Effect.provide(webConfigAlchemyLayer("production")),
+      );
+
+      expect(devUrl).toBe("http://localhost:4321");
+      expect(productionUrl).toBe("https://dotheyplay.today");
+    }),
   );
 
   it.effect("requires api and web URL bases", () =>
