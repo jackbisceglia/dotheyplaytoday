@@ -3,21 +3,25 @@ import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer, Option } from "effect";
 
 import { ApiUrl, ServerBoundPort } from "../config/api.js";
-import { WebConfigAlchemy, WebUrl } from "../config/web.js";
+import { WebConfig, WebConfigAlchemy, WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
 
 const webConfigAlchemy = (stage: string, env: Record<string, string>) =>
-  WebConfigAlchemy.pipe(
+  WebConfig.pipe(
     Effect.provide(
-      Layer.mergeAll(
-        ConfigProvider.layer(ConfigProvider.fromUnknown(env)),
-        Layer.succeed(Stack, {
-          name: "dotheyplaytoday",
-          stage,
-          resources: {},
-          bindings: {},
-          actions: {},
-        }),
+      WebConfigAlchemy.pipe(
+        Layer.provide(
+          Layer.mergeAll(
+            ConfigProvider.layer(ConfigProvider.fromUnknown(env)),
+            Layer.succeed(Stack, {
+              name: "dotheyplaytoday",
+              stage,
+              resources: {},
+              bindings: {},
+              actions: {},
+            }),
+          ),
+        ),
       ),
     ),
   );

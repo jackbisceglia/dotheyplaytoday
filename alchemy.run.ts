@@ -4,6 +4,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as Effect from "effect/Effect";
 
 import ApiWorker from "./packages/api/dist/worker.js";
+import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
 import { D1DatabaseResource } from "./packages/core/dist/lib/database/clients/d1/resource.js";
 import { SeedDev, SeedProduction } from "./packages/data/dist/seed/action.js";
 import {
@@ -40,5 +41,5 @@ export default Alchemy.Stack(
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
     };
-  }),
+  }).pipe(Effect.provide(WebConfigAlchemy)),
 );

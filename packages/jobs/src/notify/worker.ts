@@ -6,7 +6,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
 import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
-import { WebConfigAlchemy } from "@dtpt/core/lib/config/web";
+import { WebConfig } from "@dtpt/core/lib/config/web";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -48,7 +48,7 @@ export default Cloudflare.Worker(
 
     // Configs
     yield* ResendConfig;
-    yield* WebConfigAlchemy;
+    yield* WebConfig;
 
     // Layers
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);

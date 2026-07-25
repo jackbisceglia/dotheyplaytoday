@@ -1,7 +1,7 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Stack } from "alchemy";
 import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
-import { WebConfigAlchemy } from "@dtpt/core/lib/config/web";
+import { WebConfig } from "@dtpt/core/lib/config/web";
 import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
 import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -40,7 +40,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
 
     // Configs
-    yield* WebConfigAlchemy;
+    yield* WebConfig;
 
     // Layers
     const DatabaseLayer = createD1DatabaseLayerFromResource(database);
