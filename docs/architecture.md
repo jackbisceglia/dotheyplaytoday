@@ -23,6 +23,10 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Resend email delivery and console dry runs.
 - Typed Effect config at runtime boundaries.
 
+Service URL wiring remains transitional until the Web application is managed by
+Alchemy. See [Alchemy service URL wiring](./alchemy-service-urls.md) for the
+current limitation and migration design.
+
 Production deploys load `.env.production` through `--env-file .env.production`.
 
 ## Testing and validation
