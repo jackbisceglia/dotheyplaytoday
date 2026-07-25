@@ -14,19 +14,69 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 
 - TypeScript and Effect v4 beta.
 - Astro on Cloudflare.
-- SQLite and Drizzle, with Cloudflare D1 when deployed.
-- Alchemy-provisioned D1, public API worker, and notification worker.
-- The API worker serves the shared Effect `HttpApi` contracts against D1.
-- Alchemy seed Actions import the registered catalog collections at deploy time. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
+- PlanetScale PostgreSQL and Drizzle, connected to Workers through Cloudflare Hyperdrive V1.
+- Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public API worker, and notification worker.
+- The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
+- Hyperdrive uses the PlanetScale role's direct PostgreSQL origin, verifies TLS, starts with an origin connection limit of five, and has query caching disabled.
+- Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
 - Resend email delivery and console dry runs.
 - Typed Effect config at runtime boundaries.
 
 Production deploys load `.env.production` through `--env-file .env.production`.
 
+### Database topology and ordering
+
+The exact `production` Alchemy stage owns one PlanetScale database named
+`dotheyplaytoday`. Its `production` default branch is the protected production
+branch. Both the database and that branch are retained when `alchemy destroy`
+runs. Non-production stages use an Alchemy cross-stage reference to the same
+database and own generated, isolated development branches forked from
+`production`; those development resources may be destroyed normally.
+
+The resource dependency graph is:
+
+1. PlanetScale database (production-owned)
+2. Stage branch
+3. Checked-in PostgreSQL migrations
+4. Read/write runtime role
+5. Hyperdrive connection
+6. API and notification Worker bindings
+7. Stage-appropriate seed Action
+
+PostgreSQL migrations live in `packages/data/migrations/postgres/`. They are
+ordered, immutable SQL files applied transactionally by Alchemy with temporary
+migration authority. Runtime roles inherit only `pg_read_all_data` and
+`pg_write_all_data`. Runtime schema creation is not part of application or seed
+behavior.
+
+There is no automated D1 data transfer. Catalog and event data are rebuilt from
+checked-in seeds, and development seed data is recreated by its normal reset.
+The current production owner account must be recreated manually after cutover.
+The historical D1 migration remains checked in as evidence of the previous
+schema.
+
 ## Testing and validation
 
-- Persistence and domain tests use the real lightweight SQLite path where practical.
+- Schema-only and domain-only tests continue to run locally.
+- Legacy SQLite-backed core persistence, API route, and seed suites are retained as `*.sqlite.test.ts` files but excluded until they are migrated to a remote PostgreSQL-native test strategy.
+- `pnpm test:smoke:postgres` deploys a disposable non-production stage, verifies non-secret resource identifiers and disabled Hyperdrive caching, calls the API's subjects query through Worker → Hyperdrive → PlanetScale, and destroys the disposable branch/role/Hyperdrive/Workers. It requires both provider credentials and an existing production database stack reference.
 - Provider and network boundaries may use fakes.
 - Behavior changes require focused tests covering the changed path.
 - Repository-wide completion checks are `pnpm lint` and `pnpm typecheck`.
+
+## Follow-up work
+
+Atomicity is intentionally not restored by this migration. A follow-up should
+compose ordinary Effect services inside `db.transaction(...)` for signup,
+unsubscribe, subscription replacement, participant replacement, catalog
+seeding, and development reset. Provider and other external network work must
+remain outside those transactions.
+
+Separate follow-ups are:
+
+1. Evaluate a `Registration` application service while restoring signup atomicity.
+2. Re-enable and migrate the deferred persistence/API/seed suites to a PostgreSQL-native strategy without Docker.
+3. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
+4. Remove historical D1 migration and SQLite test artifacts after the cutover has proven stable.
+5. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
