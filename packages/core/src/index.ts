@@ -1,7 +1,7 @@
 export {
   Database,
-  createD1DatabaseLayer,
-  createD1DatabaseLayerFromResource,
+  createPostgresDatabaseLayer,
+  createPostgresDatabaseLayerFromHyperdrive,
 } from "./lib/database/service.js";
 export { Api } from "./contracts/api.js";
 export { PingGroup, PingResponse } from "./contracts/ping.js";

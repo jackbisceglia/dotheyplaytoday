@@ -2,15 +2,12 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { text, uniqueIndex } from "drizzle-orm/pg-core";
 import { Schema } from "effect";
 import * as SchemaTransformation from "effect/SchemaTransformation";
 
-import { sqliteTable } from "../../lib/database/drizzle/index.js";
-import type {
-  Check,
-  TableSchemasMatch,
-} from "../../lib/database/utils.js";
+import { postgresTable } from "../../lib/database/drizzle/index.js";
+import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 
 export type UserSchemasMatchTable = Check<
@@ -45,7 +42,7 @@ const domainOverrides = {
   unsubscribeToken: UnsubscribeToken,
 };
 
-export const usersTable = sqliteTable(
+export const usersTable = postgresTable(
   "users",
   {
     id: text().primaryKey(),

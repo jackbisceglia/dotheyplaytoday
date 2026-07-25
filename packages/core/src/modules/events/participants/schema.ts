@@ -2,14 +2,11 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { index, text } from "drizzle-orm/sqlite-core";
+import { index, jsonb, text } from "drizzle-orm/pg-core";
 import { Schema } from "effect";
 
-import { sqliteTable } from "../../../lib/database/drizzle/index.js";
-import type {
-  Check,
-  TableSchemasMatch,
-} from "../../../lib/database/utils.js";
+import { postgresTable } from "../../../lib/database/drizzle/index.js";
+import type { Check, TableSchemasMatch } from "../../../lib/database/utils.js";
 import { Id } from "../../../lib/id/service.js";
 import { TaggedUnion } from "../../../lib/effect/index.js";
 import { EventId, eventsTable } from "../schema.js";
@@ -36,7 +33,7 @@ const overrides = {
   details: ParticipantDetails,
 };
 
-export const participantsTable = sqliteTable(
+export const participantsTable = postgresTable(
   "participants",
   {
     _tag: text("_tag", { enum: ParticipantDetails.tags }).notNull(),
@@ -44,7 +41,7 @@ export const participantsTable = sqliteTable(
     eventId: text()
       .notNull()
       .references(() => eventsTable.id, { onDelete: "cascade" }),
-    details: text({ mode: "json" })
+    details: jsonb()
       .notNull()
       .$type<Schema.Codec.Encoded<typeof ParticipantDetails>>(),
   },

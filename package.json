@@ -13,6 +13,7 @@
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
     "test": "pnpm @core build && vitest run",
+    "test:smoke:postgres": "pnpm build && RUN_DATABASE_SMOKE=1 vitest run --config vitest.smoke.config.ts",
     "test:watch": "vitest",
     "@core": "pnpm -F @dtpt/core",
     "@data": "pnpm -F @dtpt/data",
@@ -41,7 +42,6 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "better-sqlite3",
       "esbuild"
     ]
   },

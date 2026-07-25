@@ -2,13 +2,10 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { index, primaryKey, text } from "drizzle-orm/sqlite-core";
+import { index, primaryKey, text } from "drizzle-orm/pg-core";
 
-import { sqliteTable } from "../../../lib/database/drizzle/index.js";
-import type {
-  Check,
-  TableSchemasMatch,
-} from "../../../lib/database/utils.js";
+import { postgresTable } from "../../../lib/database/drizzle/index.js";
+import type { Check, TableSchemasMatch } from "../../../lib/database/utils.js";
 import { EventId, eventsTable } from "../../events/schema.js";
 import { SubjectId, subjectsTable } from "../schema.js";
 
@@ -25,7 +22,7 @@ const overrides = {
   subjectId: SubjectId,
 };
 
-export const subjectEventsTable = sqliteTable(
+export const subjectEventsTable = postgresTable(
   "subject_events",
   {
     eventId: text()
