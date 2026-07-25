@@ -8,8 +8,9 @@ import * as Layer from "effect/Layer";
 import ApiWorker from "./packages/api/dist/worker.js";
 import {
   DatabaseHyperdrive,
-  HyperdriveCaching,
+  DatabaseHyperdriveCachingDisabled,
   PlanetScalePostgres,
+  ProductionDatabaseStage,
 } from "./packages/core/dist/lib/database/clients/postgres/resource.js";
 import { SeedDev, SeedProduction } from "./packages/data/dist/seed/action.js";
 import {
@@ -29,12 +30,12 @@ export default Alchemy.Stack(
     const stage = yield* Stage;
     const seedStrategy = yield* SeedStrategy;
 
-    const { database, branch } = yield* PlanetScalePostgres;
+    const { database, branchName } = yield* PlanetScalePostgres;
     const hyperdrive = yield* DatabaseHyperdrive;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
 
-    if (stage === "production") {
+    if (stage === ProductionDatabaseStage) {
       yield* SeedProduction("SeedProduction", { version: CatalogSeedVersion });
     } else if (context.dev && seedStrategy !== "skip") {
       yield* SeedDev("SeedDev", { version: Date.now().toString() });
@@ -43,9 +44,9 @@ export default Alchemy.Stack(
     return {
       databaseId: database.id,
       databaseName: database.name,
-      branchName: typeof branch === "string" ? branch : branch.name,
+      branchName,
       hyperdriveId: hyperdrive.hyperdriveId,
-      hyperdriveCachingDisabled: HyperdriveCaching.disabled,
+      hyperdriveCachingDisabled: DatabaseHyperdriveCachingDisabled,
       apiWorkerName: apiWorker.workerName,
       apiWorkerUrl: apiWorker.url,
       notifyJobWorkerName: notifyJobWorker.workerName,

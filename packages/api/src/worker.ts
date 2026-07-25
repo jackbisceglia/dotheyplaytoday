@@ -35,16 +35,16 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   },
   Effect.gen(function* () {
     // Resources
-    const database = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
+    const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
     // Configs
     yield* WebConfig;
 
     // Layers
-    const DatabaseLayer = createPostgresDatabaseLayerFromHyperdrive(database);
+    const DatabaseLayer = createPostgresDatabaseLayerFromHyperdrive(hyperdrive);
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
-      Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
+      Layer.provide(ApiBaseLayer.pipe(Layer.provide(DatabaseLayer))),
       Layer.provide(CloudflareHttpApiPlatformLayer),
     );
 

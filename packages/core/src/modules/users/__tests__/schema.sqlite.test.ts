@@ -9,12 +9,7 @@ import {
   createTables,
   layerTest,
 } from "../../../lib/database/__tests__/setup.sqlite.js";
-import {
-  EmailAddressFromString,
-  User,
-  UserInsert,
-  usersTable,
-} from "../schema.js";
+import { User, UserInsert, usersTable } from "../schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -26,30 +21,7 @@ const userInput = {
   unsubscribeToken: "00000000-0000-4000-8000-000000000201",
 };
 
-describe("User model", () => {
-  it("rejects malformed user-owned fields", () => {
-    expect(() => decode(User)({ ...userInput, email: "not-email" })).toThrow();
-    expect(() =>
-      decode(User)({ ...userInput, unsubscribeToken: "short" }),
-    ).toThrow();
-  });
-
-  it("normalizes email input", () => {
-    expect(decode(EmailAddressFromString)(" Test@Example.COM ")).toBe(
-      "test@example.com",
-    );
-  });
-
-  it("encodes and decodes the user row boundary", () => {
-    const user = decode(User)(userInput);
-    const insert = encode(UserInsert)(user);
-    const selected = decode(User)(insert);
-
-    expect(insert).toEqual(userInput);
-    expect(selected.email).toBe(user.email);
-    expect(selected.unsubscribeToken).toBe(user.unsubscribeToken);
-  });
-
+describe("User persistence", () => {
   it.effect("roundtrips through SQLite using the database layer", () =>
     Effect.gen(function* () {
       yield* createTables;

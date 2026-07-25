@@ -6,11 +6,13 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 
 import Stack from "../alchemy.run.js";
+import {
+  ProductionBranchName,
+  ProductionDatabaseStage,
+} from "../packages/core/dist/lib/database/clients/postgres/resource.js";
 
 const enabled = process.env.RUN_DATABASE_SMOKE === "1";
-const smokeStage =
-  process.env.DATABASE_SMOKE_STAGE ??
-  `smoke-postgres-${process.pid.toString()}`;
+const smokeStage = `smoke-postgres-${Date.now().toString(36)}-${process.pid.toString()}`;
 
 if (!enabled) {
   describe.skip("PlanetScale PostgreSQL smoke", () => {
@@ -34,11 +36,11 @@ if (!enabled) {
     Effect.gen(function* () {
       const output = yield* stack;
 
-      expect(smokeStage).not.toBe("production");
+      expect(smokeStage).not.toBe(ProductionDatabaseStage);
       expect(output.databaseId).toBeTypeOf("string");
       expect(output.databaseName).toBeTypeOf("string");
       expect(output.branchName).toBeTypeOf("string");
-      expect(output.branchName).not.toBe("production");
+      expect(output.branchName).not.toBe(ProductionBranchName);
       expect(output.hyperdriveId).toBeTypeOf("string");
       expect(output.hyperdriveCachingDisabled).toBe(true);
       expect(output.apiWorkerUrl).toBeTypeOf("string");

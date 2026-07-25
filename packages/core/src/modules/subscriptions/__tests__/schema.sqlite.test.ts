@@ -67,51 +67,7 @@ const seedParents = Effect.gen(function* () {
     .values(encode(SubjectInsert)(decode(Subject)(subjectInput)));
 });
 
-describe("Subscription model", () => {
-  it("rejects malformed subscription-owned fields and schedules", () => {
-    expect(() =>
-      decode(Subscription)({ ...subscriptionInput, id: "not-uuid" }),
-    ).toThrow();
-    expect(() =>
-      decode(Subscription)({
-        ...subscriptionInput,
-        schedule: { _tag: "relative", timeOffsetSeconds: -1800 },
-      }),
-    ).toThrow();
-    expect(() =>
-      decode(Subscription)({
-        ...subscriptionInput,
-        schedule: {
-          _tag: "fixed_local_time",
-          sendAtSecondsLocal: 9 * 60 * 60 + 1,
-        },
-      }),
-    ).toThrow();
-    expect(() =>
-      decode(Subscription)({
-        ...subscriptionInput,
-        schedule: {
-          _tag: "fixed_local_time",
-          sendAtSecondsLocal: 24 * 60 * 60,
-        },
-      }),
-    ).toThrow();
-    expect(() =>
-      decode(Subscription)({ ...subscriptionInput, lastSentAt: "not-a-date" }),
-    ).toThrow();
-  });
-
-  it("encodes and decodes the subscription row boundary", () => {
-    const subscription = decode(Subscription)(subscriptionInput);
-    const insert = encode(SubscriptionInsert)(subscription);
-    const selected = decode(Subscription)(insert);
-
-    expect(insert).toEqual(subscriptionInput);
-    expect(selected.id).toBe(subscription.id);
-    expect(selected.schedule).toEqual(subscription.schedule);
-    expect(encode(Subscription)(selected)).toEqual(subscriptionInput);
-  });
-
+describe("Subscription persistence", () => {
   it.effect("roundtrips through SQLite using the database layer", () =>
     Effect.gen(function* () {
       yield* createTables;

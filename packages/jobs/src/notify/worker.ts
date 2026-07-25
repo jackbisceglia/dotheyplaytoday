@@ -42,14 +42,14 @@ export default Cloudflare.Worker(
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;
-    const database = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
+    const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
     // Configs
     yield* ResendConfig;
     yield* WebConfig;
 
     // Layers
-    const DatabaseLayer = createPostgresDatabaseLayerFromHyperdrive(database);
+    const DatabaseLayer = createPostgresDatabaseLayerFromHyperdrive(hyperdrive);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));
 
     yield* Cloudflare.Workers.cron(

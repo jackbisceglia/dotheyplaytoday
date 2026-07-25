@@ -6,9 +6,10 @@ import { Effect } from "effect";
 import * as Path from "effect/Path";
 
 export const ProductionDatabaseStage = "production";
-export const ProductionDatabaseName = "dotheyplaytoday";
 export const ProductionBranchName = "production";
-export const HyperdriveCaching = { disabled: true } as const;
+export const DatabaseHyperdriveCachingDisabled = true;
+
+const ProductionDatabaseName = "dotheyplaytoday";
 
 const MigrationsDirByPhase = Effect.gen(function* () {
   const path = yield* Path.Path;
@@ -63,7 +64,7 @@ export const PlanetScalePostgres = Effect.gen(function* () {
     successor: "postgres",
   });
 
-  return { database, branch, role };
+  return { database, branchName: role.branch, role };
 });
 
 /**
@@ -78,7 +79,7 @@ export const DatabaseHyperdrive = Effect.gen(function* () {
   return yield* Cloudflare.Hyperdrive.Connection("DtptDatabaseHyperdrive", {
     origin: role.origin,
     mtls: { sslmode: "verify-full" },
-    caching: HyperdriveCaching,
+    caching: { disabled: DatabaseHyperdriveCachingDisabled },
     originConnectionLimit: 5,
   });
 });
