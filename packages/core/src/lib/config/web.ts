@@ -11,12 +11,13 @@ export const WebConfig = Config.all({
   port: Config.port("PUBLIC_WEB_URL_PORT").pipe(Config.option),
 });
 
-export const WebConfigAlchemy = Stack.use((stack) => {
+export const WebConfigAlchemy = Effect.gen(function* () {
+  const stack = yield* Stack;
   const baseUrl = isDevStage(stack.stage)
     ? url("localhost", "http")
     : url(getServiceDomain("web", stack.stage));
 
-  return WebConfig.pipe(
+  return yield* WebConfig.pipe(
     Effect.provide(
       ConfigProvider.layerAdd(
         ConfigProvider.fromUnknown({ PUBLIC_WEB_URL_BASE: baseUrl }),
