@@ -39,7 +39,41 @@ describe("PostgreSQL database adapter", () => {
   });
 
   it("preserves PostgreSQL cascade foreign keys", () => {
-    expect(getTableConfig(participantsTable).foreignKeys).toHaveLength(1);
-    expect(getTableConfig(subscriptionsTable).foreignKeys).toHaveLength(2);
+    const foreignKeySemantics = (
+      table: typeof participantsTable | typeof subscriptionsTable,
+    ) =>
+      getTableConfig(table).foreignKeys.map((foreignKey) => {
+        const reference = foreignKey.reference();
+
+        return {
+          columns: reference.columns.map((column) => column.name),
+          foreignTable: getTableConfig(reference.foreignTable).name,
+          foreignColumns: reference.foreignColumns.map((column) => column.name),
+          onDelete: foreignKey.onDelete,
+        };
+      });
+
+    expect(foreignKeySemantics(participantsTable)).toEqual([
+      {
+        columns: ["event_id"],
+        foreignTable: "events",
+        foreignColumns: ["id"],
+        onDelete: "cascade",
+      },
+    ]);
+    expect(foreignKeySemantics(subscriptionsTable)).toEqual([
+      {
+        columns: ["user_id"],
+        foreignTable: "users",
+        foreignColumns: ["id"],
+        onDelete: "cascade",
+      },
+      {
+        columns: ["subject_id"],
+        foreignTable: "subjects",
+        foreignColumns: ["id"],
+        onDelete: "cascade",
+      },
+    ]);
   });
 });

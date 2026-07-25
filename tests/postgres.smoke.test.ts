@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Planetscale from "alchemy/Planetscale";
 import * as Test from "alchemy/Test/Vitest";
@@ -6,13 +8,9 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 
 import Stack from "../alchemy.run.js";
-import {
-  ProductionBranchName,
-  ProductionDatabaseStage,
-} from "../packages/core/dist/lib/database/clients/postgres/resource.js";
+import { ProductionBranchName } from "../packages/core/dist/lib/database/clients/postgres/resource.js";
 
 const enabled = process.env.RUN_DATABASE_SMOKE === "1";
-const smokeStage = `smoke-postgres-${Date.now().toString(36)}-${process.pid.toString()}`;
 
 if (!enabled) {
   describe.skip("PlanetScale PostgreSQL smoke", () => {
@@ -21,6 +19,16 @@ if (!enabled) {
     });
   });
 } else {
+  const smokeStagePrefix = "smoke-postgres-";
+  const smokeStage =
+    process.env.DATABASE_SMOKE_STAGE ?? `${smokeStagePrefix}${randomUUID()}`;
+
+  if (!smokeStage.startsWith(smokeStagePrefix)) {
+    throw new Error(
+      `DATABASE_SMOKE_STAGE must start with "${smokeStagePrefix}"`,
+    );
+  }
+
   const { test, beforeAll, afterAll, deploy, destroy } = Test.make({
     providers: Layer.merge(Cloudflare.providers(), Planetscale.providers()),
     state: Cloudflare.state(),
@@ -36,7 +44,6 @@ if (!enabled) {
     Effect.gen(function* () {
       const output = yield* stack;
 
-      expect(smokeStage).not.toBe(ProductionDatabaseStage);
       expect(output.databaseId).toBeTypeOf("string");
       expect(output.databaseName).toBeTypeOf("string");
       expect(output.branchName).toBeTypeOf("string");
