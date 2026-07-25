@@ -1,9 +1,28 @@
+import {
+  Function,
+  Schema,
+  SchemaTransformation,
+  String as EffectString,
+} from "effect";
+
 import { StringParts } from "../string.js";
 
 const domain = "dotheyplay.today";
 
+const DnsLabel = Schema.String.pipe(
+  Schema.decode(
+    SchemaTransformation.transform({
+      decode: EffectString.kebabCase,
+      encode: Function.identity,
+    }),
+  ),
+  Schema.decodeTo(Schema.String.check(Schema.isLengthBetween(1, 63))),
+);
+
+const decodeDnsLabel = Schema.decodeUnknownSync(DnsLabel);
+
 const getSubdomainPrefix = (stage: string) =>
-  stage === "production" ? undefined : stage.toLowerCase().replaceAll("_", "-");
+  stage === "production" ? undefined : decodeDnsLabel(stage);
 
 type Service = "api" | "jobs" | "web";
 

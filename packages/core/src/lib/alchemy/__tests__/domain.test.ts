@@ -15,9 +15,12 @@ describe("service domains", () => {
     expect(getServiceDomain("api", "dev_jack")).toBe(
       "dev-jack.api.dotheyplay.today",
     );
-    expect(getServiceDomain("jobs", "dev_jack")).toBe(
-      "dev-jack.jobs.dotheyplay.today",
-    );
+    expect(getServiceDomain("jobs", "QA_")).toBe("qa.jobs.dotheyplay.today");
+  });
+
+  it("rejects stage prefixes outside the DNS label length limit", () => {
+    expect(() => getServiceDomain("api", "a".repeat(64))).toThrow();
+    expect(() => getServiceDomain("jobs", "---")).toThrow();
   });
 
   it("keeps the web app on the root domain outside local Vite development", () => {
