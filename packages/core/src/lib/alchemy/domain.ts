@@ -11,7 +11,6 @@ export const getServiceDomain = (service: Service, stage: string) => {
   const subdomainPrefix =
     service === "web" ? undefined : getSubdomainPrefix(stage);
 
-  // The Vite job will not have a domain in dev; deployed web uses the root domain.
   return StringParts()
     .addNullable(subdomainPrefix)
     .addIf(service !== "web", service)
