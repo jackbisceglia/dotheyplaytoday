@@ -1,5 +1,4 @@
 import * as Cloudflare from "alchemy/Cloudflare";
-import * as Output from "alchemy/Output";
 import { Stack } from "alchemy";
 import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { WebConfigAlchemy } from "@dtpt/core/lib/config/web";
@@ -34,9 +33,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: 3001, strictPort: true },
-    domain: new Output.EffectExpr(Output.VoidExpr, () =>
-      Stack.useSync((stack) => getServiceDomain("api", stack.stage)),
-    ),
+    domain: Stack.useSync((stack) => getServiceDomain("api", stack.stage)),
   },
   Effect.gen(function* () {
     // Resources

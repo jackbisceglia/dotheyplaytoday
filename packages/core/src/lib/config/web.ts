@@ -1,40 +1,29 @@
-import * as Output from "alchemy/Output";
-import { CurrentRuntimeContext } from "alchemy/RuntimeContext";
 import { Stack } from "alchemy";
-import { Config, Effect } from "effect";
+import { Config, ConfigProvider, Effect } from "effect";
 
 import { getServiceDomain, url } from "../alchemy/domain.js";
 import { isDevStage } from "../alchemy/stage.js";
 import { buildServiceUrl } from "../url.js";
 
-const WebBaseUrlKey = "PUBLIC_WEB_URL_BASE";
-const WebPort = Config.port("PUBLIC_WEB_URL_PORT").pipe(Config.option);
-
 export type WebConfig = Config.Success<typeof WebConfig>;
 export const WebConfig = Config.all({
-  baseUrl: Config.string(WebBaseUrlKey),
-  port: WebPort,
+  baseUrl: Config.string("PUBLIC_WEB_URL_BASE"),
+  port: Config.port("PUBLIC_WEB_URL_PORT").pipe(Config.option),
 });
 
-export const WebConfigAlchemy = Effect.gen(function* () {
-  const stack = yield* Stack;
-  const runtimeContext = yield* CurrentRuntimeContext;
+export const WebConfigAlchemy = Stack.use((stack) => {
   const baseUrl = isDevStage(stack.stage)
     ? url("localhost", "http")
     : url(getServiceDomain("web", stack.stage));
 
-  if (runtimeContext === undefined) {
-    return yield* Effect.die(
-      "WebConfigAlchemy must be resolved during Alchemy worker initialization",
-    );
-  }
-
-  yield* runtimeContext.set(WebBaseUrlKey, Output.literal(baseUrl));
-
-  return {
-    baseUrl,
-    port: yield* WebPort,
-  } satisfies WebConfig;
+  return WebConfig.pipe(
+    Effect.provide(
+      ConfigProvider.layerAdd(
+        ConfigProvider.fromUnknown({ PUBLIC_WEB_URL_BASE: baseUrl }),
+        { asPrimary: true },
+      ),
+    ),
+  );
 });
 
 export const WebUrl = Effect.gen(function* () {

@@ -1,4 +1,4 @@
-import { RuntimeContext, Stack } from "alchemy";
+import { Stack } from "alchemy";
 import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer, Option } from "effect";
 
@@ -6,11 +6,7 @@ import { ApiUrl, ServerBoundPort } from "../config/api.js";
 import { WebConfigAlchemy, WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
 
-const webConfigAlchemy = (
-  stage: string,
-  env: Record<string, string>,
-  onSet: (key: string) => void,
-) =>
+const webConfigAlchemy = (stage: string, env: Record<string, string>) =>
   WebConfigAlchemy.pipe(
     Effect.provide(
       Layer.mergeAll(
@@ -21,17 +17,6 @@ const webConfigAlchemy = (
           resources: {},
           bindings: {},
           actions: {},
-        }),
-        Layer.succeed(RuntimeContext, {
-          Type: "Test",
-          id: "Test",
-          env: {},
-          get: <T>() => Effect.sync((): T | undefined => undefined),
-          set: (key) =>
-            Effect.sync(() => {
-              onSet(key);
-              return key;
-            }),
         }),
       ),
     ),
@@ -96,23 +81,15 @@ describe("url config", () => {
 
   it.effect("uses the Alchemy stage for the web base and configured port", () =>
     Effect.gen(function* () {
-      const boundKeys: string[] = [];
-      const devConfig = yield* webConfigAlchemy(
-        "dev_jack",
-        { PUBLIC_WEB_URL_PORT: "4321" },
-        (key) => boundKeys.push(key),
-      );
-      const productionConfig = yield* webConfigAlchemy(
-        "production",
-        {},
-        (key) => boundKeys.push(key),
-      );
+      const devConfig = yield* webConfigAlchemy("dev_jack", {
+        PUBLIC_WEB_URL_PORT: "4321",
+      });
+      const productionConfig = yield* webConfigAlchemy("production", {});
 
       expect(devConfig.baseUrl).toBe("http://localhost");
       expect(Option.getOrUndefined(devConfig.port)).toBe(4321);
       expect(productionConfig.baseUrl).toBe("https://dotheyplay.today");
       expect(Option.isNone(productionConfig.port)).toBe(true);
-      expect(boundKeys).toEqual(["PUBLIC_WEB_URL_BASE", "PUBLIC_WEB_URL_BASE"]);
     }),
   );
 
