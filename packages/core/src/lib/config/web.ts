@@ -1,5 +1,8 @@
-import { Config, Effect } from "effect";
+import { Stack } from "alchemy";
+import { Config, ConfigProvider, Effect, Layer } from "effect";
 
+import { getServiceDomain, url } from "../alchemy/domain.js";
+import { isDevStage } from "../alchemy/stage.js";
 import { buildServiceUrl } from "../url.js";
 
 export type WebConfig = Config.Success<typeof WebConfig>;
@@ -8,13 +11,26 @@ export const WebConfig = Config.all({
   port: Config.port("PUBLIC_WEB_URL_PORT").pipe(Config.option),
 });
 
+export const WebConfigAlchemy = Layer.unwrap(
+  Effect.gen(function* () {
+    const stack = yield* Stack;
+
+    const baseUrl = isDevStage(stack.stage)
+      ? url("localhost", "http")
+      : url(getServiceDomain("web", stack.stage));
+
+    const BaseUrlSuccessProvider = ConfigProvider.fromUnknown({
+      PUBLIC_WEB_URL_BASE: baseUrl,
+    });
+
+    return ConfigProvider.layerAdd(BaseUrlSuccessProvider, {
+      asPrimary: true,
+    });
+  }),
+);
+
 export const WebUrl = Effect.gen(function* () {
   const config = yield* WebConfig;
 
   return buildServiceUrl(config.baseUrl, config.port);
-}).pipe(
-  Effect.catchTags({
-    ConfigError: (error) =>
-      Effect.die(`Web configuration error: ${error.message}`),
-  }),
-);
+}).pipe(Effect.orDie);

@@ -16,11 +16,16 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Astro on Cloudflare.
 - SQLite and Drizzle, with Cloudflare D1 when deployed.
 - Alchemy-provisioned D1, public API worker, and notification worker.
+- Alchemy routes the API through `api.dotheyplay.today` and scheduled jobs through `jobs.dotheyplay.today`. Non-production worker domains are prefixed with their stage normalized as a valid subdomain label.
 - The API worker serves the shared Effect `HttpApi` contracts against D1.
 - Alchemy seed Actions import the registered catalog collections at deploy time. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
 - Resend email delivery and console dry runs.
 - Typed Effect config at runtime boundaries.
+
+Service URL wiring remains transitional until the Web application is managed by
+Alchemy. See [Alchemy service URL wiring](./alchemy-service-urls.md) for the
+current limitation and migration design.
 
 Production deploys load `.env.production` through `--env-file .env.production`.
 
