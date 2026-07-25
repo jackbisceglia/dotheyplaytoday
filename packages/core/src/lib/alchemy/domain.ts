@@ -9,17 +9,17 @@ import { StringParts } from "../string.js";
 
 const domain = "dotheyplay.today";
 
-const SubdomainLabel = Schema.String.pipe(
-  Schema.decode(
-    SchemaTransformation.transform({
-      decode: EffectString.kebabCase,
-      encode: Function.identity,
-    }),
+const decodeSubdomainLabel = Schema.decodeUnknownSync(
+  Schema.String.pipe(
+    Schema.decode(
+      SchemaTransformation.transform({
+        decode: EffectString.kebabCase,
+        encode: Function.identity,
+      }),
+    ),
+    Schema.decodeTo(Schema.String.check(Schema.isLengthBetween(1, 63))),
   ),
-  Schema.decodeTo(Schema.String.check(Schema.isLengthBetween(1, 63))),
 );
-
-const decodeSubdomainLabel = Schema.decodeUnknownSync(SubdomainLabel);
 
 const getSubdomainPrefix = (stage: string) =>
   stage === "production" ? undefined : decodeSubdomainLabel(stage);
