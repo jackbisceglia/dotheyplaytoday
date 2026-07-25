@@ -6,5 +6,9 @@
     "outDir": "dist",
     "sourceMap": true
   },
-  "exclude": ["src/**/*.test.ts", "src/**/tests/**"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/tests/**",
+    "src/lib/database/__tests__/setup.sqlite.ts"
+  ]
 }

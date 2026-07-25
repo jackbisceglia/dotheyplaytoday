@@ -1,3 +1,5 @@
+// Deferred until the legacy SQLite seed suite is migrated to the remote
+// PostgreSQL test strategy. See docs/architecture.md.
 import { describe, expect, it } from "@effect/vitest";
 import {
   Database,
@@ -16,7 +18,7 @@ import {
 import {
   createTables,
   layerTest,
-} from "@dtpt/core/lib/database/__tests__/setup";
+} from "@dtpt/core/lib/database/__tests__/setup.sqlite";
 import { SubscriptionInsert } from "@dtpt/core/modules/subscriptions/schema";
 import { User, UserInsert } from "@dtpt/core/modules/users/schema";
 import { DateTime, Effect, Layer, Schema } from "effect";
@@ -430,7 +432,8 @@ describe("data seed catalog", () => {
   );
 
   // TODO(database): restore this assertion when catalog seeding is atomic again.
-  // D1 support removed the transaction boundary, so partial writes are expected for now.
+  // Atomicity remains deferred during the PostgreSQL cutover, so partial
+  // writes are expected for now.
   it.effect.skip("rolls seed writes back when an event import fails", () =>
     Effect.gen(function* () {
       yield* createTables;

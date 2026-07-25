@@ -1,3 +1,5 @@
+// Deferred until the legacy SQLite persistence suite is migrated to the
+// remote PostgreSQL test strategy. See docs/architecture.md.
 import { describe, expect, it } from "@effect/vitest";
 import { eq } from "drizzle-orm";
 import { Effect, Layer, Schema } from "effect";
@@ -7,7 +9,10 @@ import {
   DatabaseWriteError,
 } from "../../../lib/database/errors.js";
 import { Database } from "../../../lib/database/service.js";
-import { createTables, layerTest } from "../../../lib/database/__tests__/setup.js";
+import {
+  createTables,
+  layerTest,
+} from "../../../lib/database/__tests__/setup.sqlite.js";
 import {
   Subject,
   SubjectId,
@@ -15,10 +20,7 @@ import {
   subjectsTable,
 } from "../../subjects/schema.js";
 import { User, UserId, UserInsert, usersTable } from "../../users/schema.js";
-import {
-  InvalidSubjectSelection,
-  SubjectCapacityReached,
-} from "../errors.js";
+import { InvalidSubjectSelection, SubjectCapacityReached } from "../errors.js";
 import {
   Subscription,
   SubscriptionId,
@@ -91,9 +93,7 @@ const user = decode(User)(userInput);
 const subjectId = SubjectId.make(subjectInput.id);
 const secondSubjectId = SubjectId.make(secondSubjectInput.id);
 const thirdSubjectId = SubjectId.make(thirdSubjectInput.id);
-const missingSubjectId = SubjectId.make(
-  "00000000-0000-4000-8000-000000009999",
-);
+const missingSubjectId = SubjectId.make("00000000-0000-4000-8000-000000009999");
 const missingSubscriptionId = SubscriptionId.make(
   "00000000-0000-4000-8000-000000009998",
 );
@@ -151,48 +151,50 @@ const insertSubscription = (input: {
     yield* database.insert(subscriptionsTable).values(insert);
   });
 
-const overCapacitySubjectIds = Array.from(
-  { length: 3 },
-  (_, index) =>
-    SubjectId.make(
-      `00000000-0000-4000-8000-${String(index + 1000).padStart(12, "0")}`,
-    ),
+const overCapacitySubjectIds = Array.from({ length: 3 }, (_, index) =>
+  SubjectId.make(
+    `00000000-0000-4000-8000-${String(index + 1000).padStart(12, "0")}`,
+  ),
 );
 
 describe("Subscriptions service", () => {
-  it.effect("lists subscriptions and notification recipients deterministically", () =>
-    Effect.gen(function* () {
-      yield* createTables;
-      yield* seedUsers;
-      yield* seedSubjects;
-      yield* insertSubscription({
-        id: "00000000-0000-4000-8000-000000000402",
-        userId: secondUserInput.id,
-        subjectId: secondSubjectInput.id,
-      });
-      yield* insertSubscription({
-        id: "00000000-0000-4000-8000-000000000401",
-        userId: userInput.id,
-        subjectId: subjectInput.id,
-      });
+  it.effect(
+    "lists subscriptions and notification recipients deterministically",
+    () =>
+      Effect.gen(function* () {
+        yield* createTables;
+        yield* seedUsers;
+        yield* seedSubjects;
+        yield* insertSubscription({
+          id: "00000000-0000-4000-8000-000000000402",
+          userId: secondUserInput.id,
+          subjectId: secondSubjectInput.id,
+        });
+        yield* insertSubscription({
+          id: "00000000-0000-4000-8000-000000000401",
+          userId: userInput.id,
+          subjectId: subjectInput.id,
+        });
 
-      const subscriptions = yield* Subscriptions;
-      const listed = yield* subscriptions.list();
-      const recipients = yield* subscriptions.listNotificationRecipients();
+        const subscriptions = yield* Subscriptions;
+        const listed = yield* subscriptions.list();
+        const recipients = yield* subscriptions.listNotificationRecipients();
 
-      expect(listed.map((subscription) => subscription.id)).toEqual([
-        "00000000-0000-4000-8000-000000000401",
-        "00000000-0000-4000-8000-000000000402",
-      ]);
-      expect(recipients.map((recipient) => recipient.subscription.id)).toEqual([
-        "00000000-0000-4000-8000-000000000401",
-        "00000000-0000-4000-8000-000000000402",
-      ]);
-      expect(recipients[0]?.user.email).toBe("test@example.com");
-      expect(recipients[0]?.subscription.subject.details.name).toBe(
-        "Boston Celtics",
-      );
-    }).pipe(Effect.provide(layerSubscriptionsTest)),
+        expect(listed.map((subscription) => subscription.id)).toEqual([
+          "00000000-0000-4000-8000-000000000401",
+          "00000000-0000-4000-8000-000000000402",
+        ]);
+        expect(
+          recipients.map((recipient) => recipient.subscription.id),
+        ).toEqual([
+          "00000000-0000-4000-8000-000000000401",
+          "00000000-0000-4000-8000-000000000402",
+        ]);
+        expect(recipients[0]?.user.email).toBe("test@example.com");
+        expect(recipients[0]?.subscription.subject.details.name).toBe(
+          "Boston Celtics",
+        );
+      }).pipe(Effect.provide(layerSubscriptionsTest)),
   );
 
   it.effect(
@@ -272,36 +274,38 @@ describe("Subscriptions service", () => {
     }).pipe(Effect.provide(layerSubscriptionsTest)),
   );
 
-  it.effect("rejects over-capacity replacement before deleting existing rows", () =>
-    Effect.gen(function* () {
-      yield* createTables;
-      yield* seedUsers;
-      yield* seedSubjects;
-      yield* insertSubscription({
-        id: "00000000-0000-4000-8000-000000000401",
-        userId: userInput.id,
-        subjectId: subjectInput.id,
-      });
+  it.effect(
+    "rejects over-capacity replacement before deleting existing rows",
+    () =>
+      Effect.gen(function* () {
+        yield* createTables;
+        yield* seedUsers;
+        yield* seedSubjects;
+        yield* insertSubscription({
+          id: "00000000-0000-4000-8000-000000000401",
+          userId: userInput.id,
+          subjectId: subjectInput.id,
+        });
 
-      const subscriptions = yield* Subscriptions;
-      const database = yield* Database;
-      const error = yield* subscriptions
-        .replaceForUser({
-          user,
-          subjectIds: overCapacitySubjectIds,
-          schedule,
-        })
-        .pipe(Effect.flip);
-      const rows = yield* database.select().from(subscriptionsTable);
+        const subscriptions = yield* Subscriptions;
+        const database = yield* Database;
+        const error = yield* subscriptions
+          .replaceForUser({
+            user,
+            subjectIds: overCapacitySubjectIds,
+            schedule,
+          })
+          .pipe(Effect.flip);
+        const rows = yield* database.select().from(subscriptionsTable);
 
-      expect(error).toBeInstanceOf(SubjectCapacityReached);
-      if (!(error instanceof SubjectCapacityReached)) {
-        return;
-      }
-      expect(error.limit).toBe(2);
-      expect(error.received).toBe(3);
-      expect(rows).toHaveLength(1);
-    }).pipe(Effect.provide(layerSubscriptionsTest)),
+        expect(error).toBeInstanceOf(SubjectCapacityReached);
+        if (!(error instanceof SubjectCapacityReached)) {
+          return;
+        }
+        expect(error.limit).toBe(2);
+        expect(error.received).toBe(3);
+        expect(rows).toHaveLength(1);
+      }).pipe(Effect.provide(layerSubscriptionsTest)),
   );
 
   it.effect(

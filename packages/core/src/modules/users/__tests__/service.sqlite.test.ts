@@ -1,3 +1,5 @@
+// Deferred until the legacy SQLite persistence suite is migrated to the
+// remote PostgreSQL test strategy. See docs/architecture.md.
 import { describe, expect, it } from "@effect/vitest";
 import { eq } from "drizzle-orm";
 import { Effect, Layer, Schema } from "effect";
@@ -9,7 +11,10 @@ import {
   DatabaseWriteError,
 } from "../../../lib/database/errors.js";
 import { Database } from "../../../lib/database/service.js";
-import { createTables, layerTest } from "../../../lib/database/__tests__/setup.js";
+import {
+  createTables,
+  layerTest,
+} from "../../../lib/database/__tests__/setup.sqlite.js";
 import {
   EmailAddress,
   User,

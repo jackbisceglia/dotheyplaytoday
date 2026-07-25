@@ -3,5 +3,5 @@
   "compilerOptions": {
     "types": ["bun"]
   },
-  "include": ["alchemy.run.ts"]
+  "include": ["alchemy.run.ts", "tests/**/*.ts", "vitest*.config.ts"]
 }

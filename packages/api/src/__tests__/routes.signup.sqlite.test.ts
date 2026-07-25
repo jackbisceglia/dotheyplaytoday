@@ -1,3 +1,5 @@
+// Deferred until the legacy SQLite API suite is migrated to the remote
+// PostgreSQL test strategy. See docs/architecture.md.
 import { describe, expect, it } from "@effect/vitest";
 import {
   Database,
@@ -9,14 +11,11 @@ import {
   Users,
 } from "@dtpt/core";
 import { SignupRequest } from "@dtpt/core/contracts/signup";
-import { createTables } from "@dtpt/core/lib/database/__tests__/setup";
+import { createTables } from "@dtpt/core/lib/database/__tests__/setup.sqlite";
 import { Effect, Schema } from "effect";
-import {
-  HttpClient,
-  HttpClientRequest,
-} from "effect/unstable/http";
+import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 
-import { makeApiTestLayer } from "./helpers.js";
+import { makeApiTestLayer } from "./helpers.sqlite.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -105,7 +104,8 @@ describe("signup route handler", () => {
           yield* database.query.subscriptionsTable.findMany();
 
         expect(result.response.status).toBe(400);
-        // TODO(database): restore signup rollback with D1 batch support.
+        // TODO(database): restore this rollback assertion with the interactive
+        // PostgreSQL transaction follow-up.
         expect(users).toHaveLength(1);
         expect(subscriptions).toHaveLength(0);
       }).pipe(Effect.provide(layerSignupTest)),

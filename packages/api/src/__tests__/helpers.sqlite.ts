@@ -1,9 +1,10 @@
+// Deferred SQLite-backed API test harness. See docs/architecture.md.
 import * as NodeHttpServer from "@effect/platform-node/NodeHttpServer";
 import { SubscriptionsLayer, SubjectsLayer, UsersLayer } from "@dtpt/core";
 import {
   createTables,
   layerTest,
-} from "@dtpt/core/lib/database/__tests__/setup";
+} from "@dtpt/core/lib/database/__tests__/setup.sqlite";
 import { Config, ConfigProvider, Effect, Layer } from "effect";
 import {
   HttpClient,
@@ -29,10 +30,10 @@ export function makeApiTestLayer(config: {
     UsersLayer,
   ).pipe(Layer.provideMerge(layerTest));
 
-  const ServerLayer = HttpRouter.serve(
-    HttpApiLayer,
-    { disableListenLog: true, disableLogger: true },
-  ).pipe(
+  const ServerLayer = HttpRouter.serve(HttpApiLayer, {
+    disableListenLog: true,
+    disableLogger: true,
+  }).pipe(
     Layer.provideMerge(NodeHttpServer.layerTest),
     Layer.provide(RuntimeLayer),
     Layer.provide(TestConfigLayer),
@@ -47,13 +48,19 @@ export function submitSignup(input: {
   readonly email?: string;
   readonly timezone?: string;
   readonly subjectIds?: readonly string[];
-  readonly schedule?: { readonly _tag: "fixed_local_time"; readonly sendAtSecondsLocal: number };
+  readonly schedule?: {
+    readonly _tag: "fixed_local_time";
+    readonly sendAtSecondsLocal: number;
+  };
 }) {
   return HttpClientRequest.post("/api/signup").pipe(
     HttpClientRequest.bodyJson({
       email: input.email ?? "fan@example.com",
       timezone: input.timezone ?? "America/New_York",
-      schedule: input.schedule ?? { _tag: "fixed_local_time", sendAtSecondsLocal: 9 * 60 * 60 },
+      schedule: input.schedule ?? {
+        _tag: "fixed_local_time",
+        sendAtSecondsLocal: 9 * 60 * 60,
+      },
       subjectIds: input.subjectIds ?? [],
     }),
     Effect.flatMap(HttpClient.execute),

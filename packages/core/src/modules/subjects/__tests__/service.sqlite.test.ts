@@ -1,3 +1,5 @@
+// Deferred until the legacy SQLite persistence suite is migrated to the
+// remote PostgreSQL test strategy. See docs/architecture.md.
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
@@ -7,7 +9,10 @@ import {
   DatabaseWriteError,
 } from "../../../lib/database/errors.js";
 import { Database } from "../../../lib/database/service.js";
-import { createTables, layerTest } from "../../../lib/database/__tests__/setup.js";
+import {
+  createTables,
+  layerTest,
+} from "../../../lib/database/__tests__/setup.sqlite.js";
 import {
   EventId,
   EventInsert,
@@ -15,12 +20,7 @@ import {
   eventsTable,
 } from "../../events/schema.js";
 import { subjectEventsTable } from "../feed/schema.js";
-import {
-  Subject,
-  SubjectId,
-  SubjectInsert,
-  subjectsTable,
-} from "../schema.js";
+import { Subject, SubjectId, SubjectInsert, subjectsTable } from "../schema.js";
 import { SubjectNotFound, Subjects, SubjectsLayer } from "../service.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -125,26 +125,28 @@ describe("Subjects service", () => {
     }).pipe(Effect.provide(layerSubjectsTest)),
   );
 
-  it.effect("reads subjects by primary id and lists subjects deterministically", () =>
-    Effect.gen(function* () {
-      yield* createTables;
-      yield* seedSubjects;
+  it.effect(
+    "reads subjects by primary id and lists subjects deterministically",
+    () =>
+      Effect.gen(function* () {
+        yield* createTables;
+        yield* seedSubjects;
 
-      const subjects = yield* Subjects;
+        const subjects = yield* Subjects;
 
-      const byId = yield* subjects.get(subjectId);
-      const listed = yield* subjects.list();
+        const byId = yield* subjects.get(subjectId);
+        const listed = yield* subjects.list();
 
-      expect(encode(Subject)(byId)).toEqual(subjectInput);
-      expect(listed.map((subject) => subject.id)).toEqual([
-        subjectId,
-        secondSubjectId,
-      ]);
-      expect(listed.map((subject) => subject.details.name)).toEqual([
-        "Celtics",
-        "Lakers",
-      ]);
-    }).pipe(Effect.provide(layerSubjectsTest)),
+        expect(encode(Subject)(byId)).toEqual(subjectInput);
+        expect(listed.map((subject) => subject.id)).toEqual([
+          subjectId,
+          secondSubjectId,
+        ]);
+        expect(listed.map((subject) => subject.details.name)).toEqual([
+          "Celtics",
+          "Lakers",
+        ]);
+      }).pipe(Effect.provide(layerSubjectsTest)),
   );
 
   it.effect("returns an empty list when no subjects exist", () =>
@@ -158,34 +160,38 @@ describe("Subjects service", () => {
     }).pipe(Effect.provide(layerSubjectsTest)),
   );
 
-  it.effect("fails primary reads with SubjectNotFound when the row is missing", () =>
-    Effect.gen(function* () {
-      yield* createTables;
+  it.effect(
+    "fails primary reads with SubjectNotFound when the row is missing",
+    () =>
+      Effect.gen(function* () {
+        yield* createTables;
 
-      const subjects = yield* Subjects;
-      const error = yield* subjects.get(subjectId).pipe(Effect.flip);
+        const subjects = yield* Subjects;
+        const error = yield* subjects.get(subjectId).pipe(Effect.flip);
 
-      expect(error).toBeInstanceOf(SubjectNotFound);
-      if (!(error instanceof SubjectNotFound)) {
-        return;
-      }
-      expect(error.key).toBe("id");
-      expect(error.value).toBe(subjectId);
-    }).pipe(Effect.provide(layerSubjectsTest)),
+        expect(error).toBeInstanceOf(SubjectNotFound);
+        if (!(error instanceof SubjectNotFound)) {
+          return;
+        }
+        expect(error.key).toBe("id");
+        expect(error.value).toBe(subjectId);
+      }).pipe(Effect.provide(layerSubjectsTest)),
   );
 
-  it.effect("maps read failures with operation metadata at the query callsite", () =>
-    Effect.gen(function* () {
-      const subjects = yield* Subjects;
-      const error = yield* subjects.get(subjectId).pipe(Effect.flip);
+  it.effect(
+    "maps read failures with operation metadata at the query callsite",
+    () =>
+      Effect.gen(function* () {
+        const subjects = yield* Subjects;
+        const error = yield* subjects.get(subjectId).pipe(Effect.flip);
 
-      expect(error).toBeInstanceOf(DatabaseReadError);
-      if (!(error instanceof DatabaseReadError)) {
-        return;
-      }
-      expect(error.operation).toBe("Subjects.get");
-      expect(error.metadata).toEqual({ subjectId });
-    }).pipe(Effect.provide(layerSubjectsTest)),
+        expect(error).toBeInstanceOf(DatabaseReadError);
+        if (!(error instanceof DatabaseReadError)) {
+          return;
+        }
+        expect(error.operation).toBe("Subjects.get");
+        expect(error.metadata).toEqual({ subjectId });
+      }).pipe(Effect.provide(layerSubjectsTest)),
   );
 
   it.effect("decodes rows before returning subjects", () =>

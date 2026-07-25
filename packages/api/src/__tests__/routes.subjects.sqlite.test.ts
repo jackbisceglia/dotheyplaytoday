@@ -1,18 +1,12 @@
+// Deferred until the legacy SQLite API suite is migrated to the remote
+// PostgreSQL test strategy. See docs/architecture.md.
 import { describe, expect, it } from "@effect/vitest";
-import {
-  Database,
-  Subject,
-  SubjectInsert,
-  subjectsTable,
-} from "@dtpt/core";
-import { createTables } from "@dtpt/core/lib/database/__tests__/setup";
+import { Database, Subject, SubjectInsert, subjectsTable } from "@dtpt/core";
+import { createTables } from "@dtpt/core/lib/database/__tests__/setup.sqlite";
 import { Effect, Schema } from "effect";
-import {
-  HttpClient,
-  HttpClientRequest,
-} from "effect/unstable/http";
+import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 
-import { makeApiTestLayer } from "./helpers.js";
+import { makeApiTestLayer } from "./helpers.sqlite.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;

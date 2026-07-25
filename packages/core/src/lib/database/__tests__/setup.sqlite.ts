@@ -1,3 +1,5 @@
+// Retained only for the deferred SQLite suites. This harness is not part of
+// the active PostgreSQL runtime or test path.
 import * as NodeCrypto from "@effect/platform-node/NodeCrypto";
 import * as SqliteNodeClient from "@effect/sql-sqlite-node/SqliteClient";
 import * as SQLiteNodeDrizzle from "drizzle-orm/effect-sqlite-node";

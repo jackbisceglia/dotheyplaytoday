@@ -9,5 +9,9 @@
       }
     ]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/**/*.sqlite.test.ts",
+    "src/lib/database/__tests__/setup.sqlite.ts"
+  ]
 }

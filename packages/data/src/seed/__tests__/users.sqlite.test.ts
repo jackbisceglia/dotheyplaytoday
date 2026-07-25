@@ -1,3 +1,5 @@
+// Deferred until the legacy SQLite seed suite is migrated to the remote
+// PostgreSQL test strategy. See docs/architecture.md.
 import { describe, expect, it } from "@effect/vitest";
 import {
   Database,
@@ -13,7 +15,7 @@ import {
 import {
   createTables,
   layerTest,
-} from "@dtpt/core/lib/database/__tests__/setup";
+} from "@dtpt/core/lib/database/__tests__/setup.sqlite";
 import { ConfigProvider, Effect, Layer, Schema } from "effect";
 
 import { SportsSeed } from "../../schema/sports.js";
@@ -135,30 +137,32 @@ describe("seed users", () => {
     ),
   );
 
-  it.effect("does not read SEED_EMAIL when explicit seed users are provided", () =>
-    Effect.gen(function* () {
-      yield* createTables;
-      yield* seedNbaCatalog;
+  it.effect(
+    "does not read SEED_EMAIL when explicit seed users are provided",
+    () =>
+      Effect.gen(function* () {
+        yield* createTables;
+        yield* seedNbaCatalog;
 
-      const seededUsers = yield* seedUsers([
-        makeSeedUser({
-          email: Schema.decodeUnknownSync(EmailAddressFromString)(
-            "manual@example.com",
-          ),
-        }),
-      ]);
+        const seededUsers = yield* seedUsers([
+          makeSeedUser({
+            email: Schema.decodeUnknownSync(EmailAddressFromString)(
+              "manual@example.com",
+            ),
+          }),
+        ]);
 
-      const database = yield* Database;
-      const users = yield* database.select().from(usersTable);
+        const database = yield* Database;
+        const users = yield* database.select().from(usersTable);
 
-      expect(users).toHaveLength(1);
-      expect(users[0]?.email).toBe("manual@example.com");
-      expect(seededUsers[0]?.email).toBe("manual@example.com");
-    }).pipe(
-      Effect.provide(
-        layerSeedTestWithConfig({ SEED_EMAIL: "real@example.com" }),
+        expect(users).toHaveLength(1);
+        expect(users[0]?.email).toBe("manual@example.com");
+        expect(seededUsers[0]?.email).toBe("manual@example.com");
+      }).pipe(
+        Effect.provide(
+          layerSeedTestWithConfig({ SEED_EMAIL: "real@example.com" }),
+        ),
       ),
-    ),
   );
 
   it.effect("replaces subscriptions when a seeded user changes", () =>
