@@ -6,8 +6,8 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
 import { WebConfig } from "@dtpt/core/lib/config/web";
-import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
-import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
+import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
+import { createPostgresDatabaseLayerFromHyperdrive } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service";
@@ -42,14 +42,14 @@ export default Cloudflare.Worker(
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;
-    const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+    const database = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
     // Configs
     yield* ResendConfig;
     yield* WebConfig;
 
     // Layers
-    const DatabaseLayer = createD1DatabaseLayerFromResource(database);
+    const DatabaseLayer = createPostgresDatabaseLayerFromHyperdrive(database);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));
 
     yield* Cloudflare.Workers.cron(
@@ -118,7 +118,7 @@ export default Cloudflare.Worker(
   }).pipe(
     Effect.provide(
       Layer.merge(
-        Cloudflare.D1.QueryDatabaseBinding,
+        Cloudflare.Hyperdrive.ConnectBinding,
         Cloudflare.Workers.CronEventSourceLive,
       ),
     ),

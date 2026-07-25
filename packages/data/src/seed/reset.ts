@@ -10,15 +10,12 @@ import {
 } from "@dtpt/core";
 import { Effect } from "effect";
 
-import { createTablesIfMissing } from "./schema-setup.js";
-
 export const reset = Effect.fn("DataSeed.reset")(
   function* () {
-    yield* createTablesIfMissing();
-
     const database = yield* Database;
 
-    // TODO(database): restore atomic reset with D1 batch support.
+    // TODO(database): restore atomic reset with an interactive PostgreSQL
+    // transaction after the database cutover is stable.
     yield* database.delete(subscriptionsTable);
     yield* database.delete(usersTable);
     yield* database.delete(subjectEventsTable);
@@ -26,15 +23,13 @@ export const reset = Effect.fn("DataSeed.reset")(
     yield* database.delete(eventsTable);
     yield* database.delete(subjectsTable);
   },
-  Effect.catchTag(
-    ["SqlError", "EffectDrizzleQueryError"],
-    (cause) =>
-      Effect.fail(
-        new DatabaseWriteError({
-          operation: "DataSeed.reset",
-          cause,
-          metadata: { mode: "dev" },
-        }),
-      ),
+  Effect.catchTag("EffectDrizzleQueryError", (cause) =>
+    Effect.fail(
+      new DatabaseWriteError({
+        operation: "DataSeed.reset",
+        cause,
+        metadata: { mode: "dev" },
+      }),
+    ),
   ),
 );

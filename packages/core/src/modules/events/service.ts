@@ -197,8 +197,9 @@ export const EventsLayer = Layer.effect(
       const insertableParticipants = yield* Effect.forEach(
         participants,
         Effect.fn(function* (participant) {
-          const participantId =
-            yield* id.makeFromBrandedSchema(Participant.fields.id);
+          const participantId = yield* id.makeFromBrandedSchema(
+            Participant.fields.id,
+          );
 
           const insertable = yield* encodeParticipant({
             ...participant,
@@ -210,7 +211,8 @@ export const EventsLayer = Layer.effect(
         }),
       );
 
-      // TODO(database): restore atomic replace semantics with D1 batch support.
+      // TODO(database): restore replace atomicity with an interactive
+      // PostgreSQL transaction after the database cutover is stable.
       yield* database
         .delete(participantsTable)
         .where(eq(participantsTable.eventId, eventId))

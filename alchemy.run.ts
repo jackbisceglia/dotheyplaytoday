@@ -1,10 +1,16 @@
 import * as Alchemy from "alchemy";
 import { AlchemyContext, Stage } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
+import * as Planetscale from "alchemy/Planetscale";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 
 import ApiWorker from "./packages/api/dist/worker.js";
-import { D1DatabaseResource } from "./packages/core/dist/lib/database/clients/d1/resource.js";
+import {
+  DatabaseHyperdrive,
+  HyperdriveCaching,
+  PlanetScalePostgres,
+} from "./packages/core/dist/lib/database/clients/postgres/resource.js";
 import { SeedDev, SeedProduction } from "./packages/data/dist/seed/action.js";
 import {
   CatalogSeedVersion,
@@ -15,7 +21,7 @@ import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 export default Alchemy.Stack(
   "dotheyplaytoday",
   {
-    providers: Cloudflare.providers(),
+    providers: Layer.merge(Cloudflare.providers(), Planetscale.providers()),
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
@@ -23,7 +29,8 @@ export default Alchemy.Stack(
     const stage = yield* Stage;
     const seedStrategy = yield* SeedStrategy;
 
-    const database = yield* D1DatabaseResource;
+    const { database, branch } = yield* PlanetScalePostgres;
+    const hyperdrive = yield* DatabaseHyperdrive;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
 
@@ -34,7 +41,11 @@ export default Alchemy.Stack(
     }
 
     return {
-      databaseName: database.databaseName,
+      databaseId: database.id,
+      databaseName: database.name,
+      branchName: typeof branch === "string" ? branch : branch.name,
+      hyperdriveId: hyperdrive.hyperdriveId,
+      hyperdriveCachingDisabled: HyperdriveCaching.disabled,
       apiWorkerName: apiWorker.workerName,
       apiWorkerUrl: apiWorker.url,
       notifyJobWorkerName: notifyJobWorker.workerName,

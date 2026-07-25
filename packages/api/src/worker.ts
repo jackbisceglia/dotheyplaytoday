@@ -1,7 +1,7 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { WebConfig } from "@dtpt/core/lib/config/web";
-import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
-import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
+import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
+import { createPostgresDatabaseLayerFromHyperdrive } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
@@ -21,7 +21,7 @@ const ApiBaseLayer = pipe(
 );
 
 const WorkerLayer = Layer.merge(
-  Cloudflare.D1.QueryDatabaseBinding,
+  Cloudflare.Hyperdrive.ConnectBinding,
   RateLimiterLayer,
 );
 
@@ -35,13 +35,13 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   },
   Effect.gen(function* () {
     // Resources
-    const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+    const database = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
     // Configs
     yield* WebConfig;
 
     // Layers
-    const DatabaseLayer = createD1DatabaseLayerFromResource(database);
+    const DatabaseLayer = createPostgresDatabaseLayerFromHyperdrive(database);
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
       Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),

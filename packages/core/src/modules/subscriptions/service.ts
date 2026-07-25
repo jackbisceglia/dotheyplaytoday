@@ -178,7 +178,8 @@ export const SubscriptionsLayer = Layer.effect(
             }),
         );
 
-        // TODO(database): restore atomic replace semantics with D1 batch support.
+        // TODO(database): restore replace atomicity with an interactive
+        // PostgreSQL transaction after the database cutover is stable.
         yield* database
           .delete(subscriptionsTable)
           .where(eq(subscriptionsTable.userId, input.user.id))

@@ -5,11 +5,10 @@ import {
   SubscriptionsLayer,
   UsersLayer,
 } from "@dtpt/core";
-import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
-import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
+import { PlanetScalePostgres } from "@dtpt/core/lib/database/clients/postgres/resource";
+import { createPostgresDatabaseLayer } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { Action } from "alchemy";
-import * as Cloudflare from "alchemy/Cloudflare";
 import { Effect, Layer, pipe } from "effect";
 
 import { seedCatalog, summarizeCatalog } from "./catalog.js";
@@ -31,13 +30,16 @@ const SeedProductionLayer = pipe(
 export const SeedDev = Action(
   "SeedDev",
   Effect.gen(function* () {
-    const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+    const { role } = yield* PlanetScalePostgres;
+    const connectionUrl = yield* yield* role.connectionUrl;
 
     return Effect.fn("SeedDev.Run")(function* (input: { version: string }) {
       yield* Effect.log("Seeding development data...", input);
 
       const SeedLayer = SeedDevLayer.pipe(
-        Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
+        Layer.provideMerge(
+          createPostgresDatabaseLayer(Effect.succeed(connectionUrl)),
+        ),
       );
 
       yield* Effect.gen(function* () {
@@ -50,13 +52,14 @@ export const SeedDev = Action(
         yield* Effect.log(summarizeUsers(users));
       }).pipe(Effect.provide(SeedLayer));
     });
-  }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseLocal)),
+  }),
 );
 
 export const SeedProduction = Action(
   "SeedProduction",
   Effect.gen(function* () {
-    const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+    const { role } = yield* PlanetScalePostgres;
+    const connectionUrl = yield* yield* role.connectionUrl;
 
     return Effect.fn("SeedProduction.Run")(function* (input: {
       version: string;
@@ -64,11 +67,13 @@ export const SeedProduction = Action(
       yield* Effect.log("Seeding production catalog...", input);
 
       const SeedLayer = SeedProductionLayer.pipe(
-        Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
+        Layer.provideMerge(
+          createPostgresDatabaseLayer(Effect.succeed(connectionUrl)),
+        ),
       );
 
       const collections = yield* seedCatalog().pipe(Effect.provide(SeedLayer));
       yield* Effect.log(summarizeCatalog(collections));
     });
-  }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseLocal)),
+  }),
 );

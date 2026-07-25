@@ -145,7 +145,8 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
   const subjects = yield* Subjects;
   const events = yield* Events;
 
-  // TODO(database): restore atomic catalog seeding with D1 batch support.
+  // TODO(database): restore catalog import atomicity with an interactive
+  // PostgreSQL transaction after the database cutover is stable.
   yield* Effect.forEach(
     collections.flatMap((collection) => collection.subjects),
     (subjectSeed) => {
