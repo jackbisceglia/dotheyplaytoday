@@ -16,15 +16,14 @@ export const WebConfigAlchemy = Effect.gen(function* () {
   const baseUrl = isDevStage(stack.stage)
     ? url("localhost", "http")
     : url(getServiceDomain("web", stack.stage));
+  const baseUrlProvider = ConfigProvider.fromUnknown({
+    PUBLIC_WEB_URL_BASE: baseUrl,
+  });
+  const baseUrlConfigLayer = ConfigProvider.layerAdd(baseUrlProvider, {
+    asPrimary: true,
+  });
 
-  return yield* WebConfig.pipe(
-    Effect.provide(
-      ConfigProvider.layerAdd(
-        ConfigProvider.fromUnknown({ PUBLIC_WEB_URL_BASE: baseUrl }),
-        { asPrimary: true },
-      ),
-    ),
-  );
+  return yield* WebConfig.pipe(Effect.provide(baseUrlConfigLayer));
 });
 
 export const WebUrl = Effect.gen(function* () {
