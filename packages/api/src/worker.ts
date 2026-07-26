@@ -3,7 +3,7 @@ import { Stack } from "alchemy";
 import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { WebConfig } from "@dtpt/core/lib/config/web";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
-import { createPostgresDatabaseLayerFromHyperdrive } from "@dtpt/core/lib/database/service";
+import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
@@ -43,7 +43,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     yield* WebConfig;
 
     // Layers
-    const DatabaseLayer = createPostgresDatabaseLayerFromHyperdrive(hyperdrive);
+    const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
       Layer.provide(ApiBaseLayer.pipe(Layer.provide(DatabaseLayer))),

@@ -32,10 +32,11 @@ Do not use Docker, Testcontainers, PGlite, or the production branch.
 PostgreSQL persistence
 ├── migrations and schema
 │   ├── applies every checked-in migration to an empty branch
-│   ├── exposes the expected tables, indexes, unique constraints, and keys
-│   ├── preserves cascade behavior for feed edges, participants, and subscriptions
-│   ├── stores structured details and schedules as JSONB
-│   └── preserves text IDs and ISO-8601 text timestamp ordering
+│   ├── inserts and reads structured details and schedules without data loss
+│   ├── rejects duplicate values protected by application uniqueness rules
+│   ├── deletes parent rows and observes the expected cascades
+│   ├── preserves application-generated text IDs exactly
+│   └── orders and filters ISO-8601 text timestamps correctly
 ├── core services
 │   ├── users
 │   │   ├── reads by id, ids, email, and unsubscribe token

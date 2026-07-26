@@ -17,15 +17,15 @@ export const Database = Context.Service<Database>("@dtpt/core/Database");
  * so Worker invocations never share a live connection. The resulting
  * EffectPgDatabase retains Drizzle's interactive transaction API.
  */
-export function createPostgresDatabaseLayer<E, R>(
-  connectionUrl: Effect.Effect<Redacted.Redacted, E, R>,
+export function createDatabaseLayer<E, R>(
+  url: Effect.Effect<Redacted.Redacted, E, R>,
 ) {
-  return Layer.effect(Database, Drizzle.postgres(connectionUrl, { relations }));
+  return Layer.effect(Database, Drizzle.postgres(url, { relations }));
 }
 
 /** Creates the database layer from a Worker's Hyperdrive binding. */
-export function createPostgresDatabaseLayerFromHyperdrive(
-  connection: Cloudflare.Hyperdrive.ConnectClient,
+export function createDatabaseLayerFromHyperdriveResource(
+  client: Cloudflare.Hyperdrive.ConnectClient,
 ) {
-  return createPostgresDatabaseLayer(connection.connectionString);
+  return createDatabaseLayer(client.connectionString);
 }

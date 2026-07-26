@@ -1,17 +1,16 @@
 import * as Alchemy from "alchemy";
 import { AlchemyContext, Stage } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
-import * as Planetscale from "alchemy/Planetscale";
+import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 
 import ApiWorker from "./packages/api/dist/worker.js";
 import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
 import {
+  Database,
   DatabaseHyperdrive,
-  DatabaseHyperdriveCachingDisabled,
-  PlanetScalePostgres,
-  ProductionDatabaseStage,
+  Planetscale,
 } from "./packages/core/dist/lib/database/clients/postgres/resource.js";
 import { SeedDev, SeedProduction } from "./packages/data/dist/seed/action.js";
 import {
@@ -23,7 +22,10 @@ import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 export default Alchemy.Stack(
   "dotheyplaytoday",
   {
-    providers: Layer.merge(Cloudflare.providers(), Planetscale.providers()),
+    providers: Layer.merge(
+      Cloudflare.providers(),
+      AlchemyPlanetscale.providers(),
+    ),
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
@@ -31,12 +33,12 @@ export default Alchemy.Stack(
     const stage = yield* Stage;
     const seedStrategy = yield* SeedStrategy;
 
-    const { database, branchName } = yield* PlanetScalePostgres;
+    const { database, role } = yield* Planetscale;
     const hyperdrive = yield* DatabaseHyperdrive;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
 
-    if (stage === ProductionDatabaseStage) {
+    if (stage === Database.stage.production) {
       yield* SeedProduction("SeedProduction", { version: CatalogSeedVersion });
     } else if (context.dev && seedStrategy !== "skip") {
       yield* SeedDev("SeedDev", { version: Date.now().toString() });
@@ -45,9 +47,9 @@ export default Alchemy.Stack(
     return {
       databaseId: database.id,
       databaseName: database.name,
-      branchName,
+      branchName: role.branch,
       hyperdriveId: hyperdrive.hyperdriveId,
-      hyperdriveCachingDisabled: DatabaseHyperdriveCachingDisabled,
+      hyperdriveCachingDisabled: hyperdrive.Props.caching?.disabled,
       apiWorkerName: apiWorker.workerName,
       apiWorkerUrl: apiWorker.url,
       notifyJobWorkerName: notifyJobWorker.workerName,

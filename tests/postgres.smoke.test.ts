@@ -8,7 +8,7 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 
 import Stack from "../alchemy.run.js";
-import { ProductionBranchName } from "../packages/core/dist/lib/database/clients/postgres/resource.js";
+import { Database } from "../packages/core/dist/lib/database/clients/postgres/resource.js";
 
 const enabled = process.env.RUN_DATABASE_SMOKE === "1";
 
@@ -47,7 +47,7 @@ if (!enabled) {
       expect(output.databaseId).toBeTypeOf("string");
       expect(output.databaseName).toBeTypeOf("string");
       expect(output.branchName).toBeTypeOf("string");
-      expect(output.branchName).not.toBe(ProductionBranchName);
+      expect(output.branchName).not.toBe(Database.branch.production);
       expect(output.hyperdriveId).toBeTypeOf("string");
       expect(output.hyperdriveCachingDisabled).toBe(true);
       expect(output.apiWorkerUrl).toBeTypeOf("string");

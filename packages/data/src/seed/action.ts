@@ -5,8 +5,8 @@ import {
   SubscriptionsLayer,
   UsersLayer,
 } from "@dtpt/core";
-import { PlanetScalePostgres } from "@dtpt/core/lib/database/clients/postgres/resource";
-import { createPostgresDatabaseLayer } from "@dtpt/core/lib/database/service";
+import { Planetscale } from "@dtpt/core/lib/database/clients/postgres/resource";
+import { createDatabaseLayer } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { Action } from "alchemy";
 import { Effect, Layer, pipe } from "effect";
@@ -30,17 +30,16 @@ const SeedProductionLayer = pipe(
 export const SeedDev = Action(
   "SeedDev",
   Effect.gen(function* () {
-    const { role } = yield* PlanetScalePostgres;
-    const connectionUrl = yield* yield* role.connectionUrl;
+    // Resources
+    const database = yield* Planetscale;
+    const connectionUrl = yield* database.role.connectionUrl;
+
+    // Layers
+    const DatabaseLayer = createDatabaseLayer(connectionUrl);
+    const SeedLayer = SeedDevLayer.pipe(Layer.provideMerge(DatabaseLayer));
 
     return Effect.fn("SeedDev.Run")(function* (input: { version: string }) {
       yield* Effect.log("Seeding development data...", input);
-
-      const SeedLayer = SeedDevLayer.pipe(
-        Layer.provideMerge(
-          createPostgresDatabaseLayer(Effect.succeed(connectionUrl)),
-        ),
-      );
 
       yield* Effect.gen(function* () {
         yield* reset();
@@ -58,19 +57,20 @@ export const SeedDev = Action(
 export const SeedProduction = Action(
   "SeedProduction",
   Effect.gen(function* () {
-    const { role } = yield* PlanetScalePostgres;
-    const connectionUrl = yield* yield* role.connectionUrl;
+    // Resources
+    const database = yield* Planetscale;
+    const connectionUrl = yield* database.role.connectionUrl;
+
+    // Layers
+    const DatabaseLayer = createDatabaseLayer(connectionUrl);
+    const SeedLayer = SeedProductionLayer.pipe(
+      Layer.provideMerge(DatabaseLayer),
+    );
 
     return Effect.fn("SeedProduction.Run")(function* (input: {
       version: string;
     }) {
       yield* Effect.log("Seeding production catalog...", input);
-
-      const SeedLayer = SeedProductionLayer.pipe(
-        Layer.provideMerge(
-          createPostgresDatabaseLayer(Effect.succeed(connectionUrl)),
-        ),
-      );
 
       const collections = yield* seedCatalog().pipe(Effect.provide(SeedLayer));
       yield* Effect.log(summarizeCatalog(collections));

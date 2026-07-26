@@ -1,70 +1,69 @@
-import { ALCHEMY_PHASE, Stage } from "alchemy";
+import { Stage } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { retain } from "alchemy/RemovalPolicy";
-import * as Planetscale from "alchemy/Planetscale";
+import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect } from "effect";
-import * as Path from "effect/Path";
 
-export const ProductionDatabaseStage = "production";
-export const ProductionBranchName = "production";
-export const DatabaseHyperdriveCachingDisabled = true;
+export const Database = {
+  name: "dotheyplaytoday",
+  stage: {
+    production: "production",
+  },
+  branch: {
+    production: "production",
+  },
+} as const;
 
-const ProductionDatabaseName = "dotheyplaytoday";
+const migrations = "./packages/data/migrations/postgres";
+const ProductionDatabaseId = "DtptPostgresDatabase";
 
-const MigrationsDirByPhase = Effect.gen(function* () {
-  const path = yield* Path.Path;
-  const phase = yield* ALCHEMY_PHASE;
-
-  if (phase === "runtime") {
-    return "";
-  }
-
-  return yield* path
-    .fromFileUrl(
-      new URL("../../../../../../data/migrations/postgres", import.meta.url),
-    )
-    .pipe(Effect.orDie);
-}).pipe(Effect.provide(Path.layer));
+const ProductionDatabase = AlchemyPlanetscale.PostgresDatabase(
+  ProductionDatabaseId,
+  {
+    name: Database.name,
+    region: { slug: "us-east" },
+    clusterSize: "PS_10",
+    replicas: 0,
+    defaultBranch: Database.branch.production,
+    migrationsDir: migrations,
+  },
+).pipe(retain());
 
 /**
  * One PlanetScale PostgreSQL database is owned by the production stage.
  * Every other stage references that database and owns an isolated branch.
  */
-export const PlanetScalePostgres = Effect.gen(function* () {
+export const Planetscale = Effect.gen(function* () {
   const stage = yield* Stage;
-  const migrationsDir = yield* MigrationsDirByPhase;
-  const isProduction = stage === ProductionDatabaseStage;
 
-  const database = isProduction
-    ? yield* Planetscale.PostgresDatabase("DtptPostgresDatabase", {
-        name: ProductionDatabaseName,
-        region: { slug: "us-east" },
-        clusterSize: "PS_10",
-        replicas: 0,
-        defaultBranch: ProductionBranchName,
-        migrationsDir,
-      }).pipe(retain())
-    : yield* Planetscale.PostgresDatabase.ref("DtptPostgresDatabase", {
-        stage: ProductionDatabaseStage,
-      });
+  const database =
+    stage === Database.stage.production
+      ? yield* ProductionDatabase
+      : yield* AlchemyPlanetscale.PostgresDatabase.ref(ProductionDatabaseId, {
+          stage: Database.stage.production,
+        });
 
-  const branch = isProduction
-    ? ProductionBranchName
-    : yield* Planetscale.PostgresBranch("DtptPostgresBranch", {
-        database,
-        parentBranch: ProductionBranchName,
-        migrationsDir,
-        replicas: 0,
-      });
+  const branch =
+    stage === Database.stage.production
+      ? Database.branch.production
+      : yield* AlchemyPlanetscale.PostgresBranch("DtptPostgresBranch", {
+          database,
+          parentBranch: Database.branch.production,
+          migrationsDir: migrations,
+          replicas: 0,
+        });
 
-  const role = yield* Planetscale.PostgresRole("DtptPostgresRuntimeRole", {
-    database,
-    branch,
-    inheritedRoles: ["pg_read_all_data", "pg_write_all_data"],
-    successor: "postgres",
-  });
+  const role = yield* AlchemyPlanetscale.PostgresRole(
+    "DtptPostgresRuntimeRole",
+    {
+      database,
+      branch,
+      inheritedRoles: ["pg_read_all_data", "pg_write_all_data"],
+      successor: "postgres",
+    },
+  );
 
-  return { database, branchName: role.branch, role };
+  return { database, role };
 });
 
 /**
@@ -74,12 +73,12 @@ export const PlanetScalePostgres = Effect.gen(function* () {
  * observe current subscription and event state.
  */
 export const DatabaseHyperdrive = Effect.gen(function* () {
-  const { role } = yield* PlanetScalePostgres;
+  const { role } = yield* Planetscale;
 
   return yield* Cloudflare.Hyperdrive.Connection("DtptDatabaseHyperdrive", {
     origin: role.origin,
     mtls: { sslmode: "verify-full" },
-    caching: { disabled: DatabaseHyperdriveCachingDisabled },
+    caching: { disabled: true },
     originConnectionLimit: 5,
   });
 });
