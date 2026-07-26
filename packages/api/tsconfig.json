@@ -9,6 +9,5 @@
       }
     ]
   },
-  "include": ["src"],
-  "exclude": ["src/**/*.sqlite.test.ts", "src/__tests__/helpers.sqlite.ts"]
+  "include": ["src"]
 }

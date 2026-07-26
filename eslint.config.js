@@ -18,9 +18,6 @@ export default defineConfig(
       "**/dist/**",
       "**/.output/**",
       "**/.alchemy/**",
-      "**/*.sqlite.test.ts",
-      "**/helpers.sqlite.ts",
-      "**/setup.sqlite.ts",
     ],
   },
   {

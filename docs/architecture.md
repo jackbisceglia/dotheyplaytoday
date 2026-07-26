@@ -58,13 +58,11 @@ behavior.
 There is no automated D1 data transfer. Catalog and event data are rebuilt from
 checked-in seeds, and development seed data is recreated by its normal reset.
 The current production owner account must be recreated manually after cutover.
-The historical D1 migration remains checked in as evidence of the previous
-schema.
 
 ## Testing and validation
 
 - Schema-only and domain-only tests continue to run locally.
-- Legacy SQLite-backed core persistence, API route, and seed suites are retained as `*.sqlite.test.ts` files but excluded until they are migrated to a remote PostgreSQL-native test strategy.
+- The removed SQLite suites are represented by the behavior-focused [PostgreSQL persistence test plan](./test-plan/postgres.md). Reintroduce and prune those cases against disposable Alchemy-managed branches.
 - `pnpm test:smoke:postgres` deploys a disposable non-production stage, verifies non-secret resource identifiers and disabled Hyperdrive caching, calls the API's subjects query through Worker → Hyperdrive → PlanetScale, and destroys the disposable branch/role/Hyperdrive/Workers. It requires both provider credentials and an existing production database stack reference.
 - Provider and network boundaries may use fakes.
 - Behavior changes require focused tests covering the changed path.
@@ -81,7 +79,6 @@ remain outside those transactions.
 Separate follow-ups are:
 
 1. Evaluate a `Registration` application service while restoring signup atomicity.
-2. Re-enable and migrate the deferred persistence/API/seed suites to a PostgreSQL-native strategy without Docker.
+2. Implement the PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 3. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
-4. Remove historical D1 migration and SQLite test artifacts after the cutover has proven stable.
-5. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
+4. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
