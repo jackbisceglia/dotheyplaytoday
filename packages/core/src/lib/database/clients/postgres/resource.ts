@@ -3,31 +3,32 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import { retain } from "alchemy/RemovalPolicy";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect } from "effect";
+import { Path } from "effect/Path";
 
 export const Database = {
+  id: "DtptPostgresDatabase",
   name: "dotheyplaytoday",
-  stage: {
-    production: "production",
-  },
-  branch: {
+  migrations: new URL(
+    "../../../../../../data/migrations/postgres/",
+    import.meta.url,
+  ),
+  branches: {
     production: "production",
   },
 } as const;
 
-const migrations = "./packages/data/migrations/postgres";
-const ProductionDatabaseId = "DtptPostgresDatabase";
+const ProductionDatabase = Effect.gen(function* () {
+  const path = yield* Path;
 
-const ProductionDatabase = AlchemyPlanetscale.PostgresDatabase(
-  ProductionDatabaseId,
-  {
+  return yield* AlchemyPlanetscale.PostgresDatabase(Database.id, {
     name: Database.name,
     region: { slug: "us-east" },
     clusterSize: "PS_10",
     replicas: 0,
-    defaultBranch: Database.branch.production,
-    migrationsDir: migrations,
-  },
-).pipe(retain());
+    defaultBranch: Database.branches.production,
+    migrationsDir: path.fromFileUrl(Database.migrations),
+  }).pipe(retain());
+});
 
 /**
  * One PlanetScale PostgreSQL database is owned by the production stage.
@@ -35,21 +36,22 @@ const ProductionDatabase = AlchemyPlanetscale.PostgresDatabase(
  */
 export const Planetscale = Effect.gen(function* () {
   const stage = yield* Stage;
+  const path = yield* Path;
 
   const database =
-    stage === Database.stage.production
+    stage === "production"
       ? yield* ProductionDatabase
-      : yield* AlchemyPlanetscale.PostgresDatabase.ref(ProductionDatabaseId, {
-          stage: Database.stage.production,
+      : yield* AlchemyPlanetscale.PostgresDatabase.ref(Database.id, {
+          stage: "production",
         });
 
   const branch =
-    stage === Database.stage.production
-      ? Database.branch.production
+    stage === "production"
+      ? Database.branches.production
       : yield* AlchemyPlanetscale.PostgresBranch("DtptPostgresBranch", {
           database,
-          parentBranch: Database.branch.production,
-          migrationsDir: migrations,
+          parentBranch: Database.branches.production,
+          migrationsDir: path.fromFileUrl(Database.migrations),
           replicas: 0,
         });
 
@@ -73,10 +75,10 @@ export const Planetscale = Effect.gen(function* () {
  * observe current subscription and event state.
  */
 export const DatabaseHyperdrive = Effect.gen(function* () {
-  const { role } = yield* Planetscale;
+  const planetscale = yield* Planetscale;
 
   return yield* Cloudflare.Hyperdrive.Connection("DtptDatabaseHyperdrive", {
-    origin: role.origin,
+    origin: planetscale.role.origin,
     mtls: { sslmode: "verify-full" },
     caching: { disabled: true },
     originConnectionLimit: 5,

@@ -14,7 +14,7 @@ PostgreSQL behavior and the transaction model in place at that time.
 
 Each database integration run should:
 
-1. Generate a unique `smoke-postgres-*` Alchemy stage.
+1. Generate a unique `infra-postgres-*` Alchemy stage.
 2. Reference the production-owned PlanetScale database without selecting its
    production branch.
 3. Create a disposable branch, apply checked-in migrations, and create a
@@ -117,5 +117,6 @@ reintroduce those cases as assertions of the current non-atomic behavior.
 ## Existing coverage
 
 Keep fast schema, domain, contract, scheduling, channel, and rendering tests in
-the normal local suite. `pnpm test:smoke:postgres` remains the minimal deployed
+the normal local suite. The opt-in test under
+`packages/core/src/lib/database/__tests__/infra/` remains the minimal deployed
 connectivity check for Worker → Hyperdrive → PlanetScale.

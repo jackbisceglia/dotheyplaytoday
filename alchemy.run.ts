@@ -2,8 +2,7 @@ import * as Alchemy from "alchemy";
 import { AlchemyContext, Stage } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
-import * as Effect from "effect/Effect";
-import * as Layer from "effect/Layer";
+import { Effect, Layer } from "effect";
 
 import ApiWorker from "./packages/api/dist/worker.js";
 import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
@@ -33,21 +32,21 @@ export default Alchemy.Stack(
     const stage = yield* Stage;
     const seedStrategy = yield* SeedStrategy;
 
-    const { database, role } = yield* Planetscale;
+    const planetscale = yield* Planetscale;
     const hyperdrive = yield* DatabaseHyperdrive;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
 
-    if (stage === Database.stage.production) {
+    if (stage === "production") {
       yield* SeedProduction("SeedProduction", { version: CatalogSeedVersion });
     } else if (context.dev && seedStrategy !== "skip") {
       yield* SeedDev("SeedDev", { version: Date.now().toString() });
     }
 
     return {
-      databaseId: database.id,
-      databaseName: database.name,
-      branchName: role.branch,
+      databaseId: planetscale.database.id,
+      databaseName: planetscale.database.name,
+      branchName: planetscale.role.branch,
       hyperdriveId: hyperdrive.hyperdriveId,
       hyperdriveCachingDisabled: hyperdrive.Props.caching?.disabled,
       apiWorkerName: apiWorker.workerName,

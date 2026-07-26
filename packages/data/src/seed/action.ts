@@ -31,8 +31,8 @@ export const SeedDev = Action(
   "SeedDev",
   Effect.gen(function* () {
     // Resources
-    const database = yield* Planetscale;
-    const connectionUrl = yield* database.role.connectionUrl;
+    const planetscale = yield* Planetscale;
+    const connectionUrl = yield* planetscale.role.connectionUrl;
 
     // Layers
     const DatabaseLayer = createDatabaseLayer(connectionUrl);
@@ -58,8 +58,8 @@ export const SeedProduction = Action(
   "SeedProduction",
   Effect.gen(function* () {
     // Resources
-    const database = yield* Planetscale;
-    const connectionUrl = yield* database.role.connectionUrl;
+    const planetscale = yield* Planetscale;
+    const connectionUrl = yield* planetscale.role.connectionUrl;
 
     // Layers
     const DatabaseLayer = createDatabaseLayer(connectionUrl);

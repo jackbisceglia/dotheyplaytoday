@@ -49,11 +49,12 @@ before creating runtime roles and running seed Actions. Production seeding is a
 versioned, non-destructive catalog import; development seeding resets and
 reconstructs catalog, event, and development-user data.
 
-Run the disposable Worker → Hyperdrive → PlanetScale integration smoke test
-after the production database stack exists:
+Run the disposable Worker → Hyperdrive → PlanetScale infrastructure test after
+the production database stack exists:
 
 ```bash
-pnpm test:smoke:postgres
+pnpm build
+RUN_INFRA_TESTS=1 pnpm exec vitest run packages/core/src/lib/database/__tests__/infra/postgres.test.ts
 ```
 
 It requires Cloudflare and PlanetScale provider credentials, creates an
