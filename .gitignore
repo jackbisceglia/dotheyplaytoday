@@ -2,7 +2,8 @@
 node_modules/
 dist/
 .output/
-.astro/
+.tanstack/
+.nitro/
 
 # scratchpad
 *.scratch.txt

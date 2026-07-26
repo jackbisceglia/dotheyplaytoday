@@ -8,7 +8,7 @@
 - `packages/api`: public HTTP API.
 - `packages/jobs`: scheduled notification worker and notify orchestration.
 - `packages/data`: catalog, event, and development seed data.
-- `packages/web`: Astro frontend.
+- `packages/web`: TanStack Start (SolidJS) frontend.
 
 ## Working agreements
 

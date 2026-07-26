@@ -1,12 +1,18 @@
 {
-  "extends": ["astro/tsconfigs/strict", "../../tsconfig.base.json"],
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    // TanStack Start recommends leaving this off: it keeps type-only imports
+    // erasable, so server-only modules cannot be pulled into the client bundle.
+    "verbatimModuleSyntax": false,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "types": ["vite/client"],
     "paths": {
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src", ".astro/types.d.ts", "astro.config.ts"],
-  "exclude": ["dist"]
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["dist", ".output", ".tanstack", ".nitro"]
 }

@@ -6,14 +6,14 @@
 - `packages/api` implements the public HTTP API using `core` contracts and services.
 - `packages/jobs` implements notification orchestration and the scheduled worker using `core` services and channels.
 - `packages/data` owns catalog, event, and development seed data and writes through `core` domain services.
-- `packages/web` is the Astro frontend and consumes shared `core` contracts.
+- `packages/web` is the TanStack Start (SolidJS) frontend and consumes shared `core` contracts.
 
 Dependencies point inward toward `core`. The API, jobs, data, and web packages do not provide domain abstractions for `core` or depend on one another for their primary behavior.
 
 ## Runtime and infrastructure
 
 - TypeScript and Effect v4 beta.
-- Astro on Cloudflare.
+- TanStack Start with SolidJS, server-rendered on every route.
 - SQLite and Drizzle, with Cloudflare D1 when deployed.
 - Alchemy-provisioned D1, public API worker, and notification worker.
 - Alchemy routes the API through `api.dotheyplay.today` and scheduled jobs through `jobs.dotheyplay.today`. Non-production worker domains are prefixed with their stage normalized as a valid subdomain label.

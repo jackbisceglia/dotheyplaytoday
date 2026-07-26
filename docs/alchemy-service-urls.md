@@ -6,9 +6,13 @@ Service URL wiring is transitional until the Web application is managed by
 Alchemy.
 
 Alchemy currently manages the API Worker and notification Worker, but it does
-not manage the Astro Web application. The Workers therefore have Alchemy
-resource outputs, while the Web application does not have a corresponding
-resource or resolved `url` output.
+not manage the Web application. The Workers therefore have Alchemy resource
+outputs, while the Web application does not have a corresponding resource or
+resolved `url` output.
+
+The Web application is now a Vite project (TanStack Start), so
+`Cloudflare.Website.Vite` is a supported host for it whenever the migration
+steps below are taken up.
 
 ## Current implementation
 

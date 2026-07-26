@@ -1,5 +1,5 @@
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/config/providers";
+import { createConfigProviderFromDotEnv } from "@dtpt/core/lib/config/providers/dotenv";
 import { Layer, ManagedRuntime, pipe } from "effect";
 import { FetchHttpClient } from "effect/unstable/http";
 

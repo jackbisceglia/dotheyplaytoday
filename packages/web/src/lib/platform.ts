@@ -1,4 +1,4 @@
-import { createConfigProviderFromViteEnv } from "@dtpt/core/lib/config/providers";
+import { createConfigProviderFromViteEnv } from "@dtpt/core/lib/config/providers/vite";
 import { Layer, ManagedRuntime } from "effect";
 import { FetchHttpClient } from "effect/unstable/http";
 

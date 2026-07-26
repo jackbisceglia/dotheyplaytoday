@@ -1,12 +1,16 @@
 import { ConfigProvider, Effect, Layer } from "effect";
 import { Path } from "effect/Path";
 
-const WORKSPACE_ROOT_URL = new URL("../../../../../", import.meta.url);
+const WORKSPACE_ROOT_URL = new URL("../../../../../../", import.meta.url);
 
 /**
  * Installs the workspace-root `.env` config provider for Node runtimes.
  * The path is anchored to this package so package scripts and root one-offs
  * resolve the same file.
+ *
+ * Server-only: this reads the filesystem, so it lives apart from the runtime-
+ * neutral providers and must not be imported by code that also runs in a
+ * browser bundle.
  */
 export const createConfigProviderFromDotEnv = Effect.fn(
   function* () {
@@ -23,16 +27,3 @@ export const createConfigProviderFromDotEnv = Effect.fn(
   },
   Layer.unwrap,
 );
-
-/**
- * Installs a config provider backed by Vite's `import.meta.env`, for
- * browser/Vite runtimes where there is no filesystem `.env` to read.
- */
-export const createConfigProviderFromViteEnv = (viteEnv: unknown) =>
-  ConfigProvider.layer(ConfigProvider.fromUnknown(viteEnv));
-
-/**
- * Installs a config provider backed by Cloudflare's Worker `env` object.
- */
-export const createConfigProviderFromCloudflareEnv = (env: unknown) =>
-  ConfigProvider.layer(ConfigProvider.fromUnknown(env));
