@@ -5,6 +5,7 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
+import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { WebConfig } from "@dtpt/core/lib/config/web";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createPostgresDatabaseLayerFromHyperdrive } from "@dtpt/core/lib/database/service";
@@ -38,6 +39,7 @@ export default Cloudflare.Worker(
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: Trigger.port, strictPort: true },
+    domain: Stack.useSync((stack) => getServiceDomain("jobs", stack.stage)),
   },
   Effect.gen(function* () {
     // Resources

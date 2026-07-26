@@ -1,4 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
+import { Stack } from "alchemy";
+import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { WebConfig } from "@dtpt/core/lib/config/web";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createPostgresDatabaseLayerFromHyperdrive } from "@dtpt/core/lib/database/service";
@@ -25,13 +27,13 @@ const WorkerLayer = Layer.merge(
   RateLimiterLayer,
 );
 
-// TODO: go back to function definition once fix lands
 export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   "ApiWorker",
   {
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: 3001, strictPort: true },
+    domain: Stack.useSync((stack) => getServiceDomain("api", stack.stage)),
   },
   Effect.gen(function* () {
     // Resources

@@ -6,6 +6,7 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 
 import ApiWorker from "./packages/api/dist/worker.js";
+import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
 import {
   DatabaseHyperdrive,
   DatabaseHyperdriveCachingDisabled,
@@ -52,5 +53,5 @@ export default Alchemy.Stack(
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
     };
-  }),
+  }).pipe(Effect.provide(WebConfigAlchemy)),
 );
