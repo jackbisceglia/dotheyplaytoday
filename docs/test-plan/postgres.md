@@ -15,10 +15,8 @@ PostgreSQL behavior and the transaction model in place at that time.
 Each database integration run should:
 
 1. Generate a unique `infra-postgres-*` Alchemy stage.
-2. Reference the production-owned PlanetScale database without selecting its
-   production branch.
-3. Create a disposable branch, apply checked-in migrations, and create a
-   least-privilege role.
+2. Create a disposable PlanetScale database without referencing production.
+3. Apply checked-in migrations and create a least-privilege role.
 4. Use the direct role URL for core service and seed tests.
 5. Use a deployed Worker through Hyperdrive for HTTP integration tests.
 6. Disable Hyperdrive query caching.

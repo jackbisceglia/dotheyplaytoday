@@ -3,11 +3,11 @@ import { Effect } from "effect";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { subjectsTable } from "../../../../modules/subjects/schema.js";
-import { DatabaseHyperdrive } from "../../clients/postgres/resource.js";
 import {
   Database,
   createDatabaseLayerFromHyperdriveResource,
 } from "../../service.js";
+import { InfraDatabaseHyperdrive } from "./resource.js";
 
 export default class InfraDatabaseWorker extends Cloudflare.Worker<InfraDatabaseWorker>()(
   "InfraDatabaseWorker",
@@ -16,7 +16,9 @@ export default class InfraDatabaseWorker extends Cloudflare.Worker<InfraDatabase
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
   },
   Effect.gen(function* () {
-    const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
+    const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(
+      InfraDatabaseHyperdrive,
+    );
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
 
     return {

@@ -42,7 +42,7 @@ data; the current production owner account must be recreated manually.
 
 - Schema-only and domain-only tests continue to run locally.
 - The removed SQLite suites are represented by the behavior-focused [PostgreSQL persistence test plan](./test-plan/postgres.md). Reintroduce and prune those cases against disposable Alchemy-managed branches.
-- The opt-in PostgreSQL infrastructure test deploys a disposable non-production stage, queries PlanetScale through Worker → Hyperdrive, and destroys that stage. It requires both provider credentials and an existing production database stack reference.
+- The opt-in PostgreSQL infrastructure test deploys a disposable database and Worker stack, queries PlanetScale through Worker → Hyperdrive, and destroys the stack. It requires both provider credentials.
 - Provider and network boundaries may use fakes.
 - Behavior changes require focused tests covering the changed path.
 - Repository-wide completion checks are `pnpm lint` and `pnpm typecheck`.

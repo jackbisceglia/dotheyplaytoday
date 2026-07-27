@@ -6,11 +6,7 @@ import * as Test from "alchemy/Test/Vitest";
 import { Crypto, Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 
-import {
-  Database,
-  DatabaseHyperdrive,
-  Planetscale as DatabasePlanetscale,
-} from "../../clients/postgres/resource.js";
+import { InfraDatabaseHyperdrive, InfraPlanetscale } from "./resource.js";
 import InfraDatabaseWorker from "./worker.js";
 
 const enabled = process.env.RUN_INFRA_TESTS === "1";
@@ -43,20 +39,21 @@ if (!enabled) {
   });
 
   const Stack = Alchemy.Stack(
-    "dotheyplaytoday",
+    "dotheyplaytoday-infra",
     {
       providers: Layer.merge(Cloudflare.providers(), Planetscale.providers()),
       state: Cloudflare.state(),
     },
     Effect.gen(function* () {
-      const planetscale = yield* DatabasePlanetscale;
-      const hyperdrive = yield* DatabaseHyperdrive;
+      const planetscale = yield* InfraPlanetscale;
+      const hyperdrive = yield* InfraDatabaseHyperdrive;
       const worker = yield* InfraDatabaseWorker;
 
       return {
         databaseId: planetscale.database.id,
         databaseName: planetscale.database.name,
         branchName: planetscale.role.branch,
+        migrationHashes: planetscale.database.migrationsHashes,
         hyperdriveId: hyperdrive.hyperdriveId,
         hyperdriveCachingDisabled: hyperdrive.Props.caching?.disabled,
         workerUrl: worker.url,
@@ -76,7 +73,7 @@ if (!enabled) {
       expect(output.databaseId).toBeTypeOf("string");
       expect(output.databaseName).toBeTypeOf("string");
       expect(output.branchName).toBeTypeOf("string");
-      expect(output.branchName).not.toBe(Database.branches.production);
+      expect(Object.keys(output.migrationHashes)).not.toHaveLength(0);
       expect(output.hyperdriveId).toBeTypeOf("string");
       expect(output.hyperdriveCachingDisabled).toBe(true);
       expect(output.workerUrl).toBeTypeOf("string");

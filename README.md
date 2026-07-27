@@ -50,11 +50,11 @@ versioned, non-destructive catalog import; development seeding resets and
 reconstructs catalog, event, and development-user data.
 
 Run the disposable Worker → Hyperdrive → PlanetScale infrastructure test after
-the production database stack exists:
+loading the provider credentials:
 
 ```bash
 pnpm build
-RUN_INFRA_TESTS=1 pnpm exec vitest run packages/core/src/lib/database/__tests__/infra/postgres.test.ts
+CI=1 RUN_INFRA_TESTS=1 node --env-file=.env node_modules/vitest/vitest.mjs run packages/core/src/lib/database/__tests__/infra/postgres.test.ts
 ```
 
 It requires Cloudflare and PlanetScale provider credentials, creates an
