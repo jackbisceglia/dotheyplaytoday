@@ -39,9 +39,10 @@ authentication is also required for infrastructure commands.
 
 The exact `production` stage owns the single `dotheyplaytoday` PlanetScale
 database and its protected `production` default branch. Other stages reference
-that database and create isolated remote development branches; there is no
-Docker or local database path. Provision the production stage once before
-starting a development stage so its database reference exists.
+that database and create isolated remote PS-DEV branches; there is no Docker or
+local database path. Provision the production stage once before starting a
+development stage so its database reference exists, and destroy development
+stages when they are no longer needed so their branch billing stops.
 
 Checked-in PostgreSQL migrations live in
 `packages/data/migrations/postgres/`. Alchemy applies them transactionally

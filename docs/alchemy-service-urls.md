@@ -10,14 +10,20 @@ not manage the Astro Web application. The Workers therefore have Alchemy
 resource outputs, while the Web application does not have a corresponding
 resource or resolved `url` output.
 
+The Workers temporarily use their generated `workers.dev` endpoints. Their
+custom domains will be restored after the `dotheyplay.today` DNS zone moves to
+Cloudflare.
+
 ## Current implementation
 
-Deployed Worker hostnames are derived by `getServiceDomain`:
+The intended deployed Worker hostnames are derived by `getServiceDomain`:
 
 - Production API: `api.dotheyplay.today`
 - Production jobs: `jobs.dotheyplay.today`
 - Non-production Workers: the normalized stage is prepended to the production
   hostname.
+
+These hostnames are not currently attached to the Workers.
 
 The Workers consume `WebConfig`, which remains an ordinary Effect `Config`
 definition backed by:

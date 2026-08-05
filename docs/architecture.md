@@ -16,9 +16,9 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Astro on Cloudflare.
 - PlanetScale PostgreSQL and Drizzle, connected to Workers through Cloudflare Hyperdrive V1.
 - Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public API worker, and notification worker.
-- Alchemy routes the API through `api.dotheyplay.today` and scheduled jobs through `jobs.dotheyplay.today`. Non-production worker domains are prefixed with their stage normalized as a valid subdomain label.
+- Workers temporarily use their generated `workers.dev` endpoints. The intended custom domains are documented in [Alchemy service URL wiring](./alchemy-service-urls.md) and will be restored after the DNS zone moves to Cloudflare.
 - The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
-- Hyperdrive uses the PlanetScale role's direct PostgreSQL origin, verifies TLS, starts with an origin connection limit of five, and has query caching disabled.
+- Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
 - Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
 - Resend email delivery and console dry runs.
@@ -32,8 +32,9 @@ Production deploys load `.env.production` through `--env-file .env.production`.
 
 The `production` stage owns the retained PlanetScale database and production
 branch. Other stages reference that database and own disposable development
-branches. Alchemy applies checked-in migrations before creating runtime roles,
-Workers, and seed Actions.
+branches on PlanetScale's PS-DEV size. Destroy non-production stages when they
+are no longer needed so their branch billing stops. Alchemy applies checked-in
+migrations before creating runtime roles, Workers, and seed Actions.
 
 There is no automated D1 data transfer. Seeds rebuild catalog and development
 data; the current production owner account must be recreated manually.
