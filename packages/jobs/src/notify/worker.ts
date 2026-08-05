@@ -5,7 +5,7 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
-import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
+// import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { WebConfig } from "@dtpt/core/lib/config/web";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
@@ -33,14 +33,19 @@ const NotifyDomainsLayer = pipe(
   Layer.provide(CloudflareCryptoLayer),
 );
 
-export default Cloudflare.Worker(
-  "NotifyJobWorker",
-  {
+export class NotifyJobWorker extends Cloudflare.Worker<
+  NotifyJobWorker,
+  Cloudflare.WorkerShape
+>()("NotifyJobWorker") {}
+
+export default NotifyJobWorker.make(
+  Stack.useSync((_stack) => ({
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: Trigger.port, strictPort: true },
-    domain: Stack.useSync((stack) => getServiceDomain("jobs", stack.stage)),
-  },
+    // TODO: Restore after dotheyplay.today DNS moves to Cloudflare.
+    // domain: getServiceDomain("jobs", _stack.stage),
+  })),
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;

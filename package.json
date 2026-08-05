@@ -40,6 +40,9 @@
     "ws": "^8.21.0"
   },
   "pnpm": {
+    "overrides": {
+      "@distilled.cloud/planetscale@0.29.1": "0.30.1"
+    },
     "onlyBuiltDependencies": [
       "esbuild"
     ]

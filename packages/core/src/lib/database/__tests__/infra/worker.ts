@@ -1,5 +1,5 @@
 import * as Cloudflare from "alchemy/Cloudflare";
-import { Effect } from "effect";
+import { Cause, Effect } from "effect";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { subjectsTable } from "../../../../modules/subjects/schema.js";
@@ -28,11 +28,17 @@ export default class InfraDatabaseWorker extends Cloudflare.Worker<InfraDatabase
         yield* database
           .select({ id: subjectsTable.id })
           .from(subjectsTable)
-          .limit(1)
-          .pipe(Effect.orDie);
+          .limit(1);
 
         return HttpServerResponse.empty();
-      }).pipe(Effect.provide(DatabaseLayer)),
+      }).pipe(
+        Effect.provide(DatabaseLayer),
+        Effect.catchCause((cause) =>
+          Effect.succeed(
+            HttpServerResponse.text(Cause.pretty(cause), { status: 500 }),
+          ),
+        ),
+      ),
     };
   }).pipe(Effect.provide(Cloudflare.Hyperdrive.ConnectBinding)),
 ) {}

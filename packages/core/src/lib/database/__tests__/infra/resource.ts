@@ -1,19 +1,20 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Planetscale from "alchemy/Planetscale";
 import { Effect } from "effect";
-import { Path } from "effect/Path";
 
-import { Database } from "../../clients/postgres/resource.js";
+import { database as databaseDefinition } from "../../clients/postgres/resource.js";
 
 export const InfraPlanetscale = Effect.gen(function* () {
-  const path = yield* Path;
+  const migrationsDirectory = yield* databaseDefinition.migrationsDirectory;
   const database = yield* Planetscale.PostgresDatabase(
     "InfraPostgresDatabase",
     {
       region: { slug: "us-east" },
-      clusterSize: "PS_10",
+      clusterSize: "PS_5",
       replicas: 0,
-      migrationsDir: path.fromFileUrl(Database.migrations),
+      ...(migrationsDirectory === undefined
+        ? {}
+        : { migrationsDir: migrationsDirectory }),
     },
   );
   const role = yield* Planetscale.PostgresRole("InfraPostgresRuntimeRole", {
@@ -30,7 +31,7 @@ export const InfraDatabaseHyperdrive = Effect.gen(function* () {
 
   return yield* Cloudflare.Hyperdrive.Connection("InfraDatabaseHyperdrive", {
     origin: planetscale.role.origin,
-    mtls: { sslmode: "verify-full" },
+    dev: planetscale.role.pooledOrigin,
     caching: { disabled: true },
     originConnectionLimit: 5,
   });

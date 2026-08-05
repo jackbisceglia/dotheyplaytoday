@@ -3,13 +3,18 @@ import * as Alchemy from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Planetscale from "alchemy/Planetscale";
 import * as Test from "alchemy/Test/Vitest";
-import { Crypto, Effect, Layer } from "effect";
+import { Crypto, Data, Effect, Layer, Schedule } from "effect";
+import * as HttpClient from "effect/unstable/http/HttpClient";
 import { describe, expect, it } from "vitest";
 
 import { InfraDatabaseHyperdrive, InfraPlanetscale } from "./resource.js";
 import InfraDatabaseWorker from "./worker.js";
 
 const enabled = process.env.RUN_INFRA_TESTS === "1";
+
+class WorkerRouteNotReady extends Data.TaggedError("WorkerRouteNotReady")<{
+  readonly status: 404;
+}> {}
 
 if (!enabled) {
   describe.skip("PlanetScale PostgreSQL infrastructure", () => {
@@ -82,10 +87,25 @@ if (!enabled) {
         return yield* Effect.die("Infrastructure stack has no API URL");
       }
 
-      const response = yield* Test.getWhenReady(output.workerUrl);
+      const client = yield* HttpClient.HttpClient;
+      const response = yield* client.get(output.workerUrl).pipe(
+        Effect.flatMap((response) =>
+          response.status === 404
+            ? Effect.fail(new WorkerRouteNotReady({ status: 404 }))
+            : Effect.succeed(response),
+        ),
+        Effect.retry({
+          while: (error) => error instanceof WorkerRouteNotReady,
+          schedule: Schedule.max([
+            Schedule.spaced("1 second"),
+            Schedule.recurs(90),
+          ]),
+        }),
+      );
+      const body = yield* response.text;
 
-      expect(response.status).toBe(200);
+      expect(response.status, body).toBe(204);
     }),
-    { timeout: 120_000 },
+    { timeout: 180_000 },
   );
 }

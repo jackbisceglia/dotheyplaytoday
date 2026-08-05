@@ -31,6 +31,9 @@ catalogs:
       specifier: ^6.9.1
       version: 6.9.1
 
+overrides:
+  '@distilled.cloud/planetscale@0.29.1': 0.30.1
+
 importers:
 
   .:
@@ -524,13 +527,18 @@ packages:
     peerDependencies:
       effect: '>=4.0.0-beta.97 || >=4.0.0'
 
+  '@distilled.cloud/core@0.30.1':
+    resolution: {integrity: sha512-MVVMwN3gk/KvCR/Vq/IdZDa06np0aoQGvtSv3HiYEv9f+GrqIPvqzOJC64CZL5Qk7rqbgssqnIGtGDguMk7+Ow==}
+    peerDependencies:
+      effect: '>=4.0.0-beta.97 || >=4.0.0'
+
   '@distilled.cloud/neon@0.29.1':
     resolution: {integrity: sha512-6vfCvTEZBIfKCDZ+4B4GfuZoGigfBaxnEF21si89Lm7ffCCny2Da/OEhGqwLUvd/WVfMfDOKdvrHuN58O928hw==}
     peerDependencies:
       effect: '>=4.0.0-beta.97 || >=4.0.0'
 
-  '@distilled.cloud/planetscale@0.29.1':
-    resolution: {integrity: sha512-m/e7V6iyjI24Myr2dVJuTjNqG8JOjyaDEuWeJ/HF8BKAhELHSBAwo2XFQurRjJmB+hzTRoCuasX76NPSXoDcCA==}
+  '@distilled.cloud/planetscale@0.30.1':
+    resolution: {integrity: sha512-JvfcHtNBpb3UhLBxMg3Krb6gHbAYSCXBQKMLRMDXUfm608XtQQ97MTLOdjotWbF/Y4gRLZZKeBEcacAUR16Y+Q==}
     peerDependencies:
       effect: '>=4.0.0-beta.97 || >=4.0.0'
 
@@ -4901,14 +4909,18 @@ snapshots:
     dependencies:
       effect: 4.0.0-beta.98
 
+  '@distilled.cloud/core@0.30.1(effect@4.0.0-beta.98)':
+    dependencies:
+      effect: 4.0.0-beta.98
+
   '@distilled.cloud/neon@0.29.1(effect@4.0.0-beta.98)':
     dependencies:
       '@distilled.cloud/core': 0.29.1(effect@4.0.0-beta.98)
       effect: 4.0.0-beta.98
 
-  '@distilled.cloud/planetscale@0.29.1(effect@4.0.0-beta.98)':
+  '@distilled.cloud/planetscale@0.30.1(effect@4.0.0-beta.98)':
     dependencies:
-      '@distilled.cloud/core': 0.29.1(effect@4.0.0-beta.98)
+      '@distilled.cloud/core': 0.30.1(effect@4.0.0-beta.98)
       effect: 4.0.0-beta.98
 
   '@effect/language-service@0.86.2': {}
@@ -6116,7 +6128,7 @@ snapshots:
       '@distilled.cloud/cloudflare-vite-plugin': 0.13.5(@distilled.cloud/cloudflare-runtime@0.13.5(@distilled.cloud/cloudflare@0.29.1(effect@4.0.0-beta.98))(@effect/platform-node@4.0.0-beta.98(effect@4.0.0-beta.98)(ioredis@5.11.1))(effect@4.0.0-beta.98))(@distilled.cloud/cloudflare@0.29.1(effect@4.0.0-beta.98))(@effect/platform-node@4.0.0-beta.98(effect@4.0.0-beta.98)(ioredis@5.11.1))(effect@4.0.0-beta.98)(rolldown@1.0.1)(vite@7.3.1(@types/node@20.19.27)(yaml@2.9.0))(workerd@1.20260704.1)
       '@distilled.cloud/core': 0.29.1(effect@4.0.0-beta.98)
       '@distilled.cloud/neon': 0.29.1(effect@4.0.0-beta.98)
-      '@distilled.cloud/planetscale': 0.29.1(effect@4.0.0-beta.98)
+      '@distilled.cloud/planetscale': 0.30.1(effect@4.0.0-beta.98)
       '@effect/vitest': 4.0.0-beta.98(effect@4.0.0-beta.98)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(yaml@2.9.0))
       '@libsql/client': 0.17.4
       '@octokit/rest': 22.0.1
@@ -6171,7 +6183,7 @@ snapshots:
       '@distilled.cloud/cloudflare-vite-plugin': 0.13.5(@distilled.cloud/cloudflare-runtime@0.13.5(@distilled.cloud/cloudflare@0.29.1(effect@4.0.0-beta.98))(@effect/platform-node@4.0.0-beta.98(effect@4.0.0-beta.98)(ioredis@5.11.1))(effect@4.0.0-beta.98))(@distilled.cloud/cloudflare@0.29.1(effect@4.0.0-beta.98))(@effect/platform-node@4.0.0-beta.98(effect@4.0.0-beta.98)(ioredis@5.11.1))(effect@4.0.0-beta.98)(rolldown@1.0.1)(vite@7.3.5(@types/node@20.19.27)(yaml@2.9.0))(workerd@1.20260704.1)
       '@distilled.cloud/core': 0.29.1(effect@4.0.0-beta.98)
       '@distilled.cloud/neon': 0.29.1(effect@4.0.0-beta.98)
-      '@distilled.cloud/planetscale': 0.29.1(effect@4.0.0-beta.98)
+      '@distilled.cloud/planetscale': 0.30.1(effect@4.0.0-beta.98)
       '@effect/vitest': 4.0.0-beta.98(effect@4.0.0-beta.98)(vitest@3.2.4(@types/debug@4.1.13)(@types/node@20.19.27)(yaml@2.9.0))
       '@libsql/client': 0.17.4
       '@octokit/rest': 22.0.1

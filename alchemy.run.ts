@@ -4,10 +4,11 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect, Layer } from "effect";
 
-import ApiWorker from "./packages/api/dist/worker.js";
+import ApiWorkerLive, {
+  ApiWorker,
+} from "./packages/api/dist/worker.js";
 import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
 import {
-  Database,
   DatabaseHyperdrive,
   Planetscale,
 } from "./packages/core/dist/lib/database/clients/postgres/resource.js";
@@ -16,7 +17,11 @@ import {
   CatalogSeedVersion,
   SeedStrategy,
 } from "./packages/data/dist/seed/config.js";
-import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
+import NotifyJobWorkerLive, {
+  NotifyJobWorker,
+} from "./packages/jobs/dist/notify/worker.js";
+
+const WorkersLive = Layer.merge(ApiWorkerLive, NotifyJobWorkerLive);
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -54,5 +59,8 @@ export default Alchemy.Stack(
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
     };
-  }).pipe(Effect.provide(WebConfigAlchemy)),
+  }).pipe(
+    Effect.provide(WorkersLive),
+    Effect.provide(WebConfigAlchemy),
+  ),
 );
