@@ -1,5 +1,6 @@
 import * as Alchemy from "alchemy";
 import { AlchemyContext, Stage } from "alchemy";
+import * as Output from "alchemy/Output";
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect, Layer } from "effect";
@@ -41,11 +42,19 @@ export default Alchemy.Stack(
     const hyperdrive = yield* DatabaseHyperdrive;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
+    const seedTarget =
+      Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
 
     if (stage === "production") {
-      yield* SeedProduction("SeedProduction", { version: CatalogSeedVersion });
+      yield* SeedProduction("SeedProduction", {
+        target: seedTarget,
+        version: CatalogSeedVersion,
+      });
     } else if (context.dev && seedStrategy !== "skip") {
-      yield* SeedDev("SeedDev", { version: Date.now().toString() });
+      yield* SeedDev("SeedDev", {
+        target: seedTarget,
+        version: Date.now().toString(),
+      });
     }
 
     return {
