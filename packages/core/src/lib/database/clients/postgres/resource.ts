@@ -6,6 +6,8 @@ import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect } from "effect";
 import { Path } from "effect/Path";
 
+const MigrationsDirectory = "../../../../../../data/migrations/postgres/";
+
 export const database = {
   id: "DtptPostgresDatabase",
   name: "dotheyplaytoday",
@@ -19,9 +21,7 @@ export const database = {
 
     const path = yield* Path;
     return yield* path
-      .fromFileUrl(
-        new URL("../../../../../../data/migrations/postgres/", import.meta.url),
-      )
+      .fromFileUrl(new URL(MigrationsDirectory, import.meta.url))
       .pipe(Effect.orDie);
   }),
 } as const;
