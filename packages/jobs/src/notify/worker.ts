@@ -33,19 +33,15 @@ const NotifyDomainsLayer = pipe(
   Layer.provide(CloudflareCryptoLayer),
 );
 
-export class NotifyJobWorker extends Cloudflare.Worker<
-  NotifyJobWorker,
-  Cloudflare.WorkerShape
->()("NotifyJobWorker") {}
-
-export default NotifyJobWorker.make(
-  Stack.useSync((_stack) => ({
+export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>()(
+  "NotifyJobWorker",
+  {
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: Trigger.port, strictPort: true },
     // TODO: Restore after dotheyplay.today DNS moves to Cloudflare.
-    // domain: getServiceDomain("jobs", _stack.stage),
-  })),
+    // domain: getServiceDomain("jobs", stack.stage),
+  },
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;
@@ -59,21 +55,23 @@ export default NotifyJobWorker.make(
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));
 
-    yield* Cloudflare.Workers.cron(
-      NotifySchedule,
-      Effect.fn(
-        function* () {
-          yield* Effect.logInfo("notify job: scheduled");
+    if (stack.stage === "production") {
+      yield* Cloudflare.Workers.cron(
+        NotifySchedule,
+        Effect.fn(
+          function* () {
+            yield* Effect.logInfo("notify job: scheduled");
 
-          yield* notify({}).pipe(
-            Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
-          );
-        },
-        Effect.tapCause((cause) =>
-          Effect.logError("notify job: cron failed", cause),
+            yield* notify({}).pipe(
+              Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
+            );
+          },
+          Effect.tapCause((cause) =>
+            Effect.logError("notify job: cron failed", cause),
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     return {
       fetch: Effect.gen(function* () {
@@ -130,4 +128,4 @@ export default NotifyJobWorker.make(
       ),
     ),
   ),
-);
+) {}
