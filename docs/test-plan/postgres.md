@@ -15,10 +15,12 @@ PostgreSQL behavior and the transaction model in place at that time.
 Each database integration run should:
 
 1. Generate a unique `infra-postgres-*` Alchemy stage.
-2. Create a disposable PlanetScale database without referencing production.
-3. Apply checked-in migrations and create a least-privilege role.
+2. Deploy the application stack against an isolated PlanetScale branch forked
+   from the long-lived production database.
+3. Apply checked-in migrations and create a least-privilege role for that
+   branch.
 4. Use the direct role URL for core service and seed tests.
-5. Use a deployed Worker through Hyperdrive for HTTP integration tests.
+5. Use the deployed API Worker through Hyperdrive for HTTP integration tests.
 6. Disable Hyperdrive query caching.
 7. Destroy only the disposable stage after the suite, including on failure.
 
@@ -116,5 +118,6 @@ reintroduce those cases as assertions of the current non-atomic behavior.
 
 Keep fast schema, domain, contract, scheduling, channel, and rendering tests in
 the normal local suite. The opt-in test under
-`packages/core/src/lib/database/__tests__/infra/` remains the minimal deployed
-connectivity check for Worker → Hyperdrive → PlanetScale.
+`packages/core/src/lib/database/__tests__/infra/` deploys the actual application
+stack and remains the minimal connectivity check for Worker → Hyperdrive →
+PlanetScale.

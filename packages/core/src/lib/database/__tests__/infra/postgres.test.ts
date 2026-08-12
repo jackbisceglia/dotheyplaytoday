@@ -1,5 +1,4 @@
 import { NodeCrypto } from "@effect/platform-node";
-import * as Alchemy from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Planetscale from "alchemy/Planetscale";
 import * as Test from "alchemy/Test/Vitest";
@@ -7,8 +6,7 @@ import { Crypto, Data, Effect, Layer, Schedule } from "effect";
 import * as HttpClient from "effect/unstable/http/HttpClient";
 import { describe, expect, it } from "vitest";
 
-import { InfraDatabaseHyperdrive, InfraPlanetscale } from "./resource.js";
-import InfraDatabaseWorker from "./worker.js";
+import AppStack from "../../../../../../../alchemy.run.js";
 
 const enabled = process.env.RUN_INFRA_TESTS === "1";
 
@@ -43,32 +41,9 @@ if (!enabled) {
     stage: infraStage,
   });
 
-  const Stack = Alchemy.Stack(
-    "dotheyplaytoday-infra",
-    {
-      providers: Layer.merge(Cloudflare.providers(), Planetscale.providers()),
-      state: Cloudflare.state(),
-    },
-    Effect.gen(function* () {
-      const planetscale = yield* InfraPlanetscale;
-      const hyperdrive = yield* InfraDatabaseHyperdrive;
-      const worker = yield* InfraDatabaseWorker;
+  const stack = beforeAll(deploy(AppStack), { timeout: 1_800_000 });
 
-      return {
-        databaseId: planetscale.database.id,
-        databaseName: planetscale.database.name,
-        branchName: planetscale.role.branch,
-        migrationHashes: planetscale.database.migrationsHashes,
-        hyperdriveId: hyperdrive.hyperdriveId,
-        hyperdriveCachingDisabled: hyperdrive.Props.caching?.disabled,
-        workerUrl: worker.url,
-      };
-    }),
-  );
-
-  const stack = beforeAll(deploy(Stack), { timeout: 1_800_000 });
-
-  afterAll(destroy(Stack), { timeout: 1_800_000 });
+  afterAll(destroy(AppStack), { timeout: 1_800_000 });
 
   test(
     "Worker reaches migrated PostgreSQL through uncached Hyperdrive",
@@ -78,17 +53,18 @@ if (!enabled) {
       expect(output.databaseId).toBeTypeOf("string");
       expect(output.databaseName).toBeTypeOf("string");
       expect(output.branchName).toBeTypeOf("string");
-      expect(Object.keys(output.migrationHashes)).not.toHaveLength(0);
+      expect(output.branchName).not.toBe("production");
       expect(output.hyperdriveId).toBeTypeOf("string");
       expect(output.hyperdriveCachingDisabled).toBe(true);
-      expect(output.workerUrl).toBeTypeOf("string");
+      expect(output.apiWorkerUrl).toBeTypeOf("string");
 
-      if (typeof output.workerUrl !== "string") {
+      if (typeof output.apiWorkerUrl !== "string") {
         return yield* Effect.die("Infrastructure stack has no API URL");
       }
 
       const client = yield* HttpClient.HttpClient;
-      const response = yield* client.get(output.workerUrl).pipe(
+      const subjectsUrl = new URL("/api/subjects", output.apiWorkerUrl).href;
+      const response = yield* client.get(subjectsUrl).pipe(
         Effect.flatMap((response) =>
           response.status === 404
             ? Effect.fail(new WorkerRouteNotReady({ status: 404 }))
@@ -104,7 +80,8 @@ if (!enabled) {
       );
       const body = yield* response.text;
 
-      expect(response.status, body).toBe(204);
+      expect(response.status, body).toBe(200);
+      expect(JSON.parse(body)).toBeInstanceOf(Array);
     }),
     { timeout: 180_000 },
   );
