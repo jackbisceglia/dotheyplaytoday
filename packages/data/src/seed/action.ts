@@ -15,7 +15,7 @@ import { seedCatalog, summarizeCatalog } from "./catalog.js";
 import { reset } from "./reset.js";
 import { seedUsers, summarizeUsers } from "./users.js";
 
-type SeedInput = {
+type SeedRevision = {
   readonly target: string;
   readonly version: string;
 };
@@ -43,7 +43,7 @@ export const SeedDev = Action(
     const DatabaseLayer = createDatabaseLayer(connectionUrl);
     const SeedLayer = SeedDevLayer.pipe(Layer.provideMerge(DatabaseLayer));
 
-    return Effect.fn("SeedDev.Run")(function* (input: SeedInput) {
+    return Effect.fn("SeedDev.Run")(function* (input: SeedRevision) {
       yield* Effect.log("Seeding development data...", input);
 
       yield* Effect.gen(function* () {
@@ -72,7 +72,7 @@ export const SeedProduction = Action(
       Layer.provideMerge(DatabaseLayer),
     );
 
-    return Effect.fn("SeedProduction.Run")(function* (input: SeedInput) {
+    return Effect.fn("SeedProduction.Run")(function* (input: SeedRevision) {
       yield* Effect.log("Seeding production catalog...", input);
 
       const collections = yield* seedCatalog().pipe(Effect.provide(SeedLayer));
