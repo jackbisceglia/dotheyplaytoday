@@ -9,6 +9,7 @@ import {
   Option,
   Schema,
 } from "effect";
+import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 import {
   DatabaseReadError,
@@ -88,6 +89,7 @@ export const SubscriptionsLayer = Layer.effect(
   Subscriptions,
   Effect.gen(function* () {
     const database = yield* Database;
+    const sql = yield* SqlClient;
     const id = yield* Id;
     const SubjectPolicy = SubscriptionPolicy.subject;
 
@@ -186,8 +188,8 @@ export const SubscriptionsLayer = Layer.effect(
           subscriptionCount: insertableSubscriptions.length,
         };
 
-        yield* database
-          .transaction(() =>
+        yield* sql
+          .withTransaction(
             Effect.gen(function* () {
               yield* database
                 .delete(subscriptionsTable)

@@ -9,6 +9,7 @@ import {
   Option,
   Schema,
 } from "effect";
+import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 import {
   DatabaseReadError,
@@ -95,6 +96,7 @@ export const EventsLayer = Layer.effect(
   Events,
   Effect.gen(function* () {
     const database = yield* Database;
+    const sql = yield* SqlClient;
     const id = yield* Id;
 
     const get: Events["Service"]["get"] = Effect.fn("Events.get")(
@@ -216,8 +218,8 @@ export const EventsLayer = Layer.effect(
         }),
       );
 
-      yield* database
-        .transaction(() =>
+      yield* sql
+        .withTransaction(
           Effect.gen(function* () {
             yield* database
               .delete(participantsTable)

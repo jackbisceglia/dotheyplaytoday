@@ -18,7 +18,7 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public API worker, and notification worker.
 - Workers temporarily use their generated `workers.dev` endpoints. The intended custom domains are documented in [Alchemy service URL wiring](./alchemy-service-urls.md) and will be restored after the DNS zone moves to Cloudflare.
 - The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
-- Drizzle transactions use the same Effect `PgClient` transaction context as ordinary database queries. Domain services that close over the request's `Database` therefore join an enclosing `database.transaction(...)`; nested service transactions use savepoints.
+- The database layer exposes Drizzle and its exact underlying `PgClient` as the standard Effect `SqlClient` service. Transactional workflows yield `SqlClient` and use `sql.withTransaction(...)`, so domain-service queries inherit the transaction connection from Effect context and nested service transactions use savepoints without threading a Drizzle transaction object through service APIs.
 - Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
 - Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
@@ -53,12 +53,14 @@ Transaction rollback integration tests must run only against disposable
 Alchemy-managed PlanetScale branches. They remain opt-in because local database
 substitutes are not representative of the production transaction path.
 
-Catalog imports validate all checked-in data before opening one transaction and
-then serialize writes on its reserved PostgreSQL connection. This deliberately
-trades import speed for full-catalog rollback and avoids concurrent operations
-on one transaction connection. Seed Actions use the direct stage role rather
-than a Worker or Hyperdrive connection, and catalog versions should remain
-bounded so the transaction does not become an unbounded deployment operation.
+Catalog imports decode the checked-in data and validate feed references before
+opening one transaction. Event source IDs are resolved into feed edges while
+that transaction serializes writes on its reserved PostgreSQL connection. This
+deliberately trades import speed for full-catalog rollback and avoids concurrent
+operations on one transaction connection. Seed Actions use the direct stage
+role rather than a Worker or Hyperdrive connection, and catalog versions should
+remain bounded so the transaction does not become an unbounded deployment
+operation.
 
 ## Follow-up work
 

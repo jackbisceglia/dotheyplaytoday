@@ -2,12 +2,12 @@ import {
   EventId,
   EventSourceId,
   Events,
-  Database,
   mapTransactionError,
   StringParts,
   Subjects,
 } from "@dtpt/core";
 import { Effect, HashMap, Option, Schema } from "effect";
+import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 import { SportsSeed } from "../schema/sports.js";
 import { SeedCollections } from "./index.js";
@@ -142,10 +142,10 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
   const subjects = yield* Subjects;
   const events = yield* Events;
-  const database = yield* Database;
+  const sql = yield* SqlClient;
 
-  yield* database
-    .transaction(() =>
+  yield* sql
+    .withTransaction(
       Effect.gen(function* () {
         yield* Effect.forEach(
           collections.flatMap((collection) => collection.subjects),
