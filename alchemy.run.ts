@@ -36,8 +36,8 @@ export default Alchemy.Stack(
     const hyperdrive = yield* DatabaseHyperdrive;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
-    const seedTarget =
-      Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
+
+    const seedTarget = Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
 
     if (stage === "production") {
       yield* SeedProduction("SeedProduction", {

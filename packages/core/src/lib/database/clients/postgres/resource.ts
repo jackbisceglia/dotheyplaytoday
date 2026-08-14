@@ -1,4 +1,4 @@
-import { ALCHEMY_PHASE, Stack } from "alchemy";
+import { ALCHEMY_PHASE, type AlchemyPhase, Stack } from "alchemy";
 import { adopt } from "alchemy/AdoptPolicy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { retain } from "alchemy/RemovalPolicy";
@@ -6,7 +6,7 @@ import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect } from "effect";
 import { Path } from "effect/Path";
 
-const MigrationsDirectory = "../../../../../../data/migrations/postgres/";
+import { exactOptional } from "../../../utils.js";
 
 export const database = {
   id: "DtptPostgresDatabase",
@@ -14,15 +14,22 @@ export const database = {
   branches: {
     production: "production",
   },
-  migrationsDirectory: Effect.gen(function* () {
-    if ((yield* ALCHEMY_PHASE) === "runtime") {
+  migrationsTable: "dtpt_postgres_migrations",
+  MigrationsDirectory: Effect.fn("Database.MigrationsDirectory")(function* (
+    phase: AlchemyPhase,
+  ) {
+    if (phase === "runtime") {
       return undefined;
     }
 
     const path = yield* Path;
-    return yield* path
-      .fromFileUrl(new URL(MigrationsDirectory, import.meta.url))
-      .pipe(Effect.orDie);
+
+    const url = new URL(
+      "../../../../../../data/migrations/postgres/",
+      import.meta.url,
+    );
+
+    return yield* path.fromFileUrl(url).pipe(Effect.orDie);
   }),
 } as const;
 
@@ -32,8 +39,10 @@ export const database = {
  */
 export const Planetscale = Effect.gen(function* () {
   const stack = yield* Stack;
+  const phase = yield* ALCHEMY_PHASE;
+
   const stage = stack.stage;
-  const migrationsDirectory = yield* database.migrationsDirectory;
+  const migrationsDirectory = yield* database.MigrationsDirectory(phase);
 
   const databaseResource =
     stage === "production"
@@ -43,10 +52,10 @@ export const Planetscale = Effect.gen(function* () {
           clusterSize: "PS_5",
           replicas: 0,
           defaultBranch: database.branches.production,
-          ...(migrationsDirectory === undefined
-            ? {}
-            : { migrationsDir: migrationsDirectory }),
-          migrationsTable: "dtpt_postgres_migrations",
+          ...exactOptional(migrationsDirectory, (migrationsDir) => ({
+            migrationsDir,
+          })),
+          migrationsTable: database.migrationsTable,
         }).pipe(adopt(), retain())
       : yield* AlchemyPlanetscale.PostgresDatabase.ref(database.id, {
           stage: "production",
@@ -58,9 +67,9 @@ export const Planetscale = Effect.gen(function* () {
       : yield* AlchemyPlanetscale.PostgresBranch("DtptPostgresBranch", {
           database: databaseResource,
           parentBranch: database.branches.production,
-          ...(migrationsDirectory === undefined
-            ? {}
-            : { migrationsDir: migrationsDirectory }),
+          ...exactOptional(migrationsDirectory, (migrationsDir) => ({
+            migrationsDir,
+          })),
           replicas: 0,
         });
 
@@ -77,18 +86,14 @@ export const Planetscale = Effect.gen(function* () {
   return { database: databaseResource, role };
 });
 
-/**
- * Cloudflare Hyperdrive V1 connection used by both Workers.
- *
- * Query caching is intentionally disabled because application reads must
- * observe current subscription and event state.
- */
+/** Cloudflare Hyperdrive V1 connection used by both Workers. */
 export const DatabaseHyperdrive = Effect.gen(function* () {
   const planetscale = yield* Planetscale;
 
   return yield* Cloudflare.Hyperdrive.Connection("DtptPostgresHyperdrive", {
     origin: planetscale.role.origin,
     dev: planetscale.role.pooledOrigin,
+    // NOTE: Reads must observe current subscription and event state.
     caching: { disabled: true },
     originConnectionLimit: 5,
   });

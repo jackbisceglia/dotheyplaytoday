@@ -14,13 +14,17 @@ class WorkerRouteNotReady extends Data.TaggedError("WorkerRouteNotReady")<{
   readonly status: 404;
 }> {}
 
-if (!enabled) {
-  describe.skip("PlanetScale PostgreSQL infrastructure", () => {
-    it("requires RUN_INFRA_TESTS=1 and provider credentials", () => {
-      expect(enabled).toBe(false);
+const registerTests = () => {
+  if (!enabled) {
+    describe.skip("PlanetScale PostgreSQL infrastructure", () => {
+      it("requires RUN_INFRA_TESTS=1 and provider credentials", () => {
+        expect(enabled).toBe(false);
+      });
     });
-  });
-} else {
+
+    return;
+  }
+
   const infraStagePrefix = "infra-postgres-";
   const stageId = Effect.runSync(
     Effect.gen(function* () {
@@ -85,4 +89,6 @@ if (!enabled) {
     }),
     { timeout: 180_000 },
   );
-}
+};
+
+registerTests();

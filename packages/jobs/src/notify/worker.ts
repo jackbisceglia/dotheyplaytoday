@@ -55,23 +55,21 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));
 
-    if (stack.stage === "production") {
-      yield* Cloudflare.Workers.cron(
-        NotifySchedule,
-        Effect.fn(
-          function* () {
-            yield* Effect.logInfo("notify job: scheduled");
+    yield* Cloudflare.Workers.cron(
+      NotifySchedule,
+      Effect.fn(
+        function* () {
+          yield* Effect.logInfo("notify job: scheduled");
 
-            yield* notify({}).pipe(
-              Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
-            );
-          },
-          Effect.tapCause((cause) =>
-            Effect.logError("notify job: cron failed", cause),
-          ),
+          yield* notify({}).pipe(
+            Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
+          );
+        },
+        Effect.tapCause((cause) =>
+          Effect.logError("notify job: cron failed", cause),
         ),
-      );
-    }
+      ),
+    );
 
     return {
       fetch: Effect.gen(function* () {
