@@ -1,6 +1,6 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { SignupRateLimited } from "@dtpt/core/contracts/signup";
-import { mapTransactionError } from "@dtpt/core/lib/database/errors";
+import { withTransaction } from "@dtpt/core/lib/database/errors";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
@@ -24,7 +24,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
-      const sql = yield* SqlClient;
+      const tx = withTransaction(yield* SqlClient);
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
 
@@ -46,22 +46,21 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            yield* sql
-              .withTransaction(
-                Effect.gen(function* () {
-                  const user = yield* users.upsertForSignup(
-                    ctx.payload.email,
-                    ctx.payload.timezone,
-                  );
+            yield* tx(
+              "Signup.submit",
+              Effect.gen(function* () {
+                const user = yield* users.upsertForSignup(
+                  ctx.payload.email,
+                  ctx.payload.timezone,
+                );
 
-                  yield* subscriptions.replaceForUser({
-                    user,
-                    subjectIds: ctx.payload.subjectIds,
-                    schedule: ctx.payload.schedule,
-                  });
-                }),
-              )
-              .pipe(mapTransactionError("Signup.submit"));
+                yield* subscriptions.replaceForUser({
+                  user,
+                  subjectIds: ctx.payload.subjectIds,
+                  schedule: ctx.payload.schedule,
+                });
+              }),
+            );
 
             return { ok: true as const };
           },

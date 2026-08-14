@@ -15,10 +15,10 @@ import {
   DatabaseReadError,
   DatabaseTransactionError,
   DatabaseWriteError,
-  mapTransactionError,
   mapToReadError,
   mapToWriteError,
   toWriteError,
+  withTransaction,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
@@ -96,7 +96,7 @@ export const EventsLayer = Layer.effect(
   Events,
   Effect.gen(function* () {
     const database = yield* Database;
-    const sql = yield* SqlClient;
+    const tx = withTransaction(yield* SqlClient);
     const id = yield* Id;
 
     const get: Events["Service"]["get"] = Effect.fn("Events.get")(
@@ -218,33 +218,33 @@ export const EventsLayer = Layer.effect(
         }),
       );
 
-      yield* sql
-        .withTransaction(
-          Effect.gen(function* () {
-            yield* database
-              .delete(participantsTable)
-              .where(eq(participantsTable.eventId, eventId))
-              .pipe(
-                Effect.catchTag(
-                  "EffectDrizzleQueryError",
-                  toWriteError("Events.setParticipants", { eventId }),
-                ),
-              );
+      yield* tx(
+        "Events.setParticipants",
+        { eventId },
+        Effect.gen(function* () {
+          yield* database
+            .delete(participantsTable)
+            .where(eq(participantsTable.eventId, eventId))
+            .pipe(
+              Effect.catchTag(
+                "EffectDrizzleQueryError",
+                toWriteError("Events.setParticipants", { eventId }),
+              ),
+            );
 
-            if (Array.isReadonlyArrayEmpty(insertableParticipants)) return;
+          if (Array.isReadonlyArrayEmpty(insertableParticipants)) return;
 
-            yield* database
-              .insert(participantsTable)
-              .values(insertableParticipants)
-              .pipe(
-                Effect.catchTag(
-                  "EffectDrizzleQueryError",
-                  toWriteError("Events.setParticipants", { eventId }),
-                ),
-              );
-          }),
-        )
-        .pipe(mapTransactionError("Events.setParticipants", { eventId }));
+          yield* database
+            .insert(participantsTable)
+            .values(insertableParticipants)
+            .pipe(
+              Effect.catchTag(
+                "EffectDrizzleQueryError",
+                toWriteError("Events.setParticipants", { eventId }),
+              ),
+            );
+        }),
+      );
     });
 
     return Events.of({

@@ -15,10 +15,10 @@ import {
   DatabaseReadError,
   DatabaseTransactionError,
   DatabaseWriteError,
-  mapTransactionError,
   mapToReadError,
   mapToWriteError,
   toWriteError,
+  withTransaction,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
@@ -89,7 +89,7 @@ export const SubscriptionsLayer = Layer.effect(
   Subscriptions,
   Effect.gen(function* () {
     const database = yield* Database;
-    const sql = yield* SqlClient;
+    const tx = withTransaction(yield* SqlClient);
     const id = yield* Id;
     const SubjectPolicy = SubscriptionPolicy.subject;
 
@@ -188,33 +188,33 @@ export const SubscriptionsLayer = Layer.effect(
           subscriptionCount: insertableSubscriptions.length,
         };
 
-        yield* sql
-          .withTransaction(
-            Effect.gen(function* () {
-              yield* database
-                .delete(subscriptionsTable)
-                .where(eq(subscriptionsTable.userId, input.user.id))
-                .pipe(
-                  Effect.catchTag(
-                    "EffectDrizzleQueryError",
-                    toWriteError("Subscriptions.replaceForUser", metadata),
-                  ),
-                );
+        yield* tx(
+          "Subscriptions.replaceForUser",
+          metadata,
+          Effect.gen(function* () {
+            yield* database
+              .delete(subscriptionsTable)
+              .where(eq(subscriptionsTable.userId, input.user.id))
+              .pipe(
+                Effect.catchTag(
+                  "EffectDrizzleQueryError",
+                  toWriteError("Subscriptions.replaceForUser", metadata),
+                ),
+              );
 
-              if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) return;
+            if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) return;
 
-              yield* database
-                .insert(subscriptionsTable)
-                .values(insertableSubscriptions)
-                .pipe(
-                  Effect.catchTag(
-                    "EffectDrizzleQueryError",
-                    toWriteError("Subscriptions.replaceForUser", metadata),
-                  ),
-                );
-            }),
-          )
-          .pipe(mapTransactionError("Subscriptions.replaceForUser", metadata));
+            yield* database
+              .insert(subscriptionsTable)
+              .values(insertableSubscriptions)
+              .pipe(
+                Effect.catchTag(
+                  "EffectDrizzleQueryError",
+                  toWriteError("Subscriptions.replaceForUser", metadata),
+                ),
+              );
+          }),
+        );
       });
 
     const markSent: Subscriptions["Service"]["markSent"] = Effect.fn(

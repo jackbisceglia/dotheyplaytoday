@@ -2,9 +2,9 @@ import {
   EventId,
   EventSourceId,
   Events,
-  mapTransactionError,
   StringParts,
   Subjects,
+  withTransaction,
 } from "@dtpt/core";
 import { Effect, HashMap, Option, Schema } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
@@ -142,62 +142,58 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
   const subjects = yield* Subjects;
   const events = yield* Events;
-  const sql = yield* SqlClient;
+  const tx = withTransaction(yield* SqlClient);
 
-  yield* sql
-    .withTransaction(
-      Effect.gen(function* () {
-        yield* Effect.forEach(
-          collections.flatMap((collection) => collection.subjects),
-          (subjectSeed) => {
-            const { feedIds: _feedIds, ...subject } = subjectSeed;
+  yield* tx(
+    "DataSeed.seedCatalog",
+    { collectionCount: collections.length },
+    Effect.gen(function* () {
+      yield* Effect.forEach(
+        collections.flatMap((collection) => collection.subjects),
+        (subjectSeed) => {
+          const { feedIds: _feedIds, ...subject } = subjectSeed;
 
-            return subjects.upsert(subject);
-          },
-          { discard: true },
-        );
+          return subjects.upsert(subject);
+        },
+        { discard: true },
+      );
 
-        const importedEvents = yield* Effect.forEach(
-          collections.flatMap((collection) => collection.events),
-          (eventSeed) =>
+      const importedEvents = yield* Effect.forEach(
+        collections.flatMap((collection) => collection.events),
+        (eventSeed) =>
+          Effect.gen(function* () {
+            const { participants, ...eventInput } = eventSeed;
+            const event = yield* events.upsert(eventInput);
+
+            yield* events.setParticipants(event.id, participants);
+
+            return [event.sourceId, event.id] as const;
+          }),
+      );
+
+      const eventIndex = HashMap.fromIterable(importedEvents);
+      const feedEdges = yield* Effect.forEach(collections, (collection) =>
+        Effect.forEach(collection.subjects, (subject) =>
+          Effect.forEach(subject.feedIds, (sourceId) =>
             Effect.gen(function* () {
-              const { participants, ...eventInput } = eventSeed;
-              const event = yield* events.upsert(eventInput);
+              const eventId = yield* resolveEventSource({
+                collectionId: collection.id,
+                eventIndex,
+                sourceId,
+                subjectId: subject.id,
+              });
 
-              yield* events.setParticipants(event.id, participants);
-
-              return [event.sourceId, event.id] as const;
+              return { eventId, subjectId: subject.id };
             }),
-        );
-
-        const eventIndex = HashMap.fromIterable(importedEvents);
-        const feedEdges = yield* Effect.forEach(collections, (collection) =>
-          Effect.forEach(collection.subjects, (subject) =>
-            Effect.forEach(subject.feedIds, (sourceId) =>
-              Effect.gen(function* () {
-                const eventId = yield* resolveEventSource({
-                  collectionId: collection.id,
-                  eventIndex,
-                  sourceId,
-                  subjectId: subject.id,
-                });
-
-                return { eventId, subjectId: subject.id };
-              }),
-            ),
           ),
-        ).pipe(Effect.map((edges) => edges.flat(2)));
+        ),
+      ).pipe(Effect.map((edges) => edges.flat(2)));
 
-        yield* Effect.forEach(feedEdges, subjects.addEventToFeed, {
-          discard: true,
-        });
-      }),
-    )
-    .pipe(
-      mapTransactionError("DataSeed.seedCatalog", {
-        collectionCount: collections.length,
-      }),
-    );
+      yield* Effect.forEach(feedEdges, subjects.addEventToFeed, {
+        discard: true,
+      });
+    }),
+  );
 
   return collections;
 });

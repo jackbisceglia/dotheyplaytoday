@@ -1,13 +1,13 @@
 import {
   Database,
   DatabaseWriteError,
-  mapTransactionError,
   eventsTable,
   participantsTable,
   subjectEventsTable,
   subjectsTable,
   subscriptionsTable,
   usersTable,
+  withTransaction,
 } from "@dtpt/core";
 import { Effect } from "effect";
 import { SqlClient } from "effect/unstable/sql/SqlClient";
@@ -15,20 +15,20 @@ import { SqlClient } from "effect/unstable/sql/SqlClient";
 export const reset = Effect.fn("DataSeed.reset")(
   function* () {
     const database = yield* Database;
-    const sql = yield* SqlClient;
+    const tx = withTransaction(yield* SqlClient);
 
-    yield* sql
-      .withTransaction(
-        Effect.gen(function* () {
-          yield* database.delete(subscriptionsTable);
-          yield* database.delete(usersTable);
-          yield* database.delete(subjectEventsTable);
-          yield* database.delete(participantsTable);
-          yield* database.delete(eventsTable);
-          yield* database.delete(subjectsTable);
-        }),
-      )
-      .pipe(mapTransactionError("DataSeed.reset", { mode: "dev" }));
+    yield* tx(
+      "DataSeed.reset",
+      { mode: "dev" },
+      Effect.gen(function* () {
+        yield* database.delete(subscriptionsTable);
+        yield* database.delete(usersTable);
+        yield* database.delete(subjectEventsTable);
+        yield* database.delete(participantsTable);
+        yield* database.delete(eventsTable);
+        yield* database.delete(subjectsTable);
+      }),
+    );
   },
   Effect.catchTag("EffectDrizzleQueryError", (cause) =>
     Effect.fail(
