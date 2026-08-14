@@ -1,5 +1,7 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { UnsubscribeRateLimited } from "@dtpt/core/contracts/unsubscribe";
+import { mapTransactionError } from "@dtpt/core/lib/database/errors";
+import { Database } from "@dtpt/core/lib/database/service";
 import { Users } from "@dtpt/core/modules/users/service";
 import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
@@ -9,6 +11,7 @@ import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
 const UnexpectedErrorTags = [
   "DatabaseDeleteError",
   "DatabaseReadError",
+  "DatabaseTransactionError",
   "SchemaError",
 ] as const;
 
@@ -18,6 +21,7 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
+      const database = yield* Database;
       const users = yield* Users;
 
       return handlers.handle(
@@ -26,11 +30,19 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            // TODO(database): compose lookup and deletion in one interactive
-            // PostgreSQL transaction after the database cutover is stable.
-            const user = yield* users.getByUnsubscribeToken(ctx.payload.token);
+            const user = yield* database
+              .transaction(() =>
+                Effect.gen(function* () {
+                  const user = yield* users.getByUnsubscribeToken(
+                    ctx.payload.token,
+                  );
 
-            yield* users.remove(user.id);
+                  yield* users.remove(user.id);
+
+                  return user;
+                }),
+              )
+              .pipe(mapTransactionError("Unsubscribe.submit"));
 
             yield* Effect.logInfo("unsubscribe: user removed", {
               userId: user.id,

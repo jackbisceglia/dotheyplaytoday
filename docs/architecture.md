@@ -18,6 +18,7 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public API worker, and notification worker.
 - Workers temporarily use their generated `workers.dev` endpoints. The intended custom domains are documented in [Alchemy service URL wiring](./alchemy-service-urls.md) and will be restored after the DNS zone moves to Cloudflare.
 - The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
+- Drizzle transactions use the same Effect `PgClient` transaction context as ordinary database queries. Domain services that close over the request's `Database` therefore join an enclosing `database.transaction(...)`; nested service transactions use savepoints.
 - Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
 - Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
@@ -48,17 +49,21 @@ data; the current production owner account must be recreated manually.
 - Behavior changes require focused tests covering the changed path.
 - Repository-wide completion checks are `pnpm lint` and `pnpm typecheck`.
 
-## Follow-up work
+Transaction rollback integration tests must run only against disposable
+Alchemy-managed PlanetScale branches. They remain opt-in because local database
+substitutes are not representative of the production transaction path.
 
-Atomicity is intentionally not restored by this migration. A follow-up should
-compose ordinary Effect services inside `db.transaction(...)` for signup,
-unsubscribe, subscription replacement, participant replacement, catalog
-seeding, and development reset. Provider and other external network work must
-remain outside those transactions.
+Catalog imports validate all checked-in data before opening one transaction and
+then serialize writes on its reserved PostgreSQL connection. This deliberately
+trades import speed for full-catalog rollback and avoids concurrent operations
+on one transaction connection. Seed Actions use the direct stage role rather
+than a Worker or Hyperdrive connection, and catalog versions should remain
+bounded so the transaction does not become an unbounded deployment operation.
+
+## Follow-up work
 
 Separate follow-ups are:
 
-1. Evaluate a `Registration` application service while restoring signup atomicity.
-2. Implement the PostgreSQL persistence test plan against disposable Alchemy-managed branches.
-3. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
-4. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
+1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
+2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
+3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.

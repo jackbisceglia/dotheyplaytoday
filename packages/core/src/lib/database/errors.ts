@@ -1,4 +1,5 @@
 import { Effect, Schema } from "effect";
+import * as SqlError from "effect/unstable/sql/SqlError";
 
 import { StringParts } from "../string.js";
 import { serialize } from "../utils.js";
@@ -87,3 +88,22 @@ export const mapToWriteError =
         (cause) => new DatabaseWriteError({ operation, cause, metadata }),
       ),
     );
+
+export const mapTransactionError =
+  (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
+  <A, E, R>(effect: Effect.Effect<A, E | SqlError.SqlError, R>) => {
+    const makeError = (cause: SqlError.SqlError) =>
+      new DatabaseTransactionError({ operation, cause, metadata });
+
+    return effect.pipe(
+      Effect.mapError((cause) =>
+        SqlError.isSqlError(cause) ? makeError(cause) : cause,
+      ),
+      // Effect SQL currently defects on COMMIT/ROLLBACK failures.
+      Effect.catchDefect((cause) =>
+        SqlError.isSqlError(cause)
+          ? Effect.fail(makeError(cause))
+          : Effect.die(cause),
+      ),
+    );
+  };

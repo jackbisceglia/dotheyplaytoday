@@ -1,6 +1,7 @@
 import {
   Database,
   DatabaseWriteError,
+  mapTransactionError,
   eventsTable,
   participantsTable,
   subjectEventsTable,
@@ -14,14 +15,18 @@ export const reset = Effect.fn("DataSeed.reset")(
   function* () {
     const database = yield* Database;
 
-    // TODO(database): restore atomic reset with an interactive PostgreSQL
-    // transaction after the database cutover is stable.
-    yield* database.delete(subscriptionsTable);
-    yield* database.delete(usersTable);
-    yield* database.delete(subjectEventsTable);
-    yield* database.delete(participantsTable);
-    yield* database.delete(eventsTable);
-    yield* database.delete(subjectsTable);
+    yield* database
+      .transaction(() =>
+        Effect.gen(function* () {
+          yield* database.delete(subscriptionsTable);
+          yield* database.delete(usersTable);
+          yield* database.delete(subjectEventsTable);
+          yield* database.delete(participantsTable);
+          yield* database.delete(eventsTable);
+          yield* database.delete(subjectsTable);
+        }),
+      )
+      .pipe(mapTransactionError("DataSeed.reset", { mode: "dev" }));
   },
   Effect.catchTag("EffectDrizzleQueryError", (cause) =>
     Effect.fail(
