@@ -3,8 +3,13 @@
   "compilerOptions": {
     "noEmit": false,
     "allowImportingTsExtensions": false,
+    "rootDir": "src",
     "outDir": "dist",
     "sourceMap": true
   },
-  "exclude": ["src/**/*.test.ts", "src/**/tests/**"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/tests/**",
+    "src/**/__tests__/infra/**"
+  ]
 }

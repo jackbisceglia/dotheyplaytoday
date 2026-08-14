@@ -1,11 +1,16 @@
 import * as Alchemy from "alchemy";
 import { AlchemyContext, Stage } from "alchemy";
+import * as Output from "alchemy/Output";
 import * as Cloudflare from "alchemy/Cloudflare";
-import * as Effect from "effect/Effect";
+import * as AlchemyPlanetscale from "alchemy/Planetscale";
+import { Effect, Layer } from "effect";
 
 import ApiWorker from "./packages/api/dist/worker.js";
 import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
-import { D1DatabaseResource } from "./packages/core/dist/lib/database/clients/d1/resource.js";
+import {
+  DatabaseHyperdrive,
+  Planetscale,
+} from "./packages/core/dist/lib/database/clients/postgres/resource.js";
 import { SeedDev, SeedProduction } from "./packages/data/dist/seed/action.js";
 import {
   CatalogSeedVersion,
@@ -16,7 +21,10 @@ import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 export default Alchemy.Stack(
   "dotheyplaytoday",
   {
-    providers: Cloudflare.providers(),
+    providers: Layer.merge(
+      Cloudflare.providers(),
+      AlchemyPlanetscale.providers(),
+    ),
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
@@ -24,18 +32,31 @@ export default Alchemy.Stack(
     const stage = yield* Stage;
     const seedStrategy = yield* SeedStrategy;
 
-    const database = yield* D1DatabaseResource;
+    const planetscale = yield* Planetscale;
+    const hyperdrive = yield* DatabaseHyperdrive;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
 
+    const seedTarget = Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
+
     if (stage === "production") {
-      yield* SeedProduction("SeedProduction", { version: CatalogSeedVersion });
+      yield* SeedProduction("SeedProduction", {
+        target: seedTarget,
+        version: CatalogSeedVersion,
+      });
     } else if (context.dev && seedStrategy !== "skip") {
-      yield* SeedDev("SeedDev", { version: Date.now().toString() });
+      yield* SeedDev("SeedDev", {
+        target: seedTarget,
+        version: Date.now().toString(),
+      });
     }
 
     return {
-      databaseName: database.databaseName,
+      databaseId: planetscale.database.id,
+      databaseName: planetscale.database.name,
+      branchName: planetscale.role.branch,
+      hyperdriveId: hyperdrive.hyperdriveId,
+      hyperdriveCachingDisabled: hyperdrive.Props.caching?.disabled,
       apiWorkerName: apiWorker.workerName,
       apiWorkerUrl: apiWorker.url,
       notifyJobWorkerName: notifyJobWorker.workerName,

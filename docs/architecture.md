@@ -14,11 +14,12 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 
 - TypeScript and Effect v4 beta.
 - Astro on Cloudflare.
-- SQLite and Drizzle, with Cloudflare D1 when deployed.
-- Alchemy-provisioned D1, public API worker, and notification worker.
-- Alchemy routes the API through `api.dotheyplay.today` and scheduled jobs through `jobs.dotheyplay.today`. Non-production worker domains are prefixed with their stage normalized as a valid subdomain label.
-- The API worker serves the shared Effect `HttpApi` contracts against D1.
-- Alchemy seed Actions import the registered catalog collections at deploy time. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
+- PlanetScale PostgreSQL and Drizzle, connected to Workers through Cloudflare Hyperdrive V1.
+- Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public API worker, and notification worker.
+- Workers temporarily use their generated `workers.dev` endpoints. The intended custom domains are documented in [Alchemy service URL wiring](./alchemy-service-urls.md) and will be restored after the DNS zone moves to Cloudflare.
+- The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
+- Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
+- Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
 - Resend email delivery and console dry runs.
 - Typed Effect config at runtime boundaries.
@@ -29,9 +30,35 @@ current limitation and migration design.
 
 Production deploys load `.env.production` through `--env-file .env.production`.
 
+The `production` stage owns the retained PlanetScale database and production
+branch. Other stages reference that database and own disposable development
+branches on PlanetScale's PS-DEV size. Destroy non-production stages when they
+are no longer needed so their branch billing stops. Alchemy applies checked-in
+migrations before creating runtime roles, Workers, and seed Actions.
+
+There is no automated D1 data transfer. Seeds rebuild catalog and development
+data; the current production owner account must be recreated manually.
+
 ## Testing and validation
 
-- Persistence and domain tests use the real lightweight SQLite path where practical.
+- Schema-only and domain-only tests continue to run locally.
+- The removed SQLite suites are represented by the behavior-focused [PostgreSQL persistence test plan](./test-plan/postgres.md). Reintroduce and prune those cases against disposable Alchemy-managed branches.
+- The opt-in PostgreSQL infrastructure test deploys a disposable database and Worker stack, queries PlanetScale through Worker → Hyperdrive, and destroys the stack. It requires both provider credentials.
 - Provider and network boundaries may use fakes.
 - Behavior changes require focused tests covering the changed path.
 - Repository-wide completion checks are `pnpm lint` and `pnpm typecheck`.
+
+## Follow-up work
+
+Atomicity is intentionally not restored by this migration. A follow-up should
+compose ordinary Effect services inside `db.transaction(...)` for signup,
+unsubscribe, subscription replacement, participant replacement, catalog
+seeding, and development reset. Provider and other external network work must
+remain outside those transactions.
+
+Separate follow-ups are:
+
+1. Evaluate a `Registration` application service while restoring signup atomicity.
+2. Implement the PostgreSQL persistence test plan against disposable Alchemy-managed branches.
+3. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
+4. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.

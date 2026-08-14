@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { serialize } from "../utils.js";
+import { exactOptional, serialize } from "../utils.js";
 
 describe("serialize", () => {
   it("stringifies JSON values", () => {
@@ -26,5 +26,14 @@ describe("serialize", () => {
 
     expect(serialize(circular, "[error]")).toBe("[error]");
     expect(serialize(undefined, "[error]")).toBe("[error]");
+  });
+});
+
+describe("exactOptional", () => {
+  it("constructs an object only for a defined value", () => {
+    expect(exactOptional("value", (value) => ({ key: value }))).toEqual({
+      key: "value",
+    });
+    expect(exactOptional(undefined, (value) => ({ key: value }))).toEqual({});
   });
 });

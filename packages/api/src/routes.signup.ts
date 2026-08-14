@@ -30,10 +30,10 @@ export const SignupGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            // TODO(signup): move this into a signup domain service once D1
-            // batch restores atomicity. This is only a static pre-user guard;
-            // user-dependent policy and subject existence checks still happen
-            // after the user write.
+            // TODO(signup): evaluate a Registration application service when
+            // signup atomicity is restored with an interactive PostgreSQL
+            // transaction. This is only a static pre-user guard; user-dependent
+            // policy and subject existence checks still happen after the write.
             const received = new Set(ctx.payload.subjectIds).size;
             const { max } = SubscriptionPolicy.subject.constraints;
 
@@ -44,7 +44,8 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            // TODO(database): restore atomic signup with D1 batch support.
+            // TODO(database): compose these services in one interactive
+            // PostgreSQL transaction after the database cutover is stable.
             const user = yield* users.upsertForSignup(
               ctx.payload.email,
               ctx.payload.timezone,

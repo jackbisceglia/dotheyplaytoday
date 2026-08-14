@@ -5,16 +5,20 @@ import {
   SubscriptionsLayer,
   UsersLayer,
 } from "@dtpt/core";
-import { D1DatabaseResource } from "@dtpt/core/lib/database/clients/d1/resource";
-import { createD1DatabaseLayerFromResource } from "@dtpt/core/lib/database/service";
+import { Planetscale } from "@dtpt/core/lib/database/clients/postgres/resource";
+import { createDatabaseLayer } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { Action } from "alchemy";
-import * as Cloudflare from "alchemy/Cloudflare";
 import { Effect, Layer, pipe } from "effect";
 
 import { seedCatalog, summarizeCatalog } from "./catalog.js";
 import { reset } from "./reset.js";
 import { seedUsers, summarizeUsers } from "./users.js";
+
+type SeedRevision = {
+  readonly target: string;
+  readonly version: string;
+};
 
 const SeedDevLayer = pipe(
   Layer.mergeAll(SubjectsLayer, EventsLayer, UsersLayer, SubscriptionsLayer),
@@ -31,14 +35,16 @@ const SeedProductionLayer = pipe(
 export const SeedDev = Action(
   "SeedDev",
   Effect.gen(function* () {
-    const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+    // Resources
+    const planetscale = yield* Planetscale;
+    const connectionUrl = yield* planetscale.role.connectionUrl;
 
-    return Effect.fn("SeedDev.Run")(function* (input: { version: string }) {
+    // Layers
+    const DatabaseLayer = createDatabaseLayer(connectionUrl);
+    const SeedLayer = SeedDevLayer.pipe(Layer.provideMerge(DatabaseLayer));
+
+    return Effect.fn("SeedDev.Run")(function* (input: SeedRevision) {
       yield* Effect.log("Seeding development data...", input);
-
-      const SeedLayer = SeedDevLayer.pipe(
-        Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
-      );
 
       yield* Effect.gen(function* () {
         yield* reset();
@@ -50,25 +56,27 @@ export const SeedDev = Action(
         yield* Effect.log(summarizeUsers(users));
       }).pipe(Effect.provide(SeedLayer));
     });
-  }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseLocal)),
+  }),
 );
 
 export const SeedProduction = Action(
   "SeedProduction",
   Effect.gen(function* () {
-    const database = yield* Cloudflare.D1.QueryDatabase(D1DatabaseResource);
+    // Resources
+    const planetscale = yield* Planetscale;
+    const connectionUrl = yield* planetscale.role.connectionUrl;
 
-    return Effect.fn("SeedProduction.Run")(function* (input: {
-      version: string;
-    }) {
+    // Layers
+    const DatabaseLayer = createDatabaseLayer(connectionUrl);
+    const SeedLayer = SeedProductionLayer.pipe(
+      Layer.provideMerge(DatabaseLayer),
+    );
+
+    return Effect.fn("SeedProduction.Run")(function* (input: SeedRevision) {
       yield* Effect.log("Seeding production catalog...", input);
-
-      const SeedLayer = SeedProductionLayer.pipe(
-        Layer.provideMerge(createD1DatabaseLayerFromResource(database)),
-      );
 
       const collections = yield* seedCatalog().pipe(Effect.provide(SeedLayer));
       yield* Effect.log(summarizeCatalog(collections));
     });
-  }).pipe(Effect.provide(Cloudflare.D1.QueryDatabaseLocal)),
+  }),
 );

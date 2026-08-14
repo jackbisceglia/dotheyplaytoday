@@ -2,14 +2,11 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { text } from "drizzle-orm/sqlite-core";
+import { jsonb, text } from "drizzle-orm/pg-core";
 import { Schema } from "effect";
 
-import { sqliteTable } from "../../lib/database/drizzle/index.js";
-import type {
-  Check,
-  TableSchemasMatch,
-} from "../../lib/database/utils.js";
+import { postgresTable } from "../../lib/database/drizzle/index.js";
+import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
 import { SportTeamSubject } from "./variants/sport.schema.js";
@@ -30,10 +27,10 @@ const overrides = {
   details: SubjectDetails,
 };
 
-export const subjectsTable = sqliteTable("subjects", {
+export const subjectsTable = postgresTable("subjects", {
   id: text().primaryKey(),
   _tag: text("_tag", { enum: SubjectDetails.tags }).notNull(),
-  details: text({ mode: "json" })
+  details: jsonb()
     .notNull()
     .$type<Schema.Codec.Encoded<typeof SubjectDetails>>(),
 });

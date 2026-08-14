@@ -26,10 +26,9 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            // TODO(database): restore atomic unsubscribe with D1 batch support.
-            const user = yield* users.getByUnsubscribeToken(
-              ctx.payload.token,
-            );
+            // TODO(database): compose lookup and deletion in one interactive
+            // PostgreSQL transaction after the database cutover is stable.
+            const user = yield* users.getByUnsubscribeToken(ctx.payload.token);
 
             yield* users.remove(user.id);
 

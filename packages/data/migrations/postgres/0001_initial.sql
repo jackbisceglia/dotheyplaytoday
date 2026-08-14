@@ -14,7 +14,7 @@ ON users (unsubscribe_token);
 CREATE TABLE subjects (
   id TEXT PRIMARY KEY NOT NULL,
   _tag TEXT NOT NULL,
-  details TEXT NOT NULL
+  details JSONB NOT NULL
 );
 
 CREATE TABLE events (
@@ -23,7 +23,7 @@ CREATE TABLE events (
   source_id TEXT NOT NULL,
   starts_at TEXT NOT NULL,
   availability TEXT NOT NULL,
-  details TEXT NOT NULL
+  details JSONB NOT NULL
 );
 
 CREATE UNIQUE INDEX events_tag_source_id_idx
@@ -36,8 +36,10 @@ CREATE TABLE subject_events (
   event_id TEXT NOT NULL,
   subject_id TEXT NOT NULL,
   PRIMARY KEY (event_id, subject_id),
-  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
-  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+  CONSTRAINT subject_events_event_id_events_id_fk
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+  CONSTRAINT subject_events_subject_id_subjects_id_fk
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
 
 CREATE INDEX subject_events_subject_id_idx
@@ -47,8 +49,9 @@ CREATE TABLE participants (
   id TEXT PRIMARY KEY NOT NULL,
   event_id TEXT NOT NULL,
   _tag TEXT NOT NULL,
-  details TEXT NOT NULL,
-  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+  details JSONB NOT NULL,
+  CONSTRAINT participants_event_id_events_id_fk
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
 
 CREATE INDEX participants_event_id_idx
@@ -58,10 +61,12 @@ CREATE TABLE subscriptions (
   id TEXT PRIMARY KEY NOT NULL,
   user_id TEXT NOT NULL,
   subject_id TEXT NOT NULL,
-  schedule TEXT NOT NULL,
+  schedule JSONB NOT NULL,
   last_sent_at TEXT,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+  CONSTRAINT subscriptions_user_id_users_id_fk
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT subscriptions_subject_id_subjects_id_fk
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
 
 CREATE INDEX subscriptions_user_id_idx

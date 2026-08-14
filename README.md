@@ -10,7 +10,8 @@ See [Product](docs/product.md) for intended behavior and [Architecture](docs/arc
 
 - TypeScript and Effect
 - Astro
-- SQLite and Drizzle
+- PlanetScale PostgreSQL and Drizzle
+- Cloudflare Hyperdrive
 - Alchemy and Cloudflare Workers
 
 ## Packages
@@ -30,6 +31,36 @@ pnpm test
 pnpm lint
 pnpm typecheck
 ```
+
+PostgreSQL infrastructure is provisioned by Alchemy. Authenticate PlanetScale
+with `alchemy login` or set `PLANETSCALE_API_TOKEN_ID`,
+`PLANETSCALE_API_TOKEN`, and `PLANETSCALE_ORGANIZATION`. Cloudflare provider
+authentication is also required for infrastructure commands.
+
+The exact `production` stage owns the single `dotheyplaytoday` PlanetScale
+database and its protected `production` default branch. Other stages reference
+that database and create isolated remote PS-DEV branches; there is no Docker or
+local database path. Provision the production stage once before starting a
+development stage so its database reference exists, and destroy development
+stages when they are no longer needed so their branch billing stops.
+
+Checked-in PostgreSQL migrations live in
+`packages/data/migrations/postgres/`. Alchemy applies them transactionally
+before creating runtime roles and running seed Actions. Production seeding is a
+versioned, non-destructive catalog import; development seeding resets and
+reconstructs catalog, event, and development-user data.
+
+Run the disposable Worker → Hyperdrive → PlanetScale infrastructure test after
+loading the provider credentials:
+
+```bash
+pnpm build
+CI=1 RUN_INFRA_TESTS=1 node --env-file=.env node_modules/vitest/vitest.mjs run packages/core/src/lib/database/__tests__/infra/postgres.test.ts
+```
+
+It requires Cloudflare and PlanetScale provider credentials, creates an
+isolated non-production branch and compute resources, verifies a real API
+query, and destroys only those disposable resources.
 
 Package helpers:
 

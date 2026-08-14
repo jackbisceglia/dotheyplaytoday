@@ -2,14 +2,11 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { index, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, jsonb, text, uniqueIndex } from "drizzle-orm/pg-core";
 import { Schema } from "effect";
 
-import { sqliteTable } from "../../lib/database/drizzle/index.js";
-import type {
-  Check,
-  TableSchemasMatch,
-} from "../../lib/database/utils.js";
+import { postgresTable } from "../../lib/database/drizzle/index.js";
+import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
 import { SportEvent } from "./variants/sport.schema.js";
@@ -47,7 +44,7 @@ const overrides = {
   details: EventDetails,
 };
 
-export const eventsTable = sqliteTable(
+export const eventsTable = postgresTable(
   "events",
   {
     id: text().primaryKey(),
@@ -55,7 +52,7 @@ export const eventsTable = sqliteTable(
     sourceId: text().notNull(),
     startsAt: text().notNull(),
     availability: text({ enum: EventAvailability.literals }).notNull(),
-    details: text({ mode: "json" })
+    details: jsonb()
       .notNull()
       .$type<Schema.Codec.Encoded<typeof EventDetails>>(),
   },
