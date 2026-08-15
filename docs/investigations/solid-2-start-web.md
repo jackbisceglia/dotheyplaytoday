@@ -1,6 +1,6 @@
 # Solid 2 Start mode Web migration decision
 
-Status: deployed; local and production browser gates passed  
+Status: deployed; local and production browser gates passed
 Last updated: 2026-08-15
 
 ## Implementation outcome
