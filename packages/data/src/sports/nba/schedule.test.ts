@@ -52,6 +52,8 @@ describe("2026-27 NBA schedule", () => {
     >(subjects.map((subject) => [subject.details.display, subject]));
     const feedCounts = new Map<string, number>();
 
+    expect(subjectsByTitle.size).toBe(subjects.length);
+
     for (const subject of subjects) {
       expect(subject.feedIds).toHaveLength(gamesPerTeam);
       expect(new Set(subject.feedIds).size).toBe(gamesPerTeam);
@@ -72,6 +74,7 @@ describe("2026-27 NBA schedule", () => {
 
       for (const participant of event.participants) {
         const subject = subjectsByTitle.get(participant.details.title);
+        expect(subject, participant.details.title).toBeDefined();
         expect(subject?.feedIds).toContain(event.sourceId);
       }
     }
