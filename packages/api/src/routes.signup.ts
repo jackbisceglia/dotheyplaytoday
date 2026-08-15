@@ -1,12 +1,12 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { SignupRateLimited } from "@dtpt/core/contracts/signup";
-import { withTransaction } from "@dtpt/core/lib/database/errors";
+import { Database } from "@dtpt/core/lib/database/service";
+import { withTransaction } from "@dtpt/core/lib/database/transaction";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Users } from "@dtpt/core/modules/users/service";
 import { Effect } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
@@ -24,7 +24,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
-      const sql = yield* SqlClient;
+      const database = yield* Database;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
 
@@ -46,7 +46,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            const transaction = withTransaction(sql);
+            const transaction = withTransaction(database);
 
             yield* transaction(
               "Signup.submit",

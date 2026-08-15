@@ -1,25 +1,19 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Cause, Effect, Exit, Redacted } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 import * as SqlError from "effect/unstable/sql/SqlError";
 
-import {
-  DatabaseTransactionError,
-  mapTransactionError,
-  withTransaction,
-} from "../errors.js";
+import { DatabaseTransactionError, mapTransactionError } from "../errors.js";
 import { createDatabaseLayer, Database } from "../service.js";
+import { withTransaction } from "../transaction.js";
 
 describe("PostgreSQL database adapter", () => {
   it.effect("provides Drizzle without opening a module-scoped connection", () =>
     Effect.gen(function* () {
       const database = yield* Database;
-      const sql = yield* SqlClient;
 
       expect(typeof database.select).toBe("function");
       expect(typeof database.query.usersTable.findFirst).toBe("function");
       expect(typeof database.transaction).toBe("function");
-      expect(typeof sql.withTransaction).toBe("function");
     }).pipe(
       Effect.provide(
         createDatabaseLayer(
@@ -46,10 +40,10 @@ describe("PostgreSQL database adapter", () => {
     }),
   );
 
-  it.effect("runs and maps transactions through the provided SqlClient", () =>
+  it.effect("runs and maps transactions through the provided database", () =>
     Effect.gen(function* () {
-      const sql = yield* SqlClient;
-      const transaction = withTransaction(sql);
+      const database = yield* Database;
+      const transaction = withTransaction(database);
 
       const error = yield* transaction("Test.transaction", Effect.void).pipe(
         Effect.flip,

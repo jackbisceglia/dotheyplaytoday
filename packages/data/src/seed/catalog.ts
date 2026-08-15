@@ -1,4 +1,5 @@
 import {
+  Database,
   EventId,
   EventSourceId,
   Events,
@@ -7,7 +8,6 @@ import {
   withTransaction,
 } from "@dtpt/core";
 import { Effect, HashMap, Option, Schema } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 import { SportsSeed } from "../schema/sports.js";
 import { SeedCollections } from "./index.js";
@@ -142,9 +142,9 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
   const subjects = yield* Subjects;
   const events = yield* Events;
-  const sql = yield* SqlClient;
+  const database = yield* Database;
 
-  const transaction = withTransaction(sql);
+  const transaction = withTransaction(database);
 
   yield* transaction(
     "DataSeed.seedCatalog",

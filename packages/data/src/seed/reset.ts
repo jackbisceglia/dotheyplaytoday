@@ -10,14 +10,12 @@ import {
   withTransaction,
 } from "@dtpt/core";
 import { Effect } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 export const reset = Effect.fn("DataSeed.reset")(
   function* () {
     const database = yield* Database;
-    const sql = yield* SqlClient;
 
-    const transaction = withTransaction(sql);
+    const transaction = withTransaction(database);
 
     yield* transaction(
       "DataSeed.reset",

@@ -9,7 +9,6 @@ import {
   Option,
   Schema,
 } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 import {
   DatabaseReadError,
@@ -18,9 +17,9 @@ import {
   mapToReadError,
   mapToWriteError,
   toWriteError,
-  withTransaction,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
+import { withTransaction } from "../../lib/database/transaction.js";
 import { Id } from "../../lib/id/service.js";
 import type { WithOptionalKeys } from "../../lib/types.js";
 import { SubjectId } from "../subjects/schema.js";
@@ -96,7 +95,6 @@ export const EventsLayer = Layer.effect(
   Events,
   Effect.gen(function* () {
     const database = yield* Database;
-    const sql = yield* SqlClient;
     const id = yield* Id;
 
     const get: Events["Service"]["get"] = Effect.fn("Events.get")(
@@ -218,7 +216,7 @@ export const EventsLayer = Layer.effect(
         }),
       );
 
-      const transaction = withTransaction(sql);
+      const transaction = withTransaction(database);
 
       yield* transaction(
         "Events.setParticipants",

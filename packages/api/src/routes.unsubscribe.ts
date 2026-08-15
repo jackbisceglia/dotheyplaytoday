@@ -1,9 +1,9 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { UnsubscribeRateLimited } from "@dtpt/core/contracts/unsubscribe";
-import { withTransaction } from "@dtpt/core/lib/database/errors";
+import { Database } from "@dtpt/core/lib/database/service";
+import { withTransaction } from "@dtpt/core/lib/database/transaction";
 import { Users } from "@dtpt/core/modules/users/service";
 import { Effect } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
@@ -21,7 +21,7 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
-      const sql = yield* SqlClient;
+      const database = yield* Database;
       const users = yield* Users;
 
       return handlers.handle(
@@ -30,7 +30,7 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            const transaction = withTransaction(sql);
+            const transaction = withTransaction(database);
 
             const user = yield* transaction(
               "Unsubscribe.submit",

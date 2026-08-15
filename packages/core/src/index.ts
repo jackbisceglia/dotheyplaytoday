@@ -28,8 +28,8 @@ export {
   DatabaseTransactionError,
   DatabaseWriteError,
   mapTransactionError,
-  withTransaction,
 } from "./lib/database/errors.js";
+export { withTransaction } from "./lib/database/transaction.js";
 export { Id, IdLayer } from "./lib/id/service.js";
 export { StringPart, StringParts } from "./lib/string.js";
 export { buildUnsubscribeUrl } from "./lib/unsubscribe.js";

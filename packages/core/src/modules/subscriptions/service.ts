@@ -9,7 +9,6 @@ import {
   Option,
   Schema,
 } from "effect";
-import { SqlClient } from "effect/unstable/sql/SqlClient";
 
 import {
   DatabaseReadError,
@@ -18,9 +17,9 @@ import {
   mapToReadError,
   mapToWriteError,
   toWriteError,
-  withTransaction,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
+import { withTransaction } from "../../lib/database/transaction.js";
 import { Id } from "../../lib/id/service.js";
 import { Subject, SubjectId } from "../subjects/schema.js";
 import { User } from "../users/schema.js";
@@ -89,7 +88,6 @@ export const SubscriptionsLayer = Layer.effect(
   Subscriptions,
   Effect.gen(function* () {
     const database = yield* Database;
-    const sql = yield* SqlClient;
     const id = yield* Id;
     const SubjectPolicy = SubscriptionPolicy.subject;
 
@@ -188,7 +186,7 @@ export const SubscriptionsLayer = Layer.effect(
           subscriptionCount: insertableSubscriptions.length,
         };
 
-        const transaction = withTransaction(sql);
+        const transaction = withTransaction(database);
 
         yield* transaction(
           "Subscriptions.replaceForUser",

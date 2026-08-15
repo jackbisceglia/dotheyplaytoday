@@ -110,12 +110,13 @@ PostgreSQL persistence
     └── rolls back development reset on any delete failure
 ```
 
-The transaction behavior is implemented with Effect `SqlClient` interactive
-transactions over the same `PgClient` used by Drizzle. The rollback cases remain pending provider-backed integration
-coverage and must run only in the disposable environment above; do not replace
-them with SQLite, Docker, Testcontainers, or PGlite approximations. Catalog
-rollback coverage should use a deliberately small failing fixture while still
-exercising the same single, serialized catalog transaction used in production.
+The transaction behavior is implemented with Drizzle's Effect-native
+interactive transactions over its underlying `PgClient`. The rollback cases
+remain pending provider-backed integration coverage and must run only in the
+disposable environment above; do not replace them with SQLite, Docker,
+Testcontainers, or PGlite approximations. Catalog rollback coverage should use
+a deliberately small failing fixture while still exercising the same single,
+serialized catalog transaction used in production.
 
 ## Existing coverage
 
