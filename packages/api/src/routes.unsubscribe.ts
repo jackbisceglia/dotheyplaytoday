@@ -1,7 +1,7 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { UnsubscribeRateLimited } from "@dtpt/core/contracts/unsubscribe";
+import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
-import { withTransaction } from "@dtpt/core/lib/database/transaction";
 import { Users } from "@dtpt/core/modules/users/service";
 import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
@@ -30,20 +30,19 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            const transaction = withTransaction(database);
+            const user = yield* database
+              .transaction(() =>
+                Effect.gen(function* () {
+                  const user = yield* users.getByUnsubscribeToken(
+                    ctx.payload.token,
+                  );
 
-            const user = yield* transaction(
-              "Unsubscribe.submit",
-              Effect.gen(function* () {
-                const user = yield* users.getByUnsubscribeToken(
-                  ctx.payload.token,
-                );
+                  yield* users.remove(user.id);
 
-                yield* users.remove(user.id);
-
-                return user;
-              }),
-            );
+                  return user;
+                }),
+              )
+              .pipe(mapToTransactionError("Unsubscribe.submit"));
 
             yield* Effect.logInfo("unsubscribe: user removed", {
               userId: user.id,

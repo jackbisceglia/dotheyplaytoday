@@ -91,13 +91,19 @@ export const mapToWriteError =
 
 export const mapToTransactionError =
   (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
-  <A, E, R>(effect: Effect.Effect<A, E | SqlError.SqlError, R>) => {
+  <A, E, R>(
+    effect: Effect.Effect<A, E, R>,
+  ): Effect.Effect<
+    A,
+    Exclude<E, SqlError.SqlError> | DatabaseTransactionError,
+    R
+  > => {
     const makeError = (cause: SqlError.SqlError) =>
       new DatabaseTransactionError({ operation, cause, metadata });
 
     return effect.pipe(
-      Effect.mapError((cause) =>
-        SqlError.isSqlError(cause) ? makeError(cause) : cause,
+      Effect.mapError((cause): Exclude<E, SqlError.SqlError> | DatabaseTransactionError =>
+        SqlError.isSqlError(cause) ? makeError(cause) : (cause as Exclude<E, SqlError.SqlError>),
       ),
       // Effect SQL currently defects on COMMIT/ROLLBACK failures.
       Effect.catchDefect((cause) =>

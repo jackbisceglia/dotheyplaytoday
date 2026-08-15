@@ -4,7 +4,6 @@ import * as SqlError from "effect/unstable/sql/SqlError";
 
 import { DatabaseTransactionError, mapToTransactionError } from "../errors.js";
 import { createDatabaseLayer, Database } from "../service.js";
-import { withTransaction } from "../transaction.js";
 
 describe("PostgreSQL database adapter", () => {
   it.effect("provides Drizzle without opening a module-scoped connection", () =>
@@ -43,11 +42,10 @@ describe("PostgreSQL database adapter", () => {
   it.effect("runs and maps transactions through the provided database", () =>
     Effect.gen(function* () {
       const database = yield* Database;
-      const transaction = withTransaction(database);
 
-      const error = yield* transaction("Test.transaction", Effect.void).pipe(
-        Effect.flip,
-      );
+      const error = yield* database
+        .transaction(() => Effect.void)
+        .pipe(mapToTransactionError("Test.transaction"), Effect.flip);
 
       expect(error).toBeInstanceOf(DatabaseTransactionError);
       expect(error.operation).toBe("Test.transaction");

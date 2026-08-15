@@ -15,11 +15,11 @@ import {
   DatabaseTransactionError,
   DatabaseWriteError,
   mapToReadError,
+  mapToTransactionError,
   mapToWriteError,
   toWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
-import { withTransaction } from "../../lib/database/transaction.js";
 import { Id } from "../../lib/id/service.js";
 import type { WithOptionalKeys } from "../../lib/types.js";
 import { SubjectId } from "../subjects/schema.js";
@@ -216,35 +216,33 @@ export const EventsLayer = Layer.effect(
         }),
       );
 
-      const transaction = withTransaction(database);
+      yield* database
+        .transaction(() =>
+          Effect.gen(function* () {
+            yield* database
+              .delete(participantsTable)
+              .where(eq(participantsTable.eventId, eventId))
+              .pipe(
+                Effect.catchTag(
+                  "EffectDrizzleQueryError",
+                  toWriteError("Events.setParticipants", { eventId }),
+                ),
+              );
 
-      yield* transaction(
-        "Events.setParticipants",
-        { eventId },
-        Effect.gen(function* () {
-          yield* database
-            .delete(participantsTable)
-            .where(eq(participantsTable.eventId, eventId))
-            .pipe(
-              Effect.catchTag(
-                "EffectDrizzleQueryError",
-                toWriteError("Events.setParticipants", { eventId }),
-              ),
-            );
+            if (Array.isReadonlyArrayEmpty(insertableParticipants)) return;
 
-          if (Array.isReadonlyArrayEmpty(insertableParticipants)) return;
-
-          yield* database
-            .insert(participantsTable)
-            .values(insertableParticipants)
-            .pipe(
-              Effect.catchTag(
-                "EffectDrizzleQueryError",
-                toWriteError("Events.setParticipants", { eventId }),
-              ),
-            );
-        }),
-      );
+            yield* database
+              .insert(participantsTable)
+              .values(insertableParticipants)
+              .pipe(
+                Effect.catchTag(
+                  "EffectDrizzleQueryError",
+                  toWriteError("Events.setParticipants", { eventId }),
+                ),
+              );
+          }),
+        )
+        .pipe(mapToTransactionError("Events.setParticipants", { eventId }));
     });
 
     return Events.of({

@@ -1,7 +1,7 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { SignupRateLimited } from "@dtpt/core/contracts/signup";
+import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
-import { withTransaction } from "@dtpt/core/lib/database/transaction";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
@@ -46,23 +46,22 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            const transaction = withTransaction(database);
+            yield* database
+              .transaction(() =>
+                Effect.gen(function* () {
+                  const user = yield* users.upsertForSignup(
+                    ctx.payload.email,
+                    ctx.payload.timezone,
+                  );
 
-            yield* transaction(
-              "Signup.submit",
-              Effect.gen(function* () {
-                const user = yield* users.upsertForSignup(
-                  ctx.payload.email,
-                  ctx.payload.timezone,
-                );
-
-                yield* subscriptions.replaceForUser({
-                  user,
-                  subjectIds: ctx.payload.subjectIds,
-                  schedule: ctx.payload.schedule,
-                });
-              }),
-            );
+                  yield* subscriptions.replaceForUser({
+                    user,
+                    subjectIds: ctx.payload.subjectIds,
+                    schedule: ctx.payload.schedule,
+                  });
+                }),
+              )
+              .pipe(mapToTransactionError("Signup.submit"));
 
             return { ok: true as const };
           },

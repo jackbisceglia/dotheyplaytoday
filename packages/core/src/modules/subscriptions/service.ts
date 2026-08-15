@@ -15,11 +15,11 @@ import {
   DatabaseTransactionError,
   DatabaseWriteError,
   mapToReadError,
+  mapToTransactionError,
   mapToWriteError,
   toWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
-import { withTransaction } from "../../lib/database/transaction.js";
 import { Id } from "../../lib/id/service.js";
 import { Subject, SubjectId } from "../subjects/schema.js";
 import { User } from "../users/schema.js";
@@ -162,7 +162,6 @@ export const SubscriptionsLayer = Layer.effect(
         const subjectIds = Array.dedupe(input.subjectIds);
 
         yield* SubjectPolicy.ensureAllowance(input.user, subjectIds.length);
-        yield* assertSubjectsExist(subjectIds);
 
         const insertableSubscriptions = yield* Effect.forEach(
           subjectIds,
@@ -186,36 +185,36 @@ export const SubscriptionsLayer = Layer.effect(
           subscriptionCount: insertableSubscriptions.length,
         };
 
-        const transaction = withTransaction(database);
+        yield* database
+          .transaction(() =>
+            Effect.gen(function* () {
+              yield* assertSubjectsExist(subjectIds);
 
-        yield* transaction(
-          "Subscriptions.replaceForUser",
-          metadata,
-          Effect.gen(function* () {
-            yield* database
-              .delete(subscriptionsTable)
-              .where(eq(subscriptionsTable.userId, input.user.id))
-              .pipe(
-                Effect.catchTag(
-                  "EffectDrizzleQueryError",
-                  toWriteError("Subscriptions.replaceForUser", metadata),
-                ),
-              );
+              yield* database
+                .delete(subscriptionsTable)
+                .where(eq(subscriptionsTable.userId, input.user.id))
+                .pipe(
+                  Effect.catchTag(
+                    "EffectDrizzleQueryError",
+                    toWriteError("Subscriptions.replaceForUser", metadata),
+                  ),
+                );
 
-            // Empty input means replacing the user's subscriptions with none.
-            if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) return;
+              // Empty input means replacing the user's subscriptions with none.
+              if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) return;
 
-            yield* database
-              .insert(subscriptionsTable)
-              .values(insertableSubscriptions)
-              .pipe(
-                Effect.catchTag(
-                  "EffectDrizzleQueryError",
-                  toWriteError("Subscriptions.replaceForUser", metadata),
-                ),
-              );
-          }),
-        );
+              yield* database
+                .insert(subscriptionsTable)
+                .values(insertableSubscriptions)
+                .pipe(
+                  Effect.catchTag(
+                    "EffectDrizzleQueryError",
+                    toWriteError("Subscriptions.replaceForUser", metadata),
+                  ),
+                );
+            }),
+          )
+          .pipe(mapToTransactionError("Subscriptions.replaceForUser", metadata));
       });
 
     const markSent: Subscriptions["Service"]["markSent"] = Effect.fn(
