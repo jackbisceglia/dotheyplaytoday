@@ -4,8 +4,8 @@ type NbaSportEventSeed = SportsSeedEncoded["events"][number];
 type NbaScheduleEntry = readonly [
   espnId: string,
   startsAt: string,
-  home: string,
-  away: string,
+  homeTeam: string,
+  awayTeam: string,
 ];
 
 // NBA's August 13 release defines 80 games per team. The 30 NBA Cup flex
@@ -1215,7 +1215,7 @@ const Schedule: readonly NbaScheduleEntry[] = [
 ];
 
 export const events: readonly NbaSportEventSeed[] = Schedule.map(
-  ([espnId, startsAt, home, away]) => {
+  ([espnId, startsAt, homeTeam, awayTeam]) => {
     const id = `00000000-0000-4000-8000-000${espnId}`;
 
     return {
@@ -1234,7 +1234,7 @@ export const events: readonly NbaSportEventSeed[] = Schedule.map(
           details: {
             _tag: "sports_game",
             role: "home",
-            title: home,
+            title: homeTeam,
           },
         },
         {
@@ -1242,7 +1242,7 @@ export const events: readonly NbaSportEventSeed[] = Schedule.map(
           details: {
             _tag: "sports_game",
             role: "away",
-            title: away,
+            title: awayTeam,
           },
         },
       ],
