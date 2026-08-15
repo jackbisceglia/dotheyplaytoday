@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getServiceDomain, url } from "../domain.js";
+import { getManagedServiceDomain, getServiceDomain, url } from "../domain.js";
 
 describe("service domains", () => {
   it("uses stable production domains", () => {
@@ -9,22 +9,31 @@ describe("service domains", () => {
     expect(getServiceDomain("jobs", "production")).toBe(
       "jobs.dotheyplay.today",
     );
+    expect(getManagedServiceDomain("api", "production")).toBe(
+      "api.dotheyplay.today",
+    );
   });
 
-  it("normalizes development stages as subdomain labels", () => {
-    expect(getServiceDomain("api", "dev_jack")).toBe(
-      "dev-jack.api.dotheyplay.today",
+  it("prefixes managed non-development domains with the stage", () => {
+    expect(getManagedServiceDomain("web", "staging")).toBe(
+      "staging.dotheyplay.today",
     );
-    expect(getServiceDomain("jobs", "QA_")).toBe("qa.jobs.dotheyplay.today");
+    expect(getManagedServiceDomain("api", "preview_123")).toBe(
+      "preview-123.api.dotheyplay.today",
+    );
+    expect(getManagedServiceDomain("jobs", "QA_")).toBe(
+      "qa.jobs.dotheyplay.today",
+    );
+  });
+
+  it("leaves development stages on development-only URLs", () => {
+    expect(getManagedServiceDomain("api", "dev_jack")).toBeUndefined();
+    expect(getManagedServiceDomain("web", "dev_jack")).toBeUndefined();
   });
 
   it("rejects stage prefixes outside the subdomain label length limit", () => {
     expect(() => getServiceDomain("api", "a".repeat(64))).toThrow();
     expect(() => getServiceDomain("jobs", "---")).toThrow();
-  });
-
-  it("keeps the web app on the root domain outside local Vite development", () => {
-    expect(getServiceDomain("web", "staging")).toBe("dotheyplay.today");
   });
 
   it("builds secure deployed and local service URLs", () => {

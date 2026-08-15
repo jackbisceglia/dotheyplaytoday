@@ -1,5 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
-// import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
+import { Stack } from "alchemy";
+import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { WebConfig } from "@dtpt/core/lib/config/web";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
@@ -32,8 +33,9 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     main: import.meta.url,
     compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
     dev: { port: 3001, strictPort: true },
-    // TODO: Restore after dotheyplay.today DNS moves to Cloudflare.
-    // domain: getServiceDomain("api", stack.stage),
+    domain: Stack.useSync((stack) =>
+      getManagedServiceDomain("api", stack.stage),
+    ),
   },
   Effect.gen(function* () {
     // Resources
