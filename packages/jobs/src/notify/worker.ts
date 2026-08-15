@@ -33,16 +33,22 @@ const NotifyDomainsLayer = pipe(
   Layer.provide(CloudflareCryptoLayer),
 );
 
-export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>()(
-  "NotifyJobWorker",
-  {
-    main: import.meta.url,
-    compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
-    dev: { port: Trigger.port, strictPort: true },
-    domain: Stack.useSync((stack) =>
-      getManagedServiceDomain("jobs", stack.stage),
-    ),
-  },
+export default class NotifyJobWorker extends Cloudflare.Worker<
+  NotifyJobWorker,
+  Cloudflare.WorkerShape
+>()("NotifyJobWorker") {}
+
+export const NotifyJobWorkerLive = NotifyJobWorker.make(
+  Stack.useSync((stack) => {
+    const domain = getManagedServiceDomain("jobs", stack.stage);
+
+    return {
+      main: import.meta.url,
+      compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+      dev: { port: Trigger.port, strictPort: true },
+      ...(domain === undefined ? {} : { domain }),
+    };
+  }),
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;
@@ -127,4 +133,4 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
       ),
     ),
   ),
-) {}
+);

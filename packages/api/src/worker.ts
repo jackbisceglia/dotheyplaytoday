@@ -27,16 +27,22 @@ const WorkerLayer = Layer.merge(
   RateLimiterLayer,
 );
 
-export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
-  "ApiWorker",
-  {
-    main: import.meta.url,
-    compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
-    dev: { port: 3001, strictPort: true },
-    domain: Stack.useSync((stack) =>
-      getManagedServiceDomain("api", stack.stage),
-    ),
-  },
+export default class ApiWorker extends Cloudflare.Worker<
+  ApiWorker,
+  Cloudflare.WorkerShape
+>()("ApiWorker") {}
+
+export const ApiWorkerLive = ApiWorker.make(
+  Stack.useSync((stack) => {
+    const domain = getManagedServiceDomain("api", stack.stage);
+
+    return {
+      main: import.meta.url,
+      compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+      dev: { port: 3001, strictPort: true },
+      ...(domain === undefined ? {} : { domain }),
+    };
+  }),
   Effect.gen(function* () {
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
@@ -64,4 +70,4 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
       }).pipe(Effect.provideService(RateLimiter, rateLimiter)),
     };
   }).pipe(Effect.provide(WorkerLayer)),
-) {}
+);
