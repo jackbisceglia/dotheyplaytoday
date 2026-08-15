@@ -1,16 +1,11 @@
-import { Api } from "@dtpt/core/contracts/api";
-import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { Effect } from "effect";
-import { HttpApiClient } from "effect/unstable/httpapi";
+import type { Duration } from "effect";
+import { ClientForPlatform } from "virtual:dtpt-api-client";
 
 import { RuntimeClient } from "./platform.js";
 
 export type Client = typeof Client;
-export const Client = Effect.gen(function* () {
-  const baseUrl = yield* ApiUrl;
-
-  return yield* HttpApiClient.make(Api, { baseUrl });
-});
+export const Client = ClientForPlatform;
 
 export function withApiClient<A, E>(
   useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
@@ -20,6 +15,19 @@ export function withApiClient<A, E>(
 
     return yield* useClient(client);
   });
+
+  return RuntimeClient.runPromise(procedure);
+}
+
+export function withApiClientDeadline<A, E>(
+  useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
+  duration: Duration.Input = "15 seconds",
+) {
+  const procedure = Effect.gen(function* () {
+    const client = yield* Client;
+
+    return yield* useClient(client);
+  }).pipe(Effect.timeout(duration));
 
   return RuntimeClient.runPromise(procedure);
 }

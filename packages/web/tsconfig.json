@@ -1,12 +1,15 @@
 {
-  "extends": ["astro/tsconfigs/strict", "../../tsconfig.base.json"],
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "preserve",
+    "jsxImportSource": "@solidjs/web",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "virtual:dtpt-api-client": ["./src/lib/api.client.ts"]
     }
   },
-  "include": ["src", ".astro/types.d.ts", "astro.config.ts"],
+  "include": ["src", "vite.config.ts"],
   "exclude": ["dist"]
 }

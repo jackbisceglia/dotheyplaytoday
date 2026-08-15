@@ -34,9 +34,6 @@ export default Alchemy.Stack(
 
     const planetscale = yield* Planetscale;
     const hyperdrive = yield* DatabaseHyperdrive;
-    const apiWorker = yield* ApiWorker;
-    const notifyJobWorker = yield* NotifyJobWorker;
-
     const seedTarget = Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
 
     if (stage === "production") {
@@ -51,6 +48,30 @@ export default Alchemy.Stack(
       });
     }
 
+    const apiWorker = yield* ApiWorker;
+    const notifyJobWorker = yield* NotifyJobWorker;
+    const apiWorkerUrl = apiWorker.url.pipe(
+      Output.map((value) => {
+        if (value === undefined) {
+          throw new Error("API Worker URL is unavailable");
+        }
+        return value;
+      }),
+    );
+    const web = yield* Cloudflare.Website.Vite("Web", {
+      name: `dotheyplaytoday-web-${stage}`,
+      rootDir: "packages/web",
+      compatibility: {
+        date: "2026-06-02",
+        flags: ["nodejs_compat"],
+      },
+      dev: { port: 4321, strictPort: true },
+      env: {
+        API: apiWorker,
+        VITE_API_URL: apiWorkerUrl,
+      },
+    });
+
     return {
       databaseId: planetscale.database.id,
       databaseName: planetscale.database.name,
@@ -59,6 +80,8 @@ export default Alchemy.Stack(
       hyperdriveCachingDisabled: hyperdrive.Props.caching?.disabled,
       apiWorkerName: apiWorker.workerName,
       apiWorkerUrl: apiWorker.url,
+      webWorkerName: web.workerName,
+      webWorkerUrl: web.url,
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
     };

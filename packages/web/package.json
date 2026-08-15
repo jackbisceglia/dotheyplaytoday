@@ -4,22 +4,24 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "typecheck": "astro check",
+    "dev": "vite dev --host 0.0.0.0 --port 4321 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4321 --strictPort",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.7.0",
     "@dtpt/core": "workspace:*",
-    "astro": "^6.4.6",
-    "effect": "catalog:"
+    "@solidjs/router": "2.0.0-next.16",
+    "@solidjs/web": "2.0.0-rc.0",
+    "alchemy": "catalog:",
+    "effect": "catalog:",
+    "solid-js": "2.0.0-rc.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
-    "prettier-plugin-astro": "^0.14.1",
-    "typescript": "^5.9.2"
+    "@solidjs/vite-plugin": "3.0.0-next.28",
+    "typescript": "^5.9.2",
+    "vite": "8.1.5"
   }
 }
