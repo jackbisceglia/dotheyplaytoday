@@ -102,8 +102,11 @@ export const mapToTransactionError =
       new DatabaseTransactionError({ operation, cause, metadata });
 
     return effect.pipe(
-      Effect.mapError((cause): Exclude<E, SqlError.SqlError> | DatabaseTransactionError =>
-        SqlError.isSqlError(cause) ? makeError(cause) : (cause as Exclude<E, SqlError.SqlError>),
+      Effect.mapError(
+        (cause): Exclude<E, SqlError.SqlError> | DatabaseTransactionError =>
+          SqlError.isSqlError(cause)
+            ? makeError(cause)
+            : (cause as Exclude<E, SqlError.SqlError>),
       ),
       // Effect SQL currently defects on COMMIT/ROLLBACK failures.
       Effect.catchDefect((cause) =>

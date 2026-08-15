@@ -214,7 +214,9 @@ export const SubscriptionsLayer = Layer.effect(
                 );
             }),
           )
-          .pipe(mapToTransactionError("Subscriptions.replaceForUser", metadata));
+          .pipe(
+            mapToTransactionError("Subscriptions.replaceForUser", metadata),
+          );
       });
 
     const markSent: Subscriptions["Service"]["markSent"] = Effect.fn(
