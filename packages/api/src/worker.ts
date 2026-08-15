@@ -46,7 +46,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
-      Layer.provide(ApiBaseLayer.pipe(Layer.provide(DatabaseLayer))),
+      Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
       Layer.provide(CloudflareHttpApiPlatformLayer),
     );
 

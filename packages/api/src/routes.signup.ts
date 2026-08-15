@@ -1,5 +1,7 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { SignupRateLimited } from "@dtpt/core/contracts/signup";
+import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
+import { Database } from "@dtpt/core/lib/database/service";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
@@ -11,6 +13,7 @@ import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
 
 const UnexpectedErrorTags = [
   "DatabaseReadError",
+  "DatabaseTransactionError",
   "DatabaseWriteError",
   "SchemaError",
 ] as const;
@@ -21,6 +24,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
+      const database = yield* Database;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
 
@@ -30,10 +34,8 @@ export const SignupGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            // TODO(signup): evaluate a Registration application service when
-            // signup atomicity is restored with an interactive PostgreSQL
-            // transaction. This is only a static pre-user guard; user-dependent
-            // policy and subject existence checks still happen after the write.
+            // This static guard keeps known-invalid work outside the transaction;
+            // user-dependent policy and subject checks still run inside it.
             const received = new Set(ctx.payload.subjectIds).size;
             const { max } = SubscriptionPolicy.subject.constraints;
 
@@ -44,18 +46,22 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            // TODO(database): compose these services in one interactive
-            // PostgreSQL transaction after the database cutover is stable.
-            const user = yield* users.upsertForSignup(
-              ctx.payload.email,
-              ctx.payload.timezone,
-            );
+            yield* database
+              .transaction(() =>
+                Effect.gen(function* () {
+                  const user = yield* users.upsertForSignup(
+                    ctx.payload.email,
+                    ctx.payload.timezone,
+                  );
 
-            yield* subscriptions.replaceForUser({
-              user,
-              subjectIds: ctx.payload.subjectIds,
-              schedule: ctx.payload.schedule,
-            });
+                  yield* subscriptions.replaceForUser({
+                    user,
+                    subjectIds: ctx.payload.subjectIds,
+                    schedule: ctx.payload.schedule,
+                  });
+                }),
+              )
+              .pipe(mapToTransactionError("Signup.submit"));
 
             return { ok: true as const };
           },

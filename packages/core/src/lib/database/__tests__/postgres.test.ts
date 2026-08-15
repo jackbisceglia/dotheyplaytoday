@@ -1,6 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Redacted } from "effect";
+import { Cause, Effect, Exit, Redacted } from "effect";
+import * as SqlError from "effect/unstable/sql/SqlError";
 
+import { DatabaseTransactionError, mapToTransactionError } from "../errors.js";
 import { createDatabaseLayer, Database } from "../service.js";
 
 describe("PostgreSQL database adapter", () => {
@@ -23,4 +25,87 @@ describe("PostgreSQL database adapter", () => {
       ),
     ),
   );
+
+  it.effect("maps typed transaction failures to database errors", () =>
+    Effect.gen(function* () {
+      const cause = transactionSqlError();
+      const error = yield* Effect.fail(cause).pipe(
+        mapToTransactionError("Test.transaction"),
+        Effect.flip,
+      );
+
+      expect(error).toBeInstanceOf(DatabaseTransactionError);
+      expect(error.cause).toBe(cause);
+    }),
+  );
+
+  it.effect("runs and maps transactions through the provided database", () =>
+    Effect.gen(function* () {
+      const database = yield* Database;
+
+      const error = yield* database
+        .transaction(() => Effect.void)
+        .pipe(mapToTransactionError("Test.transaction"), Effect.flip);
+
+      expect(error).toBeInstanceOf(DatabaseTransactionError);
+      expect(error.operation).toBe("Test.transaction");
+    }).pipe(
+      Effect.provide(
+        createDatabaseLayer(
+          Effect.succeed(
+            Redacted.make("postgresql://test:test@127.0.0.1:1/test"),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  it.effect("maps Effect SQL commit defects to database errors", () =>
+    Effect.gen(function* () {
+      const cause = transactionSqlError();
+      const error = yield* Effect.die(cause).pipe(
+        mapToTransactionError("Test.transaction"),
+        Effect.flip,
+      );
+
+      expect(error).toBeInstanceOf(DatabaseTransactionError);
+      expect(error.cause).toBe(cause);
+    }),
+  );
+
+  it.effect("preserves non-SQL typed transaction failures", () =>
+    Effect.gen(function* () {
+      const cause = new Error("application failure");
+      const error = yield* Effect.fail(cause).pipe(
+        mapToTransactionError("Test.transaction"),
+        Effect.flip,
+      );
+
+      expect(error).toBe(cause);
+    }),
+  );
+
+  it.effect("preserves non-SQL transaction defects", () =>
+    Effect.gen(function* () {
+      const cause = new Error("application defect");
+      const exit = yield* Effect.die(cause).pipe(
+        mapToTransactionError("Test.transaction"),
+        Effect.exit,
+      );
+
+      expect(Exit.isFailure(exit)).toBe(true);
+      if (Exit.isFailure(exit)) {
+        expect(Cause.squash(exit.cause)).toBe(cause);
+      }
+    }),
+  );
 });
+
+const transactionSqlError = () =>
+  new SqlError.SqlError({
+    reason: new SqlError.ConnectionError({
+      cause: new Error("connection unavailable"),
+      message: "transaction connection unavailable",
+      operation: "acquireConnection",
+    }),
+  });

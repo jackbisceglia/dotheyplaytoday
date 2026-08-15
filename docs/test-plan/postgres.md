@@ -101,7 +101,7 @@ PostgreSQL persistence
 │   │   └── replaces subscriptions when seed definitions change
 │   └── reset
 │       └── clears every current seed table
-└── transaction follow-up
+└── transaction rollback
     ├── rolls back signup when subscription replacement fails
     ├── makes unsubscribe lookup and deletion atomic
     ├── rolls back subscription replacement on insert failure
@@ -110,9 +110,13 @@ PostgreSQL persistence
     └── rolls back development reset on any delete failure
 ```
 
-The transaction subtree remains deferred until ordinary interactive
-PostgreSQL transactions compose the participating Effect services. Do not
-reintroduce those cases as assertions of the current non-atomic behavior.
+The transaction behavior is implemented with Drizzle's Effect-native
+interactive transactions over its underlying `PgClient`. The rollback cases
+remain pending provider-backed integration coverage and must run only in the
+disposable environment above; do not replace them with SQLite, Docker,
+Testcontainers, or PGlite approximations. Catalog rollback coverage should use
+a deliberately small failing fixture while still exercising the same single,
+serialized catalog transaction used in production.
 
 ## Existing coverage
 
