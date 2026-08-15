@@ -1,4 +1,5 @@
 import type { SportsSeedEncoded } from "../../schema/sports.js";
+import { getTeamFeedIds } from "./events.js";
 
 type NbaSportSubjectSeed = SportsSeedEncoded["subjects"][number];
 
@@ -15,7 +16,7 @@ export const Teams = {
       abbreviation: "ATL",
       slug: "atlanta-hawks",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Atlanta Hawks"),
   },
   BrooklynNets: {
     id: "00000000-0000-4000-8000-000000000103",
@@ -29,7 +30,7 @@ export const Teams = {
       abbreviation: "BKN",
       slug: "brooklyn-nets",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Brooklyn Nets"),
   },
   BostonCeltics: {
     id: "00000000-0000-4000-8000-000000000102",
@@ -43,7 +44,7 @@ export const Teams = {
       abbreviation: "BOS",
       slug: "boston-celtics",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Boston Celtics"),
   },
   CharlotteHornets: {
     id: "00000000-0000-4000-8000-000000000104",
@@ -57,7 +58,7 @@ export const Teams = {
       abbreviation: "CHA",
       slug: "charlotte-hornets",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Charlotte Hornets"),
   },
   ChicagoBulls: {
     id: "00000000-0000-4000-8000-000000000105",
@@ -71,7 +72,7 @@ export const Teams = {
       abbreviation: "CHI",
       slug: "chicago-bulls",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Chicago Bulls"),
   },
   ClevelandCavaliers: {
     id: "00000000-0000-4000-8000-000000000106",
@@ -85,7 +86,7 @@ export const Teams = {
       abbreviation: "CLE",
       slug: "cleveland-cavaliers",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Cleveland Cavaliers"),
   },
   DallasMavericks: {
     id: "00000000-0000-4000-8000-000000000107",
@@ -99,7 +100,7 @@ export const Teams = {
       abbreviation: "DAL",
       slug: "dallas-mavericks",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Dallas Mavericks"),
   },
   DenverNuggets: {
     id: "00000000-0000-4000-8000-000000000108",
@@ -113,7 +114,7 @@ export const Teams = {
       abbreviation: "DEN",
       slug: "denver-nuggets",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Denver Nuggets"),
   },
   DetroitPistons: {
     id: "00000000-0000-4000-8000-000000000109",
@@ -127,7 +128,7 @@ export const Teams = {
       abbreviation: "DET",
       slug: "detroit-pistons",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Detroit Pistons"),
   },
   GoldenStateWarriors: {
     id: "00000000-0000-4000-8000-000000000110",
@@ -141,7 +142,7 @@ export const Teams = {
       abbreviation: "GSW",
       slug: "golden-state-warriors",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Golden State Warriors"),
   },
   HoustonRockets: {
     id: "00000000-0000-4000-8000-000000000111",
@@ -155,7 +156,7 @@ export const Teams = {
       abbreviation: "HOU",
       slug: "houston-rockets",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Houston Rockets"),
   },
   IndianaPacers: {
     id: "00000000-0000-4000-8000-000000000112",
@@ -169,7 +170,7 @@ export const Teams = {
       abbreviation: "IND",
       slug: "indiana-pacers",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Indiana Pacers"),
   },
   LAClippers: {
     id: "00000000-0000-4000-8000-000000000113",
@@ -183,7 +184,7 @@ export const Teams = {
       abbreviation: "LAC",
       slug: "la-clippers",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("LA Clippers"),
   },
   LosAngelesLakers: {
     id: "00000000-0000-4000-8000-000000000114",
@@ -197,7 +198,7 @@ export const Teams = {
       abbreviation: "LAL",
       slug: "los-angeles-lakers",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Los Angeles Lakers"),
   },
   MemphisGrizzlies: {
     id: "00000000-0000-4000-8000-000000000115",
@@ -211,7 +212,7 @@ export const Teams = {
       abbreviation: "MEM",
       slug: "memphis-grizzlies",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Memphis Grizzlies"),
   },
   MiamiHeat: {
     id: "00000000-0000-4000-8000-000000000116",
@@ -225,7 +226,7 @@ export const Teams = {
       abbreviation: "MIA",
       slug: "miami-heat",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Miami Heat"),
   },
   MilwaukeeBucks: {
     id: "00000000-0000-4000-8000-000000000117",
@@ -239,7 +240,7 @@ export const Teams = {
       abbreviation: "MIL",
       slug: "milwaukee-bucks",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Milwaukee Bucks"),
   },
   MinnesotaTimberwolves: {
     id: "00000000-0000-4000-8000-000000000118",
@@ -253,7 +254,7 @@ export const Teams = {
       abbreviation: "MIN",
       slug: "minnesota-timberwolves",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Minnesota Timberwolves"),
   },
   NewOrleansPelicans: {
     id: "00000000-0000-4000-8000-000000000119",
@@ -267,7 +268,7 @@ export const Teams = {
       abbreviation: "NOP",
       slug: "new-orleans-pelicans",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("New Orleans Pelicans"),
   },
   NewYorkKnicks: {
     id: "00000000-0000-4000-8000-000000000120",
@@ -281,7 +282,7 @@ export const Teams = {
       abbreviation: "NYK",
       slug: "new-york-knicks",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("New York Knicks"),
   },
   OklahomaCityThunder: {
     id: "00000000-0000-4000-8000-000000000121",
@@ -295,7 +296,7 @@ export const Teams = {
       abbreviation: "OKC",
       slug: "oklahoma-city-thunder",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Oklahoma City Thunder"),
   },
   OrlandoMagic: {
     id: "00000000-0000-4000-8000-000000000122",
@@ -309,7 +310,7 @@ export const Teams = {
       abbreviation: "ORL",
       slug: "orlando-magic",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Orlando Magic"),
   },
   Philadelphia76ers: {
     id: "00000000-0000-4000-8000-000000000123",
@@ -323,7 +324,7 @@ export const Teams = {
       abbreviation: "PHI",
       slug: "philadelphia-76ers",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Philadelphia 76ers"),
   },
   PhoenixSuns: {
     id: "00000000-0000-4000-8000-000000000124",
@@ -337,7 +338,7 @@ export const Teams = {
       abbreviation: "PHX",
       slug: "phoenix-suns",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Phoenix Suns"),
   },
   PortlandTrailBlazers: {
     id: "00000000-0000-4000-8000-000000000125",
@@ -351,7 +352,7 @@ export const Teams = {
       abbreviation: "POR",
       slug: "portland-trail-blazers",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Portland Trail Blazers"),
   },
   SacramentoKings: {
     id: "00000000-0000-4000-8000-000000000126",
@@ -365,7 +366,7 @@ export const Teams = {
       abbreviation: "SAC",
       slug: "sacramento-kings",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Sacramento Kings"),
   },
   SanAntonioSpurs: {
     id: "00000000-0000-4000-8000-000000000127",
@@ -379,7 +380,7 @@ export const Teams = {
       abbreviation: "SAS",
       slug: "san-antonio-spurs",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("San Antonio Spurs"),
   },
   TorontoRaptors: {
     id: "00000000-0000-4000-8000-000000000128",
@@ -393,7 +394,7 @@ export const Teams = {
       abbreviation: "TOR",
       slug: "toronto-raptors",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Toronto Raptors"),
   },
   UtahJazz: {
     id: "00000000-0000-4000-8000-000000000129",
@@ -407,7 +408,7 @@ export const Teams = {
       abbreviation: "UTA",
       slug: "utah-jazz",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Utah Jazz"),
   },
   WashingtonWizards: {
     id: "00000000-0000-4000-8000-000000000130",
@@ -421,7 +422,7 @@ export const Teams = {
       abbreviation: "WAS",
       slug: "washington-wizards",
     },
-    feedIds: [],
+    feedIds: getTeamFeedIds("Washington Wizards"),
   },
 } as const satisfies Record<string, NbaSportSubjectSeed>;
 
