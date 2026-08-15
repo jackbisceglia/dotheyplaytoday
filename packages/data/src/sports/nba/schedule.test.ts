@@ -11,6 +11,16 @@ const announcedGameCount = 1_200;
 // Two NBA Cup flex games per team still lack concrete matchups and times.
 const gamesPerTeam = 80;
 const scheduleEvents: readonly SportsSeedEncoded["events"][number][] = events;
+type ScheduleEvent = (typeof scheduleEvents)[number];
+
+type TeamScheduleGame = {
+  readonly event: ScheduleEvent;
+  readonly opponent: string;
+  readonly role: "home" | "away";
+};
+
+const scheduleKey = (startsAt: string, opponent: string) =>
+  `${startsAt}|${opponent}`;
 
 describe("2026-27 NBA schedule", () => {
   it("decodes as a sports seed with every announced game and team", () => {
@@ -39,9 +49,7 @@ describe("2026-27 NBA schedule", () => {
     const subjectsByTitle = new Map<
       string,
       SportsSeedEncoded["subjects"][number]
-    >(
-      subjects.map((subject) => [subject.details.display, subject]),
-    );
+    >(subjects.map((subject) => [subject.details.display, subject]));
     const feedCounts = new Map<string, number>();
 
     for (const subject of subjects) {
@@ -65,6 +73,70 @@ describe("2026-27 NBA schedule", () => {
       for (const participant of event.participants) {
         const subject = subjectsByTitle.get(participant.details.title);
         expect(subject?.feedIds).toContain(event.sourceId);
+      }
+    }
+  });
+
+  it("matches every team game to the opponent's entry on the same date", () => {
+    const eventsBySourceId = new Map(
+      scheduleEvents.map((event) => [event.sourceId, event]),
+    );
+    const schedulesByTeam = new Map<string, Map<string, TeamScheduleGame>>();
+
+    for (const subject of subjects) {
+      const team = subject.details.display;
+      const teamSchedule = new Map<string, TeamScheduleGame>();
+
+      for (const sourceId of subject.feedIds) {
+        const event = eventsBySourceId.get(sourceId);
+        if (!event)
+          throw new Error(`${team} references missing game ${sourceId}`);
+
+        const teamParticipant = event.participants.find(
+          (participant) => participant.details.title === team,
+        );
+        if (!teamParticipant) {
+          throw new Error(`${team} is not a participant in ${sourceId}`);
+        }
+
+        const opponent = event.participants.find(
+          (participant) => participant.details.title !== team,
+        )?.details.title;
+        if (!opponent)
+          throw new Error(`${team} has no opponent in ${sourceId}`);
+
+        const key = scheduleKey(event.startsAt, opponent);
+        if (teamSchedule.has(key)) {
+          throw new Error(`${team} has duplicate game ${key}`);
+        }
+
+        teamSchedule.set(key, {
+          event,
+          opponent,
+          role: teamParticipant.details.role,
+        });
+      }
+
+      expect(teamSchedule.size).toBe(gamesPerTeam);
+      schedulesByTeam.set(team, teamSchedule);
+    }
+
+    for (const [team, teamSchedule] of schedulesByTeam) {
+      for (const game of teamSchedule.values()) {
+        const reciprocal = schedulesByTeam
+          .get(game.opponent)
+          ?.get(scheduleKey(game.event.startsAt, team));
+        if (!reciprocal) {
+          throw new Error(
+            `${game.opponent} is missing ${team} at ${game.event.startsAt}`,
+          );
+        }
+
+        expect(reciprocal.opponent).toBe(team);
+        expect(reciprocal.role).toBe(game.role === "home" ? "away" : "home");
+        expect(reciprocal.event.sourceId).toBe(game.event.sourceId);
+        expect(reciprocal.event.startsAt).toBe(game.event.startsAt);
+        expect(reciprocal.event).toEqual(game.event);
       }
     }
   });
