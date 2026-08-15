@@ -27,7 +27,7 @@ export {
   DatabaseReadError,
   DatabaseTransactionError,
   DatabaseWriteError,
-  mapTransactionError,
+  mapToTransactionError,
 } from "./lib/database/errors.js";
 export { withTransaction } from "./lib/database/transaction.js";
 export { Id, IdLayer } from "./lib/id/service.js";

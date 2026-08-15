@@ -89,7 +89,7 @@ export const mapToWriteError =
       ),
     );
 
-export const mapTransactionError =
+export const mapToTransactionError =
   (operation: string, metadata?: Readonly<Record<string, unknown>>) =>
   <A, E, R>(effect: Effect.Effect<A, E | SqlError.SqlError, R>) => {
     const makeError = (cause: SqlError.SqlError) =>

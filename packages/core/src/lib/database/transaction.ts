@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 
-import { DatabaseTransactionError, mapTransactionError } from "./errors.js";
+import { DatabaseTransactionError, mapToTransactionError } from "./errors.js";
 import type { Database } from "./service.js";
 
 export const withTransaction = (database: Database) => {
@@ -27,14 +27,14 @@ export const withTransaction = (database: Database) => {
 
       return database
         .transaction(() => effect)
-        .pipe(mapTransactionError(operation));
+        .pipe(mapToTransactionError(operation));
     }
 
     const [operation, metadata, effect] = args;
 
     return database
       .transaction(() => effect)
-      .pipe(mapTransactionError(operation, metadata));
+      .pipe(mapToTransactionError(operation, metadata));
   }
 
   return transaction;

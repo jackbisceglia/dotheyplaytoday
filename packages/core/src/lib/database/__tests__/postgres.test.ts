@@ -2,7 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { Cause, Effect, Exit, Redacted } from "effect";
 import * as SqlError from "effect/unstable/sql/SqlError";
 
-import { DatabaseTransactionError, mapTransactionError } from "../errors.js";
+import { DatabaseTransactionError, mapToTransactionError } from "../errors.js";
 import { createDatabaseLayer, Database } from "../service.js";
 import { withTransaction } from "../transaction.js";
 
@@ -31,7 +31,7 @@ describe("PostgreSQL database adapter", () => {
     Effect.gen(function* () {
       const cause = transactionSqlError();
       const error = yield* Effect.fail(cause).pipe(
-        mapTransactionError("Test.transaction"),
+        mapToTransactionError("Test.transaction"),
         Effect.flip,
       );
 
@@ -66,7 +66,7 @@ describe("PostgreSQL database adapter", () => {
     Effect.gen(function* () {
       const cause = transactionSqlError();
       const error = yield* Effect.die(cause).pipe(
-        mapTransactionError("Test.transaction"),
+        mapToTransactionError("Test.transaction"),
         Effect.flip,
       );
 
@@ -79,7 +79,7 @@ describe("PostgreSQL database adapter", () => {
     Effect.gen(function* () {
       const cause = new Error("application failure");
       const error = yield* Effect.fail(cause).pipe(
-        mapTransactionError("Test.transaction"),
+        mapToTransactionError("Test.transaction"),
         Effect.flip,
       );
 
@@ -91,7 +91,7 @@ describe("PostgreSQL database adapter", () => {
     Effect.gen(function* () {
       const cause = new Error("application defect");
       const exit = yield* Effect.die(cause).pipe(
-        mapTransactionError("Test.transaction"),
+        mapToTransactionError("Test.transaction"),
         Effect.exit,
       );
 
