@@ -7,27 +7,21 @@ import { RuntimeClient } from "./platform.js";
 export type Client = typeof Client;
 export const Client = ClientForPlatform;
 
+const useApiClient = <A, E>(
+  useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
+) => Effect.flatMap(Client, useClient);
+
 export function withApiClient<A, E>(
   useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
 ) {
-  const procedure = Effect.gen(function* () {
-    const client = yield* Client;
-
-    return yield* useClient(client);
-  });
-
-  return RuntimeClient.runPromise(procedure);
+  return RuntimeClient.runPromise(useApiClient(useClient));
 }
 
 export function withApiClientDeadline<A, E>(
   useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
   duration: Duration.Input = "15 seconds",
 ) {
-  const procedure = Effect.gen(function* () {
-    const client = yield* Client;
-
-    return yield* useClient(client);
-  }).pipe(Effect.timeout(duration));
-
-  return RuntimeClient.runPromise(procedure);
+  return RuntimeClient.runPromise(
+    useApiClient(useClient).pipe(Effect.timeout(duration)),
+  );
 }

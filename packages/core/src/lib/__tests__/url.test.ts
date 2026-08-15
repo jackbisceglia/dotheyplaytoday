@@ -32,6 +32,10 @@ describe("url config", () => {
       "https://example.com",
     );
 
+    expect(buildServiceUrl("https://example.com/path/", Option.none())).toBe(
+      "https://example.com",
+    );
+
     expect(buildServiceUrl("http://localhost", Option.some(3000))).toBe(
       "http://localhost:3000",
     );

@@ -1,7 +1,10 @@
 import { ConfigProvider, Effect, Layer } from "effect";
 import { Path } from "effect/Path";
 
-const WORKSPACE_ROOT_URL = new URL("../../../../../", import.meta.url);
+const WORKSPACE_ROOT_URL = new URL(
+  /* @vite-ignore */ "../../../../../",
+  import.meta.url,
+);
 
 /**
  * Installs the workspace-root `.env` config provider for Node runtimes.

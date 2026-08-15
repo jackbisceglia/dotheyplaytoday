@@ -1,6 +1,5 @@
 import { httpStatus } from "@solidjs/web";
 import { Result } from "effect";
-import { createMemo } from "solid-js";
 
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
@@ -15,18 +14,15 @@ export function Unsubscribe(props: {
   readonly token: string;
 }) {
   usePageMetadata("Unsubscribe | dotheyplaytoday", description);
-  const token = createMemo(() => {
-    const result = decodeUnsubscribeToken(props.token);
-    if (Result.isFailure(result)) httpStatus(404, "Not Found");
-    return result;
-  });
+  const token = decodeUnsubscribeToken(props.token);
+  if (Result.isFailure(token)) httpStatus(404, "Not Found");
 
   return (
     <Layout
       homeHref={props.homeHref}
       headerAction={{ href: props.homeHref, label: "Home" }}
     >
-      {Result.match(token(), {
+      {Result.match(token, {
         onSuccess: (value) => (
           <Confirmation homeHref={props.homeHref} token={value} />
         ),

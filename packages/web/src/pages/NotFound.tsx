@@ -2,6 +2,7 @@ import { httpStatus } from "@solidjs/web";
 
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
+
 export function NotFound(props: { readonly homeHref: string }) {
   httpStatus(404, "Not Found");
   usePageMetadata(

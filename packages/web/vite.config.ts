@@ -14,6 +14,14 @@ export default defineConfig({
     },
   },
   envPrefix: ["VITE_", "PUBLIC_"],
+  resolve: {
+    alias: [
+      {
+        find: /^@dtpt\/core\/(.+)$/,
+        replacement: fileURLToPath(new URL("../core/src/$1", import.meta.url)),
+      },
+    ],
+  },
   plugins: [
     solid({ start: true, ssr: true }),
     {

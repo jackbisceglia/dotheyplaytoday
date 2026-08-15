@@ -1,7 +1,7 @@
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
-import { DateTime, Match, Option } from "effect";
+import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { withApiClientDeadline } from "../../lib/api.js";
@@ -19,9 +19,10 @@ import {
 } from "../../lib/time.js";
 import { Success } from "./Success.jsx";
 
-const emailPattern = /^\S+@\S+\.\S+$/;
+const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
 const capacityHint = `Free tier users can subscribe to ${subjectCapacity.toString()} teams.`;
+type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
   Match.value(error).pipe(
@@ -86,6 +87,7 @@ export function Form(props: FormProps) {
 
   let root: HTMLDivElement | undefined;
   let emailInput: HTMLInputElement | undefined;
+  let sendTimeInput: HTMLSelectElement | undefined;
   let successTitle: HTMLHeadingElement | undefined;
 
   const toggleTeam = (teamId: string) => {
@@ -106,28 +108,36 @@ export function Form(props: FormProps) {
   };
 
   const validate = () => {
-    let valid = true;
+    const emailResult = decodeEmailAddress(email());
+    const teamsInvalid = selected().size === 0;
+    const emailInvalid = Result.isFailure(emailResult);
+    const sendTimeInvalid = !isValidSendTime(sendTimeSeconds());
 
-    if (!emailPattern.test(email().trim())) {
+    if (emailInvalid) {
       setEmailError("Enter a valid email address.");
-      valid = false;
     }
 
-    if (selected().size === 0) {
+    if (teamsInvalid) {
       setTeamError("Pick at least one team.");
-      valid = false;
     }
 
-    if (!isValidSendTime(sendTimeSeconds())) {
+    if (sendTimeInvalid) {
       setSendTimeError("Choose a send time.");
-      valid = false;
     }
 
-    return valid;
+    let firstInvalid: InvalidControl;
+    if (teamsInvalid) firstInvalid = "teams";
+    else if (emailInvalid) firstInvalid = "email";
+    else if (sendTimeInvalid) firstInvalid = "sendTime";
+
+    return {
+      email: Result.isSuccess(emailResult) ? emailResult.success : undefined,
+      firstInvalid,
+    };
   };
 
-  const focusFirstInvalidControl = () => {
-    if (selected().size === 0) {
+  const focusFirstInvalidControl = (invalid: InvalidControl) => {
+    if (invalid === "teams") {
       root
         ?.querySelector<HTMLButtonElement>(
           ".team-grid:not([hidden]) .team-card",
@@ -136,15 +146,12 @@ export function Form(props: FormProps) {
       return;
     }
 
-    if (!emailPattern.test(email().trim())) {
+    if (invalid === "email") {
       emailInput?.focus();
       return;
     }
 
-    const invalid = root?.querySelector<HTMLElement>('[aria-invalid="true"]');
-    if (invalid !== undefined && invalid !== null) {
-      invalid.focus();
-    }
+    if (invalid === "sendTime") sendTimeInput?.focus();
   };
 
   const submit = (event: SubmitEvent) => {
@@ -152,8 +159,10 @@ export function Form(props: FormProps) {
     setFormError(undefined);
     setTimezoneError(undefined);
 
-    if (!validate()) {
-      focusFirstInvalidControl();
+    const validation = validate();
+    const emailAddress = validation.email;
+    if (validation.firstInvalid !== undefined || emailAddress === undefined) {
+      focusFirstInvalidControl(validation.firstInvalid);
       return;
     }
 
@@ -175,7 +184,7 @@ export function Form(props: FormProps) {
     void withApiClientDeadline((client) =>
       client.signup.submit({
         payload: {
-          email: EmailAddressFromString.make(email().trim()),
+          email: emailAddress,
           timezone: timezoneValue,
           schedule: {
             _tag: "fixed_local_time",
@@ -347,6 +356,7 @@ export function Form(props: FormProps) {
                   aria-invalid={
                     sendTimeError() === undefined ? undefined : "true"
                   }
+                  ref={sendTimeInput}
                   onChange={(event) => {
                     setSendTimeSeconds(Number(event.currentTarget.value));
                     setSendTimeError(undefined);
