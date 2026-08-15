@@ -89,7 +89,7 @@ export const SubscriptionsLayer = Layer.effect(
   Subscriptions,
   Effect.gen(function* () {
     const database = yield* Database;
-    const tx = withTransaction(yield* SqlClient);
+    const sql = yield* SqlClient;
     const id = yield* Id;
     const SubjectPolicy = SubscriptionPolicy.subject;
 
@@ -188,7 +188,9 @@ export const SubscriptionsLayer = Layer.effect(
           subscriptionCount: insertableSubscriptions.length,
         };
 
-        yield* tx(
+        const transaction = withTransaction(sql);
+
+        yield* transaction(
           "Subscriptions.replaceForUser",
           metadata,
           Effect.gen(function* () {

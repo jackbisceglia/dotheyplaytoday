@@ -142,9 +142,11 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
   const subjects = yield* Subjects;
   const events = yield* Events;
-  const tx = withTransaction(yield* SqlClient);
+  const sql = yield* SqlClient;
 
-  yield* tx(
+  const transaction = withTransaction(sql);
+
+  yield* transaction(
     "DataSeed.seedCatalog",
     { collectionCount: collections.length },
     Effect.gen(function* () {

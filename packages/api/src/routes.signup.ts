@@ -24,7 +24,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
-      const tx = withTransaction(yield* SqlClient);
+      const sql = yield* SqlClient;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
 
@@ -46,7 +46,9 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            yield* tx(
+            const transaction = withTransaction(sql);
+
+            yield* transaction(
               "Signup.submit",
               Effect.gen(function* () {
                 const user = yield* users.upsertForSignup(

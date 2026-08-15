@@ -15,9 +15,11 @@ import { SqlClient } from "effect/unstable/sql/SqlClient";
 export const reset = Effect.fn("DataSeed.reset")(
   function* () {
     const database = yield* Database;
-    const tx = withTransaction(yield* SqlClient);
+    const sql = yield* SqlClient;
 
-    yield* tx(
+    const transaction = withTransaction(sql);
+
+    yield* transaction(
       "DataSeed.reset",
       { mode: "dev" },
       Effect.gen(function* () {

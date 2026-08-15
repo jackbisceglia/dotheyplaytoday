@@ -21,7 +21,7 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
   (handlers) =>
     Effect.gen(function* () {
       const rateLimiter = yield* RateLimiter;
-      const tx = withTransaction(yield* SqlClient);
+      const sql = yield* SqlClient;
       const users = yield* Users;
 
       return handlers.handle(
@@ -30,7 +30,9 @@ export const UnsubscribeGroupLayer = HttpApiBuilder.group(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            const user = yield* tx(
+            const transaction = withTransaction(sql);
+
+            const user = yield* transaction(
               "Unsubscribe.submit",
               Effect.gen(function* () {
                 const user = yield* users.getByUnsubscribeToken(

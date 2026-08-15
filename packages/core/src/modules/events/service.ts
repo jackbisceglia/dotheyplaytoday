@@ -96,7 +96,7 @@ export const EventsLayer = Layer.effect(
   Events,
   Effect.gen(function* () {
     const database = yield* Database;
-    const tx = withTransaction(yield* SqlClient);
+    const sql = yield* SqlClient;
     const id = yield* Id;
 
     const get: Events["Service"]["get"] = Effect.fn("Events.get")(
@@ -218,7 +218,9 @@ export const EventsLayer = Layer.effect(
         }),
       );
 
-      yield* tx(
+      const transaction = withTransaction(sql);
+
+      yield* transaction(
         "Events.setParticipants",
         { eventId },
         Effect.gen(function* () {

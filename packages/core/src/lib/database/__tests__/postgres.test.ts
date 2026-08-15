@@ -48,8 +48,10 @@ describe("PostgreSQL database adapter", () => {
 
   it.effect("runs and maps transactions through the provided SqlClient", () =>
     Effect.gen(function* () {
-      const tx = withTransaction(yield* SqlClient);
-      const error = yield* tx("Test.transaction", Effect.void).pipe(
+      const sql = yield* SqlClient;
+      const transaction = withTransaction(sql);
+
+      const error = yield* transaction("Test.transaction", Effect.void).pipe(
         Effect.flip,
       );
 
