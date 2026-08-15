@@ -4,7 +4,7 @@ import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
-import { withApiClientDeadline } from "../../lib/api.js";
+import { withApiClient } from "../../lib/api.js";
 import {
   getSportsLogo,
   getTeams,
@@ -181,7 +181,7 @@ export function Form(props: FormProps) {
     }
 
     setSubmitting(true);
-    void withApiClientDeadline((client) =>
+    void withApiClient((client) =>
       client.signup.submit({
         payload: {
           email: emailAddress,

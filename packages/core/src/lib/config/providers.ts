@@ -1,10 +1,8 @@
 import { ConfigProvider, Effect, Layer } from "effect";
 import { Path } from "effect/Path";
 
-const WORKSPACE_ROOT_URL = new URL(
-  /* @vite-ignore */ "../../../../../",
-  import.meta.url,
-);
+// TODO: Separate Node dotenv resolution from browser providers to fix Vite's unresolved asset warning.
+const WORKSPACE_ROOT_URL = new URL("../../../../../", import.meta.url);
 
 /**
  * Installs the workspace-root `.env` config provider for Node runtimes.

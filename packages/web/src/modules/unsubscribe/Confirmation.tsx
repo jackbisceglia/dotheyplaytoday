@@ -1,7 +1,7 @@
 import { Match } from "effect";
 import { createSignal } from "solid-js";
 
-import { withApiClientDeadline } from "../../lib/api.js";
+import { withApiClient } from "../../lib/api.js";
 import type { UnsubscribeTokenSuccess } from "./token.js";
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -29,7 +29,7 @@ export function Confirmation(props: {
     setFormError(undefined);
     setSubmitting(true);
 
-    void withApiClientDeadline((client) =>
+    void withApiClient((client) =>
       client.unsubscribe.submit({ payload: { token: props.token } }),
     )
       .then(() => {
