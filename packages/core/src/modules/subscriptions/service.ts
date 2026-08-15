@@ -202,6 +202,7 @@ export const SubscriptionsLayer = Layer.effect(
                 ),
               );
 
+            // Empty input means replacing the user's subscriptions with none.
             if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) return;
 
             yield* database
