@@ -6,5 +6,9 @@ export const buildServiceUrl = (
 ) =>
   Option.match(port, {
     onNone: () => baseUrl,
-    onSome: (value) => `${baseUrl}:${value.toString()}`,
+    onSome: (value) => {
+      const url = new URL(baseUrl);
+      url.port = value.toString();
+      return url.origin;
+    },
   });

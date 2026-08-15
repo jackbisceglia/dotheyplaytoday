@@ -1,7 +1,7 @@
 import { Stack } from "alchemy";
 import { Config, ConfigProvider, Effect, Layer } from "effect";
 
-import { getServiceDomain, url } from "../alchemy/domain.js";
+import { url } from "../alchemy/domain.js";
 import { isDevStage } from "../alchemy/stage.js";
 import { buildServiceUrl } from "../url.js";
 
@@ -14,13 +14,10 @@ export const WebConfig = Config.all({
 export const WebConfigAlchemy = Layer.unwrap(
   Effect.gen(function* () {
     const stack = yield* Stack;
-
-    const baseUrl = isDevStage(stack.stage)
-      ? url("localhost", "http")
-      : url(getServiceDomain("web", stack.stage));
+    if (!isDevStage(stack.stage)) return Layer.empty;
 
     const BaseUrlSuccessProvider = ConfigProvider.fromUnknown({
-      PUBLIC_WEB_URL_BASE: baseUrl,
+      PUBLIC_WEB_URL_BASE: url("localhost", "http"),
     });
 
     return ConfigProvider.layerAdd(BaseUrlSuccessProvider, {

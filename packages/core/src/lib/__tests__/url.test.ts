@@ -6,25 +6,25 @@ import { ApiUrl, ServerBoundPort } from "../config/api.js";
 import { WebConfig, WebConfigAlchemy, WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
 
-const webConfigAlchemy = (stage: string, env: Record<string, string>) =>
-  WebConfig.pipe(
+const webConfigAlchemy = (stage: string, env: Record<string, string>) => {
+  const EnvLayer = ConfigProvider.layer(ConfigProvider.fromUnknown(env));
+  if (stage === "production") {
+    return WebConfig.pipe(Effect.provide(EnvLayer));
+  }
+  const StackLayer = Layer.succeed(Stack, {
+    name: "dotheyplaytoday",
+    stage,
+    resources: {},
+    bindings: {},
+    actions: {},
+  });
+
+  return WebConfig.pipe(
     Effect.provide(
-      WebConfigAlchemy.pipe(
-        Layer.provide(
-          Layer.mergeAll(
-            ConfigProvider.layer(ConfigProvider.fromUnknown(env)),
-            Layer.succeed(Stack, {
-              name: "dotheyplaytoday",
-              stage,
-              resources: {},
-              bindings: {},
-              actions: {},
-            }),
-          ),
-        ),
-      ),
+      WebConfigAlchemy.pipe(Layer.provide(Layer.merge(EnvLayer, StackLayer))),
     ),
   );
+};
 
 describe("url config", () => {
   it("builds service urls from base urls and optional ports", () => {
@@ -34,6 +34,10 @@ describe("url config", () => {
 
     expect(buildServiceUrl("http://localhost", Option.some(3000))).toBe(
       "http://localhost:3000",
+    );
+
+    expect(buildServiceUrl("https://example.com", Option.some(443))).toBe(
+      "https://example.com",
     );
   });
 
@@ -83,16 +87,20 @@ describe("url config", () => {
     ),
   );
 
-  it.effect("uses the Alchemy stage for the web base and configured port", () =>
+  it.effect("uses localhost in development and deployment config otherwise", () =>
     Effect.gen(function* () {
       const devConfig = yield* webConfigAlchemy("dev_jack", {
         PUBLIC_WEB_URL_PORT: "4321",
       });
-      const productionConfig = yield* webConfigAlchemy("production", {});
+      const productionConfig = yield* webConfigAlchemy("production", {
+        PUBLIC_WEB_URL_BASE: "https://web-worker.example.workers.dev",
+      });
 
       expect(devConfig.baseUrl).toBe("http://localhost");
       expect(Option.getOrUndefined(devConfig.port)).toBe(4321);
-      expect(productionConfig.baseUrl).toBe("https://dotheyplay.today");
+      expect(productionConfig.baseUrl).toBe(
+        "https://web-worker.example.workers.dev",
+      );
       expect(Option.isNone(productionConfig.port)).toBe(true);
     }),
   );
