@@ -23,8 +23,12 @@ const getSubjects = query(
 const routes = defineRoutes([
   defineRoute({
     path: "/",
-    preload: () => createMemo(() => getSubjects()),
-    component: (props) => <Home homeHref={paths()} subjects={props.data()} />,
+    preload: () => getSubjects(),
+    component: () => {
+      const subjects = createMemo(() => getSubjects());
+
+      return <Home homeHref={paths()} subjects={subjects()} />;
+    },
   }),
   defineRoute({
     path: "/unsubscribe/:token",
