@@ -20,10 +20,10 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public
   API worker, notification worker, and Web Worker. Each deployable owns its
   resource declaration in its package; `alchemy.run.ts` orchestrates them.
-- Workers temporarily use their `workers.dev` endpoints. The Web Worker has a
-  stable stage-qualified name; the intended custom domains are documented in
-  [Alchemy service URL wiring](./alchemy-service-urls.md) and will be restored
-  after the DNS zone moves to Cloudflare.
+- Alchemy attaches the exact `production` stage to `dotheyplay.today`,
+  `api.dotheyplay.today`, and `jobs.dotheyplay.today`. Other non-development
+  stages prepend their normalized stage; `dev_*` stages keep development-only
+  URLs and do not claim custom domains.
 - The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
 - Transactional workflows use Drizzle's Effect-native `database.transaction(...)`. Drizzle delegates to its underlying `PgClient.withTransaction(...)`, so domain-service queries inherit the transaction connection from Effect context and nested service transactions use savepoints without threading a transaction object through service APIs.
 - Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
@@ -35,10 +35,10 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 Web receives both an `API` service binding and the API Worker's complete
 resolved URL. The shared typed API client loads a binding-backed HTTP transport
 in the SSR environment and uses the public URL transport in the browser;
-application calls are independent of that transport choice. API CORS receives
-the Web Worker's exact `workers.dev` origin from deployment configuration. See
-[Alchemy service URL wiring](./alchemy-service-urls.md) for the remaining
-custom-domain follow-up.
+application calls are independent of that transport choice. API CORS and the
+Web Worker domain derive from the same declared Web hostname, avoiding a
+resource cycle without hardcoded deployed URLs. See [Alchemy service URL
+wiring](./alchemy-service-urls.md).
 
 Web uses all-SSR rendering. The attempted mixed-render design was rejected
 because Solid Start mode has no SSR route-prerender hook; producing a static
