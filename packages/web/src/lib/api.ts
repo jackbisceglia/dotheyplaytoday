@@ -1,19 +1,31 @@
+import { Api } from "@dtpt/core/contracts/api";
+import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { Effect } from "effect";
 import type { Duration } from "effect";
+import { HttpClient } from "effect/unstable/http";
+import { HttpApiClient } from "effect/unstable/httpapi";
 
-import { ApiClient as BrowserApiClient } from "./api.client.js";
 import { RuntimeClient } from "./platform.js";
 
-export type Client = typeof Client;
-export const Client = await (async () => {
+const RuntimeHttpClient = Effect.gen(function* () {
   if (import.meta.env.SSR) {
-    const { ApiClient: ServerApiClient } = await import("./api.server.js");
+    const { CloudflareBindingHttpClient } = yield* Effect.promise(() =>
+      import("./cloudflare-http-client.js"),
+    );
 
-    return ServerApiClient;
+    return CloudflareBindingHttpClient;
   }
 
-  return BrowserApiClient;
-})();
+  return yield* HttpClient.HttpClient;
+});
+
+export type Client = typeof Client;
+export const Client = Effect.gen(function* () {
+  const baseUrl = yield* ApiUrl;
+  const httpClient = yield* RuntimeHttpClient;
+
+  return yield* HttpApiClient.makeWith(Api, { baseUrl, httpClient });
+});
 
 export function withApiClient<A, E>(
   useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
