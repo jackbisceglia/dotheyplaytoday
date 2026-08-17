@@ -9,6 +9,6 @@
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "resource.ts", "vite.config.ts"],
   "exclude": ["dist"]
 }

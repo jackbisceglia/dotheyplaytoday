@@ -30,19 +30,18 @@ definition backed by:
 - `PUBLIC_WEB_URL_BASE`
 - The optional `PUBLIC_WEB_URL_PORT`
 
-At the Alchemy composition boundary, `WebConfigAlchemy` overrides the base URL
-with localhost for a development-named stage. Cloud deployments use the exact
-`PUBLIC_WEB_URL_BASE` supplied by deployment configuration; while `workers.dev`
-endpoints are in use this must be the deployed Web Worker's origin. The Web
-Worker has the stable stage-qualified name `dotheyplaytoday-web-${stage}` so
-that origin is known before its first deployment. The port continues to come
-from the ordinary configuration provider.
+At the Alchemy composition boundary, `WebConfigAlchemy` currently contributes
+an empty primary provider, so both local and cloud runs use the exact
+`PUBLIC_WEB_URL_BASE` supplied by environment configuration. While `workers.dev`
+endpoints are in use, production must receive the deployed Web Worker's origin.
+The Web Worker has the stable stage-qualified name
+`dotheyplaytoday-web-${stage}` so that origin is known before deployment.
 
-`Cloudflare.Website.Vite` passes `apiWorker` to Web as the `API` service binding
-and `apiWorker.url` as `VITE_API_URL`. Alchemy tracks both resource dependencies
-and resolves the public URL before the Vite build. The browser API client adapts
-that URL to the existing internal API config shape. The SSR API client adapts
-the service binding to Effect's `HttpClient`, avoiding a same-account public
+`packages/web/resource.ts` passes `apiWorker` to Web as the `API` service binding
+and derives `VITE_API_URL` from `apiWorker.url`. Alchemy tracks both resource
+dependencies and resolves the public URL before the Vite build. The browser API
+client consumes that complete URL directly. The SSR API client adapts the
+service binding to Effect's `HttpClient`, avoiding a same-account public
 `workers.dev` fetch and Cloudflare error 1042. Local SSR therefore runs through
 `alchemy dev`; the browser transport remains an ordinary public HTTP client.
 
@@ -54,15 +53,6 @@ it is not intended to be the final source of the Web public endpoint.
 The configured CORS origin and the Web resource's generated URL are sibling
 values. They can drift until a declared custom-domain endpoint becomes their
 single upstream value.
-
-The current localhost decision also uses the stage name, while Alchemy's actual
-execution mode is independent of the stage:
-
-- `alchemy dev --stage staging` still runs Workers locally.
-- `alchemy deploy --stage dev_jack` still performs a cloud deployment.
-
-The local Web port is another external input until Alchemy owns the Web
-development process.
 
 This limitation is accepted temporarily for the generated-URL rollout. The
 deploy operator must set `PUBLIC_WEB_URL_BASE` to the exact Web Worker origin;
@@ -148,7 +138,7 @@ When the DNS zone is available in Cloudflare:
    API CORS configuration.
 2. Replace `PUBLIC_WEB_URL_BASE` and `PUBLIC_WEB_URL_PORT` with a complete
    `PUBLIC_WEB_URL`.
-3. Remove the stage-based localhost decision from `WebConfigAlchemy`.
+3. Restore Alchemy-owned Web URL configuration in `WebConfigAlchemy`.
 4. Verify local URLs through `alchemy dev` and deployed URLs through a
    provider-level plan test before the first production deployment.
 

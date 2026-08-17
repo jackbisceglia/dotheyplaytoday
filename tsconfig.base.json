@@ -10,7 +10,8 @@
     "target": "ESNext",
     "plugins": [
       {
-        "name": "@effect/language-service"
+        "name": "@effect/language-service",
+        "allowedDuplicatedPackages": ["@distilled.cloud/core"]
       }
     ]
   },

@@ -28,9 +28,9 @@ of the initial migration session. It is the starting point for the next agent.
 - Astro has been removed from `packages/web` and replaced by the exact pinned
   Solid 2 RC, Solid Web, Solid Router 2, Solid Vite plugin, and Vite versions
   selected above.
-- `vite.config.ts` uses `solid({ start: true, ssr: true })`. There is no
-  Cloudflare Vite plugin in application configuration; Alchemy injects its
-  provider plugin.
+- `vite.config.ts` uses `solid({ start: true, ssr: true })`. Standalone Vite
+  runs install Alchemy's Cloudflare plugin; Alchemy-orchestrated runs detect
+  and use the provider-injected instance instead.
 - The explicit typed route table contains `/`, `/unsubscribe/:token`, and a
   catch-all route. Internal Home links derive from `Router.paths`.
 - The layout, home, ticker, signup, signup success/edit flow, unsubscribe,
@@ -42,14 +42,14 @@ of the initial migration session. It is the starting point for the next agent.
 - Home uses a query-backed subject preload. In all-SSR mode, subject-load
   failures are logged with error context and render the established unavailable
   state.
-- Signup and unsubscribe use a shared Effect-backed 15-second request deadline.
+- Signup and unsubscribe use a shared Effect-backed 10-second request deadline.
   Timeout and generic failures retain form input and re-enable submission.
 - Form state is reactive rather than imperative DOM scripting. Validation focus,
   success focus, team capacity, retained selections, and separate persistent
   alert/status regions are implemented.
-- `Cloudflare.Website.Vite` is part of `alchemy.run.ts` with
-  `rootDir: "packages/web"`. Alchemy passes the tracked `apiWorker.url` Output
-  directly as `VITE_API_URL` and uses asset-first routing.
+- `packages/web/resource.ts` owns `Cloudflare.Website.Vite`. It passes the
+  tracked `apiWorker.url` Output directly as `VITE_API_URL` and uses
+  asset-first routing; `alchemy.run.ts` only orchestrates the resource.
 - Database seed runs before API, jobs, and Web creation in stack composition.
   Development uses fixed Web/API ports 4321 and 3001.
 - Cloud deployment CORS uses the temporary exact `PUBLIC_WEB_URL_BASE` input.

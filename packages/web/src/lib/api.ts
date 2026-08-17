@@ -5,21 +5,27 @@ import { ApiClient as BrowserApiClient } from "./api.client.js";
 import { RuntimeClient } from "./platform.js";
 
 export type Client = typeof Client;
-export const Client = await (async () => {
+export const Client = Effect.gen(function* () {
   if (import.meta.env.SSR) {
-    const { ApiClient: ServerApiClient } = await import("./api.server.js");
+    const { ApiClient: ServerApiClient } = yield* Effect.promise(() =>
+      import("./api.server.js"),
+    );
 
-    return ServerApiClient;
+    return yield* ServerApiClient;
   }
 
-  return BrowserApiClient;
-})();
+  return yield* BrowserApiClient;
+});
 
 export function withApiClient<A, E>(
   useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
   duration: Duration.Input = "10 seconds",
 ) {
-  return RuntimeClient.runPromise(
-    Effect.flatMap(Client, useClient).pipe(Effect.timeout(duration)),
-  );
+  const procedure = Effect.gen(function* () {
+    const client = yield* Client;
+
+    return yield* useClient(client);
+  }).pipe(Effect.timeout(duration));
+
+  return RuntimeClient.runPromise(procedure);
 }

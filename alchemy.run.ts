@@ -17,6 +17,7 @@ import {
   SeedStrategy,
 } from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
+import Web from "./packages/web/resource.ts";
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -50,27 +51,7 @@ export default Alchemy.Stack(
 
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
-    const apiWorkerUrl = apiWorker.url.pipe(
-      Output.map((value) => {
-        if (value === undefined) {
-          throw new Error("API Worker URL is unavailable");
-        }
-        return value;
-      }),
-    );
-    const web = yield* Cloudflare.Website.Vite("Web", {
-      name: `dotheyplaytoday-web-${stage}`,
-      rootDir: "packages/web",
-      compatibility: {
-        date: "2026-06-02",
-        flags: ["nodejs_compat"],
-      },
-      dev: { port: 4321, strictPort: true },
-      env: {
-        API: apiWorker,
-        VITE_API_URL: apiWorkerUrl,
-      },
-    });
+    const web = yield* Web;
 
     return {
       databaseId: planetscale.database.id,

@@ -18,7 +18,8 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
   Fetchable as the Worker entry.
 - PlanetScale PostgreSQL and Drizzle, connected to Workers through Cloudflare Hyperdrive V1.
 - Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public
-  API worker, notification worker, and Web Worker.
+  API worker, notification worker, and Web Worker. Each deployable owns its
+  resource declaration in its package; `alchemy.run.ts` orchestrates them.
 - Workers temporarily use their `workers.dev` endpoints. The Web Worker has a
   stable stage-qualified name; the intended custom domains are documented in
   [Alchemy service URL wiring](./alchemy-service-urls.md) and will be restored
