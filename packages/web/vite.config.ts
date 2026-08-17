@@ -2,15 +2,22 @@ import cloudflare from "@distilled.cloud/cloudflare-vite-plugin";
 import solid from "@solidjs/vite-plugin";
 import { defineConfig } from "vite";
 
+const isAlchemyEnv = process.env.ALCHEMY_CLOUDFLARE_VITE_INJECTED === "1";
+
+/** Installs the Cloudflare provider unless Alchemy is already providing it. */
+const standaloneCloudflare = () => {
+  if (isAlchemyEnv) return null;
+
+  return cloudflare({
+    compatibilityDate: "2026-06-02",
+    compatibilityFlags: ["nodejs_compat"],
+  });
+};
+
 export default defineConfig({
-  envDir: "../..",
+  envDir: isAlchemyEnv ? false : "../..",
   plugins: [
-    process.env.ALCHEMY_CLOUDFLARE_VITE_INJECTED === "1"
-      ? null
-      : cloudflare({
-          compatibilityDate: "2026-06-02",
-          compatibilityFlags: ["nodejs_compat"],
-        }),
+    standaloneCloudflare(),
     solid({ start: true, ssr: true }),
     {
       name: "dtpt:disable-ssr-dependency-discovery",

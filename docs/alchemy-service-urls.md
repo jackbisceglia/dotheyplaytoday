@@ -27,21 +27,22 @@ These hostnames are not currently attached to the Workers.
 The Workers consume `WebConfig`, which remains an ordinary Effect `Config`
 definition backed by:
 
-- `PUBLIC_WEB_URL_BASE`
-- The optional `PUBLIC_WEB_URL_PORT`
+- `VITE_WEB_URL_BASE`
+- The optional `VITE_WEB_URL_PORT`
 
 At the Alchemy composition boundary, `WebConfigAlchemy` currently contributes
 an empty primary provider, so both local and cloud runs use the exact
-`PUBLIC_WEB_URL_BASE` supplied by environment configuration. While `workers.dev`
+`VITE_WEB_URL_BASE` supplied by environment configuration. While `workers.dev`
 endpoints are in use, production must receive the deployed Web Worker's origin.
 The Web Worker has the stable stage-qualified name
 `dotheyplaytoday-web-${stage}` so that origin is known before deployment.
 
 `packages/web/resource.ts` passes `apiWorker` to Web as the `API` service binding
-and derives `VITE_API_URL` from `apiWorker.url`. Alchemy tracks both resource
-dependencies and resolves the public URL before the Vite build. The browser API
-client consumes that complete URL directly. The SSR API client adapts the
-service binding to Effect's `HttpClient`, avoiding a same-account public
+and derives `VITE_API_URL_BASE` from `apiWorker.url`. Alchemy tracks both
+resource dependencies and resolves the public URL before the Vite build. The
+browser API client consumes that value through the shared `ApiUrl` Effect
+config. The SSR API client adapts the service binding to Effect's `HttpClient`,
+avoiding a same-account public
 `workers.dev` fetch and Cloudflare error 1042. Local SSR therefore runs through
 `alchemy dev`; the browser transport remains an ordinary public HTTP client.
 
@@ -55,7 +56,7 @@ values. They can drift until a declared custom-domain endpoint becomes their
 single upstream value.
 
 This limitation is accepted temporarily for the generated-URL rollout. The
-deploy operator must set `PUBLIC_WEB_URL_BASE` to the exact Web Worker origin;
+deploy operator must set `VITE_WEB_URL_BASE` to the exact Web Worker origin;
 wildcard CORS is not allowed.
 
 ## Target model
@@ -68,7 +69,7 @@ const stack = Effect.gen(function* () {
   const api = yield* ApiWorker;
   const web = yield* Web({
     env: {
-      PUBLIC_API_URL: api.url,
+      VITE_API_URL: api.url,
     },
   });
 
@@ -92,12 +93,12 @@ variables at the infrastructure boundary.
 The intended environment-variable shape is consequently one complete URL per
 dependency, for example:
 
-- `PUBLIC_API_URL`
-- `PUBLIC_WEB_URL`
+- `VITE_API_URL`
+- `VITE_WEB_URL`
 - `JOBS_URL`, if another runtime eventually needs to call the jobs Worker
 
-The current `PUBLIC_WEB_URL_BASE` plus `PUBLIC_WEB_URL_PORT` representation can
-be replaced by `PUBLIC_WEB_URL` when Web becomes an Alchemy resource.
+The current `VITE_WEB_URL_BASE` plus `VITE_WEB_URL_PORT` representation can be
+replaced by `VITE_WEB_URL` when custom domains are attached.
 
 ## Dependency direction and cycles
 
@@ -136,13 +137,13 @@ When the DNS zone is available in Cloudflare:
 
 1. Define the Web public endpoint once and use it for both the Web domain and
    API CORS configuration.
-2. Replace `PUBLIC_WEB_URL_BASE` and `PUBLIC_WEB_URL_PORT` with a complete
-   `PUBLIC_WEB_URL`.
+2. Replace `VITE_WEB_URL_BASE` and `VITE_WEB_URL_PORT` with a complete
+   `VITE_WEB_URL`.
 3. Restore Alchemy-owned Web URL configuration in `WebConfigAlchemy`.
 4. Verify local URLs through `alchemy dev` and deployed URLs through a
    provider-level plan test before the first production deployment.
 
-Until then, `WebConfigAlchemy` and `VITE_API_URL` remain explicit public-identity
-compatibility bridges for CORS and browser requests; do not expand them into a
-second shared URL model. The SSR `API` binding is independent of that future
+Until then, `WebConfigAlchemy` and the split `VITE_*_URL_BASE`/`VITE_*_URL_PORT`
+configuration remain explicit public-identity compatibility bridges for CORS
+and browser requests. The SSR `API` binding is independent of that future
 custom-domain work.

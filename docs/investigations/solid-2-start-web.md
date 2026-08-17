@@ -14,9 +14,9 @@ mutation coupled to Alchemy's asset-finalization order.
 
 The generated Solid Fetchable serves all page requests. Cloudflare asset-first
 routing serves hashed client assets directly. The Web build receives the API
-Worker's complete URL through the tracked `VITE_API_URL` Output, while API CORS
+Worker's complete URL through the tracked `VITE_API_URL_BASE` Output, while API CORS
 temporarily receives the exact Web `workers.dev` origin from
-`PUBLIC_WEB_URL_BASE` deployment configuration.
+`VITE_WEB_URL_BASE` deployment configuration.
 
 ## Handoff state
 
@@ -48,11 +48,11 @@ of the initial migration session. It is the starting point for the next agent.
   success focus, team capacity, retained selections, and separate persistent
   alert/status regions are implemented.
 - `packages/web/resource.ts` owns `Cloudflare.Website.Vite`. It passes the
-  tracked `apiWorker.url` Output directly as `VITE_API_URL` and uses
+  tracked `apiWorker.url` Output directly as `VITE_API_URL_BASE` and uses
   asset-first routing; `alchemy.run.ts` only orchestrates the resource.
 - Database seed runs before API, jobs, and Web creation in stack composition.
   Development uses fixed Web/API ports 4321 and 3001.
-- Cloud deployment CORS uses the temporary exact `PUBLIC_WEB_URL_BASE` input.
+- Cloud deployment CORS uses the temporary exact `VITE_WEB_URL_BASE` input.
   Local CORS permits `http://localhost:4321`. No wildcard or same-origin proxy
   was added.
 - The service URL and architecture documents were updated, and a repeatable
@@ -74,11 +74,10 @@ of the initial migration session. It is the starting point for the next agent.
 - A production client-output scan found no filesystem/dotenv imports, database
   credentials, provider tokens, or other known server-only secret markers.
 - All-SSR degradation was exercised with the API unavailable: the server logged
-  the transport error and returned the unavailable signup state with status
-  200.
+  the transport error and returned the unavailable signup state with status 200.
 - `alchemy dev` successfully created/reused the development PlanetScale branch,
   role, Hyperdrive, API Worker, notification Worker, Web Worker, and tracked
-  `Web/VITE_API_URL` binding.
+  `Web/VITE_API_URL_BASE` binding.
 - Development seed completed with 3 collections, 92 subjects, 1,257 events,
   2,514 feed edges, 2,514 participants, and one seed user.
 - Live Web and API endpoints were available at `http://localhost:4321/` and
@@ -165,13 +164,13 @@ migration, not a narrow SSR fix. The repository therefore remains on
 
 1. Complete the browser runbook: responsive screenshots, league switching,
    selection capacity, validation/focus order, signup edit and retained-error
-   flows, both 15-second timeouts, valid unsubscribe success, invalid
+   flows, both 10-second timeouts, valid unsubscribe success, invalid
    unsubscribe, client navigation, and browser back/forward behavior.
 2. Inspect browser console and network activity for hydration warnings, dead
    interactions, duplicate subject requests, missing metadata/CSS, and asset
    routing behavior.
 3. Supply the exact generated production Web `workers.dev` origin as
-   `PUBLIC_WEB_URL_BASE`, deploy only after the local gate passes, and repeat
+   `VITE_WEB_URL_BASE`, deploy only after the local gate passes, and repeat
    the smoke runbook against production. Production has not been deployed from
    this branch.
 
@@ -382,9 +381,9 @@ bridge needed to make the current split API URL configuration work:
 - Do not use `Stack.useSync` to read a resource Output. It is for deriving
   module-scope props from stack context and would not replace the tracked
   resource dependency.
-- The bridge may adapt the build value into the current
-  `PUBLIC_API_URL_BASE`/optional-port shape inside Web, but must not perform the
-  wider shared-config migration.
+- The bridge supplies the build value through the shared
+  `VITE_API_URL_BASE`/optional-port configuration, but must not perform the
+  wider complete-URL migration.
 
 API CORS must continue to permit one explicit origin. For the production
 rollout, supply the exact generated Web `workers.dev` origin as temporary

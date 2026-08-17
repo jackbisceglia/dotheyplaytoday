@@ -11,6 +11,7 @@
     "plugins": [
       {
         "name": "@effect/language-service",
+        // TODO: Remove after the Alchemy dependency versions are unified; see docs/backlog.md.
         "allowedDuplicatedPackages": ["@distilled.cloud/core"]
       }
     ]

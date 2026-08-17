@@ -34,8 +34,8 @@ const successResponse: CreateEmailResponse = {
 const EmailConfigLayerTest = ConfigProvider.layer(
   ConfigProvider.fromEnv({
     env: {
-      PUBLIC_WEB_URL_BASE: "https://example.com",
-      PUBLIC_WEB_URL_PORT: "8080",
+      VITE_WEB_URL_BASE: "https://example.com",
+      VITE_WEB_URL_PORT: "8080",
       RESEND_API_KEY: "re_test_key",
       RESEND_FROM_EMAIL: "sender@example.com",
     },

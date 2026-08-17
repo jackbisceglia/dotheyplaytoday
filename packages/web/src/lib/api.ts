@@ -5,17 +5,15 @@ import { ApiClient as BrowserApiClient } from "./api.client.js";
 import { RuntimeClient } from "./platform.js";
 
 export type Client = typeof Client;
-export const Client = Effect.gen(function* () {
+export const Client = await (async () => {
   if (import.meta.env.SSR) {
-    const { ApiClient: ServerApiClient } = yield* Effect.promise(() =>
-      import("./api.server.js"),
-    );
+    const { ApiClient: ServerApiClient } = await import("./api.server.js");
 
-    return yield* ServerApiClient;
+    return ServerApiClient;
   }
 
-  return yield* BrowserApiClient;
-});
+  return BrowserApiClient;
+})();
 
 export function withApiClient<A, E>(
   useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,

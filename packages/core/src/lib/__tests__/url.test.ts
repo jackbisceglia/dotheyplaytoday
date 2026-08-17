@@ -33,7 +33,7 @@ describe("url config", () => {
   });
 
   it.effect(
-    "builds localhost api and web urls from PUBLIC URL bases and ports",
+    "builds localhost api and web urls from VITE URL bases and ports",
     () =>
       Effect.gen(function* () {
         const apiUrl = yield* ApiUrl;
@@ -46,10 +46,10 @@ describe("url config", () => {
           ConfigProvider.layer(
             ConfigProvider.fromEnv({
               env: {
-                PUBLIC_API_URL_BASE: "http://localhost",
-                PUBLIC_API_URL_PORT: "3001",
-                PUBLIC_WEB_URL_BASE: "http://localhost",
-                PUBLIC_WEB_URL_PORT: "3000",
+                VITE_API_URL_BASE: "http://localhost",
+                VITE_API_URL_PORT: "3001",
+                VITE_WEB_URL_BASE: "http://localhost",
+                VITE_WEB_URL_PORT: "3000",
               },
             }),
           ),
@@ -69,8 +69,8 @@ describe("url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              PUBLIC_API_URL_BASE: "https://api.example.com",
-              PUBLIC_WEB_URL_BASE: "https://example.com",
+              VITE_API_URL_BASE: "https://api.example.com",
+              VITE_WEB_URL_BASE: "https://example.com",
             },
           }),
         ),
@@ -81,11 +81,11 @@ describe("url config", () => {
   it.effect("falls back to configured Web URLs", () =>
     Effect.gen(function* () {
       const devConfig = yield* webConfigAlchemy({
-        PUBLIC_WEB_URL_BASE: "http://localhost",
-        PUBLIC_WEB_URL_PORT: "4321",
+        VITE_WEB_URL_BASE: "http://localhost",
+        VITE_WEB_URL_PORT: "4321",
       });
       const productionConfig = yield* webConfigAlchemy({
-        PUBLIC_WEB_URL_BASE: "https://web-worker.example.workers.dev",
+        VITE_WEB_URL_BASE: "https://web-worker.example.workers.dev",
       });
 
       expect(devConfig.baseUrl).toBe("http://localhost");
@@ -109,8 +109,8 @@ describe("url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              PUBLIC_API_URL_PORT: "3001",
-              PUBLIC_WEB_URL_PORT: "3000",
+              VITE_API_URL_PORT: "3001",
+              VITE_WEB_URL_PORT: "3000",
             },
           }),
         ),
@@ -132,10 +132,10 @@ describe("url config", () => {
             env: {
               API_PORT: "3001",
               WEB_PORT: "3000",
-              VITE_API_URL_BASE: "https://api.example.com",
-              VITE_API_URL_PORT: "3001",
-              VITE_WEB_URL_BASE: "https://example.com",
-              VITE_WEB_URL_PORT: "3000",
+              PUBLIC_API_URL_BASE: "https://api.example.com",
+              PUBLIC_API_URL_PORT: "3001",
+              PUBLIC_WEB_URL_BASE: "https://example.com",
+              PUBLIC_WEB_URL_PORT: "3000",
               VITE_API_URL: "https://api.example.com",
               VITE_WEB_URL: "https://example.com",
             },
@@ -145,7 +145,7 @@ describe("url config", () => {
     ),
   );
 
-  it.effect("binds the server with PUBLIC_API_URL_PORT", () =>
+  it.effect("binds the server with VITE_API_URL_PORT", () =>
     Effect.gen(function* () {
       const configuredPort = yield* ServerBoundPort;
 
@@ -155,8 +155,8 @@ describe("url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              PUBLIC_API_URL_BASE: "http://localhost",
-              PUBLIC_API_URL_PORT: "4001",
+              VITE_API_URL_BASE: "http://localhost",
+              VITE_API_URL_PORT: "4001",
             },
           }),
         ),
@@ -165,7 +165,7 @@ describe("url config", () => {
   );
 
   it.effect(
-    "defaults the server bind port when PUBLIC_API_URL_PORT is absent",
+    "defaults the server bind port when VITE_API_URL_PORT is absent",
     () =>
       Effect.gen(function* () {
         const configuredPort = yield* ServerBoundPort;
@@ -176,7 +176,7 @@ describe("url config", () => {
           ConfigProvider.layer(
             ConfigProvider.fromEnv({
               env: {
-                PUBLIC_API_URL_BASE: "https://api.example.com",
+                VITE_API_URL_BASE: "https://api.example.com",
               },
             }),
           ),

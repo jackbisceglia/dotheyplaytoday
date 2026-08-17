@@ -9,9 +9,9 @@ production Web `workers.dev` URL after deployment.
 2. For local integration, run `pnpm dev:infra` and use the Web URL printed by
    Alchemy.
 3. Use `pnpm dev:web` only for a standalone Vite session. It reads
-   `VITE_API_URL` from the workspace `.env`, but does not provision the API
-   service binding used by integrated SSR.
-4. For production, set `PUBLIC_WEB_URL_BASE` to the exact Web Worker origin
+   `VITE_API_URL_BASE` and `VITE_API_URL_PORT` from the workspace `.env`, but
+   does not provision the API service binding used by integrated SSR.
+4. For production, set `VITE_WEB_URL_BASE` to the exact Web Worker origin
    before deployment so API CORS permits that one origin. The production Worker
    name is `dotheyplaytoday-web-production`.
 5. Keep browser developer tools open and confirm there are no hydration
