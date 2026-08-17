@@ -5,7 +5,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect, Layer } from "effect";
 
-import ApiWorker, { ApiWorkerLive } from "./packages/api/dist/worker.js";
+import ApiWorker from "./packages/api/dist/worker.js";
 import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
 import {
   DatabaseHyperdrive,
@@ -16,9 +16,7 @@ import {
   CatalogSeedVersion,
   SeedStrategy,
 } from "./packages/data/dist/seed/config.js";
-import NotifyJobWorker, {
-  NotifyJobWorkerLive,
-} from "./packages/jobs/dist/notify/worker.js";
+import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 import Web from "./packages/web/resource.ts";
 
 export default Alchemy.Stack(
@@ -68,11 +66,5 @@ export default Alchemy.Stack(
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
     };
-  }).pipe(
-    Effect.provide(
-      Layer.merge(ApiWorkerLive, NotifyJobWorkerLive).pipe(
-        Layer.provide(WebConfigAlchemy),
-      ),
-    ),
-  ),
+  }).pipe(Effect.provide(WebConfigAlchemy)),
 );
