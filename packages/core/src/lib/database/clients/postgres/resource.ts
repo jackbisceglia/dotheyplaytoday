@@ -76,7 +76,7 @@ export const Planetscale = Effect.gen(function* () {
   const role = yield* AlchemyPlanetscale.PostgresRole(
     "DtptPostgresWorkerRole",
     {
-      database: databaseResource.name,
+      database: databaseResource,
       branch,
       inheritedRoles: ["pg_read_all_data", "pg_write_all_data"],
       successor: "postgres",
