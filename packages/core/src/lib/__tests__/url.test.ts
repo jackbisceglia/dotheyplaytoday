@@ -1,4 +1,3 @@
-import { Stack } from "alchemy";
 import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer, Option } from "effect";
 
@@ -6,23 +5,11 @@ import { ApiUrl, ServerBoundPort } from "../config/api.js";
 import { WebConfig, WebConfigAlchemy, WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
 
-const webConfigAlchemy = (stage: string, env: Record<string, string>) => {
+const webConfigAlchemy = (env: Record<string, string>) => {
   const EnvLayer = ConfigProvider.layer(ConfigProvider.fromUnknown(env));
-  if (stage === "production") {
-    return WebConfig.pipe(Effect.provide(EnvLayer));
-  }
-  const StackLayer = Layer.succeed(Stack, {
-    name: "dotheyplaytoday",
-    stage,
-    resources: {},
-    bindings: {},
-    actions: {},
-  });
 
   return WebConfig.pipe(
-    Effect.provide(
-      WebConfigAlchemy.pipe(Layer.provide(Layer.merge(EnvLayer, StackLayer))),
-    ),
+    Effect.provide(WebConfigAlchemy.pipe(Layer.provide(EnvLayer))),
   );
 };
 
@@ -91,12 +78,13 @@ describe("url config", () => {
     ),
   );
 
-  it.effect("uses localhost in development and deployment config otherwise", () =>
+  it.effect("falls back to configured Web URLs", () =>
     Effect.gen(function* () {
-      const devConfig = yield* webConfigAlchemy("dev_jack", {
+      const devConfig = yield* webConfigAlchemy({
+        PUBLIC_WEB_URL_BASE: "http://localhost",
         PUBLIC_WEB_URL_PORT: "4321",
       });
-      const productionConfig = yield* webConfigAlchemy("production", {
+      const productionConfig = yield* webConfigAlchemy({
         PUBLIC_WEB_URL_BASE: "https://web-worker.example.workers.dev",
       });
 
