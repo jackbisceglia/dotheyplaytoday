@@ -1,5 +1,5 @@
 import * as Cloudflare from "alchemy/Cloudflare";
-import { Stack } from "alchemy";
+import { Stack, Stage } from "alchemy";
 import { Boolean, Effect, Layer, Option, pipe, Result } from "effect";
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
@@ -37,17 +37,18 @@ const NotifyDomainsLayer = pipe(
 export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>()(
   "NotifyJobWorker",
   // The beta.63 runtime supports effectful props; its class overload was fixed in beta.72.
-  Effect.map(Stack, (stack) => ({
-    main: import.meta.url,
-    compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
-    dev: { port: Trigger.port, strictPort: true },
-    ...exactOptional(
-      getManagedServiceDomain("jobs", stack.stage),
-      (domain) => ({
+  Effect.gen(function* () {
+    const stage = yield* Stage;
+
+    return {
+      main: import.meta.url,
+      compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+      dev: { port: Trigger.port, strictPort: true },
+      ...exactOptional(getManagedServiceDomain("jobs", stage), (domain) => ({
         domain,
-      }),
-    ),
-  })) as unknown as Cloudflare.WorkerProps,
+      })),
+    };
+  }) as unknown as Cloudflare.WorkerProps,
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;

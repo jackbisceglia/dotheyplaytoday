@@ -1,5 +1,5 @@
 import * as Cloudflare from "alchemy/Cloudflare";
-import { Stack } from "alchemy";
+import { Stage } from "alchemy";
 import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { WebConfig } from "@dtpt/core/lib/config/web";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
@@ -31,14 +31,18 @@ const WorkerLayer = Layer.merge(
 export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   "ApiWorker",
   // The beta.63 runtime supports effectful props; its class overload was fixed in beta.72.
-  Effect.map(Stack, (stack) => ({
-    main: import.meta.url,
-    compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
-    dev: { port: 3001, strictPort: true },
-    ...exactOptional(getManagedServiceDomain("api", stack.stage), (domain) => ({
-      domain,
-    })),
-  })) as unknown as Cloudflare.WorkerProps,
+  Effect.gen(function* () {
+    const stage = yield* Stage;
+
+    return {
+      main: import.meta.url,
+      compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+      dev: { port: 3001, strictPort: true },
+      ...exactOptional(getManagedServiceDomain("api", stage), (domain) => ({
+        domain,
+      })),
+    };
+  }) as unknown as Cloudflare.WorkerProps,
   Effect.gen(function* () {
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
