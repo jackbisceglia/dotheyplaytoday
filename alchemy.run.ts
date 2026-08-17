@@ -17,6 +17,7 @@ import {
   SeedStrategy,
 } from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
+import Web from "./packages/web/resource.ts";
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -34,9 +35,6 @@ export default Alchemy.Stack(
 
     const planetscale = yield* Planetscale;
     const hyperdrive = yield* DatabaseHyperdrive;
-    const apiWorker = yield* ApiWorker;
-    const notifyJobWorker = yield* NotifyJobWorker;
-
     const seedTarget = Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
 
     if (stage === "production") {
@@ -51,6 +49,10 @@ export default Alchemy.Stack(
       });
     }
 
+    const apiWorker = yield* ApiWorker;
+    const notifyJobWorker = yield* NotifyJobWorker;
+    const web = yield* Web;
+
     return {
       databaseId: planetscale.database.id,
       databaseName: planetscale.database.name,
@@ -59,6 +61,8 @@ export default Alchemy.Stack(
       hyperdriveCachingDisabled: hyperdrive.Props.caching?.disabled,
       apiWorkerName: apiWorker.workerName,
       apiWorkerUrl: apiWorker.url,
+      webWorkerName: web.workerName,
+      webWorkerUrl: web.url,
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
     };

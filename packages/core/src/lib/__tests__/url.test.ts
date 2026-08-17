@@ -1,4 +1,3 @@
-import { Stack } from "alchemy";
 import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer, Option } from "effect";
 
@@ -6,25 +5,13 @@ import { ApiUrl, ServerBoundPort } from "../config/api.js";
 import { WebConfig, WebConfigAlchemy, WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
 
-const webConfigAlchemy = (stage: string, env: Record<string, string>) =>
-  WebConfig.pipe(
-    Effect.provide(
-      WebConfigAlchemy.pipe(
-        Layer.provide(
-          Layer.mergeAll(
-            ConfigProvider.layer(ConfigProvider.fromUnknown(env)),
-            Layer.succeed(Stack, {
-              name: "dotheyplaytoday",
-              stage,
-              resources: {},
-              bindings: {},
-              actions: {},
-            }),
-          ),
-        ),
-      ),
-    ),
+const webConfigAlchemy = (env: Record<string, string>) => {
+  const EnvLayer = ConfigProvider.layer(ConfigProvider.fromUnknown(env));
+
+  return WebConfig.pipe(
+    Effect.provide(WebConfigAlchemy.pipe(Layer.provide(EnvLayer))),
   );
+};
 
 describe("url config", () => {
   it("builds service urls from base urls and optional ports", () => {
@@ -32,13 +19,21 @@ describe("url config", () => {
       "https://example.com",
     );
 
+    expect(buildServiceUrl("https://example.com/path/", Option.none())).toBe(
+      "https://example.com",
+    );
+
     expect(buildServiceUrl("http://localhost", Option.some(3000))).toBe(
       "http://localhost:3000",
+    );
+
+    expect(buildServiceUrl("https://example.com", Option.some(443))).toBe(
+      "https://example.com",
     );
   });
 
   it.effect(
-    "builds localhost api and web urls from PUBLIC URL bases and ports",
+    "builds localhost api and web urls from VITE URL bases and ports",
     () =>
       Effect.gen(function* () {
         const apiUrl = yield* ApiUrl;
@@ -51,10 +46,10 @@ describe("url config", () => {
           ConfigProvider.layer(
             ConfigProvider.fromEnv({
               env: {
-                PUBLIC_API_URL_BASE: "http://localhost",
-                PUBLIC_API_URL_PORT: "3001",
-                PUBLIC_WEB_URL_BASE: "http://localhost",
-                PUBLIC_WEB_URL_PORT: "3000",
+                VITE_API_URL_BASE: "http://localhost",
+                VITE_API_URL_PORT: "3001",
+                VITE_WEB_URL_BASE: "http://localhost",
+                VITE_WEB_URL_PORT: "3000",
               },
             }),
           ),
@@ -74,8 +69,8 @@ describe("url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              PUBLIC_API_URL_BASE: "https://api.example.com",
-              PUBLIC_WEB_URL_BASE: "https://example.com",
+              VITE_API_URL_BASE: "https://api.example.com",
+              VITE_WEB_URL_BASE: "https://example.com",
             },
           }),
         ),
@@ -83,16 +78,21 @@ describe("url config", () => {
     ),
   );
 
-  it.effect("uses the Alchemy stage for the web base and configured port", () =>
+  it.effect("falls back to configured Web URLs", () =>
     Effect.gen(function* () {
-      const devConfig = yield* webConfigAlchemy("dev_jack", {
-        PUBLIC_WEB_URL_PORT: "4321",
+      const devConfig = yield* webConfigAlchemy({
+        VITE_WEB_URL_BASE: "http://localhost",
+        VITE_WEB_URL_PORT: "4321",
       });
-      const productionConfig = yield* webConfigAlchemy("production", {});
+      const productionConfig = yield* webConfigAlchemy({
+        VITE_WEB_URL_BASE: "https://web-worker.example.workers.dev",
+      });
 
       expect(devConfig.baseUrl).toBe("http://localhost");
       expect(Option.getOrUndefined(devConfig.port)).toBe(4321);
-      expect(productionConfig.baseUrl).toBe("https://dotheyplay.today");
+      expect(productionConfig.baseUrl).toBe(
+        "https://web-worker.example.workers.dev",
+      );
       expect(Option.isNone(productionConfig.port)).toBe(true);
     }),
   );
@@ -109,8 +109,8 @@ describe("url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              PUBLIC_API_URL_PORT: "3001",
-              PUBLIC_WEB_URL_PORT: "3000",
+              VITE_API_URL_PORT: "3001",
+              VITE_WEB_URL_PORT: "3000",
             },
           }),
         ),
@@ -132,10 +132,10 @@ describe("url config", () => {
             env: {
               API_PORT: "3001",
               WEB_PORT: "3000",
-              VITE_API_URL_BASE: "https://api.example.com",
-              VITE_API_URL_PORT: "3001",
-              VITE_WEB_URL_BASE: "https://example.com",
-              VITE_WEB_URL_PORT: "3000",
+              PUBLIC_API_URL_BASE: "https://api.example.com",
+              PUBLIC_API_URL_PORT: "3001",
+              PUBLIC_WEB_URL_BASE: "https://example.com",
+              PUBLIC_WEB_URL_PORT: "3000",
               VITE_API_URL: "https://api.example.com",
               VITE_WEB_URL: "https://example.com",
             },
@@ -145,7 +145,7 @@ describe("url config", () => {
     ),
   );
 
-  it.effect("binds the server with PUBLIC_API_URL_PORT", () =>
+  it.effect("binds the server with VITE_API_URL_PORT", () =>
     Effect.gen(function* () {
       const configuredPort = yield* ServerBoundPort;
 
@@ -155,8 +155,8 @@ describe("url config", () => {
         ConfigProvider.layer(
           ConfigProvider.fromEnv({
             env: {
-              PUBLIC_API_URL_BASE: "http://localhost",
-              PUBLIC_API_URL_PORT: "4001",
+              VITE_API_URL_BASE: "http://localhost",
+              VITE_API_URL_PORT: "4001",
             },
           }),
         ),
@@ -165,7 +165,7 @@ describe("url config", () => {
   );
 
   it.effect(
-    "defaults the server bind port when PUBLIC_API_URL_PORT is absent",
+    "defaults the server bind port when VITE_API_URL_PORT is absent",
     () =>
       Effect.gen(function* () {
         const configuredPort = yield* ServerBoundPort;
@@ -176,7 +176,7 @@ describe("url config", () => {
           ConfigProvider.layer(
             ConfigProvider.fromEnv({
               env: {
-                PUBLIC_API_URL_BASE: "https://api.example.com",
+                VITE_API_URL_BASE: "https://api.example.com",
               },
             }),
           ),

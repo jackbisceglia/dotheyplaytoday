@@ -9,7 +9,7 @@ See [Product](docs/product.md) for intended behavior and [Architecture](docs/arc
 ## Tech stack
 
 - TypeScript and Effect
-- Astro
+- Solid 2 Start mode and Solid Router
 - PlanetScale PostgreSQL and Drizzle
 - Cloudflare Hyperdrive
 - Alchemy and Cloudflare Workers
@@ -20,7 +20,7 @@ See [Product](docs/product.md) for intended behavior and [Architecture](docs/arc
 - `packages/api`: public HTTP API.
 - `packages/jobs`: scheduled notification worker and notify orchestration.
 - `packages/data`: catalog, event, and development seed data.
-- `packages/web`: Astro frontend.
+- `packages/web`: Solid 2 frontend and SSR Worker.
 
 ## Commands
 

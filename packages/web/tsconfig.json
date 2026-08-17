@@ -1,12 +1,14 @@
 {
-  "extends": ["astro/tsconfigs/strict", "../../tsconfig.base.json"],
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "preserve",
+    "jsxImportSource": "@solidjs/web",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "paths": {
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src", ".astro/types.d.ts", "astro.config.ts"],
+  "include": ["src", "resource.ts", "vite.config.ts"],
   "exclude": ["dist"]
 }

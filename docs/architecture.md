@@ -6,17 +6,24 @@
 - `packages/api` implements the public HTTP API using `core` contracts and services.
 - `packages/jobs` implements notification orchestration and the scheduled worker using `core` services and channels.
 - `packages/data` owns catalog, event, and development seed data and writes through `core` domain services.
-- `packages/web` is the Astro frontend and consumes shared `core` contracts.
+- `packages/web` is the Solid 2 Start-mode frontend and consumes shared `core` contracts.
 
 Dependencies point inward toward `core`. The API, jobs, data, and web packages do not provide domain abstractions for `core` or depend on one another for their primary behavior.
 
 ## Runtime and infrastructure
 
 - TypeScript and Effect v4 beta.
-- Astro on Cloudflare.
+- Solid 2 Start mode and Solid Router 2 on a Cloudflare Worker. Alchemy adopts
+  Solid's `client` environment as static assets and its generated `ssr`
+  Fetchable as the Worker entry.
 - PlanetScale PostgreSQL and Drizzle, connected to Workers through Cloudflare Hyperdrive V1.
-- Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public API worker, and notification worker.
-- Workers temporarily use their generated `workers.dev` endpoints. The intended custom domains are documented in [Alchemy service URL wiring](./alchemy-service-urls.md) and will be restored after the DNS zone moves to Cloudflare.
+- Alchemy-provisioned PlanetScale database/branches/roles, Hyperdrive, public
+  API worker, notification worker, and Web Worker. Each deployable owns its
+  resource declaration in its package; `alchemy.run.ts` orchestrates them.
+- Workers temporarily use their `workers.dev` endpoints. The Web Worker has a
+  stable stage-qualified name; the intended custom domains are documented in
+  [Alchemy service URL wiring](./alchemy-service-urls.md) and will be restored
+  after the DNS zone moves to Cloudflare.
 - The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
 - Transactional workflows use Drizzle's Effect-native `database.transaction(...)`. Drizzle delegates to its underlying `PgClient.withTransaction(...)`, so domain-service queries inherit the transaction connection from Effect context and nested service transactions use savepoints without threading a transaction object through service APIs.
 - Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
@@ -25,9 +32,23 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Resend email delivery and console dry runs.
 - Typed Effect config at runtime boundaries.
 
-Service URL wiring remains transitional until the Web application is managed by
-Alchemy. See [Alchemy service URL wiring](./alchemy-service-urls.md) for the
-current limitation and migration design.
+Web receives both an `API` service binding and the API Worker's complete
+resolved URL. The shared typed API client loads a binding-backed HTTP transport
+in the SSR environment and uses the public URL transport in the browser;
+application calls are independent of that transport choice. API CORS receives
+the Web Worker's exact `workers.dev` origin from deployment configuration. See
+[Alchemy service URL wiring](./alchemy-service-urls.md) for the remaining
+custom-domain follow-up.
+
+Web uses all-SSR rendering. The attempted mixed-render design was rejected
+because Solid Start mode has no SSR route-prerender hook; producing a static
+home document would require post-build output mutation coupled to Alchemy's
+asset-finalization order. Cloudflare still serves hashed client assets before
+unmatched requests enter the generated Solid Fetchable. Development disables
+runtime dependency discovery only in the SSR Vite environment because
+Alchemy's workerd runner cannot safely reload an SSR program during an
+in-flight request; native ESM dependencies are transformed without
+prebundling.
 
 Production deploys load `.env.production` through `--env-file .env.production`.
 

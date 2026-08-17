@@ -10,7 +10,9 @@
     "target": "ESNext",
     "plugins": [
       {
-        "name": "@effect/language-service"
+        "name": "@effect/language-service",
+        // TODO: Remove after docs/todo/unify-alchemy-dependencies.md is resolved.
+        "allowedDuplicatedPackages": ["@distilled.cloud/core"]
       }
     ]
   },

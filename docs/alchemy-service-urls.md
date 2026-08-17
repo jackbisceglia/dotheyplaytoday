@@ -2,13 +2,12 @@
 
 ## Status
 
-Service URL wiring is transitional until the Web application is managed by
-Alchemy.
+Web is managed by Alchemy. Service URL wiring remains transitional until the
+generated `workers.dev` endpoints are replaced by declared custom domains.
 
-Alchemy currently manages the API Worker and notification Worker, but it does
-not manage the Astro Web application. The Workers therefore have Alchemy
-resource outputs, while the Web application does not have a corresponding
-resource or resolved `url` output.
+Alchemy manages the API Worker, notification Worker, and Solid Web Worker. Web
+consumes the API Worker's resolved URL directly. The API-to-Web CORS direction
+still uses temporary deployment configuration to avoid a resource cycle.
 
 The Workers temporarily use their generated `workers.dev` endpoints. Their
 custom domains will be restored after the `dotheyplay.today` DNS zone moves to
@@ -28,35 +27,37 @@ These hostnames are not currently attached to the Workers.
 The Workers consume `WebConfig`, which remains an ordinary Effect `Config`
 definition backed by:
 
-- `PUBLIC_WEB_URL_BASE`
-- The optional `PUBLIC_WEB_URL_PORT`
+- `VITE_WEB_URL_BASE`
+- The optional `VITE_WEB_URL_PORT`
 
-At the Alchemy composition boundary, `WebConfigAlchemy` overrides the base URL.
-It selects localhost for a development-named stage and otherwise derives the
-deployed Web URL from `getServiceDomain`. The port continues to come from the
-ordinary configuration provider.
+At the Alchemy composition boundary, `WebConfigAlchemy` currently contributes
+an empty primary provider, so both local and cloud runs use the exact
+`VITE_WEB_URL_BASE` supplied by environment configuration. While `workers.dev`
+endpoints are in use, production must receive the deployed Web Worker's origin.
+The Web Worker has the stable stage-qualified name
+`dotheyplaytoday-web-${stage}` so that origin is known before deployment.
 
-This bridge preserves the application's existing configuration structure while
-Web remains outside Alchemy, but it is not intended to be the final source of
-service URLs.
+`packages/web/resource.ts` passes `apiWorker` to Web as the `API` service binding
+and derives `VITE_API_URL_BASE` from `apiWorker.url`. Alchemy tracks both
+resource dependencies and resolves the public URL before the Vite build. The
+browser API client consumes that value through the shared `ApiUrl` Effect
+config. The SSR API client adapts the service binding to Effect's `HttpClient`,
+avoiding a same-account public
+`workers.dev` fetch and Cloudflare error 1042. Local SSR therefore runs through
+`alchemy dev`; the browser transport remains an ordinary public HTTP client.
+
+This bridge preserves the application's existing configuration structure, but
+it is not intended to be the final source of the Web public endpoint.
 
 ## Current limitation
 
-The configured Web URL and a future Web resource URL would be sibling values:
-neither would derive from the other. Their implementations could therefore
-drift.
+The configured CORS origin and the Web resource's generated URL are sibling
+values. They can drift until a declared custom-domain endpoint becomes their
+single upstream value.
 
-The current localhost decision also uses the stage name, while Alchemy's actual
-execution mode is independent of the stage:
-
-- `alchemy dev --stage staging` still runs Workers locally.
-- `alchemy deploy --stage dev_jack` still performs a cloud deployment.
-
-The local Web port is another external input until Alchemy owns the Web
-development process.
-
-This limitation is accepted temporarily because there is no Web resource whose
-resolved URL can be injected. Removing it depends on migrating Web to Alchemy.
+This limitation is accepted temporarily for the generated-URL rollout. The
+deploy operator must set `VITE_WEB_URL_BASE` to the exact Web Worker origin;
+wildcard CORS is not allowed.
 
 ## Target model
 
@@ -68,7 +69,7 @@ const stack = Effect.gen(function* () {
   const api = yield* ApiWorker;
   const web = yield* Web({
     env: {
-      PUBLIC_API_URL: api.url,
+      VITE_API_URL: api.url,
     },
   });
 
@@ -92,12 +93,12 @@ variables at the infrastructure boundary.
 The intended environment-variable shape is consequently one complete URL per
 dependency, for example:
 
-- `PUBLIC_API_URL`
-- `PUBLIC_WEB_URL`
+- `VITE_API_URL`
+- `VITE_WEB_URL`
 - `JOBS_URL`, if another runtime eventually needs to call the jobs Worker
 
-The current `PUBLIC_WEB_URL_BASE` plus `PUBLIC_WEB_URL_PORT` representation can
-be replaced by `PUBLIC_WEB_URL` when Web becomes an Alchemy resource.
+The current `VITE_WEB_URL_BASE` plus `VITE_WEB_URL_PORT` representation can be
+replaced by `VITE_WEB_URL` when custom domains are attached.
 
 ## Dependency direction and cycles
 
@@ -130,20 +131,19 @@ ApiWorker.url ─────────────> Web (runtime config)
 This keeps the cyclic public identity authoritative in one place while still
 using actual resource `url` outputs for one-way runtime dependencies.
 
-## Migration steps
+## Remaining migration steps
 
-When Web is ready to move under Alchemy:
+When the DNS zone is available in Cloudflare:
 
-1. Add the Web resource with its custom domain and strict local development
-   port.
-2. Define the Web public endpoint once and use it for both the Web domain and
+1. Define the Web public endpoint once and use it for both the Web domain and
    API CORS configuration.
-3. Inject `api.url` into the Web resource as a complete `PUBLIC_API_URL`.
-4. Replace `PUBLIC_WEB_URL_BASE` and `PUBLIC_WEB_URL_PORT` with a complete
-   `PUBLIC_WEB_URL`.
-5. Remove the stage-based URL decision from `WebConfigAlchemy`.
-6. Verify local URLs through `alchemy dev` and deployed URLs through a
+2. Replace `VITE_WEB_URL_BASE` and `VITE_WEB_URL_PORT` with a complete
+   `VITE_WEB_URL`.
+3. Restore Alchemy-owned Web URL configuration in `WebConfigAlchemy`.
+4. Verify local URLs through `alchemy dev` and deployed URLs through a
    provider-level plan test before the first production deployment.
 
-Until then, `WebConfigAlchemy` is the explicit compatibility bridge for the
-unmanaged Web process.
+Until then, `WebConfigAlchemy` and the split `VITE_*_URL_BASE`/`VITE_*_URL_PORT`
+configuration remain explicit public-identity compatibility bridges for CORS
+and browser requests. The SSR `API` binding is independent of that future
+custom-domain work.
