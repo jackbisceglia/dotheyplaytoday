@@ -7,6 +7,7 @@ import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/databa
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
@@ -32,17 +33,16 @@ export default class ApiWorker extends Cloudflare.Worker<
   Cloudflare.WorkerShape
 >()("ApiWorker") {}
 
+// Resolve stage-dependent props before Alchemy serializes the Worker resource.
 export const ApiWorkerLive = ApiWorker.make(
-  Stack.useSync((stack) => {
-    const domain = getManagedServiceDomain("api", stack.stage);
-
-    return {
-      main: import.meta.url,
-      compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
-      dev: { port: 3001, strictPort: true },
-      ...(domain === undefined ? {} : { domain }),
-    };
-  }),
+  Stack.useSync((stack) => ({
+    main: import.meta.url,
+    compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+    dev: { port: 3001, strictPort: true },
+    ...exactOptional(getManagedServiceDomain("api", stack.stage), (domain) => ({
+      domain,
+    })),
+  })),
   Effect.gen(function* () {
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);

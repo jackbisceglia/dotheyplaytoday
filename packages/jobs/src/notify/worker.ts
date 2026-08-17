@@ -11,6 +11,7 @@ import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/res
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service";
 import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
 import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";
@@ -38,17 +39,17 @@ export default class NotifyJobWorker extends Cloudflare.Worker<
   Cloudflare.WorkerShape
 >()("NotifyJobWorker") {}
 
+// Resolve stage-dependent props before Alchemy serializes the Worker resource.
 export const NotifyJobWorkerLive = NotifyJobWorker.make(
-  Stack.useSync((stack) => {
-    const domain = getManagedServiceDomain("jobs", stack.stage);
-
-    return {
-      main: import.meta.url,
-      compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
-      dev: { port: Trigger.port, strictPort: true },
-      ...(domain === undefined ? {} : { domain }),
-    };
-  }),
+  Stack.useSync((stack) => ({
+    main: import.meta.url,
+    compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+    dev: { port: Trigger.port, strictPort: true },
+    ...exactOptional(
+      getManagedServiceDomain("jobs", stack.stage),
+      (domain) => ({ domain }),
+    ),
+  })),
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;

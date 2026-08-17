@@ -1,5 +1,6 @@
 import ApiWorker from "@dtpt/api/worker";
 import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { Stage } from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Effect } from "effect";
@@ -10,7 +11,6 @@ export default class Web extends Cloudflare.Website.Vite<Web>()(
   Effect.gen(function* () {
     const stage = yield* Stage;
     const apiWorker = yield* ApiWorker;
-    const domain = getManagedServiceDomain("web", stage);
 
     return {
       name: `dotheyplaytoday-web-${stage}`,
@@ -20,7 +20,9 @@ export default class Web extends Cloudflare.Website.Vite<Web>()(
         flags: ["nodejs_compat"],
       },
       dev: { port: 4321, strictPort: true },
-      ...(domain === undefined ? {} : { domain }),
+      ...exactOptional(getManagedServiceDomain("web", stage), (domain) => ({
+        domain,
+      })),
       env: {
         API: apiWorker,
         VITE_API_URL_BASE: apiWorker.url.as<string>(),
