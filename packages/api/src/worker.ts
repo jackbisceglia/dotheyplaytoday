@@ -28,22 +28,20 @@ const WorkerLayer = Layer.merge(
   RateLimiterLayer,
 );
 
+const getApiDomain = (stage: string) => getManagedServiceDomain("api", stage);
+
 export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   "ApiWorker",
-  // The beta.63 runtime supports effectful props; its class overload was fixed in beta.72.
+  // TODO: Remove this typecast when upgrading Alchemy to beta.72 or later.
   Effect.gen(function* () {
     const stack = yield* Stack;
+    const domain = getApiDomain(stack.stage);
 
     return {
       main: import.meta.url,
       compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
       dev: { port: 3001, strictPort: true },
-      ...exactOptional(
-        getManagedServiceDomain("api", stack.stage),
-        (domain) => ({
-          domain,
-        }),
-      ),
+      ...exactOptional(domain, (domain) => ({ domain })),
     };
   }) as unknown as Cloudflare.WorkerProps,
   Effect.gen(function* () {

@@ -34,22 +34,20 @@ const NotifyDomainsLayer = pipe(
   Layer.provide(CloudflareCryptoLayer),
 );
 
+const getJobsDomain = (stage: string) => getManagedServiceDomain("jobs", stage);
+
 export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>()(
   "NotifyJobWorker",
-  // The beta.63 runtime supports effectful props; its class overload was fixed in beta.72.
+  // TODO: Remove this typecast when upgrading Alchemy to beta.72 or later.
   Effect.gen(function* () {
     const stack = yield* Stack;
+    const domain = getJobsDomain(stack.stage);
 
     return {
       main: import.meta.url,
       compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
       dev: { port: Trigger.port, strictPort: true },
-      ...exactOptional(
-        getManagedServiceDomain("jobs", stack.stage),
-        (domain) => ({
-          domain,
-        }),
-      ),
+      ...exactOptional(domain, (domain) => ({ domain })),
     };
   }) as unknown as Cloudflare.WorkerProps,
   Effect.gen(function* () {
