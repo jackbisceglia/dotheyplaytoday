@@ -2,20 +2,21 @@ import cloudflare from "@distilled.cloud/cloudflare-vite-plugin";
 import solid from "@solidjs/vite-plugin";
 import { defineConfig } from "vite";
 
-const isAlchemyEnv = process.env.ALCHEMY_CLOUDFLARE_VITE_INJECTED === "1";
-
 /** Installs the Cloudflare provider unless Alchemy is already providing it. */
-const standaloneCloudflare = () => {
+function standaloneCloudflare() {
+  const isAlchemyEnv = process.env.ALCHEMY_CLOUDFLARE_VITE_INJECTED === "1";
+
   if (isAlchemyEnv) return null;
 
   return cloudflare({
     compatibilityDate: "2026-06-02",
     compatibilityFlags: ["nodejs_compat"],
   });
-};
+}
 
 export default defineConfig({
-  envDir: isAlchemyEnv ? false : "../..",
+  envDir:
+    process.env.ALCHEMY_CLOUDFLARE_VITE_INJECTED === "1" ? false : "../..",
   plugins: [
     standaloneCloudflare(),
     solid({ start: true, ssr: true }),
