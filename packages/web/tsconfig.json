@@ -6,8 +6,7 @@
     "jsxImportSource": "@solidjs/web",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "paths": {
-      "~/*": ["./src/*"],
-      "virtual:dtpt-api-client": ["./src/lib/api.client.ts"]
+      "~/*": ["./src/*"]
     }
   },
   "include": ["src", "vite.config.ts"],

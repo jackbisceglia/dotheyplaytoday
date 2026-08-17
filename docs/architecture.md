@@ -31,8 +31,8 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Typed Effect config at runtime boundaries.
 
 Web receives both an `API` service binding and the API Worker's complete
-resolved URL. The shared typed API client selects a binding-backed HTTP
-transport in the SSR build and the public URL transport in the browser build;
+resolved URL. The shared typed API client loads a binding-backed HTTP transport
+in the SSR environment and uses the public URL transport in the browser;
 application calls are independent of that transport choice. API CORS receives
 the Web Worker's exact `workers.dev` origin from deployment configuration. See
 [Alchemy service URL wiring](./alchemy-service-urls.md) for the remaining
