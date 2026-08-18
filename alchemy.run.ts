@@ -6,6 +6,7 @@ import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect, Layer } from "effect";
 
 import ApiWorker from "./packages/api/dist/worker.js";
+import { Domain } from "./packages/core/dist/lib/alchemy/domain/resource.js";
 import {
   DatabaseHyperdrive,
   Planetscale,
@@ -31,6 +32,8 @@ export default Alchemy.Stack(
     const context = yield* AlchemyContext;
     const stage = yield* Stage;
     const seedStrategy = yield* SeedStrategy;
+
+    yield* Domain;
 
     const planetscale = yield* Planetscale;
     const hyperdrive = yield* DatabaseHyperdrive;

@@ -24,6 +24,12 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
   `api.dotheyplay.today`, and `jobs.dotheyplay.today`. Other non-development
   stages prepend their normalized stage; `dev_*` stages keep development-only
   URLs and do not claim custom domains.
+- The production stack manages HTTPS redirection and a conservative HSTS
+  policy as Cloudflare zone settings. It adopts the existing Cloudflare zone,
+  retains it on stack destruction, and exposes it to other stages through an
+  Alchemy resource reference. Existing DNS records remain unmanaged until they
+  are individually declared and adopted. No other stage manages the zone-wide
+  settings.
 - The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
 - Transactional workflows use Drizzle's Effect-native `database.transaction(...)`. Drizzle delegates to its underlying `PgClient.withTransaction(...)`, so domain-service queries inherit the transaction connection from Effect context and nested service transactions use savepoints without threading a transaction object through service APIs.
 - Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.

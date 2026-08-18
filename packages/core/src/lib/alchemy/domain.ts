@@ -8,7 +8,7 @@ import {
 import { isDevStage } from "./stage.js";
 import { StringParts } from "../string.js";
 
-const domain = "dotheyplay.today";
+export const domain = "dotheyplay.today";
 
 const decodeSubdomainLabel = Schema.decodeUnknownSync(
   Schema.String.pipe(

@@ -14,7 +14,18 @@ Web custom domain after deployment.
 4. For production, confirm Alchemy reports `https://dotheyplay.today` as the Web
    URL and `https://api.dotheyplay.today` as the API URL. Do not hardcode their
    generated `workers.dev` URLs in `.env.production`.
-5. Keep browser developer tools open and confirm there are no hydration
+5. Confirm plain HTTP redirects at the edge and HTTPS sends the initial HSTS
+   policy:
+
+   ```sh
+   curl --head http://dotheyplay.today
+   curl --head https://dotheyplay.today
+   ```
+
+   Expect a permanent redirect with an HTTPS `Location` from the first command
+   and `Strict-Transport-Security: max-age=2592000` from the second.
+
+6. Keep browser developer tools open and confirm there are no hydration
    warnings, failed static assets, or unexpected duplicate subject requests.
 
 ## Home and signup

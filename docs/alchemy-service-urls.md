@@ -23,8 +23,30 @@ development URLs.
 `packages/core/src/lib/alchemy/domain.ts` defines each resource's desired custom
 hostname. `getManagedServiceDomain` applies the development-stage exception
 before the resource passes its hostname to Alchemy's `domain` property. The
-existing `dotheyplay.today` Cloudflare zone is a prerequisite and is not adopted
-as a whole by this stack.
+exact `production` stage explicitly adopts the existing `dotheyplay.today`
+Cloudflare zone. The zone is declared as a full, active zone using Cloudflare's
+standard nameservers and is retained if the stack is destroyed. Other stages
+reference the production-owned zone through Alchemy state rather than declaring
+another owner for the same physical zone.
+
+Zone adoption does not implicitly adopt DNS records. Existing records remain
+unmanaged until each record is inventoried, declared, and explicitly adopted.
+This keeps mail and verification records outside the stack during the initial
+zone migration.
+
+## Transport security
+
+The adopted production zone owns two zone-wide Cloudflare settings:
+
+- `always_use_https` redirects HTTP requests to HTTPS at Cloudflare's edge.
+- `security_header` enables HSTS with an initial 30-day maximum age and
+  `nosniff`.
+
+HSTS initially excludes subdomains and preload. Increase its maximum age and
+consider subdomain coverage only after every current and prospective hostname
+under `dotheyplay.today` is confirmed HTTPS-only. Do not let non-production
+stages manage these singleton settings because their independent Alchemy state
+would compete over the same Cloudflare zone.
 
 Services consume each other's resolved resource URLs rather than reconstructing
 them from the hostname policy:
@@ -72,6 +94,9 @@ Production deploys use:
 ```sh
 pnpm run deploy --stage production --env-file .env.production
 ```
+
+An API token deployment needs permission to read and edit the
+`dotheyplay.today` zone and its zone settings.
 
 Do not set deployed `VITE_WEB_URL_BASE` or `VITE_API_URL_BASE` to generated
 `workers.dev` URLs. Alchemy supplies both values at the infrastructure boundary.
