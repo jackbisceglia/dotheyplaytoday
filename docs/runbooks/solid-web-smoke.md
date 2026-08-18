@@ -1,7 +1,7 @@
 # Solid Web smoke runbook
 
-Run this checklist against `alchemy dev`, then repeat it against the generated
-production Web `workers.dev` URL after deployment.
+Run this checklist against `alchemy dev`, then repeat it against the production
+Web custom domain after deployment.
 
 ## Setup
 
@@ -11,9 +11,9 @@ production Web `workers.dev` URL after deployment.
 3. Use `pnpm dev:web` only for a standalone Vite session. It reads
    `VITE_API_URL_BASE` and `VITE_API_URL_PORT` from the workspace `.env`, but
    does not provision the API service binding used by integrated SSR.
-4. For production, set `VITE_WEB_URL_BASE` to the exact Web Worker origin
-   before deployment so API CORS permits that one origin. The production Worker
-   name is `dotheyplaytoday-web-production`.
+4. For production, confirm Alchemy reports `https://dotheyplay.today` as the Web
+   URL and `https://api.dotheyplay.today` as the API URL. Do not hardcode their
+   generated `workers.dev` URLs in `.env.production`.
 5. Keep browser developer tools open and confirm there are no hydration
    warnings, failed static assets, or unexpected duplicate subject requests.
 

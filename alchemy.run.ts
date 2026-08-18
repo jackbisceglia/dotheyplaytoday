@@ -6,7 +6,6 @@ import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect, Layer } from "effect";
 
 import ApiWorker from "./packages/api/dist/worker.js";
-import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
 import {
   DatabaseHyperdrive,
   Planetscale,
@@ -17,7 +16,7 @@ import {
   SeedStrategy,
 } from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
-import Web from "./packages/web/resource.ts";
+import Web, { bindWebUrl } from "./packages/web/resource.ts";
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -49,9 +48,14 @@ export default Alchemy.Stack(
       });
     }
 
+    const web = yield* Web;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
-    const web = yield* Web;
+
+    // Move these reverse dependencies into Worker props once Website.Vite
+    // supports separate definition and implementation declarations.
+    yield* bindWebUrl(apiWorker, web);
+    yield* bindWebUrl(notifyJobWorker, web);
 
     return {
       databaseId: planetscale.database.id,
@@ -66,5 +70,5 @@ export default Alchemy.Stack(
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
     };
-  }).pipe(Effect.provide(WebConfigAlchemy)),
+  }),
 );

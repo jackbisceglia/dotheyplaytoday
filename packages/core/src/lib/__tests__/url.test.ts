@@ -1,17 +1,9 @@
 import { describe, expect, it } from "@effect/vitest";
-import { ConfigProvider, Effect, Layer, Option } from "effect";
+import { ConfigProvider, Effect, Option } from "effect";
 
 import { ApiUrl, ServerBoundPort } from "../config/api.js";
-import { WebConfig, WebConfigAlchemy, WebUrl } from "../config/web.js";
+import { WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
-
-const webConfigAlchemy = (env: Record<string, string>) => {
-  const EnvLayer = ConfigProvider.layer(ConfigProvider.fromUnknown(env));
-
-  return WebConfig.pipe(
-    Effect.provide(WebConfigAlchemy.pipe(Layer.provide(EnvLayer))),
-  );
-};
 
 describe("url config", () => {
   it("builds service urls from base urls and optional ports", () => {
@@ -76,25 +68,6 @@ describe("url config", () => {
         ),
       ),
     ),
-  );
-
-  it.effect("falls back to configured Web URLs", () =>
-    Effect.gen(function* () {
-      const devConfig = yield* webConfigAlchemy({
-        VITE_WEB_URL_BASE: "http://localhost",
-        VITE_WEB_URL_PORT: "4321",
-      });
-      const productionConfig = yield* webConfigAlchemy({
-        VITE_WEB_URL_BASE: "https://web-worker.example.workers.dev",
-      });
-
-      expect(devConfig.baseUrl).toBe("http://localhost");
-      expect(Option.getOrUndefined(devConfig.port)).toBe(4321);
-      expect(productionConfig.baseUrl).toBe(
-        "https://web-worker.example.workers.dev",
-      );
-      expect(Option.isNone(productionConfig.port)).toBe(true);
-    }),
   );
 
   it.effect("requires api and web URL bases", () =>

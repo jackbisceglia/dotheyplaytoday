@@ -1,16 +1,16 @@
 import * as Cloudflare from "alchemy/Cloudflare";
-import { Stack } from "alchemy/Stack";
+import { Stack } from "alchemy";
 import { Boolean, Effect, Layer, Option, pipe, Result } from "effect";
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
-// import { getServiceDomain } from "@dtpt/core/lib/alchemy/domain";
-import { WebConfig } from "@dtpt/core/lib/config/web";
+import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service";
 import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
 import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";
@@ -33,15 +33,22 @@ const NotifyDomainsLayer = pipe(
   Layer.provide(CloudflareCryptoLayer),
 );
 
+const getJobsDomain = (stage: string) => getManagedServiceDomain("jobs", stage);
+
 export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>()(
   "NotifyJobWorker",
-  {
-    main: import.meta.url,
-    compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
-    dev: { port: Trigger.port, strictPort: true },
-    // TODO: Restore after dotheyplay.today DNS moves to Cloudflare.
-    // domain: getServiceDomain("jobs", stack.stage),
-  },
+  // TODO: Remove this typecast when upgrading Alchemy to beta.72 or later.
+  Effect.gen(function* () {
+    const stack = yield* Stack;
+    const domain = getJobsDomain(stack.stage);
+
+    return {
+      main: import.meta.url,
+      compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
+      dev: { port: Trigger.port, strictPort: true },
+      ...exactOptional(domain, (domain) => ({ domain })),
+    };
+  }) as unknown as Cloudflare.WorkerProps,
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;
@@ -49,8 +56,8 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
 
     // Configs
     yield* ResendConfig;
-    yield* WebConfig;
 
+    // Notification layers read WebConfig at runtime from the Stack's late binding.
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));

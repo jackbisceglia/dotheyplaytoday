@@ -1,5 +1,9 @@
 # Solid 2 Start mode Web migration decision
 
+> Historical implementation record. The generated `workers.dev` rollout notes
+> below have been superseded by the Alchemy-managed custom-domain wiring in
+> [Alchemy service URL wiring](../alchemy-service-urls.md).
+
 Status: deployed; local and production browser gates passed
 Last updated: 2026-08-15
 
