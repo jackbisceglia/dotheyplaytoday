@@ -28,6 +28,14 @@ export function Layout(props: LayoutProps) {
 
       <header class="site-header">
         <a class="wordmark" href={props.homeHref}>
+          <img
+            class="wordmark-mark"
+            src="/favicon.svg"
+            alt=""
+            aria-hidden="true"
+            width="28"
+            height="28"
+          />
           <span class="visually-hidden">Do they play today</span>
           <span aria-hidden="true">
             dothey<em>play</em>today

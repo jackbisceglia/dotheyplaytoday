@@ -91,11 +91,20 @@ button {
 }
 
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 900;
   font-stretch: 70%;
   font-size: 1.25rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+.wordmark-mark {
+  display: block;
+  width: 28px;
+  height: 28px;
 }
 
 .wordmark em {
