@@ -16,7 +16,7 @@ import {
   SeedStrategy,
 } from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
-import Web from "./packages/web/resource.ts";
+import Web, { bindWebUrl } from "./packages/web/resource.ts";
 
 export default Alchemy.Stack(
   "dotheyplaytoday",
@@ -52,25 +52,8 @@ export default Alchemy.Stack(
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
 
-    yield* apiWorker.bind("WebUrl", {
-      bindings: [
-        {
-          type: "plain_text",
-          name: "VITE_WEB_URL_BASE",
-          text: web.url.as<string>(),
-        },
-      ],
-    });
-
-    yield* notifyJobWorker.bind("WebUrl", {
-      bindings: [
-        {
-          type: "plain_text",
-          name: "VITE_WEB_URL_BASE",
-          text: web.url.as<string>(),
-        },
-      ],
-    });
+    yield* bindWebUrl(apiWorker, web);
+    yield* bindWebUrl(notifyJobWorker, web);
 
     return {
       databaseId: planetscale.database.id,

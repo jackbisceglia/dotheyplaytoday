@@ -57,6 +57,7 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
     // Configs
     yield* ResendConfig;
 
+    // Notification layers read WebConfig at runtime from the Stack's late binding.
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));

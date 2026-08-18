@@ -31,3 +31,14 @@ export default class Web extends Cloudflare.Website.Vite<Web>()(
     };
   }),
 ) {}
+
+export const bindWebUrl = (worker: Cloudflare.Worker, web: Web) =>
+  worker.bind("WebUrl", {
+    bindings: [
+      {
+        type: "plain_text",
+        name: "VITE_WEB_URL_BASE",
+        text: web.url.as<string>(),
+      },
+    ],
+  });

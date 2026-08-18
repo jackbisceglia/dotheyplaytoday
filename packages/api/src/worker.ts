@@ -46,6 +46,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
+    // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
 
