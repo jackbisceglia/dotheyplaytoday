@@ -7,13 +7,17 @@ import { HttpApiClient } from "effect/unstable/httpapi";
 
 import { RuntimeClient } from "./platform.js";
 
-const RuntimeHttpClient = import.meta.env.SSR
-  ? Effect.promise(() => import("./cloudflare-http-client.js")).pipe(
-      Effect.map(
-        ({ CloudflareBindingHttpClient }) => CloudflareBindingHttpClient,
-      ),
-    )
-  : HttpClient.HttpClient;
+const RuntimeHttpClient = Effect.gen(function* () {
+  if (import.meta.env.SSR) {
+    const { CloudflareBindingHttpClient } = yield* Effect.promise(() =>
+      import("./cloudflare-http-client.js"),
+    );
+
+    return CloudflareBindingHttpClient;
+  }
+
+  return yield* HttpClient.HttpClient;
+});
 
 export type Client = typeof Client;
 export const Client = Effect.gen(function* () {
