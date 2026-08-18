@@ -1,7 +1,11 @@
 import { Context, Effect } from "effect";
 
 import type { ChannelClientError } from "../errors.js";
-import type { ChannelDelivery } from "../service.js";
+
+export type ChannelDelivery<TRecipient> = {
+  readonly recipient: TRecipient;
+  readonly hash: string;
+};
 
 export type ChannelClientService<TRecipient, TRendered> = {
   readonly send: (

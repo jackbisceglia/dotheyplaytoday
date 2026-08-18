@@ -1,6 +1,7 @@
 import { Schema } from "effect";
 
 import { Notification } from "../notification/schema.js";
+import { SignupConfirmation } from "../signup/schema.js";
 
 const decode = Schema.decodeUnknownSync;
 
@@ -103,4 +104,23 @@ export const notification = decode(Notification)({
       ],
     },
   ],
+});
+
+export const signupConfirmation = SignupConfirmation.cases.first_signup.make({
+  user: notification.user,
+  subjects: [
+    notification.subject,
+    {
+      ...notification.subject,
+      details: {
+        ...notification.subject.details,
+        location: "New York",
+        name: "Knicks & Nets",
+        display: "New York Knicks & Nets <Team>",
+        abbreviation: "NYK",
+        slug: "new-york-knicks",
+      },
+    },
+  ],
+  schedule: notification.subscription.schedule,
 });

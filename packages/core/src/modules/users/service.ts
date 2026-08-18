@@ -12,6 +12,20 @@ import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
 
+export type SignupUserOutcome = typeof SignupUserOutcome.Type;
+export const SignupUserOutcome = Schema.TaggedUnion({
+  first_signup: { user: User },
+  repeat_signup: { user: User },
+});
+
+export const classifySignupUser = (
+  candidateId: User["id"],
+  user: User,
+): SignupUserOutcome =>
+  user.id === candidateId
+    ? SignupUserOutcome.cases.first_signup.make({ user })
+    : SignupUserOutcome.cases.repeat_signup.make({ user });
+
 export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
   "UserNotFound",
   {
@@ -47,7 +61,10 @@ export class Users extends Context.Service<
     readonly upsertForSignup: (
       email: User["email"],
       timezone: User["timezone"],
-    ) => Effect.Effect<User, DatabaseWriteError | Schema.SchemaError>;
+    ) => Effect.Effect<
+      SignupUserOutcome,
+      DatabaseWriteError | Schema.SchemaError
+    >;
     readonly remove: (
       userId: User["id"],
     ) => Effect.Effect<void, DatabaseDeleteError>;
@@ -148,8 +165,9 @@ export const UsersLayer = Layer.effect(
     const upsertForSignup: Users["Service"]["upsertForSignup"] = Effect.fn(
       "Users.upsertForSignup",
     )(function* (email: User["email"], timezone: User["timezone"]) {
+      const candidateId = yield* id.makeFromBrandedSchema(User.fields.id);
       const insertable = yield* encodeUser({
-        id: yield* id.makeFromBrandedSchema(User.fields.id),
+        id: candidateId,
         unsubscribeToken: yield* id.makeFromBrandedSchema(
           User.fields.unsubscribeToken,
         ),
@@ -184,7 +202,7 @@ export const UsersLayer = Layer.effect(
 
       const user = yield* decodeUser(row.value);
 
-      return user;
+      return classifySignupUser(candidateId, user);
     });
 
     const remove: Users["Service"]["remove"] = Effect.fn("Users.remove")(

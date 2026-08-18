@@ -1,9 +1,9 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Cause, Effect, Exit } from "effect";
 
-import { Channel } from "../service.js";
-import { EmailRenderError } from "../email/service.js";
-import type { EmailRendered } from "../email/render.js";
+import { NotificationChannel } from "../notification/service.js";
+import { NotificationEmailRenderError } from "../notification/email/service.js";
+import type { EmailRendered } from "../email/design.js";
 import type { Notification } from "../notification/schema.js";
 import { notification } from "./fixtures.js";
 
@@ -15,14 +15,14 @@ const rendered: EmailRendered = {
   },
 };
 
-describe("Channel service", () => {
+describe("NotificationChannel service", () => {
   it.effect("delivers notifications through the configured channel", () => {
     const renderedNotifications: string[] = [];
     const sentMessages: {
       readonly subscriptionId: string;
       readonly rendered: EmailRendered;
     }[] = [];
-    const ChannelLayerTest = Channel.makeLayer(
+    const ChannelLayerTest = NotificationChannel.makeLayer(
       Effect.succeed({
         render: (input: Notification) => {
           return Effect.sync(() => {
@@ -42,7 +42,7 @@ describe("Channel service", () => {
     );
 
     return Effect.gen(function* () {
-      const channel = yield* Channel;
+      const channel = yield* NotificationChannel;
 
       yield* channel.deliver(notification);
 
@@ -57,7 +57,7 @@ describe("Channel service", () => {
   });
 
   it.effect("dies on render errors instead of sending fallback email", () => {
-    const error = new EmailRenderError({
+    const error = new NotificationEmailRenderError({
       message: "Expected sports_game event to have participant role",
       eventId: notification.events[0].id,
       role: "home",
@@ -66,7 +66,7 @@ describe("Channel service", () => {
       readonly subscriptionId: string;
       readonly rendered: EmailRendered;
     }[] = [];
-    const ChannelLayerTest = Channel.makeLayer(
+    const ChannelLayerTest = NotificationChannel.makeLayer(
       Effect.succeed({
         render: () => Effect.fail(error),
         send: (input: Notification, message: EmailRendered) =>
@@ -80,7 +80,7 @@ describe("Channel service", () => {
     );
 
     return Effect.gen(function* () {
-      const channel = yield* Channel;
+      const channel = yield* NotificationChannel;
       const exit = yield* channel.deliver(notification).pipe(Effect.exit);
 
       expect(Exit.isFailure(exit)).toBe(true);

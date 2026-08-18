@@ -1,7 +1,10 @@
+import * as Cloudflare from "alchemy/Cloudflare";
 import { Api } from "@dtpt/core/contracts/api";
 import { SignupRateLimited } from "@dtpt/core/contracts/signup";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
+import { SignupConfirmation } from "@dtpt/core/modules/channels/signup/schema";
+import { SignupChannel } from "@dtpt/core/modules/channels/signup/service";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
@@ -27,6 +30,8 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const database = yield* Database;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
+      const signupChannel = yield* SignupChannel;
+      const executionContext = yield* Cloudflare.WorkerExecutionContext;
 
       return handlers.handle(
         "submit",
@@ -46,22 +51,63 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            yield* database
+            const receipt = yield* database
               .transaction(() =>
                 Effect.gen(function* () {
-                  const user = yield* users.upsertForSignup(
+                  const outcome = yield* users.upsertForSignup(
                     ctx.payload.email,
                     ctx.payload.timezone,
                   );
 
-                  yield* subscriptions.replaceForUser({
-                    user,
+                  const subjects = yield* subscriptions.replaceForUser({
+                    user: outcome.user,
                     subjectIds: ctx.payload.subjectIds,
                     schedule: ctx.payload.schedule,
                   });
+
+                  return { outcome, subjects };
                 }),
               )
               .pipe(mapToTransactionError("Signup.submit"));
+
+            const [firstSubject, ...remainingSubjects] = receipt.subjects;
+
+            if (!firstSubject) {
+              return yield* Effect.die(
+                "A successful signup must contain at least one subject",
+              );
+            }
+
+            const confirmationFields = {
+              user: receipt.outcome.user,
+              subjects: [firstSubject, ...remainingSubjects] as const,
+              schedule: ctx.payload.schedule,
+            };
+            const confirmation =
+              receipt.outcome._tag === "first_signup"
+                ? SignupConfirmation.cases.first_signup.make(confirmationFields)
+                : SignupConfirmation.cases.repeat_signup.make(
+                    confirmationFields,
+                  );
+
+            yield* executionContext.waitUntil(
+              signupChannel.deliver(confirmation).pipe(
+                Effect.tap(() =>
+                  Effect.logInfo("signup confirmation: delivered", {
+                    kind: confirmation._tag,
+                    user: confirmation.user.email,
+                  }),
+                ),
+                Effect.tapCause((cause) =>
+                  Effect.logError("signup confirmation: delivery failed", {
+                    cause,
+                    kind: confirmation._tag,
+                    user: confirmation.user.email,
+                  }),
+                ),
+                Effect.ignore,
+              ),
+            );
 
             return { ok: true as const };
           },

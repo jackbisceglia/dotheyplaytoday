@@ -1,7 +1,7 @@
 import { DateTime } from "effect";
 
-import { StringParts } from "../../lib/string.js";
-import type { Notification } from "./notification/schema.js";
+import { StringParts } from "../../../lib/string.js";
+import type { Notification } from "./schema.js";
 
 export const createDeliveryHash = (notification: Notification) =>
   StringParts()

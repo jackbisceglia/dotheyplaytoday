@@ -11,14 +11,19 @@ import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/databa
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
-import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service";
+import { NotificationConsoleChannelLayer } from "@dtpt/core/modules/channels/notification/console/service";
 import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
-import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";
+import { EmailChannelClientLayerResend } from "@dtpt/core/modules/channels/email/clients/resend";
+import { NotificationEmailChannelLayer } from "@dtpt/core/modules/channels/notification/email/service";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { notify, NotifyOptions } from "./index.js";
 
 const NotifySchedule = "*/15 * * * *";
+
+const NotificationEmailChannelLayerLive = NotificationEmailChannelLayer.pipe(
+  Layer.provide(EmailChannelClientLayerResend),
+);
 
 export const Trigger = {
   path: "/test/notify",
@@ -69,7 +74,9 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
           yield* Effect.logInfo("notify job: scheduled");
 
           yield* notify({}).pipe(
-            Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
+            Effect.provide(
+              Layer.merge(NotifyLayer, NotificationEmailChannelLayerLive),
+            ),
           );
         },
         Effect.tapCause((cause) =>
@@ -105,8 +112,8 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
         const NotifyRunLayer = Layer.merge(
           NotifyLayer,
           Boolean.match(body.dryRun, {
-            onFalse: () => EmailChannelLayer,
-            onTrue: () => ConsoleChannelLayer,
+            onFalse: () => NotificationEmailChannelLayerLive,
+            onTrue: () => NotificationConsoleChannelLayer,
           }),
         );
 

@@ -1,7 +1,7 @@
-import type { EmailAddress } from "../../users/schema.js";
-import type { Notification } from "../notification/schema.js";
+import type { EmailAddress } from "../../../users/schema.js";
+import type { ChannelDelivery } from "../../client/service.js";
+import type { Notification } from "../schema.js";
 import { createDeliveryHash } from "../hash.js";
-import type { ChannelDelivery } from "../service.js";
 
 export type ConsoleDelivery = ChannelDelivery<EmailAddress>;
 

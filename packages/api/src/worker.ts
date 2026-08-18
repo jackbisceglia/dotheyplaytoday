@@ -7,6 +7,9 @@ import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
+import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
+import { EmailChannelClientLayerResend } from "@dtpt/core/modules/channels/email/clients/resend";
+import { SignupEmailChannelLayer } from "@dtpt/core/modules/channels/signup/email/service";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
@@ -16,7 +19,12 @@ import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
 const ApiBaseLayer = pipe(
-  Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
+  Layer.mergeAll(
+    SubjectsLayer,
+    SubscriptionsLayer,
+    UsersLayer,
+    SignupEmailChannelLayer.pipe(Layer.provide(EmailChannelClientLayerResend)),
+  ),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );
@@ -45,6 +53,9 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   Effect.gen(function* () {
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
+
+    // Validate email delivery config before the Worker begins serving requests.
+    yield* ResendConfig;
 
     // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.
     // Layers

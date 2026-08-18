@@ -3,10 +3,14 @@ import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 import { beforeEach, vi } from "vitest";
 
-import { Channel } from "../../service.js";
-import { EmailChannelLayer, EmailRenderError } from "../service.js";
-import { notification } from "../../__tests__/fixtures.js";
-import type { Notification } from "../../notification/schema.js";
+import { NotificationChannel } from "../../service.js";
+import {
+  NotificationEmailChannelLayer,
+  NotificationEmailRenderError,
+} from "../service.js";
+import { notification } from "../../../__tests__/fixtures.js";
+import type { Notification } from "../../schema.js";
+import { EmailChannelClientLayerResend } from "../../../email/clients/resend.js";
 
 const resendMock = vi.hoisted(() => ({
   constructor: vi.fn(),
@@ -42,13 +46,14 @@ const EmailConfigLayerTest = ConfigProvider.layer(
   }),
 );
 
-const EmailChannelLayerTest = EmailChannelLayer.pipe(
+const EmailChannelLayerTest = NotificationEmailChannelLayer.pipe(
+  Layer.provide(EmailChannelClientLayerResend),
   Layer.provideMerge(EmailConfigLayerTest),
 );
 
 const deliver = (input: Notification) =>
   Effect.gen(function* () {
-    const channel = yield* Channel;
+    const channel = yield* NotificationChannel;
 
     yield* channel.deliver(input);
   }).pipe(Effect.provide(EmailChannelLayerTest));
@@ -161,8 +166,8 @@ describe("email rendering", () => {
         if (Exit.isFailure(missingHome)) {
           const error = Cause.squash(missingHome.cause);
 
-          expect(error).toBeInstanceOf(EmailRenderError);
-          if (error instanceof EmailRenderError) {
+          expect(error).toBeInstanceOf(NotificationEmailRenderError);
+          if (error instanceof NotificationEmailRenderError) {
             expect(error.role).toBe("home");
           }
         }
@@ -171,8 +176,8 @@ describe("email rendering", () => {
         if (Exit.isFailure(missingAway)) {
           const error = Cause.squash(missingAway.cause);
 
-          expect(error).toBeInstanceOf(EmailRenderError);
-          if (error instanceof EmailRenderError) {
+          expect(error).toBeInstanceOf(NotificationEmailRenderError);
+          if (error instanceof NotificationEmailRenderError) {
             expect(error.role).toBe("away");
           }
         }

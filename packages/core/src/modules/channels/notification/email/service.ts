@@ -1,18 +1,17 @@
-import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
+import { type Array, DateTime, Effect, Match, Schema } from "effect";
 
-import { StringParts } from "../../../lib/string.js";
-import type { ExtractFromTag } from "../../../lib/types.js";
-import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
-import { EventId } from "../../events/schema.js";
-import type { EventWithParticipants } from "../../events/service.js";
-import type { Subject } from "../../subjects/schema.js";
-import type { User } from "../../users/schema.js";
-import type { Notification } from "../notification/schema.js";
-import { Channel } from "../service.js";
-import { EmailChannelClientLayerResend } from "./clients/resend.js";
-import { EmailChannelClient } from "./clients/service.js";
-import { EmailDelivery } from "./delivery.js";
-import { EmailView, type EmailRendered } from "./render.js";
+import { StringParts } from "../../../../lib/string.js";
+import type { ExtractFromTag } from "../../../../lib/types.js";
+import { buildUnsubscribeUrl } from "../../../../lib/unsubscribe.js";
+import { EventId } from "../../../events/schema.js";
+import type { EventWithParticipants } from "../../../events/service.js";
+import type { Subject } from "../../../subjects/schema.js";
+import type { User } from "../../../users/schema.js";
+import { EmailChannelClient } from "../../email/clients/service.js";
+import type { Notification } from "../schema.js";
+import { NotificationChannel } from "../service.js";
+import { NotificationEmailDelivery } from "./delivery.js";
+import { NotificationEmailView, type EmailRendered } from "./render.js";
 
 const isTaggedAs =
   <const TTag extends PropertyKey>(tag: TTag) =>
@@ -21,8 +20,8 @@ const isTaggedAs =
   ): value is Extract<TValue, { readonly _tag: TTag }> =>
     value._tag === tag;
 
-export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>()(
-  "EmailRenderError",
+export class NotificationEmailRenderError extends Schema.TaggedErrorClass<NotificationEmailRenderError>()(
+  "NotificationEmailRenderError",
   {
     message: Schema.String,
     eventId: EventId,
@@ -66,7 +65,7 @@ const requireSportsParticipantsRoles = Effect.fn(
   if (!home || !away) {
     const role = home ? "away" : "home";
 
-    return yield* new EmailRenderError({
+    return yield* new NotificationEmailRenderError({
       message: "Expected sports_game event to have participant role",
       eventId: event.id,
       role,
@@ -126,21 +125,22 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
   },
 );
 
-export const EmailChannelLayer = Channel.makeLayer(
+export const NotificationEmailChannelLayer = NotificationChannel.makeLayer(
   Effect.gen(function* () {
     const client = yield* EmailChannelClient;
 
     const render = Effect.fn(function* (notification: Notification) {
       const props = yield* getEmailViewProps(notification);
 
-      return EmailView(props);
+      return NotificationEmailView(props);
     });
 
     const send = Effect.fn(function* (
       notification: Notification,
       rendered: EmailRendered,
     ) {
-      const delivery = EmailDelivery.makeFromNotification(notification);
+      const delivery =
+        NotificationEmailDelivery.makeFromNotification(notification);
 
       return yield* client.send(delivery, rendered);
     });
@@ -150,4 +150,4 @@ export const EmailChannelLayer = Channel.makeLayer(
       send,
     };
   }),
-).pipe(Layer.provide(EmailChannelClientLayerResend));
+);

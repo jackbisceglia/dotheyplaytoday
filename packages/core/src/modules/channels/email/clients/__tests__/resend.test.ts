@@ -11,8 +11,8 @@ import {
   ChannelClientRequestError,
   ChannelClientResponseError,
 } from "../../../errors.js";
-import { EmailDelivery } from "../../delivery.js";
-import type { EmailRendered } from "../../render.js";
+import { NotificationEmailDelivery } from "../../../notification/email/delivery.js";
+import type { EmailRendered } from "../../design.js";
 import { EmailChannelClient } from "../service.js";
 import {
   EmailChannelClientLayerResend,
@@ -84,7 +84,7 @@ const sendRendered = Effect.gen(function* () {
   const client = yield* EmailChannelClient;
 
   yield* client.send(
-    EmailDelivery.makeFromNotification(notification),
+    NotificationEmailDelivery.makeFromNotification(notification),
     rendered,
   );
 }).pipe(Effect.provide(EmailChannelClientLayerTest));

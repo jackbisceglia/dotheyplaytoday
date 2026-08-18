@@ -59,7 +59,7 @@ export class Subscriptions extends Context.Service<
       readonly subjectIds: readonly SubjectId[];
       readonly schedule: Subscription["schedule"];
     }) => Effect.Effect<
-      void,
+      readonly Subject[],
       | InvalidSubjectSelection
       | SubjectCapacityReached
       | DatabaseReadError
@@ -78,6 +78,7 @@ export class Subscriptions extends Context.Service<
 const decodeSubscriptions = Schema.decodeUnknownEffect(
   Schema.Array(Subscription),
 );
+const decodeSubjects = Schema.decodeUnknownEffect(Schema.Array(Subject));
 const decodeNotificationRecipients = Schema.decodeUnknownEffect(
   Schema.Array(NotificationRecipient),
 );
@@ -94,7 +95,7 @@ export const SubscriptionsLayer = Layer.effect(
     const assertSubjectsExist = Effect.fn(function* (
       subjectIds: readonly SubjectId[],
     ) {
-      if (Array.isReadonlyArrayEmpty(subjectIds)) return;
+      if (Array.isReadonlyArrayEmpty(subjectIds)) return [];
 
       const rows = yield* database.query.subjectsTable
         .findMany({
@@ -112,7 +113,9 @@ export const SubscriptionsLayer = Layer.effect(
         (subjectId) => !HashSet.has(foundIds, subjectId),
       );
 
-      if (Array.isReadonlyArrayEmpty(invalidIds)) return;
+      if (Array.isReadonlyArrayEmpty(invalidIds)) {
+        return yield* decodeSubjects(rows);
+      }
 
       return yield* new InvalidSubjectSelection({ invalidIds });
     });
@@ -185,10 +188,10 @@ export const SubscriptionsLayer = Layer.effect(
           subscriptionCount: insertableSubscriptions.length,
         };
 
-        yield* database
+        return yield* database
           .transaction(() =>
             Effect.gen(function* () {
-              yield* assertSubjectsExist(subjectIds);
+              const subjects = yield* assertSubjectsExist(subjectIds);
 
               yield* database
                 .delete(subscriptionsTable)
@@ -201,7 +204,9 @@ export const SubscriptionsLayer = Layer.effect(
                 );
 
               // Empty input means replacing the user's subscriptions with none.
-              if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) return;
+              if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) {
+                return subjects;
+              }
 
               yield* database
                 .insert(subscriptionsTable)
@@ -212,6 +217,8 @@ export const SubscriptionsLayer = Layer.effect(
                     toWriteError("Subscriptions.replaceForUser", metadata),
                   ),
                 );
+
+              return subjects;
             }),
           )
           .pipe(
