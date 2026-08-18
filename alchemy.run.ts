@@ -6,7 +6,6 @@ import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect, Layer } from "effect";
 
 import ApiWorker from "./packages/api/dist/worker.js";
-import { WebConfigAlchemy } from "./packages/core/dist/lib/config/web.js";
 import {
   DatabaseHyperdrive,
   Planetscale,
@@ -49,9 +48,29 @@ export default Alchemy.Stack(
       });
     }
 
+    const web = yield* Web;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
-    const web = yield* Web;
+
+    yield* apiWorker.bind("WebUrl", {
+      bindings: [
+        {
+          type: "plain_text",
+          name: "VITE_WEB_URL_BASE",
+          text: web.url.as<string>(),
+        },
+      ],
+    });
+
+    yield* notifyJobWorker.bind("WebUrl", {
+      bindings: [
+        {
+          type: "plain_text",
+          name: "VITE_WEB_URL_BASE",
+          text: web.url.as<string>(),
+        },
+      ],
+    });
 
     return {
       databaseId: planetscale.database.id,
@@ -66,5 +85,5 @@ export default Alchemy.Stack(
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
     };
-  }).pipe(Effect.provide(WebConfigAlchemy)),
+  }),
 );

@@ -18,34 +18,36 @@ prepend their normalized stage, for example `staging.dotheyplay.today`,
 stages do not attach custom domains and keep Alchemy's local/generated
 development URLs.
 
-## Source of truth
+## Domains and resource URLs
 
-`packages/core/src/lib/alchemy/domain.ts` defines every public service hostname.
-`getManagedServiceDomain` applies the development-stage exception before each
-resource passes its hostname to Alchemy's `domain` property. The existing
-`dotheyplay.today` Cloudflare zone is a prerequisite and is not adopted as a
-whole by this stack.
+`packages/core/src/lib/alchemy/domain.ts` defines each resource's desired custom
+hostname. `getManagedServiceDomain` applies the development-stage exception
+before the resource passes its hostname to Alchemy's `domain` property. The
+existing `dotheyplay.today` Cloudflare zone is a prerequisite and is not adopted
+as a whole by this stack.
 
-The Web public identity is needed by both the Web resource and API CORS. Both
-derive it from the same domain helper rather than from each other's resource
-outputs:
+Services consume each other's resolved resource URLs rather than reconstructing
+them from the hostname policy:
 
 ```text
-Declared Web endpoint ─┬─> API Worker (CORS)
-                       └─> Web Worker (domain)
-
-API Worker URL ─────────────> Web Worker (browser runtime config)
-API service binding ─────────> Web Worker (SSR transport)
+API Worker URL ─────────> Web Worker (browser runtime config)
+API service binding ────> Web Worker (SSR transport)
+Web Worker URL ─────────> API Worker (CORS, late binding)
+Web Worker URL ─────────> jobs Worker (generated links, late binding)
 ```
 
-This avoids a resource cycle while keeping the public identity authoritative in
-one place.
+Web keeps its API dependencies in its initial Vite props because
+`VITE_API_URL_BASE` must be available while Vite builds the browser bundle and
+the service binding must be present while the SSR Worker initializes. The
+reverse dependencies are attached with Alchemy resource bindings after the
+resources are declared. This avoids a props-level cycle while retaining direct
+resource outputs on both sides.
 
 ## Runtime wiring
 
-`WebConfigAlchemy` injects the declared Web base URL into `VITE_WEB_URL_BASE`.
-The API and jobs Workers consume that value through ordinary Effect `Config`;
-the API uses it as the exact allowed Web origin.
+The Stack binds the Web Worker's resolved `url` to the API and jobs Workers as
+`VITE_WEB_URL_BASE`. They consume it through ordinary Effect `Config`; the API
+uses it as the exact allowed Web origin.
 
 `packages/web/resource.ts` passes the API Worker to Web in two forms:
 
@@ -75,3 +77,8 @@ Do not set deployed `VITE_WEB_URL_BASE` or `VITE_API_URL_BASE` to generated
 `workers.dev` URLs. Alchemy supplies both values at the infrastructure boundary.
 After deployment, verify the returned `webWorkerUrl`, `apiWorkerUrl`, and
 `notifyJobWorkerUrl`, then run the Solid Web smoke checklist.
+
+Alchemy `2.0.0-beta.63` may plan redundant Worker and URL-binding updates after
+this graph has converged. The deployed outputs remain stable and were verified
+in staging and production. Recheck this behavior when upgrading Alchemy or when
+`Website.Vite` supports separate definition and implementation layers.

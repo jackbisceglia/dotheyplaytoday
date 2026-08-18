@@ -1,7 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Stack } from "alchemy";
 import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
-import { WebConfig } from "@dtpt/core/lib/config/web";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -13,7 +12,6 @@ import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
-
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
@@ -47,9 +45,6 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   Effect.gen(function* () {
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
-
-    // Configs
-    yield* WebConfig;
 
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);

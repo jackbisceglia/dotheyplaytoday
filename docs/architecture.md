@@ -36,9 +36,9 @@ Web receives both an `API` service binding and the API Worker's complete
 resolved URL. The shared typed API client loads a binding-backed HTTP transport
 in the SSR environment and uses the public URL transport in the browser;
 application calls are independent of that transport choice. API CORS and the
-Web Worker domain derive from the same declared Web hostname, avoiding a
-resource cycle without hardcoded deployed URLs. See [Alchemy service URL
-wiring](./alchemy-service-urls.md).
+notification Worker consume the Web Worker's resolved URL through late
+bindings, avoiding a props-level resource cycle without reconstructing deployed
+URLs. See [Alchemy service URL wiring](./alchemy-service-urls.md).
 
 Web uses all-SSR rendering. The attempted mixed-render design was rejected
 because Solid Start mode has no SSR route-prerender hook; producing a static

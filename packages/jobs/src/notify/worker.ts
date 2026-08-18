@@ -6,7 +6,6 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
 import { isDevStage } from "@dtpt/core/lib/alchemy/stage";
 import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
-import { WebConfig } from "@dtpt/core/lib/config/web";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
@@ -57,7 +56,6 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
 
     // Configs
     yield* ResendConfig;
-    yield* WebConfig;
 
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);

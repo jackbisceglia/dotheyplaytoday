@@ -1,30 +1,9 @@
-import { Stack } from "alchemy";
 import { describe, expect, it } from "@effect/vitest";
-import { ConfigProvider, Effect, Layer, Option } from "effect";
+import { ConfigProvider, Effect, Option } from "effect";
 
 import { ApiUrl, ServerBoundPort } from "../config/api.js";
-import { WebConfig, WebConfigAlchemy, WebUrl } from "../config/web.js";
+import { WebUrl } from "../config/web.js";
 import { buildServiceUrl } from "../url.js";
-
-const webConfigAlchemy = (stage: string, env: Record<string, string>) =>
-  WebConfig.pipe(
-    Effect.provide(
-      WebConfigAlchemy.pipe(
-        Layer.provide(
-          Layer.mergeAll(
-            ConfigProvider.layer(ConfigProvider.fromUnknown(env)),
-            Layer.succeed(Stack, {
-              name: "dotheyplaytoday",
-              stage,
-              resources: {},
-              bindings: {},
-              actions: {},
-            }),
-          ),
-        ),
-      ),
-    ),
-  );
 
 describe("url config", () => {
   it("builds service urls from base urls and optional ports", () => {
@@ -89,24 +68,6 @@ describe("url config", () => {
         ),
       ),
     ),
-  );
-
-  it.effect("uses Alchemy-managed Web URLs", () =>
-    Effect.gen(function* () {
-      const devConfig = yield* webConfigAlchemy("dev_jack", {
-        VITE_WEB_URL_PORT: "4321",
-      });
-      const stagingConfig = yield* webConfigAlchemy("staging", {});
-      const productionConfig = yield* webConfigAlchemy("production", {
-        VITE_WEB_URL_BASE: "https://stale.example.workers.dev",
-      });
-
-      expect(devConfig.baseUrl).toBe("http://localhost");
-      expect(Option.getOrUndefined(devConfig.port)).toBe(4321);
-      expect(stagingConfig.baseUrl).toBe("https://staging.dotheyplay.today");
-      expect(productionConfig.baseUrl).toBe("https://dotheyplay.today");
-      expect(Option.isNone(productionConfig.port)).toBe(true);
-    }),
   );
 
   it.effect("requires api and web URL bases", () =>
