@@ -1,15 +1,16 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Api } from "@dtpt/core/contracts/api";
-import { SignupRateLimited } from "@dtpt/core/contracts/signup";
+import { SignupRateLimited, SignupRequest } from "@dtpt/core/contracts/signup";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
-import { SignupConfirmation } from "@dtpt/core/modules/channels/signup/schema";
-import { SignupChannel } from "@dtpt/core/modules/channels/signup/service";
+import { SignupConfirmation } from "@dtpt/core/modules/channels/signup-confirmation/schema";
+import { SignupConfirmationChannel } from "@dtpt/core/modules/channels/signup-confirmation/service";
+import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
@@ -21,6 +22,8 @@ const UnexpectedErrorTags = [
   "SchemaError",
 ] as const;
 
+const SelectedSubjects = Schema.NonEmptyArray(Subject);
+
 export const SignupGroupLayer = HttpApiBuilder.group(
   Api,
   "signup",
@@ -30,8 +33,42 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const database = yield* Database;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
-      const signupChannel = yield* SignupChannel;
-      const executionContext = yield* Cloudflare.WorkerExecutionContext;
+      const confirmationChannel = yield* SignupConfirmationChannel;
+      const workerExecutionContext = yield* Cloudflare.WorkerExecutionContext;
+
+      const commitSignup = Effect.fn("SignupHttpApi.commitSignup")(function* (
+        payload: typeof SignupRequest.Type,
+      ) {
+        return yield* database
+          .transaction(() =>
+            Effect.gen(function* () {
+              const signupUser = yield* users.upsertForSignup(
+                payload.email,
+                payload.timezone,
+              );
+              const subjects = yield* subscriptions.replaceForUser({
+                user: signupUser.user,
+                subjectIds: payload.subjectIds,
+                schedule: payload.schedule,
+              });
+              const selectedSubjects = yield* Schema.decodeUnknownEffect(
+                SelectedSubjects,
+              )(subjects);
+              const confirmationFields = {
+                user: signupUser.user,
+                subjects: selectedSubjects,
+                schedule: payload.schedule,
+              };
+
+              return signupUser.isFirstSignup
+                ? SignupConfirmation.cases.first_signup.make(confirmationFields)
+                : SignupConfirmation.cases.repeat_signup.make(
+                    confirmationFields,
+                  );
+            }),
+          )
+          .pipe(mapToTransactionError("Signup.submit"));
+      });
 
       return handlers.handle(
         "submit",
@@ -51,47 +88,10 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            const receipt = yield* database
-              .transaction(() =>
-                Effect.gen(function* () {
-                  const outcome = yield* users.upsertForSignup(
-                    ctx.payload.email,
-                    ctx.payload.timezone,
-                  );
+            const confirmation = yield* commitSignup(ctx.payload);
 
-                  const subjects = yield* subscriptions.replaceForUser({
-                    user: outcome.user,
-                    subjectIds: ctx.payload.subjectIds,
-                    schedule: ctx.payload.schedule,
-                  });
-
-                  return { outcome, subjects };
-                }),
-              )
-              .pipe(mapToTransactionError("Signup.submit"));
-
-            const [firstSubject, ...remainingSubjects] = receipt.subjects;
-
-            if (!firstSubject) {
-              return yield* Effect.die(
-                "A successful signup must contain at least one subject",
-              );
-            }
-
-            const confirmationFields = {
-              user: receipt.outcome.user,
-              subjects: [firstSubject, ...remainingSubjects] as const,
-              schedule: ctx.payload.schedule,
-            };
-            const confirmation =
-              receipt.outcome._tag === "first_signup"
-                ? SignupConfirmation.cases.first_signup.make(confirmationFields)
-                : SignupConfirmation.cases.repeat_signup.make(
-                    confirmationFields,
-                  );
-
-            yield* executionContext.waitUntil(
-              signupChannel.deliver(confirmation).pipe(
+            yield* workerExecutionContext.waitUntil(
+              confirmationChannel.deliver(confirmation).pipe(
                 Effect.tap(() =>
                   Effect.logInfo("signup confirmation: delivered", {
                     kind: confirmation._tag,

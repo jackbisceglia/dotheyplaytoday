@@ -12,19 +12,8 @@ import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
 
-export type SignupUserOutcome = typeof SignupUserOutcome.Type;
-export const SignupUserOutcome = Schema.TaggedUnion({
-  first_signup: { user: User },
-  repeat_signup: { user: User },
-});
-
-export const classifySignupUser = (
-  candidateId: User["id"],
-  user: User,
-): SignupUserOutcome =>
-  user.id === candidateId
-    ? SignupUserOutcome.cases.first_signup.make({ user })
-    : SignupUserOutcome.cases.repeat_signup.make({ user });
+export const wasCreatedForSignup = (candidateId: User["id"], user: User) =>
+  user.id === candidateId;
 
 export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
   "UserNotFound",
@@ -62,7 +51,7 @@ export class Users extends Context.Service<
       email: User["email"],
       timezone: User["timezone"],
     ) => Effect.Effect<
-      SignupUserOutcome,
+      { readonly user: User; readonly isFirstSignup: boolean },
       DatabaseWriteError | Schema.SchemaError
     >;
     readonly remove: (
@@ -202,7 +191,10 @@ export const UsersLayer = Layer.effect(
 
       const user = yield* decodeUser(row.value);
 
-      return classifySignupUser(candidateId, user);
+      return {
+        user,
+        isFirstSignup: wasCreatedForSignup(candidateId, user),
+      };
     });
 
     const remove: Users["Service"]["remove"] = Effect.fn("Users.remove")(

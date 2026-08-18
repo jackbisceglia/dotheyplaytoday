@@ -1,4 +1,4 @@
-import { type Array, DateTime, Effect, Match, Schema } from "effect";
+import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 
 import { StringParts } from "../../../../lib/string.js";
 import type { ExtractFromTag } from "../../../../lib/types.js";
@@ -8,9 +8,9 @@ import type { EventWithParticipants } from "../../../events/service.js";
 import type { Subject } from "../../../subjects/schema.js";
 import type { User } from "../../../users/schema.js";
 import { EmailChannelClient } from "../../email/clients/service.js";
+import { NotificationDelivery } from "../delivery.js";
 import type { Notification } from "../schema.js";
 import { NotificationChannel } from "../service.js";
-import { NotificationEmailDelivery } from "./delivery.js";
 import { NotificationEmailView, type EmailRendered } from "./render.js";
 
 const isTaggedAs =
@@ -125,29 +125,20 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
   },
 );
 
-export const NotificationEmailChannelLayer = NotificationChannel.makeLayer(
+export const NotificationEmailChannelLayer = Layer.effect(
+  NotificationChannel,
   Effect.gen(function* () {
     const client = yield* EmailChannelClient;
 
-    const render = Effect.fn(function* (notification: Notification) {
-      const props = yield* getEmailViewProps(notification);
+    const deliver: NotificationChannel["Service"]["deliver"] = Effect.fn(
+      "NotificationChannel.deliver",
+    )(function* (notification: Notification) {
+      const props = yield* getEmailViewProps(notification).pipe(Effect.orDie);
+      const rendered: EmailRendered = NotificationEmailView(props);
 
-      return NotificationEmailView(props);
+      yield* client.send(NotificationDelivery.make(notification), rendered);
     });
 
-    const send = Effect.fn(function* (
-      notification: Notification,
-      rendered: EmailRendered,
-    ) {
-      const delivery =
-        NotificationEmailDelivery.makeFromNotification(notification);
-
-      return yield* client.send(delivery, rendered);
-    });
-
-    return {
-      render,
-      send,
-    };
+    return NotificationChannel.of({ deliver });
   }),
 );

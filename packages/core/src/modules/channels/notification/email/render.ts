@@ -1,14 +1,14 @@
 import { StringParts } from "../../../../lib/string.js";
+import type { EmailRendered } from "../../email/clients/service.js";
 import {
-  emailDesign,
+  emailStyles,
   escapeHtml,
-  type EmailRendered,
   renderUnsubscribeHtml,
   renderUnsubscribeText,
   type Unsubscribe,
-} from "../../email/design.js";
+} from "../../email/utils.js";
 
-export type { EmailRendered } from "../../email/design.js";
+export type { EmailRendered } from "../../email/clients/service.js";
 
 export type NotificationEmailViewProps = {
   readonly subject: string;
@@ -31,7 +31,7 @@ const html = (
   const element = {
     div: '<div style="height: 10px;"></div>',
     p: (content: string) =>
-      `<p style="${emailDesign.paragraph}">${content}</p>`,
+      `<p style="${emailStyles.paragraph}">${content}</p>`,
   };
 
   const Main = StringParts(
@@ -44,11 +44,11 @@ const html = (
 
   return `<!DOCTYPE html>
 <html lang="en">
-  <body style="${emailDesign.body}">
-    <div style="${emailDesign.container}">
-      <p style="${emailDesign.heading}">${escapeHtml(subject)}</p>
+  <body style="${emailStyles.body}">
+    <div style="${emailStyles.container}">
+      <p style="${emailStyles.heading}">${escapeHtml(subject)}</p>
       ${Main}
-      <div style="${emailDesign.footer}">${Footer}</div>
+      <div style="${emailStyles.footer}">${Footer}</div>
     </div>
   </body>
 </html>`;

@@ -38,5 +38,5 @@
 | Schedule             | The rule determining when a subscription becomes due; currently a fixed local time.                      |
 | Notification         | The subject-scoped message assembled from a user, subscription, subject, and that day's matching events. |
 | Notification Channel | The boundary that renders a scheduled event notification and arranges its delivery.                      |
-| Signup Channel       | The boundary that renders a signup confirmation receipt and arranges its delivery.                       |
+| Signup Confirmation Channel | The boundary that renders a signup confirmation receipt and arranges its delivery.                |
 | Channel Client       | The provider-facing boundary that sends an already rendered delivery.                                    |

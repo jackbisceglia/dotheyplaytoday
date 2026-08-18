@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 
 import { Notification } from "../notification/schema.js";
-import { SignupConfirmation } from "../signup/schema.js";
+import { SignupConfirmation } from "../signup-confirmation/schema.js";
 
 const decode = Schema.decodeUnknownSync;
 

@@ -8,8 +8,8 @@ import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloud
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
 import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
-import { EmailChannelClientLayerResend } from "@dtpt/core/modules/channels/email/clients/resend";
-import { SignupEmailChannelLayer } from "@dtpt/core/modules/channels/signup/email/service";
+import { EmailChannelClientLayer } from "@dtpt/core/modules/channels/email/clients/resend";
+import { SignupConfirmationEmailChannelLayer } from "@dtpt/core/modules/channels/signup-confirmation/email/service";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
@@ -23,8 +23,9 @@ const ApiBaseLayer = pipe(
     SubjectsLayer,
     SubscriptionsLayer,
     UsersLayer,
-    SignupEmailChannelLayer.pipe(Layer.provide(EmailChannelClientLayerResend)),
+    SignupConfirmationEmailChannelLayer,
   ),
+  Layer.provide(EmailChannelClientLayer),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );

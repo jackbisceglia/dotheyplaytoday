@@ -13,7 +13,7 @@ import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
 import { NotificationConsoleChannelLayer } from "@dtpt/core/modules/channels/notification/console/service";
 import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
-import { EmailChannelClientLayerResend } from "@dtpt/core/modules/channels/email/clients/resend";
+import { EmailChannelClientLayer } from "@dtpt/core/modules/channels/email/clients/resend";
 import { NotificationEmailChannelLayer } from "@dtpt/core/modules/channels/notification/email/service";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
@@ -22,7 +22,7 @@ import { notify, NotifyOptions } from "./index.js";
 const NotifySchedule = "*/15 * * * *";
 
 const NotificationEmailChannelLayerLive = NotificationEmailChannelLayer.pipe(
-  Layer.provide(EmailChannelClientLayerResend),
+  Layer.provide(EmailChannelClientLayer),
 );
 
 export const Trigger = {

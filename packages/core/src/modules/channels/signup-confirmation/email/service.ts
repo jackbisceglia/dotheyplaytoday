@@ -2,18 +2,18 @@ import { Effect, Layer } from "effect";
 
 import { Id } from "../../../../lib/id/service.js";
 import { EmailChannelClient } from "../../email/clients/service.js";
-import { SignupChannel } from "../service.js";
-import { SignupEmailDelivery } from "./delivery.js";
+import { SignupConfirmationChannel } from "../service.js";
+import { SignupConfirmationEmailDelivery } from "./delivery.js";
 import { renderSignupConfirmation } from "./render.js";
 
-export const SignupEmailChannelLayer = Layer.effect(
-  SignupChannel,
+export const SignupConfirmationEmailChannelLayer = Layer.effect(
+  SignupConfirmationChannel,
   Effect.gen(function* () {
     const client = yield* EmailChannelClient;
     const id = yield* Id;
 
-    const deliver: SignupChannel["Service"]["deliver"] = Effect.fn(
-      "SignupChannel.deliver",
+    const deliver: SignupConfirmationChannel["Service"]["deliver"] = Effect.fn(
+      "SignupConfirmationChannel.deliver",
     )(function* (confirmation) {
       const deliveryId = yield* id.generate();
       const rendered = yield* renderSignupConfirmation(confirmation).pipe(
@@ -21,11 +21,11 @@ export const SignupEmailChannelLayer = Layer.effect(
       );
 
       yield* client.send(
-        SignupEmailDelivery.make(confirmation, deliveryId),
+        SignupConfirmationEmailDelivery.make(confirmation, deliveryId),
         rendered,
       );
     });
 
-    return SignupChannel.of({ deliver });
+    return SignupConfirmationChannel.of({ deliver });
   }),
 );

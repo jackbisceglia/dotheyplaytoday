@@ -35,11 +35,11 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
 - Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. Development may reset all seed data; the exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
-- Resend email delivery and notification-only console dry runs. Core has separate notification and signup channel families that share the provider-facing email client and low-level email design primitives, while retaining message-specific schemas, rendering, and delivery orchestration.
+- Resend email delivery and notification-only console dry runs. Core has separate notification and signup-confirmation channel families that share the provider-facing email client and low-level email styles and utilities, while retaining message-specific schemas, rendering, and delivery orchestration.
 - Typed Effect config at runtime boundaries.
 
 The notification Worker provisions the notification email channel for scheduled
-messages. The API Worker provisions the signup email channel and validates the
+messages. The API Worker provisions the signup-confirmation email channel and validates the
 same Resend configuration at startup. After a signup transaction commits, the
 API constructs a complete confirmation without further database reads and uses
 Alchemy's `WorkerExecutionContext.waitUntil` to attach best-effort delivery to

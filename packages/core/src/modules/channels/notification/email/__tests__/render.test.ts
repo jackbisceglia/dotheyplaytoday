@@ -10,7 +10,7 @@ import {
 } from "../service.js";
 import { notification } from "../../../__tests__/fixtures.js";
 import type { Notification } from "../../schema.js";
-import { EmailChannelClientLayerResend } from "../../../email/clients/resend.js";
+import { EmailChannelClientLayer } from "../../../email/clients/resend.js";
 
 const resendMock = vi.hoisted(() => ({
   constructor: vi.fn(),
@@ -47,7 +47,7 @@ const EmailConfigLayerTest = ConfigProvider.layer(
 );
 
 const EmailChannelLayerTest = NotificationEmailChannelLayer.pipe(
-  Layer.provide(EmailChannelClientLayerResend),
+  Layer.provide(EmailChannelClientLayer),
   Layer.provideMerge(EmailConfigLayerTest),
 );
 

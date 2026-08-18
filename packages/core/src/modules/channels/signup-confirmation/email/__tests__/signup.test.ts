@@ -4,12 +4,12 @@ import { ConfigProvider, Effect, Layer, Schema } from "effect";
 import { Id } from "../../../../../lib/id/service.js";
 import { ChannelClientResponseError } from "../../../errors.js";
 import type { ChannelDelivery } from "../../../client/service.js";
-import type { EmailRendered } from "../../../email/design.js";
+import type { EmailRendered } from "../../../email/clients/service.js";
 import { EmailChannelClient } from "../../../email/clients/service.js";
 import { signupConfirmation } from "../../../__tests__/fixtures.js";
 import { SignupConfirmation } from "../../schema.js";
-import { SignupChannel } from "../../service.js";
-import { SignupEmailChannelLayer } from "../service.js";
+import { SignupConfirmationChannel } from "../../service.js";
+import { SignupConfirmationEmailChannelLayer } from "../service.js";
 import { renderSignupConfirmation } from "../render.js";
 
 const WebConfigLayerTest = ConfigProvider.layer(
@@ -86,12 +86,12 @@ describe("signup confirmation email", () => {
             Effect.succeed(schema.make("00000000-0000-4000-8000-000000000999")),
         }),
       );
-      const ChannelLayerTest = SignupEmailChannelLayer.pipe(
+      const ChannelLayerTest = SignupConfirmationEmailChannelLayer.pipe(
         Layer.provide(Layer.merge(ClientLayerTest, IdLayerTest)),
       );
 
       return Effect.gen(function* () {
-        const channel = yield* SignupChannel;
+        const channel = yield* SignupConfirmationChannel;
         yield* channel.deliver(signupConfirmation);
 
         expect(sent).toHaveLength(1);
@@ -123,12 +123,12 @@ describe("signup confirmation email", () => {
           Effect.succeed(schema.make("00000000-0000-4000-8000-000000000999")),
       }),
     );
-    const ChannelLayerTest = SignupEmailChannelLayer.pipe(
+    const ChannelLayerTest = SignupConfirmationEmailChannelLayer.pipe(
       Layer.provide(Layer.merge(ClientLayerTest, IdLayerTest)),
     );
 
     return Effect.gen(function* () {
-      const channel = yield* SignupChannel;
+      const channel = yield* SignupConfirmationChannel;
       const error = yield* channel
         .deliver(signupConfirmation)
         .pipe(Effect.flip);

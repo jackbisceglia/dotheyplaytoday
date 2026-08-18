@@ -47,7 +47,7 @@ export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestErr
   { cause: Schema.Defect() },
 ) {}
 
-export const EmailChannelClientLayerResend = Layer.effect(
+export const EmailChannelClientLayer = Layer.effect(
   EmailChannelClient,
   Effect.gen(function* () {
     const config = yield* ResendConfig;

@@ -1,6 +1,13 @@
 import type { EmailAddress } from "../../../users/schema.js";
 import { ChannelClient } from "../../client/service.js";
-import type { EmailRendered } from "../design.js";
+
+export type EmailRendered = {
+  readonly subject: string;
+  readonly body: {
+    readonly text: string;
+    readonly html: string;
+  };
+};
 
 export class EmailChannelClient extends ChannelClient.makeService<
   EmailChannelClient,
