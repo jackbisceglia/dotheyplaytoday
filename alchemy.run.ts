@@ -52,6 +52,8 @@ export default Alchemy.Stack(
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
 
+    // Move these reverse dependencies into Worker props once Website.Vite
+    // supports separate definition and implementation declarations.
     yield* bindWebUrl(apiWorker, web);
     yield* bindWebUrl(notifyJobWorker, web);
 

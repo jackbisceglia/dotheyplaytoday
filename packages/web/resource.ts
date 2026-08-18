@@ -32,6 +32,7 @@ export default class Web extends Cloudflare.Website.Vite<Web>()(
   }),
 ) {}
 
+/** Late-binds Web's resolved public URL without creating a props-level cycle. */
 export const bindWebUrl = (worker: Cloudflare.Worker, web: Web) =>
   worker.bind("WebUrl", {
     bindings: [
