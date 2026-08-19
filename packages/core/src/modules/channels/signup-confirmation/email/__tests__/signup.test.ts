@@ -2,15 +2,14 @@ import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer, Schema } from "effect";
 
 import { Id } from "../../../../../lib/id/service.js";
+import { notification } from "../../../__tests__/fixtures.js";
+import type { ChannelDelivery } from "../../../service.js";
 import { ChannelClientResponseError } from "../../../errors.js";
-import type { ChannelDelivery } from "../../../client/service.js";
-import type { EmailRendered } from "../../../email/clients/service.js";
 import { EmailChannelClient } from "../../../email/clients/service.js";
-import { signupConfirmation } from "../../../__tests__/fixtures.js";
+import type { EmailRendered } from "../../../email/render.js";
 import { SignupConfirmation } from "../../schema.js";
-import { SignupConfirmationChannel } from "../../service.js";
-import { SignupConfirmationEmailChannelLayer } from "../service.js";
 import { renderSignupConfirmation } from "../render.js";
+import { makeSignupConfirmationEmailSender } from "../sender.js";
 
 const WebConfigLayerTest = ConfigProvider.layer(
   ConfigProvider.fromEnv({
@@ -20,6 +19,25 @@ const WebConfigLayerTest = ConfigProvider.layer(
     },
   }),
 );
+
+const signupConfirmation = SignupConfirmation.cases.first_signup.make({
+  user: notification.user,
+  subjects: [
+    notification.subject,
+    {
+      ...notification.subject,
+      details: {
+        ...notification.subject.details,
+        location: "New York",
+        name: "Knicks & Nets",
+        display: "New York Knicks & Nets <Team>",
+        abbreviation: "NYK",
+        slug: "new-york-knicks",
+      },
+    },
+  ],
+  schedule: notification.subscription.schedule,
+});
 
 const repeatConfirmation = SignupConfirmation.cases.repeat_signup.make({
   user: signupConfirmation.user,
@@ -86,13 +104,9 @@ describe("signup confirmation email", () => {
             Effect.succeed(schema.make("00000000-0000-4000-8000-000000000999")),
         }),
       );
-      const ChannelLayerTest = SignupConfirmationEmailChannelLayer.pipe(
-        Layer.provide(Layer.merge(ClientLayerTest, IdLayerTest)),
-      );
-
       return Effect.gen(function* () {
-        const channel = yield* SignupConfirmationChannel;
-        yield* channel.deliver(signupConfirmation);
+        const send = yield* makeSignupConfirmationEmailSender;
+        yield* send(signupConfirmation);
 
         expect(sent).toHaveLength(1);
         expect(sent[0]?.delivery).toEqual({
@@ -100,7 +114,9 @@ describe("signup confirmation email", () => {
           hash: "confirmation-delivery-id",
         });
         expect(sent[0]?.rendered.subject).toBe("Welcome to dotheyplaytoday");
-      }).pipe(Effect.provide([ChannelLayerTest, WebConfigLayerTest]));
+      }).pipe(
+        Effect.provide([ClientLayerTest, IdLayerTest, WebConfigLayerTest]),
+      );
     },
   );
 
@@ -123,17 +139,11 @@ describe("signup confirmation email", () => {
           Effect.succeed(schema.make("00000000-0000-4000-8000-000000000999")),
       }),
     );
-    const ChannelLayerTest = SignupConfirmationEmailChannelLayer.pipe(
-      Layer.provide(Layer.merge(ClientLayerTest, IdLayerTest)),
-    );
-
     return Effect.gen(function* () {
-      const channel = yield* SignupConfirmationChannel;
-      const error = yield* channel
-        .deliver(signupConfirmation)
-        .pipe(Effect.flip);
+      const send = yield* makeSignupConfirmationEmailSender;
+      const error = yield* send(signupConfirmation).pipe(Effect.flip);
 
       expect(error).toBe(expected);
-    }).pipe(Effect.provide([ChannelLayerTest, WebConfigLayerTest]));
+    }).pipe(Effect.provide([ClientLayerTest, IdLayerTest, WebConfigLayerTest]));
   });
 });

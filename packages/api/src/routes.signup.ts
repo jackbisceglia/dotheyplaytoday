@@ -3,8 +3,8 @@ import { Api } from "@dtpt/core/contracts/api";
 import { SignupRateLimited } from "@dtpt/core/contracts/signup";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
+import { makeSignupConfirmationEmailSender } from "@dtpt/core/modules/channels/signup-confirmation/email/sender";
 import { SignupConfirmation } from "@dtpt/core/modules/channels/signup-confirmation/schema";
-import { SignupConfirmationChannel } from "@dtpt/core/modules/channels/signup-confirmation/service";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
@@ -33,7 +33,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const database = yield* Database;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
-      const confirmationChannel = yield* SignupConfirmationChannel;
+      const sendConfirmationEmail = yield* makeSignupConfirmationEmailSender;
       const context = yield* Cloudflare.WorkerExecutionContext;
 
       return handlers.handle(
@@ -83,7 +83,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               : SignupConfirmation.cases.repeat_signup.make(confirmationFields);
 
             yield* context.waitUntil(
-              confirmationChannel.deliver(confirmation).pipe(Effect.ignore),
+              sendConfirmationEmail(confirmation).pipe(Effect.ignore),
             );
 
             return { ok: true as const };

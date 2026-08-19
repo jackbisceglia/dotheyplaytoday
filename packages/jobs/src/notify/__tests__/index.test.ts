@@ -1,9 +1,9 @@
 import { describe, expect, it } from "@effect/vitest";
 import {
-  NotificationChannel,
+  Channel,
   ChannelClientRequestError,
   ChannelClientResponseError,
-  NotificationConsoleChannelLayer,
+  ConsoleChannelLayer,
   DatabaseReadError,
   DatabaseWriteError,
   EmailAddress,
@@ -137,7 +137,7 @@ type HarnessOptions = {
   >;
   readonly deliver?: (
     notification: Notification,
-  ) => ReturnType<NotificationChannel["Service"]["deliver"]>;
+  ) => ReturnType<Channel["Service"]["deliver"]>;
   readonly markSent?: (
     input: Parameters<Subscriptions["Service"]["markSent"]>[0],
   ) => ReturnType<Subscriptions["Service"]["markSent"]>;
@@ -185,8 +185,8 @@ const makeHarness = (opts: HarnessOptions) => {
   );
 
   const ChannelLayerTest = Layer.succeed(
-    NotificationChannel,
-    NotificationChannel.of({
+    Channel,
+    Channel.of({
       deliver: (notification) =>
         Effect.sync(() => deliveries.push(notification)).pipe(
           Effect.andThen(
@@ -280,8 +280,8 @@ describe("notify orchestration", () => {
 
   it.effect("console channel layer does not require Resend config", () =>
     Effect.gen(function* () {
-      yield* NotificationChannel;
-    }).pipe(Effect.provide(NotificationConsoleChannelLayer)),
+      yield* Channel;
+    }).pipe(Effect.provide(ConsoleChannelLayer)),
   );
 
   it.effect(

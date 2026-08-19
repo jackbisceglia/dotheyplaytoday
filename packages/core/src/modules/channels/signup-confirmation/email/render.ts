@@ -1,14 +1,7 @@
 import { Effect, Match } from "effect";
 
-import { StringParts } from "../../../../lib/string.js";
 import { buildUnsubscribeUrl } from "../../../../lib/unsubscribe.js";
-import type { EmailRendered } from "../../email/clients/service.js";
-import {
-  escapeHtml,
-  renderUnsubscribeHtml,
-  renderUnsubscribeText,
-  styles,
-} from "../../email/utils.js";
+import { EmailView, type EmailRendered } from "../../email/render.js";
 import type { SignupConfirmation } from "../schema.js";
 
 const formatLocalTime = (seconds: number, timezone: string) => {
@@ -50,36 +43,16 @@ export const renderSignupConfirmation = Effect.fn(
     }),
   );
   const schedule = `We'll email you at ${localTime} on days one of your teams plays.`;
-  const text = StringParts()
-    .add(copy.heading)
-    .add("")
-    .add(copy.intro)
-    .addParts(...teamNames.map((name) => `- ${name}`))
-    .add("")
-    .add(schedule)
-    .add("")
-    .add(renderUnsubscribeText(unsubscribe))
-    .make("\n");
-  const TeamList = teamNames
-    .map((name) => `<li style="margin: 0 0 4px;">${escapeHtml(name)}</li>`)
-    .join("");
-  const paragraph = (content: string) =>
-    `<p style="${styles.paragraph}">${content}</p>`;
-  const html = `<!DOCTYPE html>
-<html lang="en">
-  <body style="${styles.body}">
-    <div style="${styles.container}">
-      <p style="${styles.heading}">${escapeHtml(copy.heading)}</p>
-      ${paragraph(escapeHtml(copy.intro))}
-      <ul style="margin: 0 0 12px; padding-left: 20px; font-size: 15px; line-height: 1.5; color: #1f2937;">${TeamList}</ul>
-      ${paragraph(escapeHtml(schedule))}
-      <div style="${styles.footer}">${renderUnsubscribeHtml(unsubscribe)}</div>
-    </div>
-  </body>
-</html>`;
-
-  return {
+  return EmailView({
     subject: copy.subject,
-    body: { text, html },
-  } satisfies EmailRendered;
+    main: [
+      copy.heading,
+      "",
+      copy.intro,
+      ...teamNames.map((name) => `- ${name}`),
+      "",
+      schedule,
+    ],
+    unsubscribe,
+  }) satisfies EmailRendered;
 });

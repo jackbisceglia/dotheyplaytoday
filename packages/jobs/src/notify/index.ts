@@ -1,4 +1,4 @@
-import { NotificationChannel } from "@dtpt/core/modules/channels/notification/service";
+import { Channel } from "@dtpt/core/modules/channels/service";
 import { Notification } from "@dtpt/core/modules/channels/notification/schema";
 import {
   Events,
@@ -83,7 +83,7 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
   ) {
     const subscriptions = yield* Subscriptions;
     const events = yield* Events;
-    const channel = yield* NotificationChannel;
+    const channel = yield* Channel;
 
     const { subscription, user } = recipient;
 

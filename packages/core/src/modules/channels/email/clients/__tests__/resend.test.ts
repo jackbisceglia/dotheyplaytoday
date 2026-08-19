@@ -11,11 +11,11 @@ import {
   ChannelClientRequestError,
   ChannelClientResponseError,
 } from "../../../errors.js";
-import { NotificationDelivery } from "../../../notification/delivery.js";
-import type { EmailRendered } from "../service.js";
+import { EmailDelivery } from "../../delivery.js";
+import type { EmailRendered } from "../../render.js";
 import { EmailChannelClient } from "../service.js";
 import {
-  EmailChannelClientLayer,
+  EmailChannelClientLayerResend,
   ResendInstantiationError,
 } from "../resend.js";
 import { notification } from "../../../__tests__/fixtures.js";
@@ -76,17 +76,20 @@ const ResendConfigLayerTest = ConfigProvider.layer(
   }),
 );
 
-const EmailChannelClientLayerTest = EmailChannelClientLayer.pipe(
+const EmailChannelClientLayerTest = EmailChannelClientLayerResend.pipe(
   Layer.provideMerge(ResendConfigLayerTest),
 );
 
 const sendRendered = Effect.gen(function* () {
   const client = yield* EmailChannelClient;
 
-  yield* client.send(NotificationDelivery.make(notification), rendered);
+  yield* client.send(
+    EmailDelivery.makeFromNotification(notification),
+    rendered,
+  );
 }).pipe(Effect.provide(EmailChannelClientLayerTest));
 
-describe("EmailChannelClientLayer", () => {
+describe("EmailChannelClientLayerResend", () => {
   beforeEach(() => {
     resendMock.constructor.mockReset();
     resendMock.send.mockReset();
