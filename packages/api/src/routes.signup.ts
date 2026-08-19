@@ -57,29 +57,28 @@ export const SignupGroupLayer = HttpApiBuilder.group(
             const signup = yield* database
               .transaction(() =>
                 Effect.gen(function* () {
-                  const signupUser = yield* users.upsertForSignup(
+                  const { user, ...context } = yield* users.upsertForSignup(
                     ctx.payload.email,
                     ctx.payload.timezone,
                   );
                   const subjects = yield* subscriptions.replaceForUser({
-                    user: signupUser.user,
+                    user,
                     subjectIds: ctx.payload.subjectIds,
                     schedule: ctx.payload.schedule,
                   });
 
-                  return { ...signupUser, subjects };
+                  return { user, context, subjects };
                 }),
               )
               .pipe(mapToTransactionError("Signup.submit"));
-            const subjects = yield* Schema.decodeUnknownEffect(
-              SelectedSubjects,
-            )(signup.subjects);
             const confirmationFields = {
               user: signup.user,
-              subjects,
+              subjects: yield* Schema.decodeUnknownEffect(SelectedSubjects)(
+                signup.subjects,
+              ),
               schedule: ctx.payload.schedule,
             };
-            const confirmation = signup.isFirstSignup
+            const confirmation = signup.context.isFirstSignup
               ? SignupConfirmation.cases.first_signup.make(confirmationFields)
               : SignupConfirmation.cases.repeat_signup.make(confirmationFields);
 
