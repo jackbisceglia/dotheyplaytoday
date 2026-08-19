@@ -8,6 +8,11 @@
 - `packages/data` owns catalog, event, and development seed data and writes through `core` domain services.
 - `packages/web` is the Solid 2 Start-mode frontend and consumes shared `core` contracts.
 
+The feedback write path is intentionally small: its API handler validates the
+shared contract and inserts directly through the `Database` service. There is no
+feedback domain service because submission currently has no orchestration or
+reusable domain behavior.
+
 Dependencies point inward toward `core`. The API, jobs, data, and web packages do not provide domain abstractions for `core` or depend on one another for their primary behavior.
 
 ## Runtime and infrastructure

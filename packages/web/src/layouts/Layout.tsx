@@ -58,6 +58,9 @@ export function Layout(props: LayoutProps) {
 
       <footer class="site-footer">
         <span>dotheyplaytoday</span>
+        <a class="footer-link" href="/feedback">
+          Feedback
+        </a>
       </footer>
     </>
   );
