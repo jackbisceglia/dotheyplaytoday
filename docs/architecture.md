@@ -42,8 +42,8 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 
 The notification Worker provisions its existing email channel. The API Worker
 provisions the shared email client and validates the same Resend configuration
-at startup. After a signup transaction commits, the
-API constructs a complete confirmation without further database reads and uses
+at startup. After a signup transaction commits, the API constructs a complete
+confirmation without further database reads and uses
 Alchemy's `WorkerExecutionContext.waitUntil` to attach best-effort delivery to
 the Cloudflare request lifetime. Delivery failures are logged in that background
 effect and do not alter the `{ ok: true }` response.

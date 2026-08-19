@@ -41,7 +41,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const users = yield* Users;
       const emailClient = yield* EmailChannelClient;
       const id = yield* Id;
-      const context = yield* Cloudflare.WorkerExecutionContext;
+      const executionContext = yield* Cloudflare.WorkerExecutionContext;
 
       return handlers.handle(
         "submit",
@@ -64,7 +64,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
             const signup = yield* database
               .transaction(() =>
                 Effect.gen(function* () {
-                  const { user, ...context } = yield* users.upsertForSignup(
+                  const { user, isFirstSignup } = yield* users.upsertForSignup(
                     ctx.payload.email,
                     ctx.payload.timezone,
                   );
@@ -74,21 +74,19 @@ export const SignupGroupLayer = HttpApiBuilder.group(
                     schedule: ctx.payload.schedule,
                   });
 
-                  return { user, context, subjects };
+                  return { user, isFirstSignup, subjects };
                 }),
               )
               .pipe(mapToTransactionError("Signup.submit"));
 
             const confirmation = SignupConfirmation.make({
-              _tag: signup.context.isFirstSignup
-                ? "firstSignup"
-                : "repeatSignup",
+              _tag: signup.isFirstSignup ? "firstSignup" : "repeatSignup",
               user: signup.user,
               subjects: yield* decodeSelectedSubjects(signup.subjects),
               schedule: ctx.payload.schedule,
             });
 
-            yield* context.waitUntil(
+            yield* executionContext.waitUntil(
               sendSignupConfirmation(confirmation).pipe(
                 Effect.provideService(EmailChannelClient, emailClient),
                 Effect.provideService(Id, id),

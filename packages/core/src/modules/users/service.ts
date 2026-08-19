@@ -12,9 +12,6 @@ import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
 
-export const wasCreatedForSignup = (candidateId: User["id"], user: User) =>
-  user.id === candidateId;
-
 export type UpsertContext = {
   readonly user: User;
   readonly isFirstSignup: boolean;
@@ -195,7 +192,7 @@ export const UsersLayer = Layer.effect(
 
       return {
         user,
-        isFirstSignup: wasCreatedForSignup(candidateId, user),
+        isFirstSignup: user.id === candidateId,
       };
     });
 

@@ -22,6 +22,15 @@ const WebConfigLayerTest = ConfigProvider.layer(
   }),
 );
 
+const IdLayerTest = Layer.succeed(
+  Id,
+  Id.of({
+    generate: () => Effect.succeed("confirmation-delivery-id"),
+    makeFromBrandedSchema: (schema) =>
+      Effect.succeed(schema.make("00000000-0000-4000-8000-000000000999")),
+  }),
+);
+
 const signupConfirmation = SignupConfirmation.cases.firstSignup.make({
   user: notification.user,
   subjects: [
@@ -99,15 +108,6 @@ describe("signup confirmation email", () => {
         }),
       );
 
-      const IdLayerTest = Layer.succeed(
-        Id,
-        Id.of({
-          generate: () => Effect.succeed("confirmation-delivery-id"),
-          makeFromBrandedSchema: (schema) =>
-            Effect.succeed(schema.make("00000000-0000-4000-8000-000000000999")),
-        }),
-      );
-
       return Effect.gen(function* () {
         yield* sendSignupConfirmation(signupConfirmation);
 
@@ -134,15 +134,6 @@ describe("signup confirmation email", () => {
     const ClientLayerTest = Layer.succeed(
       EmailChannelClient,
       EmailChannelClient.of({ send: () => Effect.fail(expected) }),
-    );
-
-    const IdLayerTest = Layer.succeed(
-      Id,
-      Id.of({
-        generate: () => Effect.succeed("confirmation-delivery-id"),
-        makeFromBrandedSchema: (schema) =>
-          Effect.succeed(schema.make("00000000-0000-4000-8000-000000000999")),
-      }),
     );
 
     return Effect.gen(function* () {
