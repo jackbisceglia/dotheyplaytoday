@@ -31,8 +31,6 @@ export const FeedbackGroupLayer = HttpApiBuilder.group(
                 ...ctx.payload,
               })
               .pipe(mapToWriteError("Feedback.submit"));
-
-            return { ok: true as const };
           },
           Effect.tapErrorTag("DatabaseWriteError", (error) =>
             Effect.logError("feedback: unexpected failure", {

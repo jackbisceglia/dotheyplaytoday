@@ -21,8 +21,6 @@ export const FeedbackRequest = Schema.Struct({
   request: FeedbackRequestTextFromString,
 });
 
-export const FeedbackResponse = Schema.Struct({ ok: Schema.Literal(true) });
-
 export class FeedbackRateLimited extends Schema.TaggedErrorClass<FeedbackRateLimited>()(
   "FeedbackRateLimited",
   {},
@@ -32,7 +30,6 @@ export class FeedbackRateLimited extends Schema.TaggedErrorClass<FeedbackRateLim
 export const FeedbackGroup = HttpApiGroup.make("feedback").add(
   HttpApiEndpoint.post("submit", "/feedback", {
     payload: FeedbackRequest,
-    success: FeedbackResponse,
     error: [HttpApiError.InternalServerError, FeedbackRateLimited],
   }),
 );
