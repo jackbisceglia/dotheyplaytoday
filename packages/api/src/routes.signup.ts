@@ -54,7 +54,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            const confirmation = yield* database
+            const signup = yield* database
               .transaction(() =>
                 Effect.gen(function* () {
                   const signupUser = yield* users.upsertForSignup(
@@ -66,26 +66,22 @@ export const SignupGroupLayer = HttpApiBuilder.group(
                     subjectIds: ctx.payload.subjectIds,
                     schedule: ctx.payload.schedule,
                   });
-                  const selectedSubjects =
-                    yield* Schema.decodeUnknownEffect(SelectedSubjects)(
-                      subjects,
-                    );
-                  const confirmationFields = {
-                    user: signupUser.user,
-                    subjects: selectedSubjects,
-                    schedule: ctx.payload.schedule,
-                  };
 
-                  return signupUser.isFirstSignup
-                    ? SignupConfirmation.cases.first_signup.make(
-                        confirmationFields,
-                      )
-                    : SignupConfirmation.cases.repeat_signup.make(
-                        confirmationFields,
-                      );
+                  return { ...signupUser, subjects };
                 }),
               )
               .pipe(mapToTransactionError("Signup.submit"));
+            const subjects = yield* Schema.decodeUnknownEffect(
+              SelectedSubjects,
+            )(signup.subjects);
+            const confirmationFields = {
+              user: signup.user,
+              subjects,
+              schedule: ctx.payload.schedule,
+            };
+            const confirmation = signup.isFirstSignup
+              ? SignupConfirmation.cases.first_signup.make(confirmationFields)
+              : SignupConfirmation.cases.repeat_signup.make(confirmationFields);
 
             yield* context.waitUntil(
               confirmationChannel.deliver(confirmation).pipe(Effect.ignore),
