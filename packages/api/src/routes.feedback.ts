@@ -37,12 +37,11 @@ export const FeedbackGroupLayer = HttpApiBuilder.group(
               error: error.message,
             }),
           ),
-          Effect.catchTag("DatabaseWriteError", () =>
-            Effect.fail(new HttpApiError.InternalServerError({})),
-          ),
-          Effect.catchTag("RateLimitExceeded", () =>
-            Effect.fail(new FeedbackRateLimited({})),
-          ),
+          Effect.catchTags({
+            DatabaseWriteError: () =>
+              Effect.fail(new HttpApiError.InternalServerError({})),
+            RateLimitExceeded: () => Effect.fail(new FeedbackRateLimited({})),
+          }),
         ),
       );
     }),

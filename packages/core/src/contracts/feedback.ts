@@ -4,6 +4,7 @@ import {
   HttpApiEndpoint,
   HttpApiError,
   HttpApiGroup,
+  HttpApiSchema,
 } from "effect/unstable/httpapi";
 
 import {
@@ -30,6 +31,7 @@ export class FeedbackRateLimited extends Schema.TaggedErrorClass<FeedbackRateLim
 export const FeedbackGroup = HttpApiGroup.make("feedback").add(
   HttpApiEndpoint.post("submit", "/feedback", {
     payload: FeedbackRequest,
+    success: HttpApiSchema.NoContent,
     error: [HttpApiError.InternalServerError, FeedbackRateLimited],
   }),
 );
