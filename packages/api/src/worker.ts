@@ -8,7 +8,6 @@ import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloud
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
 import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
-import { EmailChannelClientLayerResend } from "@dtpt/core/modules/channels/email/clients/resend";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
@@ -18,12 +17,7 @@ import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
 const ApiBaseLayer = pipe(
-  Layer.mergeAll(
-    SubjectsLayer,
-    SubscriptionsLayer,
-    UsersLayer,
-    EmailChannelClientLayerResend,
-  ),
+  Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
   Layer.provideMerge(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );

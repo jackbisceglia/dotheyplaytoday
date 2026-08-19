@@ -40,13 +40,13 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
   client directly through a concrete sender.
 - Typed Effect config at runtime boundaries.
 
-The notification Worker provisions its existing email channel. The API Worker
-provisions the shared email client and validates the same Resend configuration
-at startup. After a signup transaction commits, the API constructs a complete
-confirmation without further database reads and uses
-Alchemy's `WorkerExecutionContext.waitUntil` to attach best-effort delivery to
-the Cloudflare request lifetime. Delivery failures are logged in that background
-effect and do not alter the `{ ok: true }` response.
+The notification Worker provisions its existing email channel. The API signup
+route layer provisions the shared email client, while the API Worker validates
+the same Resend configuration at startup. After a signup transaction commits,
+the API constructs a complete confirmation without further database reads and
+uses Alchemy's `WorkerExecutionContext.waitUntil` to attach best-effort delivery
+to the Cloudflare request lifetime. Delivery failures are logged in that
+background effect and do not alter the `{ ok: true }` response.
 
 Web receives both an `API` service binding and the API Worker's complete
 resolved URL. The shared typed API client loads a binding-backed HTTP transport
