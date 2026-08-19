@@ -3,7 +3,9 @@ import { Api } from "@dtpt/core/contracts/api";
 import { SignupRateLimited } from "@dtpt/core/contracts/signup";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
-import { makeSignupConfirmationEmailSender } from "@dtpt/core/modules/channels/signup-confirmation/email/sender";
+import { Id } from "@dtpt/core/lib/id/service";
+import { EmailChannelClient } from "@dtpt/core/modules/channels/email/clients/service";
+import { renderSignupConfirmation } from "@dtpt/core/modules/channels/signup-confirmation/email/render";
 import { SignupConfirmation } from "@dtpt/core/modules/channels/signup-confirmation/schema";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
@@ -22,7 +24,9 @@ const UnexpectedErrorTags = [
   "SchemaError",
 ] as const;
 
-const SelectedSubjects = Schema.NonEmptyArray(Subject);
+const decodeSelectedSubjects = Schema.decodeUnknownEffect(
+  Schema.NonEmptyArray(Subject),
+);
 
 export const SignupGroupLayer = HttpApiBuilder.group(
   Api,
@@ -33,7 +37,8 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const database = yield* Database;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
-      const sendConfirmationEmail = yield* makeSignupConfirmationEmailSender;
+      const emailClient = yield* EmailChannelClient;
+      const id = yield* Id;
       const context = yield* Cloudflare.WorkerExecutionContext;
 
       return handlers.handle(
@@ -71,19 +76,44 @@ export const SignupGroupLayer = HttpApiBuilder.group(
                 }),
               )
               .pipe(mapToTransactionError("Signup.submit"));
-            const confirmationFields = {
+            const confirmation = SignupConfirmation.make({
+              _tag: signup.context.isFirstSignup
+                ? "firstSignup"
+                : "repeatSignup",
               user: signup.user,
-              subjects: yield* Schema.decodeUnknownEffect(SelectedSubjects)(
-                signup.subjects,
-              ),
+              subjects: yield* decodeSelectedSubjects(signup.subjects),
               schedule: ctx.payload.schedule,
-            };
-            const confirmation = signup.context.isFirstSignup
-              ? SignupConfirmation.cases.first_signup.make(confirmationFields)
-              : SignupConfirmation.cases.repeat_signup.make(confirmationFields);
+            });
 
             yield* context.waitUntil(
-              sendConfirmationEmail(confirmation).pipe(Effect.ignore),
+              Effect.gen(function* () {
+                const rendered = yield* renderSignupConfirmation(
+                  confirmation,
+                ).pipe(Effect.orDie);
+
+                yield* emailClient.send(
+                  {
+                    recipient: confirmation.user.email,
+                    hash: yield* id.generate(),
+                  },
+                  rendered,
+                );
+              }).pipe(
+                Effect.tap(() =>
+                  Effect.logInfo("signup confirmation: delivered", {
+                    kind: confirmation._tag,
+                    user: confirmation.user.email,
+                  }),
+                ),
+                Effect.tapCause((cause) =>
+                  Effect.logError("signup confirmation: delivery failed", {
+                    cause,
+                    kind: confirmation._tag,
+                    user: confirmation.user.email,
+                  }),
+                ),
+                Effect.ignore,
+              ),
             );
 
             return { ok: true as const };

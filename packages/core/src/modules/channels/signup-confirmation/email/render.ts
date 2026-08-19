@@ -30,12 +30,12 @@ export const renderSignupConfirmation = Effect.fn(
 
   const copy = Match.value(confirmation).pipe(
     Match.tagsExhaustive({
-      first_signup: () => ({
+      firstSignup: () => ({
         subject: "Welcome to dotheyplaytoday",
         heading: "You're on the roster",
         intro: "Your game-day email signup is active for these teams:",
       }),
-      repeat_signup: () => ({
+      repeatSignup: () => ({
         subject: "Your dotheyplaytoday picks are updated",
         heading: "Your picks are updated",
         intro: "Your previous picks have been replaced with these teams:",

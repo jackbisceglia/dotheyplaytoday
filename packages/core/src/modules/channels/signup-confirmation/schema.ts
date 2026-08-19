@@ -12,6 +12,6 @@ const receiptFields = {
 
 export type SignupConfirmation = typeof SignupConfirmation.Type;
 export const SignupConfirmation = Schema.TaggedUnion({
-  first_signup: receiptFields,
-  repeat_signup: receiptFields,
+  firstSignup: receiptFields,
+  repeatSignup: receiptFields,
 });
