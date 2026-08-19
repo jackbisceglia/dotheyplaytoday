@@ -1,23 +1,49 @@
 import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer, Schema } from "effect";
+import type {
+  CreateEmailOptions,
+  CreateEmailRequestOptions,
+  CreateEmailResponse,
+} from "resend";
+import { beforeEach, vi } from "vitest";
 
 import { Id } from "../../../../lib/id/service.js";
 import { notification } from "../../../channels/__tests__/fixtures.js";
 import { ChannelClientResponseError } from "../../../channels/errors.js";
-import { EmailChannelClient } from "../../../channels/email/clients/service.js";
-import type { EmailRendered } from "../../../channels/email/render.js";
-import type { ChannelDelivery } from "../../../channels/service.js";
 import {
   renderSignupConfirmation,
   sendSignupConfirmation,
   SignupConfirmation,
 } from "../signup-confirmation.js";
 
+const resendMock = vi.hoisted(() => ({
+  constructor: vi.fn(),
+  send: vi.fn(),
+}));
+
+vi.mock("resend", () => ({
+  Resend: class {
+    readonly emails = { send: resendMock.send };
+
+    constructor(apiKey: string) {
+      resendMock.constructor(apiKey);
+    }
+  },
+}));
+
+const successResponse: CreateEmailResponse = {
+  data: { id: "email-id" },
+  error: null,
+  headers: null,
+};
+
 const WebConfigLayerTest = ConfigProvider.layer(
   ConfigProvider.fromEnv({
     env: {
       VITE_WEB_URL_BASE: "https://example.com",
       VITE_WEB_URL_PORT: "8080",
+      RESEND_API_KEY: "re_test_key",
+      RESEND_FROM_EMAIL: "sender@example.com",
     },
   }),
 );
@@ -57,6 +83,12 @@ const repeatConfirmation = SignupConfirmation.cases.repeatSignup.make({
 });
 
 describe("signup confirmation email", () => {
+  beforeEach(() => {
+    resendMock.constructor.mockReset();
+    resendMock.send.mockReset();
+    resendMock.send.mockResolvedValue(successResponse);
+  });
+
   it("decodes both confirmation variants", () => {
     const decode = Schema.decodeUnknownSync(SignupConfirmation);
     const encode = Schema.encodeUnknownSync(SignupConfirmation);
@@ -93,37 +125,30 @@ describe("signup confirmation email", () => {
     }).pipe(Effect.provide(WebConfigLayerTest)),
   );
 
-  it.effect(
-    "sends through the shared client with one generated delivery ID",
-    () => {
-      const sent: {
-        readonly delivery: ChannelDelivery<string>;
-        readonly rendered: EmailRendered;
-      }[] = [];
-      const ClientLayerTest = Layer.succeed(
-        EmailChannelClient,
-        EmailChannelClient.of({
-          send: (delivery, rendered) =>
-            Effect.sync(() => sent.push({ delivery, rendered })),
-        }),
-      );
+  it.effect("sends through Resend with one generated delivery ID", () =>
+    Effect.gen(function* () {
+      yield* sendSignupConfirmation(signupConfirmation);
 
-      return Effect.gen(function* () {
-        yield* sendSignupConfirmation(signupConfirmation);
+      expect(resendMock.constructor).toHaveBeenCalledWith("re_test_key");
+      expect(resendMock.send).toHaveBeenCalledOnce();
 
-        expect(sent).toHaveLength(1);
-        expect(sent[0]?.delivery).toEqual({
-          recipient: "fan@example.com",
-          hash: "confirmation-delivery-id",
-        });
-        expect(sent[0]?.rendered.subject).toBe("Welcome to dotheyplaytoday");
-      }).pipe(
-        Effect.provide([ClientLayerTest, IdLayerTest, WebConfigLayerTest]),
-      );
-    },
+      const [payload, options] = resendMock.send.mock.calls[0] as [
+        CreateEmailOptions,
+        CreateEmailRequestOptions,
+      ];
+
+      expect(payload).toMatchObject({
+        from: "sender@example.com",
+        to: "fan@example.com",
+        subject: "Welcome to dotheyplaytoday",
+      });
+      expect(options).toEqual({
+        idempotencyKey: "confirmation-delivery-id",
+      });
+    }).pipe(Effect.provide([IdLayerTest, WebConfigLayerTest])),
   );
 
-  it.effect("preserves typed provider failures", () => {
+  it.effect("maps typed provider failures", () => {
     const expected = new ChannelClientResponseError({
       channel: "email",
       message: "Rejected",
@@ -131,17 +156,22 @@ describe("signup confirmation email", () => {
       statusCode: 422,
     });
 
-    const ClientLayerTest = Layer.succeed(
-      EmailChannelClient,
-      EmailChannelClient.of({ send: () => Effect.fail(expected) }),
-    );
+    resendMock.send.mockResolvedValue({
+      data: null,
+      error: {
+        name: "validation_error",
+        message: expected.message,
+        statusCode: expected.statusCode,
+      },
+      headers: null,
+    } satisfies CreateEmailResponse);
 
     return Effect.gen(function* () {
       const error = yield* sendSignupConfirmation(signupConfirmation).pipe(
         Effect.flip,
       );
 
-      expect(error).toBe(expected);
-    }).pipe(Effect.provide([ClientLayerTest, IdLayerTest, WebConfigLayerTest]));
+      expect(error).toStrictEqual(expected);
+    }).pipe(Effect.provide([IdLayerTest, WebConfigLayerTest]));
   });
 });

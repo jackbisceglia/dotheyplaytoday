@@ -4,8 +4,6 @@ import { SignupRateLimited } from "@dtpt/core/contracts/signup";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
 import { Id } from "@dtpt/core/lib/id/service";
-import { EmailChannelClientLayerResend } from "@dtpt/core/modules/channels/email/clients/resend";
-import { EmailChannelClient } from "@dtpt/core/modules/channels/email/clients/service";
 import {
   sendSignupConfirmation,
   SignupConfirmation,
@@ -15,7 +13,7 @@ import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors"
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Layer, Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
@@ -40,7 +38,6 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const database = yield* Database;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
-      const emailClient = yield* EmailChannelClient;
       const id = yield* Id;
       const executionContext = yield* Cloudflare.WorkerExecutionContext;
 
@@ -89,7 +86,6 @@ export const SignupGroupLayer = HttpApiBuilder.group(
 
             yield* executionContext.waitUntil(
               sendSignupConfirmation(confirmation).pipe(
-                Effect.provideService(EmailChannelClient, emailClient),
                 Effect.provideService(Id, id),
                 Effect.ignore,
               ),
@@ -113,4 +109,4 @@ export const SignupGroupLayer = HttpApiBuilder.group(
         ),
       );
     }),
-).pipe(Layer.provide(EmailChannelClientLayerResend));
+);

@@ -2,6 +2,7 @@ import { Effect, Match, Schema } from "effect";
 
 import { Id } from "../../../lib/id/service.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
+import { EmailChannelClientLayerResend } from "../../channels/email/clients/resend.js";
 import { EmailChannelClient } from "../../channels/email/clients/service.js";
 import { EmailView, type EmailRendered } from "../../channels/email/render.js";
 import { Subject } from "../../subjects/schema.js";
@@ -109,4 +110,5 @@ export const sendSignupConfirmation = Effect.fn("SignupConfirmation.send")(
         ),
       );
   },
+  Effect.provide(EmailChannelClientLayerResend),
 );

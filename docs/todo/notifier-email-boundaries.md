@@ -79,9 +79,10 @@ tracking, or fan-out.
 Transactional files should remain single files while small. For example,
 `email/transactional/signup-confirmation.ts` owns its input, private rendering
 function, and send workflow. The workflow resolves its `Email` requirement
-internally; the caller provides that requirement before handing the effect to a
-background runtime. It may become a directory with separate files only when its
-size or reuse justifies that split.
+internally through its concrete provider layer. The caller provides only shared
+runtime requirements before handing the effect to a background runtime. It may
+become a directory with separate files only when its size or reuse justifies
+that split.
 
 ## Notifier Contract
 
@@ -162,8 +163,9 @@ notification plugin contract.
 3. Move the email and console notification implementations under `notifier/`
    and keep Worker layer selection unchanged.
 4. Keep signup-confirmation email code in
-   `email/transactional/signup-confirmation.ts`. Replace its temporary
-   `EmailChannelClient` requirement with `Email`.
+   `email/transactional/signup-confirmation.ts`. Replace its temporary internal
+   `EmailChannelClient` and Resend composition with the equivalent `Email`
+   composition.
 5. Update imports, tests, architecture documentation, and vocabulary after the
    structural moves are complete.
 
