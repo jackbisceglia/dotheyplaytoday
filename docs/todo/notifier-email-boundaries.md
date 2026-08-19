@@ -63,7 +63,7 @@ packages/core/src/modules/
       resend.ts
       ses.ts
     transactional/
-      signup.ts
+      signup-confirmation.ts
       forgot-password.ts
 
   sms/
@@ -77,9 +77,11 @@ domain emerges, such as cross-medium routing, fallback, auditing, status
 tracking, or fan-out.
 
 Transactional files should remain single files while small. For example,
-`email/transactional/signup.ts` owns the signup-email service, its layer, input,
-and private rendering function. It may become a directory with `service.ts`,
-`layer.ts`, and `template.ts` only when its size or reuse justifies that split.
+`email/transactional/signup-confirmation.ts` owns its input, private rendering
+function, and send workflow. The workflow resolves its `Email` requirement
+internally; the caller provides that requirement before handing the effect to a
+background runtime. It may become a directory with separate files only when its
+size or reuse justifies that split.
 
 ## Notifier Contract
 
@@ -159,9 +161,9 @@ notification plugin contract.
    `makeLayer` implementation factory.
 3. Move the email and console notification implementations under `notifier/`
    and keep Worker layer selection unchanged.
-4. Move signup-confirmation email code to
-   `email/transactional/signup.ts`. Keep its service, layer, input, and private
-   template together initially.
+4. Keep signup-confirmation email code in
+   `email/transactional/signup-confirmation.ts`. Replace its temporary
+   `EmailChannelClient` requirement with `Email`.
 5. Update imports, tests, architecture documentation, and vocabulary after the
    structural moves are complete.
 

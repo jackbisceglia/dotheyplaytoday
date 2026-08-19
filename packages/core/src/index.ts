@@ -94,7 +94,11 @@ export { ResendConfig } from "./modules/channels/email/clients/config.js";
 export type { ResendConfig as ResendConfigShape } from "./modules/channels/email/clients/config.js";
 export { EmailChannelClientLayerResend } from "./modules/channels/email/clients/resend.js";
 export { Notification } from "./modules/channels/notification/schema.js";
-export { SignupConfirmation } from "./modules/channels/signup-confirmation/schema.js";
+export {
+  renderSignupConfirmation,
+  sendSignupConfirmation,
+  SignupConfirmation,
+} from "./modules/email/transactional/signup-confirmation.js";
 export {
   SubjectEvent,
   SubjectEventInsert,

@@ -5,8 +5,10 @@ import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
 import { Id } from "@dtpt/core/lib/id/service";
 import { EmailChannelClient } from "@dtpt/core/modules/channels/email/clients/service";
-import { renderSignupConfirmation } from "@dtpt/core/modules/channels/signup-confirmation/email/render";
-import { SignupConfirmation } from "@dtpt/core/modules/channels/signup-confirmation/schema";
+import {
+  sendSignupConfirmation,
+  SignupConfirmation,
+} from "@dtpt/core/modules/email/transactional/signup-confirmation";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
@@ -76,6 +78,7 @@ export const SignupGroupLayer = HttpApiBuilder.group(
                 }),
               )
               .pipe(mapToTransactionError("Signup.submit"));
+
             const confirmation = SignupConfirmation.make({
               _tag: signup.context.isFirstSignup
                 ? "firstSignup"
@@ -86,32 +89,9 @@ export const SignupGroupLayer = HttpApiBuilder.group(
             });
 
             yield* context.waitUntil(
-              Effect.gen(function* () {
-                const rendered = yield* renderSignupConfirmation(
-                  confirmation,
-                ).pipe(Effect.orDie);
-
-                yield* emailClient.send(
-                  {
-                    recipient: confirmation.user.email,
-                    hash: yield* id.generate(),
-                  },
-                  rendered,
-                );
-              }).pipe(
-                Effect.tap(() =>
-                  Effect.logInfo("signup confirmation: delivered", {
-                    kind: confirmation._tag,
-                    user: confirmation.user.email,
-                  }),
-                ),
-                Effect.tapCause((cause) =>
-                  Effect.logError("signup confirmation: delivery failed", {
-                    cause,
-                    kind: confirmation._tag,
-                    user: confirmation.user.email,
-                  }),
-                ),
+              sendSignupConfirmation(confirmation).pipe(
+                Effect.provideService(EmailChannelClient, emailClient),
+                Effect.provideService(Id, id),
                 Effect.ignore,
               ),
             );
