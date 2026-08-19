@@ -51,11 +51,10 @@ export const seedUsers = Effect.fn("Seed.Users")(function* (
 
   return yield* Effect.forEach(decodedUsers, (seedUser) =>
     Effect.gen(function* () {
-      const signupUser = yield* users.upsertForSignup(
+      const { user } = yield* users.upsertForSignup(
         seedUser.email,
         seedUser.timezone,
       );
-      const user = signupUser.user;
 
       yield* subscriptions.replaceForUser({
         user,

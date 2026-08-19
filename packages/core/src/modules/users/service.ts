@@ -15,6 +15,11 @@ import { User, UserInsert, usersTable } from "./schema.js";
 export const wasCreatedForSignup = (candidateId: User["id"], user: User) =>
   user.id === candidateId;
 
+export type UpsertContext = {
+  readonly user: User;
+  readonly isFirstSignup: boolean;
+};
+
 export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
   "UserNotFound",
   {
@@ -50,10 +55,7 @@ export class Users extends Context.Service<
     readonly upsertForSignup: (
       email: User["email"],
       timezone: User["timezone"],
-    ) => Effect.Effect<
-      { readonly user: User; readonly isFirstSignup: boolean },
-      DatabaseWriteError | Schema.SchemaError
-    >;
+    ) => Effect.Effect<UpsertContext, DatabaseWriteError | Schema.SchemaError>;
     readonly remove: (
       userId: User["id"],
     ) => Effect.Effect<void, DatabaseDeleteError>;

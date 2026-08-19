@@ -85,28 +85,28 @@ export const sendSignupConfirmation = Effect.fn("SignupConfirmation.send")(
       Effect.orDie,
     );
 
-    yield* client.send(
-      {
-        recipient: confirmation.user.email,
-        hash: yield* id.generate(),
-      },
-      rendered,
-    );
+    yield* client
+      .send(
+        {
+          recipient: confirmation.user.email,
+          hash: yield* id.generate(),
+        },
+        rendered,
+      )
+      .pipe(
+        Effect.tap(() =>
+          Effect.logInfo("signup confirmation: delivered", {
+            kind: confirmation._tag,
+            user: confirmation.user.email,
+          }),
+        ),
+        Effect.tapCause((cause) =>
+          Effect.logError("signup confirmation: delivery failed", {
+            cause,
+            kind: confirmation._tag,
+            user: confirmation.user.email,
+          }),
+        ),
+      );
   },
-  (effect, confirmation) =>
-    effect.pipe(
-      Effect.tap(() =>
-        Effect.logInfo("signup confirmation: delivered", {
-          kind: confirmation._tag,
-          user: confirmation.user.email,
-        }),
-      ),
-      Effect.tapCause((cause) =>
-        Effect.logError("signup confirmation: delivery failed", {
-          cause,
-          kind: confirmation._tag,
-          user: confirmation.user.email,
-        }),
-      ),
-    ),
 );
