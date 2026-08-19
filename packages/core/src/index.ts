@@ -95,6 +95,11 @@ export type { ResendConfig as ResendConfigShape } from "./modules/channels/email
 export { EmailChannelClientLayerResend } from "./modules/channels/email/clients/resend.js";
 export { Notification } from "./modules/channels/notification/schema.js";
 export {
+  renderSignupConfirmation,
+  sendSignupConfirmation,
+  SignupConfirmation,
+} from "./modules/email/transactional/signup-confirmation.js";
+export {
   SubjectEvent,
   SubjectEventInsert,
   subjectEventsTable,
@@ -140,3 +145,4 @@ export {
   usersTable,
 } from "./modules/users/schema.js";
 export { UserNotFound, Users, UsersLayer } from "./modules/users/service.js";
+export type { UpsertContext } from "./modules/users/service.js";

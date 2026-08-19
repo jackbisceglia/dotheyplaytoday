@@ -18,6 +18,13 @@
 - A dry run renders and delivers through the selected non-production channel and does not mark the subscription sent.
 - Production scheduling is performed by the Cloudflare Worker cron. Development triggers and command-line entry points are operational tools, not the production scheduler.
 
+## Signup confirmations
+
+- Every successfully committed signup sends a best-effort confirmation email. The signup is already active and does not require email verification.
+- A first signup receives welcome copy; later submissions for the same normalized email confirm that the user's teams and schedule were replaced.
+- Confirmations list the selected teams and local send time and include the user's unsubscribe link.
+- Confirmation delivery runs after the signup transaction in the API Worker's background execution lifetime. Rendering or provider failures are logged and do not change the successful signup response.
+
 ## Vocabulary
 
 | Term | Meaning |

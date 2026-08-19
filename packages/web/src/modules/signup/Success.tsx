@@ -22,6 +22,7 @@ export function Success(props: SuccessProps) {
         Game-day emails for your teams will land at your chosen time, only on
         days they play.
       </p>
+      <p class="signup-success-copy">A confirmation email is on its way.</p>
       <p class="signup-success-copy">
         Change your mind later? Sign up again with the same email and your new
         picks replace the old ones.

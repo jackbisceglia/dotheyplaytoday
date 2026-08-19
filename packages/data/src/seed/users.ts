@@ -49,22 +49,20 @@ export const seedUsers = Effect.fn("Seed.Users")(function* (
 
   const decodedUsers = input ?? (yield* DefaultSeedUsers);
 
-  return yield* Effect.forEach(
-    decodedUsers,
-    (seedUser) =>
-      Effect.gen(function* () {
-        const user = yield* users.upsertForSignup(
-          seedUser.email,
-          seedUser.timezone,
-        );
+  return yield* Effect.forEach(decodedUsers, (seedUser) =>
+    Effect.gen(function* () {
+      const { user } = yield* users.upsertForSignup(
+        seedUser.email,
+        seedUser.timezone,
+      );
 
-        yield* subscriptions.replaceForUser({
-          user,
-          subjectIds: seedUser.subjectIds,
-          schedule: seedUser.schedule,
-        });
+      yield* subscriptions.replaceForUser({
+        user,
+        subjectIds: seedUser.subjectIds,
+        schedule: seedUser.schedule,
+      });
 
-        return user;
-      }),
+      return user;
+    }),
   );
 });

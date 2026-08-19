@@ -157,7 +157,7 @@ const makeHarness = (opts: HarnessOptions) => {
     Subscriptions.of({
       list: () => Effect.succeed([]),
       listNotificationRecipients: () => Effect.succeed(opts.recipients),
-      replaceForUser: () => Effect.void,
+      replaceForUser: () => Effect.succeed([]),
       markSent: (input) =>
         Effect.sync(() => markSentCalls.push(input)).pipe(
           Effect.andThen(opts.markSent ? opts.markSent(input) : Effect.void),
