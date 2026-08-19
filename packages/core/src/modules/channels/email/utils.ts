@@ -3,7 +3,7 @@ export type Unsubscribe = {
   readonly text: string;
 };
 
-export const emailStyles = {
+export const styles = {
   body: "margin: 0; padding: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #111827; background-color: #ffffff;",
   container:
     "max-width: 560px; border-left: 3px solid #2563eb; padding: 4px 0 4px 16px; background-color: #ffffff;",
@@ -28,4 +28,4 @@ export const renderUnsubscribeText = (unsubscribe: Unsubscribe) =>
   `${unsubscribe.text}: ${unsubscribe.href}`;
 
 export const renderUnsubscribeHtml = (unsubscribe: Unsubscribe) =>
-  `<p style="${emailStyles.paragraph}"><a href="${escapeHtml(unsubscribe.href)}" style="${emailStyles.link}">${escapeHtml(unsubscribe.text)}</a></p>`;
+  `<p style="${styles.paragraph}"><a href="${escapeHtml(unsubscribe.href)}" style="${styles.link}">${escapeHtml(unsubscribe.text)}</a></p>`;

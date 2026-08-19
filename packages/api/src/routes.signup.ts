@@ -1,6 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Api } from "@dtpt/core/contracts/api";
-import { SignupRateLimited, SignupRequest } from "@dtpt/core/contracts/signup";
+import { SignupRateLimited } from "@dtpt/core/contracts/signup";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
 import { SignupConfirmation } from "@dtpt/core/modules/channels/signup-confirmation/schema";
@@ -34,40 +34,27 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
       const confirmationChannel = yield* SignupConfirmationChannel;
-      const workerExecutionContext = yield* Cloudflare.WorkerExecutionContext;
+      const context = yield* Cloudflare.WorkerExecutionContext;
 
-      const commitSignup = Effect.fn("SignupHttpApi.commitSignup")(function* (
-        payload: typeof SignupRequest.Type,
+      const confirmSignup = Effect.fn("SignupHttpApi.confirmSignup")(function* (
+        confirmation: SignupConfirmation,
       ) {
-        return yield* database
-          .transaction(() =>
-            Effect.gen(function* () {
-              const signupUser = yield* users.upsertForSignup(
-                payload.email,
-                payload.timezone,
-              );
-              const subjects = yield* subscriptions.replaceForUser({
-                user: signupUser.user,
-                subjectIds: payload.subjectIds,
-                schedule: payload.schedule,
-              });
-              const selectedSubjects = yield* Schema.decodeUnknownEffect(
-                SelectedSubjects,
-              )(subjects);
-              const confirmationFields = {
-                user: signupUser.user,
-                subjects: selectedSubjects,
-                schedule: payload.schedule,
-              };
-
-              return signupUser.isFirstSignup
-                ? SignupConfirmation.cases.first_signup.make(confirmationFields)
-                : SignupConfirmation.cases.repeat_signup.make(
-                    confirmationFields,
-                  );
+        yield* confirmationChannel.deliver(confirmation).pipe(
+          Effect.tap(() =>
+            Effect.logInfo("signup confirmation: delivered", {
+              kind: confirmation._tag,
+              user: confirmation.user.email,
             }),
-          )
-          .pipe(mapToTransactionError("Signup.submit"));
+          ),
+          Effect.tapCause((cause) =>
+            Effect.logError("signup confirmation: delivery failed", {
+              cause,
+              kind: confirmation._tag,
+              user: confirmation.user.email,
+            }),
+          ),
+          Effect.ignore,
+        );
       });
 
       return handlers.handle(
@@ -88,26 +75,40 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               });
             }
 
-            const confirmation = yield* commitSignup(ctx.payload);
+            const confirmation = yield* database
+              .transaction(() =>
+                Effect.gen(function* () {
+                  const signupUser = yield* users.upsertForSignup(
+                    ctx.payload.email,
+                    ctx.payload.timezone,
+                  );
+                  const subjects = yield* subscriptions.replaceForUser({
+                    user: signupUser.user,
+                    subjectIds: ctx.payload.subjectIds,
+                    schedule: ctx.payload.schedule,
+                  });
+                  const selectedSubjects =
+                    yield* Schema.decodeUnknownEffect(SelectedSubjects)(
+                      subjects,
+                    );
+                  const confirmationFields = {
+                    user: signupUser.user,
+                    subjects: selectedSubjects,
+                    schedule: ctx.payload.schedule,
+                  };
 
-            yield* workerExecutionContext.waitUntil(
-              confirmationChannel.deliver(confirmation).pipe(
-                Effect.tap(() =>
-                  Effect.logInfo("signup confirmation: delivered", {
-                    kind: confirmation._tag,
-                    user: confirmation.user.email,
-                  }),
-                ),
-                Effect.tapCause((cause) =>
-                  Effect.logError("signup confirmation: delivery failed", {
-                    cause,
-                    kind: confirmation._tag,
-                    user: confirmation.user.email,
-                  }),
-                ),
-                Effect.ignore,
-              ),
-            );
+                  return signupUser.isFirstSignup
+                    ? SignupConfirmation.cases.first_signup.make(
+                        confirmationFields,
+                      )
+                    : SignupConfirmation.cases.repeat_signup.make(
+                        confirmationFields,
+                      );
+                }),
+              )
+              .pipe(mapToTransactionError("Signup.submit"));
+
+            yield* context.waitUntil(confirmSignup(confirmation));
 
             return { ok: true as const };
           },

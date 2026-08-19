@@ -1,10 +1,10 @@
 import { StringParts } from "../../../../lib/string.js";
 import type { EmailRendered } from "../../email/clients/service.js";
 import {
-  emailStyles,
   escapeHtml,
   renderUnsubscribeHtml,
   renderUnsubscribeText,
+  styles,
   type Unsubscribe,
 } from "../../email/utils.js";
 
@@ -30,8 +30,7 @@ const html = (
 ) => {
   const element = {
     div: '<div style="height: 10px;"></div>',
-    p: (content: string) =>
-      `<p style="${emailStyles.paragraph}">${content}</p>`,
+    p: (content: string) => `<p style="${styles.paragraph}">${content}</p>`,
   };
 
   const Main = StringParts(
@@ -44,11 +43,11 @@ const html = (
 
   return `<!DOCTYPE html>
 <html lang="en">
-  <body style="${emailStyles.body}">
-    <div style="${emailStyles.container}">
-      <p style="${emailStyles.heading}">${escapeHtml(subject)}</p>
+  <body style="${styles.body}">
+    <div style="${styles.container}">
+      <p style="${styles.heading}">${escapeHtml(subject)}</p>
       ${Main}
-      <div style="${emailStyles.footer}">${Footer}</div>
+      <div style="${styles.footer}">${Footer}</div>
     </div>
   </body>
 </html>`;

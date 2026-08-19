@@ -4,10 +4,10 @@ import { StringParts } from "../../../../lib/string.js";
 import { buildUnsubscribeUrl } from "../../../../lib/unsubscribe.js";
 import type { EmailRendered } from "../../email/clients/service.js";
 import {
-  emailStyles,
   escapeHtml,
   renderUnsubscribeHtml,
   renderUnsubscribeText,
+  styles,
 } from "../../email/utils.js";
 import type { SignupConfirmation } from "../schema.js";
 
@@ -64,16 +64,16 @@ export const renderSignupConfirmation = Effect.fn(
     .map((name) => `<li style="margin: 0 0 4px;">${escapeHtml(name)}</li>`)
     .join("");
   const paragraph = (content: string) =>
-    `<p style="${emailStyles.paragraph}">${content}</p>`;
+    `<p style="${styles.paragraph}">${content}</p>`;
   const html = `<!DOCTYPE html>
 <html lang="en">
-  <body style="${emailStyles.body}">
-    <div style="${emailStyles.container}">
-      <p style="${emailStyles.heading}">${escapeHtml(copy.heading)}</p>
+  <body style="${styles.body}">
+    <div style="${styles.container}">
+      <p style="${styles.heading}">${escapeHtml(copy.heading)}</p>
       ${paragraph(escapeHtml(copy.intro))}
       <ul style="margin: 0 0 12px; padding-left: 20px; font-size: 15px; line-height: 1.5; color: #1f2937;">${TeamList}</ul>
       ${paragraph(escapeHtml(schedule))}
-      <div style="${emailStyles.footer}">${renderUnsubscribeHtml(unsubscribe)}</div>
+      <div style="${styles.footer}">${renderUnsubscribeHtml(unsubscribe)}</div>
     </div>
   </body>
 </html>`;
