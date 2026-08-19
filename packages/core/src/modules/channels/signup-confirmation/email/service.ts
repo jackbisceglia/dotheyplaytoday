@@ -20,10 +20,26 @@ export const SignupConfirmationEmailChannelLayer = Layer.effect(
         Effect.orDie,
       );
 
-      yield* client.send(
-        SignupConfirmationEmailDelivery.make(confirmation, deliveryId),
-        rendered,
-      );
+      yield* client
+        .send(
+          SignupConfirmationEmailDelivery.make(confirmation, deliveryId),
+          rendered,
+        )
+        .pipe(
+          Effect.tap(() =>
+            Effect.logInfo("signup confirmation: delivered", {
+              kind: confirmation._tag,
+              user: confirmation.user.email,
+            }),
+          ),
+          Effect.tapCause((cause) =>
+            Effect.logError("signup confirmation: delivery failed", {
+              cause,
+              kind: confirmation._tag,
+              user: confirmation.user.email,
+            }),
+          ),
+        );
     });
 
     return SignupConfirmationChannel.of({ deliver });

@@ -36,27 +36,6 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const confirmationChannel = yield* SignupConfirmationChannel;
       const context = yield* Cloudflare.WorkerExecutionContext;
 
-      const confirmSignup = Effect.fn("SignupHttpApi.confirmSignup")(function* (
-        confirmation: SignupConfirmation,
-      ) {
-        yield* confirmationChannel.deliver(confirmation).pipe(
-          Effect.tap(() =>
-            Effect.logInfo("signup confirmation: delivered", {
-              kind: confirmation._tag,
-              user: confirmation.user.email,
-            }),
-          ),
-          Effect.tapCause((cause) =>
-            Effect.logError("signup confirmation: delivery failed", {
-              cause,
-              kind: confirmation._tag,
-              user: confirmation.user.email,
-            }),
-          ),
-          Effect.ignore,
-        );
-      });
-
       return handlers.handle(
         "submit",
         Effect.fn("SignupHttpApi.submit")(
@@ -108,7 +87,9 @@ export const SignupGroupLayer = HttpApiBuilder.group(
               )
               .pipe(mapToTransactionError("Signup.submit"));
 
-            yield* context.waitUntil(confirmSignup(confirmation));
+            yield* context.waitUntil(
+              confirmationChannel.deliver(confirmation).pipe(Effect.ignore),
+            );
 
             return { ok: true as const };
           },
