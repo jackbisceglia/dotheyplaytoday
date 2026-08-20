@@ -23,7 +23,7 @@ const getSubmitErrorMessage = (error: unknown) =>
 
 export function Feedback(props: { readonly homeHref: string }) {
   usePageMetadata(
-    "Feedback — dotheyplaytoday",
+    "Feedback | dotheyplaytoday",
     "Request a league, team, or sport, or send general feedback.",
   );
 
@@ -81,14 +81,13 @@ export function Feedback(props: { readonly homeHref: string }) {
     >
       <section class="feedback-page">
         <div class="feedback-heading">
-          <p class="feedback-kicker">Help shape the scoreboard</p>
           <h1 class="feedback-title">
-            What should we
+            What should we add
             <br />
-            <em>add next?</em>
+            <em>next</em>?
           </h1>
           <p class="feedback-copy">
-            Request a league, team, or sport—or let us know if something is not
+            Request a league, team, sport, or let us know if something is not
             working.
           </p>
         </div>
