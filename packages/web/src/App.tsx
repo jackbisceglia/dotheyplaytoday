@@ -11,7 +11,6 @@ import { createMemo } from "solid-js";
 import { withApiClient } from "./lib/api.js";
 import { Home } from "./pages/Home.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
-import { MascotPreview } from "./pages/MascotPreview.jsx";
 import { Unsubscribe } from "./pages/Unsubscribe.jsx";
 
 const getSubjects = query(
@@ -32,10 +31,6 @@ const routes = defineRoutes([
 
       return <Home homeHref={paths()} subjects={subjects()} />;
     },
-  }),
-  defineRoute({
-    path: "/mascot",
-    component: MascotPreview,
   }),
   defineRoute({
     path: "/unsubscribe/:token",

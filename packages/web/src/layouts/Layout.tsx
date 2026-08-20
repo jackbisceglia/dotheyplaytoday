@@ -29,11 +29,7 @@ export function Layout(props: LayoutProps) {
 
       <header class="site-header">
         <a class="wordmark" href={props.homeHref}>
-          <BrandMark
-            class="wordmark-mark"
-            eyeShadow="offset"
-            headband="white"
-          />
+          <BrandMark class="wordmark-mark" />
           <span class="visually-hidden">Do they play today</span>
           <span aria-hidden="true">
             dothey<em>play</em>today

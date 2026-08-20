@@ -4,8 +4,6 @@ const EYE_LOOK_RADIUS = 1.3;
 
 type BrandMarkProps = {
   readonly class?: string;
-  readonly eyeShadow?: "green" | "ink" | "none" | "offset";
-  readonly headband?: "blue" | "split" | "tied" | "white";
 };
 
 export function BrandMark(props: BrandMarkProps) {
@@ -58,55 +56,11 @@ export function BrandMark(props: BrandMarkProps) {
       <g clip-path={`url(#${frameId})`}>
         <rect width="32" height="32" fill="var(--ink)" />
         <circle cx="12" cy="27.5" r="19" fill="var(--kelly)" />
-        {props.headband === "white" ? (
-          <g clip-path={`url(#${headId})`}>
-            <rect x="-8" y="11.6" width="40" height="3.7" fill="var(--paper)" />
-          </g>
-        ) : null}
-        {props.headband === "blue" ? (
-          <g clip-path={`url(#${headId})`}>
-            <rect x="-8" y="11.6" width="40" height="3.7" fill="#2563eb" />
-          </g>
-        ) : null}
-        {props.headband === "split" ? (
-          <g clip-path={`url(#${headId})`}>
-            <rect x="-8" y="11.6" width="40" height="1.85" fill="#2563eb" />
-            <rect x="-8" y="13.45" width="40" height="1.85" fill="#ef3340" />
-          </g>
-        ) : null}
-        {props.headband === "tied" ? (
-          <>
-            <path d="M24 12.5 31 10.8 28.7 14.8Z" fill="#ef3340" />
-            <g clip-path={`url(#${headId})`}>
-              <rect
-                x="-8"
-                y="11.6"
-                width="40"
-                height="3.7"
-                fill="var(--paper)"
-              />
-            </g>
-            <circle cx="25.2" cy="13.2" r="1.9" fill="#2563eb" />
-          </>
-        ) : null}
-        {props.eyeShadow === "green" ? (
-          <>
-            <circle cx="6.5" cy="16.8" r="4.15" fill="var(--kelly-deep)" />
-            <circle cx="17.5" cy="16.8" r="4.15" fill="var(--kelly-deep)" />
-          </>
-        ) : null}
-        {props.eyeShadow === "ink" ? (
-          <>
-            <circle cx="6.5" cy="16.8" r="4.1" fill="var(--ink)" />
-            <circle cx="17.5" cy="16.8" r="4.1" fill="var(--ink)" />
-          </>
-        ) : null}
-        {props.eyeShadow === "offset" ? (
-          <>
-            <circle cx="6.1" cy="17.25" r="3.85" fill="var(--kelly-deep)" />
-            <circle cx="17.1" cy="17.25" r="3.85" fill="var(--kelly-deep)" />
-          </>
-        ) : null}
+        <g clip-path={`url(#${headId})`}>
+          <rect x="-8" y="11.6" width="40" height="3.7" fill="var(--paper)" />
+        </g>
+        <circle cx="6.1" cy="17.25" r="3.85" fill="var(--kelly-deep)" />
+        <circle cx="17.1" cy="17.25" r="3.85" fill="var(--kelly-deep)" />
         <circle cx="6.5" cy="16.8" r="3.7" fill="var(--paper)" />
         <circle cx="17.5" cy="16.8" r="3.7" fill="var(--paper)" />
         <circle
