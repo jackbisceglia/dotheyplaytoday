@@ -48,13 +48,35 @@ a {
   text-decoration: none;
 }
 
-button {
+button,
+input,
+select,
+textarea {
   font: inherit;
+  color: inherit;
+}
+
+button {
   cursor: pointer;
 }
 
 [hidden] {
   display: none !important;
+}
+
+.dev-catalog-notice {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 100;
+  max-width: 320px;
+  padding: 10px 12px;
+  border: 2px solid var(--ink);
+  background: var(--kelly-wash);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 /* Header */
@@ -103,8 +125,12 @@ button {
 
 .wordmark-mark {
   display: block;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
+}
+
+.mascot-pupil {
+  transition: transform 0.12s ease-out;
 }
 
 .wordmark em {
@@ -817,5 +843,9 @@ select.form-input {
     opacity: 1;
     transform: none;
     animation: none;
+  }
+
+  .mascot-pupil {
+    transition: none;
   }
 }

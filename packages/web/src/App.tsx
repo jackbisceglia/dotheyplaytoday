@@ -6,7 +6,7 @@ import {
   defineRoutes,
   query,
 } from "@solidjs/router";
-import { createMemo } from "solid-js";
+import { createMemo, Show } from "solid-js";
 
 import { withApiClient } from "./lib/api.js";
 import { Feedback } from "./pages/Feedback.jsx";
@@ -49,6 +49,19 @@ const routes = defineRoutes([
 const Router = createRouter({ routes });
 const { paths } = Router;
 
+const DevOnlyAlerts = () => (
+  <Show when={import.meta.env.DEV}>
+    <aside class="dev-catalog-notice" role="status">
+      Development catalog: event notifications are available for the NBA only.
+    </aside>
+  </Show>
+);
+
 export default function App() {
-  return <Router />;
+  return (
+    <>
+      <DevOnlyAlerts />
+      <Router />
+    </>
+  );
 }
