@@ -594,11 +594,17 @@ select.form-input {
   color: var(--kelly);
 }
 
+.feedback-title-line {
+  display: block;
+  white-space: nowrap;
+}
+
 .feedback-copy {
   max-width: 46ch;
   color: var(--muted);
   font-size: 1.08rem;
   line-height: 1.55;
+  text-wrap: balance;
 }
 
 .feedback-form {

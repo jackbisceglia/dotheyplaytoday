@@ -82,9 +82,10 @@ export function Feedback(props: { readonly homeHref: string }) {
       <section class="feedback-page">
         <div class="feedback-heading">
           <h1 class="feedback-title">
-            What should we add
-            <br />
-            <em>next</em>?
+            <span class="feedback-title-line">What should we</span>
+            <span class="feedback-title-line">
+              add <em>next</em>?
+            </span>
           </h1>
           <p class="feedback-copy">
             Request a league, team, sport, or let us know if something is not
