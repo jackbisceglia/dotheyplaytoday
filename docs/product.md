@@ -25,6 +25,12 @@
 - Confirmations list the selected teams and local send time and include the user's unsubscribe link.
 - Confirmation delivery runs after the signup transaction in the API Worker's background execution lifetime. Rendering or provider failures are logged and do not change the successful signup response.
 
+## Feedback
+
+- The `/feedback` page accepts a required request of up to 2,000 characters.
+- Feedback is categorized internally as `new_subject` or `general`. The user-facing new-subject option covers requests for a league, team, or sport and is selected by default; general feedback also covers support requests.
+- Successful submissions are stored for later review and do not trigger a follow-up workflow.
+
 ## Vocabulary
 
 | Term | Meaning |

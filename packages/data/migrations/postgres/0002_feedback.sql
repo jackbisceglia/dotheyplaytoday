@@ -1,0 +1,5 @@
+CREATE TABLE feedback (
+  id TEXT PRIMARY KEY NOT NULL,
+  type TEXT NOT NULL,
+  request TEXT NOT NULL
+);
