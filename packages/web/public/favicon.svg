@@ -3,10 +3,18 @@
     <clipPath id="frame">
       <rect width="32" height="32" rx="5" />
     </clipPath>
+    <clipPath id="head">
+      <circle cx="12" cy="27.5" r="19" />
+    </clipPath>
   </defs>
   <g clip-path="url(#frame)">
     <rect width="32" height="32" fill="#131711" />
-    <circle cx="12" cy="27.5" r="17" fill="#169b4d" />
+    <circle cx="12" cy="27.5" r="19" fill="#169b4d" />
+    <g clip-path="url(#head)">
+      <rect x="-8" y="11.6" width="40" height="3.7" fill="#f8f6f0" />
+    </g>
+    <circle cx="6.1" cy="17.25" r="3.85" fill="#0c6b34" />
+    <circle cx="17.1" cy="17.25" r="3.85" fill="#0c6b34" />
     <circle cx="6.5" cy="16.8" r="3.7" fill="#f8f6f0" />
     <circle cx="17.5" cy="16.8" r="3.7" fill="#f8f6f0" />
     <circle cx="7.9" cy="15.7" r="1.7" fill="#131711" />

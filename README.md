@@ -47,8 +47,9 @@ stages when they are no longer needed so their branch billing stops.
 Checked-in PostgreSQL migrations live in
 `packages/data/migrations/postgres/`. Alchemy applies them transactionally
 before creating runtime roles and running seed Actions. Production seeding is a
-versioned, non-destructive catalog import; development seeding resets and
-reconstructs catalog, event, and development-user data.
+versioned, non-destructive catalog import. Run `pnpm dev:seed` to recreate the
+personal development stage and start it with all subjects, NBA events, and the
+development user; subsequent `pnpm dev` starts reuse that seed.
 
 Run the disposable Worker → Hyperdrive → PlanetScale infrastructure test after
 loading the provider credentials:

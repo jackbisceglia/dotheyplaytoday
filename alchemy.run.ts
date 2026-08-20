@@ -12,10 +12,7 @@ import {
   Planetscale,
 } from "./packages/core/dist/lib/database/clients/postgres/resource.js";
 import { SeedDev, SeedProduction } from "./packages/data/dist/seed/action.js";
-import {
-  CatalogSeedVersion,
-  SeedStrategy,
-} from "./packages/data/dist/seed/config.js";
+import { CatalogSeedVersion } from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 import Web, { bindWebUrl } from "./packages/web/resource.ts";
 
@@ -31,24 +28,21 @@ export default Alchemy.Stack(
   Effect.gen(function* () {
     const context = yield* AlchemyContext;
     const stage = yield* Stage;
-    const seedStrategy = yield* SeedStrategy;
 
     yield* Domain;
 
     const planetscale = yield* Planetscale;
     const hyperdrive = yield* DatabaseHyperdrive;
-    const seedTarget = Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
+    const DatabaseTarget =
+      Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
 
     if (stage === "production") {
       yield* SeedProduction("SeedProduction", {
-        target: seedTarget,
+        target: DatabaseTarget,
         version: CatalogSeedVersion,
       });
-    } else if (context.dev && seedStrategy !== "skip") {
-      yield* SeedDev("SeedDev", {
-        target: seedTarget,
-        version: Date.now().toString(),
-      });
+    } else if (context.dev) {
+      yield* SeedDev("SeedDev", {});
     }
 
     const web = yield* Web;
