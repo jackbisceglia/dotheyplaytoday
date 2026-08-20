@@ -103,8 +103,12 @@ button {
 
 .wordmark-mark {
   display: block;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
+}
+
+.mascot-pupil {
+  transition: transform 0.12s ease-out;
 }
 
 .wordmark em {
@@ -711,5 +715,9 @@ select.form-input {
     opacity: 1;
     transform: none;
     animation: none;
+  }
+
+  .mascot-pupil {
+    transition: none;
   }
 }
