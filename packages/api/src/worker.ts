@@ -39,7 +39,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     return {
       main: import.meta.url,
       compatibility: { date: "2026-06-02", flags: ["nodejs_compat"] },
-      dev: { port: 3001, strictPort: true },
+      dev: { port: 8080, strictPort: true },
       ...exactOptional(domain, (domain) => ({ domain })),
     };
   }) as unknown as Cloudflare.WorkerProps,

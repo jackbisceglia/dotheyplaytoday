@@ -55,7 +55,7 @@ of the initial migration session. It is the starting point for the next agent.
   tracked `apiWorker.url` Output directly as `VITE_API_URL_BASE` and uses
   asset-first routing; `alchemy.run.ts` only orchestrates the resource.
 - Database seed runs before API, jobs, and Web creation in stack composition.
-  Development uses fixed Web/API ports 4321 and 3001.
+  Development uses fixed Web/API ports 4321 and 8080.
 - Cloud deployment CORS uses the temporary exact `VITE_WEB_URL_BASE` input.
   Local CORS permits `http://localhost:4321`. No wildcard or same-origin proxy
   was added.
@@ -85,7 +85,7 @@ of the initial migration session. It is the starting point for the next agent.
 - Development seed completed with 3 collections, 92 subjects, 1,257 events,
   2,514 feed edges, 2,514 participants, and one seed user.
 - Live Web and API endpoints were available at `http://localhost:4321/` and
-  `http://localhost:3001/`.
+  `http://localhost:8080/`.
 - Live Home returned status 200 with Solid head metadata.
 - Live invalid-unsubscribe and unknown routes returned HTTP 404 with their
   expected interfaces and metadata.
