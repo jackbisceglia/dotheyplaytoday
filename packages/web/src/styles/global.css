@@ -567,10 +567,10 @@ select.form-input {
 
 .feedback-page {
   min-height: 68vh;
-  padding: 88px 0;
+  padding: 76px 0 84px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
-  gap: clamp(48px, 8vw, 96px);
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.8fr);
+  gap: clamp(40px, 5vw, 64px);
   align-items: start;
 }
 
@@ -584,8 +584,8 @@ select.form-input {
 .feedback-title {
   font-weight: 900;
   font-stretch: 65%;
-  font-size: clamp(3rem, 6vw, 5.25rem);
-  line-height: 0.94;
+  font-size: clamp(2.75rem, 5.1vw, 4.5rem);
+  line-height: 0.96;
   text-transform: uppercase;
   letter-spacing: -0.01em;
 }
@@ -599,8 +599,12 @@ select.form-input {
   white-space: nowrap;
 }
 
+.feedback-title-mark {
+  margin-left: 0.04em;
+}
+
 .feedback-copy {
-  max-width: 46ch;
+  max-width: 38ch;
   color: var(--muted);
   font-size: 1.08rem;
   line-height: 1.55;
@@ -610,8 +614,8 @@ select.form-input {
 .feedback-form {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding: 28px;
+  gap: 18px;
+  padding: 24px;
   border: 3px solid var(--ink);
   background: var(--kelly-wash);
   box-shadow: var(--shadow);
@@ -631,7 +635,7 @@ select.form-input {
 }
 
 .feedback-request {
-  min-height: 190px;
+  min-height: 164px;
   resize: vertical;
   line-height: 1.5;
 }
@@ -795,6 +799,10 @@ select.form-input {
   .feedback-page {
     padding: 56px 0 48px;
     gap: 36px;
+  }
+
+  .feedback-title {
+    font-size: clamp(2.25rem, 11.5vw, 3rem);
   }
 
   .feedback-form {

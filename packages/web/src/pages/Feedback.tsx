@@ -84,7 +84,8 @@ export function Feedback(props: { readonly homeHref: string }) {
           <h1 class="feedback-title">
             <span class="feedback-title-line">What should we</span>
             <span class="feedback-title-line">
-              add <em>next</em>?
+              add <em>next</em>
+              <span class="feedback-title-mark">?</span>
             </span>
           </h1>
           <p class="feedback-copy">
