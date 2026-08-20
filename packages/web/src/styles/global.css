@@ -364,6 +364,64 @@ button {
   box-shadow: none;
 }
 
+/* Selection summary */
+
+.selection-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  height: 50px;
+  min-height: 50px;
+  padding: 8px 20px;
+  border-left: 4px solid var(--kelly);
+  background: var(--kelly-wash);
+}
+
+.selection-summary-label,
+.selection-summary-count {
+  white-space: nowrap;
+}
+
+.selection-summary-count {
+  margin-left: auto;
+  color: var(--kelly-deep);
+}
+
+.selection-summary-list {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 34px;
+  flex-wrap: wrap;
+}
+
+.selection-summary-pick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 76px;
+  min-height: 34px;
+  padding: 5px 16px;
+  font-size: 0.76rem;
+}
+
+.selection-summary-pick + .selection-summary-pick {
+  border-left: 1px solid var(--kelly-border);
+}
+
+.selection-summary-pick strong {
+  font-weight: 900;
+  font-stretch: 70%;
+  letter-spacing: 0.06em;
+}
+
+.selection-summary-empty {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 /* Team grid */
 
 .team-grid {
@@ -683,6 +741,17 @@ select.form-input {
 
   .ticker {
     margin: 0 -20px;
+  }
+
+  .selection-summary {
+    height: auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+  }
+
+  .selection-summary-list {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .team-grid {

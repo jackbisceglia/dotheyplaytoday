@@ -74,6 +74,20 @@ export function Form(props: FormProps) {
       : (available[0]?.id ?? "");
   });
   const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set());
+  const teamsById = createMemo(
+    () =>
+      new Map(
+        leagues().flatMap((league) =>
+          league.teams.map((team) => [team.id as string, team] as const),
+        ),
+      ),
+  );
+  const selectedTeams = createMemo(() =>
+    [...selected()].flatMap((teamId) => {
+      const team = teamsById().get(teamId);
+      return team === undefined ? [] : [team];
+    }),
+  );
   const [email, setEmail] = createSignal("");
   const [sendTimeSeconds, setSendTimeSeconds] = createSignal(sendTime.default);
   const [emailError, setEmailError] = createSignal<string>();
@@ -255,6 +269,42 @@ export function Form(props: FormProps) {
               </button>
             </div>
           </fieldset>
+
+          <div class="selection-summary">
+            <span class="form-label selection-summary-label">Your picks</span>
+            <div class="selection-summary-list">
+              <Show
+                when={selectedTeams().length > 0}
+                fallback={
+                  <span class="selection-summary-empty">None selected yet</span>
+                }
+              >
+                <For each={selectedTeams()}>
+                  {(team) => (
+                    <span
+                      class="selection-summary-pick"
+                      aria-label={team.details.display}
+                      title={team.details.display}
+                    >
+                      <span aria-hidden="true">
+                        {getSportsLogo(team.details)}
+                      </span>
+                      <strong aria-hidden="true">
+                        {team.details.abbreviation}
+                      </strong>
+                    </span>
+                  )}
+                </For>
+              </Show>
+            </div>
+            <span
+              class="form-label selection-summary-count"
+              aria-live="polite"
+              aria-label={`${selected().size.toString()} of ${subjectCapacity.toString()} teams selected`}
+            >
+              {selected().size}/{subjectCapacity}
+            </span>
+          </div>
 
           <fieldset
             class="form-section"
