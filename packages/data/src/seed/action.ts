@@ -12,6 +12,7 @@ import { Action } from "alchemy";
 import { Effect, Layer, pipe } from "effect";
 
 import { seedCatalog, summarizeCatalog } from "./catalog.js";
+import { DevSeedCollections } from "./index.js";
 import { reset } from "./reset.js";
 import { seedUsers, summarizeUsers } from "./users.js";
 
@@ -43,13 +44,13 @@ export const SeedDev = Action(
     const DatabaseLayer = createDatabaseLayer(connectionUrl);
     const SeedLayer = SeedDevLayer.pipe(Layer.provideMerge(DatabaseLayer));
 
-    return Effect.fn("SeedDev.Run")(function* (input: SeedRevision) {
-      yield* Effect.log("Seeding development data...", input);
+    return Effect.fn("SeedDev.Run")(function* () {
+      yield* Effect.log("Seeding development data...");
 
       yield* Effect.gen(function* () {
         yield* reset();
 
-        const collections = yield* seedCatalog();
+        const collections = yield* seedCatalog(DevSeedCollections);
         yield* Effect.log(summarizeCatalog(collections));
 
         const users = yield* seedUsers();

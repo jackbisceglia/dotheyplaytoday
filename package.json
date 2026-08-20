@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "alchemy dev alchemy.run.ts --stage dev_$USER",
+    "dev:seed": "alchemy destroy alchemy.run.ts --stage dev_$USER --yes && pnpm dev",
     "dev:web": "pnpm @web dev",
-    "dev:infra": "alchemy dev alchemy.run.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
     "build": "pnpm -r run build",

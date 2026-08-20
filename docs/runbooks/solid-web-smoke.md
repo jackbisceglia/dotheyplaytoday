@@ -6,7 +6,7 @@ Web custom domain after deployment.
 ## Setup
 
 1. Run `pnpm build`.
-2. For local integration, run `pnpm dev:infra` and use the Web URL printed by
+2. For local integration, run `pnpm dev` and use the Web URL printed by
    Alchemy.
 3. Use `pnpm dev:web` only for a standalone Vite session. It reads
    `VITE_API_URL_BASE` and `VITE_API_URL_PORT` from the workspace `.env`, but

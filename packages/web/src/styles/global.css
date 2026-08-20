@@ -64,6 +64,21 @@ button {
   display: none !important;
 }
 
+.dev-catalog-notice {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 100;
+  max-width: 320px;
+  padding: 10px 12px;
+  border: 2px solid var(--ink);
+  background: var(--kelly-wash);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 /* Header */
 
 .skip-link {
