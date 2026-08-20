@@ -566,7 +566,7 @@ select.form-input {
 /* Feedback */
 
 .feedback-page {
-  min-height: 68vh;
+  min-height: calc(100vh - 150px);
   padding: 76px 0 84px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
