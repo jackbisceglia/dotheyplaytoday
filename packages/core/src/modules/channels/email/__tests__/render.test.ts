@@ -71,16 +71,16 @@ describe("email rendering", () => {
 
         expect(payload.subject).toBe("Boston Celtics play today");
         expect(payload.text).toContain(
-          "New York Knicks at Boston Celtics, 4:00 PM EDT",
+          "Boston Celtics vs. New York Knicks, 4:00 PM EDT",
         );
         expect(payload.text).toContain(
-          "Boston Celtics at Miami Heat, 8:30 PM EDT",
+          "Boston Celtics @ Miami Heat, 8:30 PM EDT",
         );
         expect(payload.text).toContain(
           "Unsubscribe: https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
         );
         expect(payload.html).toContain("Boston Celtics play today");
-        expect(payload.html).toContain("New York Knicks at Boston Celtics");
+        expect(payload.html).toContain("Boston Celtics vs. New York Knicks");
         expect(payload.html).toContain("https://example.com:8080/unsubscribe/");
         expect(payload.html).toContain(
           '<a href="https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201"',
@@ -128,10 +128,10 @@ describe("email rendering", () => {
         const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
 
         expect(payload.text).toContain(
-          "Knicks & Nets at Celtics <Home>, 4:00 PM EDT",
+          "Knicks & Nets @ Celtics <Home>, 4:00 PM EDT",
         );
         expect(payload.html).toContain(
-          "Knicks &amp; Nets at Celtics &lt;Home&gt;",
+          "Knicks &amp; Nets @ Celtics &lt;Home&gt;",
         );
       });
     },
