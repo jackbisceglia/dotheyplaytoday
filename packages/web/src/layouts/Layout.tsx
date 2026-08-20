@@ -1,5 +1,6 @@
 import { Show } from "solid-js";
 import type { ParentProps } from "solid-js";
+import { BrandMark } from "../modules/ui/BrandMark.jsx";
 
 type HeaderAction = {
   readonly href: string;
@@ -28,13 +29,10 @@ export function Layout(props: LayoutProps) {
 
       <header class="site-header">
         <a class="wordmark" href={props.homeHref}>
-          <img
+          <BrandMark
             class="wordmark-mark"
-            src="/favicon.svg"
-            alt=""
-            aria-hidden="true"
-            width="28"
-            height="28"
+            eyeShadow="offset"
+            headband="white"
           />
           <span class="visually-hidden">Do they play today</span>
           <span aria-hidden="true">
