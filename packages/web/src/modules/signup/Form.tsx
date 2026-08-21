@@ -2,7 +2,7 @@ import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { DateTime, Match, Option, Result, Schema } from "effect";
-import { For, Show, createMemo, createSignal } from "solid-js";
+import { For, Show, createMemo, createSignal, onCleanup } from "solid-js";
 
 import { withApiClient } from "../../lib/api.js";
 import {
@@ -21,7 +21,7 @@ import { Success } from "./Success.jsx";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
-const capacityHint = `Free tier users can subscribe to ${subjectCapacity.toString()} teams.`;
+const capacityHint = `You can select up to ${subjectCapacity.toString()} teams. Remove one before selecting another.`;
 type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -94,7 +94,8 @@ export function Form(props: FormProps) {
   const [sendTimeError, setSendTimeError] = createSignal<string>();
   const [timezoneError, setTimezoneError] = createSignal<string>();
   const [teamError, setTeamError] = createSignal<string>();
-  const [teamHint, setTeamHint] = createSignal<string>();
+  const [rejectedTeamId, setRejectedTeamId] = createSignal<string>();
+  const [capacityToast, setCapacityToast] = createSignal<string>();
   const [formError, setFormError] = createSignal<string>();
   const [isSubmitting, setSubmitting] = createSignal(false);
   const [isSucceeded, setSucceeded] = createSignal(false);
@@ -103,12 +104,43 @@ export function Form(props: FormProps) {
   let emailInput: HTMLInputElement | undefined;
   let sendTimeInput: HTMLSelectElement | undefined;
   let successTitle: HTMLHeadingElement | undefined;
+  let rejectionFrame: number | undefined;
+  let rejectionTimer: number | undefined;
+  let toastTimer: number | undefined;
+
+  const rejectTeam = (teamId: string) => {
+    setRejectedTeamId(undefined);
+    setCapacityToast(undefined);
+
+    if (rejectionFrame !== undefined)
+      window.cancelAnimationFrame(rejectionFrame);
+    if (rejectionTimer !== undefined) window.clearTimeout(rejectionTimer);
+    if (toastTimer !== undefined) window.clearTimeout(toastTimer);
+
+    rejectionFrame = window.requestAnimationFrame(() => {
+      setRejectedTeamId(teamId);
+      setCapacityToast(capacityHint);
+      rejectionTimer = window.setTimeout(() => {
+        setRejectedTeamId(undefined);
+      }, 280);
+      toastTimer = window.setTimeout(() => {
+        setCapacityToast(undefined);
+      }, 2400);
+    });
+  };
+
+  onCleanup(() => {
+    if (rejectionFrame !== undefined)
+      window.cancelAnimationFrame(rejectionFrame);
+    if (rejectionTimer !== undefined) window.clearTimeout(rejectionTimer);
+    if (toastTimer !== undefined) window.clearTimeout(toastTimer);
+  });
 
   const toggleTeam = (teamId: string) => {
     const current = selected();
 
     if (!current.has(teamId) && current.size >= subjectCapacity) {
-      setTeamHint(capacityHint);
+      rejectTeam(teamId);
       return;
     }
 
@@ -118,7 +150,7 @@ export function Form(props: FormProps) {
 
     setSelected(next);
     setTeamError(undefined);
-    setTeamHint(next.size === subjectCapacity ? capacityHint : undefined);
+    setCapacityToast(undefined);
   };
 
   const validate = () => {
@@ -270,13 +302,12 @@ export function Form(props: FormProps) {
             </div>
           </fieldset>
 
-          <div class="selection-summary">
-            <span class="form-label selection-summary-label">Your picks</span>
+          <div class="selection-summary" role="group" aria-label="Your picks">
             <div class="selection-summary-list">
               <Show
                 when={selectedTeams().length > 0}
                 fallback={
-                  <span class="selection-summary-empty">None selected yet</span>
+                  <span class="selection-summary-empty">No picks yet</span>
                 }
               >
                 <For each={selectedTeams()}>
@@ -286,7 +317,7 @@ export function Form(props: FormProps) {
                       aria-label={team.details.display}
                       title={team.details.display}
                     >
-                      <span aria-hidden="true">
+                      <span class="selection-summary-logo" aria-hidden="true">
                         {getSportsLogo(team.details)}
                       </span>
                       <strong aria-hidden="true">
@@ -306,10 +337,7 @@ export function Form(props: FormProps) {
             </span>
           </div>
 
-          <fieldset
-            class="form-section"
-            aria-describedby="team-error team-hint"
-          >
+          <fieldset class="form-section" aria-describedby="team-error">
             <legend class="visually-hidden">Teams</legend>
             <For each={leagues()}>
               {(league) => (
@@ -321,6 +349,9 @@ export function Form(props: FormProps) {
                         class="team-card"
                         aria-pressed={
                           selected().has(team.id) ? "true" : "false"
+                        }
+                        data-rejected={
+                          rejectedTeamId() === team.id ? "true" : undefined
                         }
                         onClick={() => {
                           toggleTeam(team.id);
@@ -347,14 +378,6 @@ export function Form(props: FormProps) {
                 hidden={teamError() === undefined}
               >
                 {teamError() ?? ""}
-              </p>
-              <p
-                id="team-hint"
-                class="form-hint"
-                role="status"
-                hidden={teamHint() === undefined}
-              >
-                {teamHint() ?? ""}
               </p>
             </div>
           </fieldset>
@@ -459,6 +482,14 @@ export function Form(props: FormProps) {
           >
             {formError() ?? ""}
           </p>
+
+          <Show when={capacityToast()}>
+            {(message) => (
+              <div class="capacity-toast" role="status" aria-live="polite">
+                {message()}
+              </div>
+            )}
+          </Show>
         </form>
       </Show>
     </div>
