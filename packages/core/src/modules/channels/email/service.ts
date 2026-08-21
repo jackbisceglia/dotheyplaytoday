@@ -32,6 +32,7 @@ export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>(
 
 type SportsGameEvents = Array.NonEmptyReadonlyArray<SportsGameEvent>;
 type SportsGameEvent = ExtractFromTag<EventWithParticipants, "sports_game">;
+type SportsGameParticipant = SportsGameEvent["participants"][number];
 
 type SportsTeamSubject = Subject & {
   readonly details: ExtractFromTag<Subject["details"], "sports_team">;
@@ -76,6 +77,92 @@ const requireSportsParticipantsRoles = Effect.fn(
   return { home, away };
 });
 
+type SubjectSide = {
+  readonly leading: SportsGameParticipant;
+  readonly trailing: SportsGameParticipant;
+  readonly separator: "@" | "vs.";
+};
+
+/**
+ * When every event in the batch shares exactly one participant title, that
+ * title must be the subscriber's team: the events were pulled in because
+ * they're the subject's games, so a team present in all of them can only be
+ * the subject. This is a structural inference, not a guess.
+ */
+const findSharedParticipantTitle = (
+  events: SportsGameEvents,
+): string | undefined => {
+  if (events.length < 2) return undefined;
+
+  const titleCounts = new Map<string, number>();
+
+  for (const event of events) {
+    for (const participant of event.participants) {
+      const title = participant.details.title;
+
+      titleCounts.set(title, (titleCounts.get(title) ?? 0) + 1);
+    }
+  }
+
+  let sharedTitle: string | undefined;
+
+  for (const [title, count] of titleCounts) {
+    if (count !== events.length) continue;
+    if (sharedTitle !== undefined) return undefined;
+    sharedTitle = title;
+  }
+
+  return sharedTitle;
+};
+
+/**
+ * Best-effort guess at which participant is the subscriber's team, used when
+ * {@link findSharedParticipantTitle} has nothing to compare across (a single
+ * event). Participant titles carry no id back to the subject, so this is a
+ * plain string match against the subject's display name — it can miss
+ * (differing formatting, renamed teams), in which case callers should treat
+ * `undefined` as "ordering doesn't matter".
+ */
+const guessSubjectSide = (
+  home: SportsGameParticipant,
+  away: SportsGameParticipant,
+  subjectDisplay: string,
+): SubjectSide | undefined => {
+  const normalize = (value: string) => value.trim().toLowerCase();
+  const target = normalize(subjectDisplay);
+
+  if (normalize(home.details.title) === target) {
+    return { leading: home, trailing: away, separator: "vs." };
+  }
+  if (normalize(away.details.title) === target) {
+    return { leading: away, trailing: home, separator: "@" };
+  }
+
+  return undefined;
+};
+
+const orderBySubject = (
+  home: SportsGameParticipant,
+  away: SportsGameParticipant,
+  sharedParticipantTitle: string | undefined,
+  subjectDisplay: string,
+): SubjectSide => {
+  if (sharedParticipantTitle === home.details.title) {
+    return { leading: home, trailing: away, separator: "vs." };
+  }
+  if (sharedParticipantTitle === away.details.title) {
+    return { leading: away, trailing: home, separator: "@" };
+  }
+
+  return (
+    guessSubjectSide(home, away, subjectDisplay) ?? {
+      leading: away,
+      trailing: home,
+      separator: "@",
+    }
+  );
+};
+
 const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
   const userLocaleDateTime = DateTime.setZone(event.startsAt, tz);
 
@@ -101,15 +188,28 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
         Effect.gen(function* () {
           const subject = `${notification.subject.details.display} play today`;
 
+          const sharedParticipantTitle = findSharedParticipantTitle(
+            notification.events,
+          );
+
           const main = yield* Effect.forEach(notification.events, (game) =>
             Effect.gen(function* () {
               const { home, away } =
                 yield* requireSportsParticipantsRoles(game);
 
+              const { leading, trailing, separator } = orderBySubject(
+                home,
+                away,
+                sharedParticipantTitle,
+                notification.subject.details.display,
+              );
+
               return StringParts()
-                .add(`${away.details.title} at ${home.details.title}`)
+                .add(
+                  `${leading.details.title} ${separator} ${trailing.details.title}`,
+                )
                 .add(formatStartTime(game, timezone))
-                .make(", ");
+                .make("\t");
             }),
           );
 
