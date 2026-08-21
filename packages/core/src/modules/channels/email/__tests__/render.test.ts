@@ -80,6 +80,10 @@ describe("email rendering", () => {
           "Unsubscribe: https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
         );
         expect(payload.html).toContain("Boston Celtics play today");
+        expect(payload.html).toContain(
+          '<meta name="color-scheme" content="light dark" />',
+        );
+        expect(payload.html).toContain("@media (prefers-color-scheme: dark)");
         expect(payload.html).toContain("Boston Celtics vs. New York Knicks");
         expect(payload.html).toContain("https://example.com:8080/unsubscribe/");
         expect(payload.html).toContain(

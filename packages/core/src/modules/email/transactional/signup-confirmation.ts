@@ -54,8 +54,8 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
           intro: "Your game-day email signup is active for these teams:",
         }),
         repeatSignup: () => ({
-          subject: "Your dotheyplaytoday picks are updated",
-          heading: "Your picks are updated",
+          subject: "Your Picks are Updated",
+          heading: undefined,
           intro: "Your previous picks have been replaced with these teams:",
         }),
       }),
@@ -65,8 +65,7 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
     return EmailView({
       subject: copy.subject,
       main: [
-        copy.heading,
-        "",
+        ...(copy.heading === undefined ? [] : [copy.heading, ""]),
         copy.intro,
         ...teamNames.map((name) => `- ${name}`),
         "",

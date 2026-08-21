@@ -20,6 +20,7 @@ export type EmailViewProps = {
 };
 
 const color = {
+  canvas: "#ffffff",
   paper: "#f8f6f0",
   ink: "#131711",
   kelly: "#169b4d",
@@ -55,16 +56,16 @@ const html = (
   const element = {
     div: '<div style="height: 12px; line-height: 12px; font-size: 12px;">&nbsp;</div>',
     a: (href: string, text: string) =>
-      `<a href="${escapeHtml(href)}" style="color: ${color.kellyDeep}; font-weight: 700;">${escapeHtml(text)}</a>`,
+      `<a href="${escapeHtml(href)}" class="email-link" style="color: ${color.kellyDeep}; font-weight: 700;">${escapeHtml(text)}</a>`,
     p: (content: string) =>
-      `<p style="margin: 0 0 10px; font-size: 15px; line-height: 1.5; color: ${color.ink}; font-family: ${font.body};">${content}</p>`,
+      `<p class="email-ink" style="margin: 0 0 10px; font-size: 15px; line-height: 1.5; color: ${color.ink}; font-family: ${font.body};">${content}</p>`,
     item: (content: string) =>
-      `<p style="margin: 0 0 8px; font-size: 15px; line-height: 1.4; font-weight: 700; color: ${color.ink}; font-family: ${font.body};"><span style="color: ${color.kelly};">&#9679;</span>&nbsp; ${content}</p>`,
+      `<p class="email-ink" style="margin: 0 0 8px; font-size: 15px; line-height: 1.4; font-weight: 700; color: ${color.ink}; font-family: ${font.body};"><span style="color: ${color.kelly};">&#9679;</span>&nbsp; ${content}</p>`,
     row: (label: string, value: string) =>
-      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td style="padding: 6px 0; font-size: 15px; font-weight: 700; line-height: 1.4; color: ${color.ink}; font-family: ${font.body};">${label}</td>
-        <td style="padding: 6px 0 6px 16px; font-size: 13px; font-weight: 400; line-height: 1.4; color: ${color.ink}; font-family: ${font.body}; text-align: right; white-space: nowrap;">${value}</td>
-      </tr></table>`,
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr><td class="email-ink" style="padding: 6px 0 0; font-size: 15px; font-weight: 700; line-height: 1.4; color: ${color.ink}; font-family: ${font.body};">${label}</td></tr>
+        <tr><td class="email-ink" style="padding: 2px 0 14px; font-size: 13px; font-weight: 400; line-height: 1.4; color: ${color.ink}; font-family: ${font.body};">${value}</td></tr>
+      </table>`,
   };
 
   const Main = StringParts(
@@ -91,20 +92,51 @@ const html = (
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        supported-color-schemes: light dark;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .email-body {
+          background-color: #131711 !important;
+        }
+
+        .email-ink {
+          color: #f8f6f0 !important;
+        }
+
+        .email-rule,
+        .email-card {
+          border-color: #f8f6f0 !important;
+        }
+
+        .email-card {
+          background-color: #20241e !important;
+        }
+
+        .email-link {
+          color: #47c878 !important;
+        }
+      }
+    </style>
   </head>
-  <body style="margin: 0; padding: 32px 16px; font-family: ${font.body}; color: ${color.ink}; background-color: ${color.paper};">
+  <body class="email-body" style="margin: 0; padding: 32px 16px; font-family: ${font.body}; color: ${color.ink}; background-color: ${color.canvas};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; margin: 0 auto;">
       <tr>
-        <td style="padding: 0 0 20px; border-bottom: 3px solid ${color.ink};">
-          <span style="font-family: ${font.display}; font-weight: 900; font-size: 16px; letter-spacing: 0.02em; text-transform: uppercase; color: ${color.ink};">dothey<span style="color: ${color.kelly};">play</span>today</span>
+        <td class="email-rule" style="padding: 0 0 20px; border-bottom: 3px solid ${color.ink};">
+          <span class="email-ink" style="font-family: ${font.display}; font-weight: 900; font-size: 16px; letter-spacing: 0.02em; text-transform: uppercase; color: ${color.ink};">dothey<span style="color: ${color.kelly};">play</span>today</span>
         </td>
       </tr>
       <tr>
         <td style="padding: 28px 0 0;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 3px solid ${color.ink}; background-color: #ffffff; box-shadow: 6px 6px 0 ${color.kelly};">
+          <table class="email-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 3px solid ${color.ink}; background-color: #ffffff; box-shadow: 6px 6px 0 ${color.kelly};">
             <tr>
               <td style="padding: 28px;">
-                <p style="margin: 0 0 18px; font-family: ${font.display}; font-weight: 900; font-size: 21px; line-height: 1.25; letter-spacing: 0; text-transform: uppercase; color: ${color.ink};">${escapeHtml(subject)}</p>
+                <p class="email-ink" style="margin: 0 0 18px; font-family: ${font.display}; font-weight: 900; font-size: 21px; line-height: 1.25; letter-spacing: 0; text-transform: uppercase; color: ${color.ink};">${escapeHtml(subject)}</p>
                 ${Main}
               </td>
             </tr>
