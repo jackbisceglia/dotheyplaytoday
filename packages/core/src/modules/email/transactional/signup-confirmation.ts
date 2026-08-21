@@ -21,13 +21,26 @@ export const SignupConfirmation = Schema.TaggedUnion({
   repeatSignup: fields,
 });
 
-const formatLocalTime = (seconds: number, timezone: string) => {
+const formatTimezoneAbbreviation = (timezone: string, date: Date) =>
+  new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    timeZoneName: "short",
+  })
+    .formatToParts(date)
+    .find((part) => part.type === "timeZoneName")?.value ?? timezone;
+
+const formatLocalTime = (
+  seconds: number,
+  timezone: string,
+  date = new Date(),
+) => {
   const hour = Math.floor(seconds / 3_600);
   const minute = Math.floor((seconds % 3_600) / 60);
   const period = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 || 12;
+  const timezoneAbbreviation = formatTimezoneAbbreviation(timezone, date);
 
-  return `${hour12.toString()}:${minute.toString().padStart(2, "0")} ${period} (${timezone})`;
+  return `${hour12.toString()}:${minute.toString().padStart(2, "0")} ${period} ${timezoneAbbreviation}`;
 };
 
 export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(

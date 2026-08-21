@@ -5,7 +5,7 @@ import type {
   CreateEmailRequestOptions,
   CreateEmailResponse,
 } from "resend";
-import { beforeEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 
 import { Id } from "../../../../lib/id/service.js";
 import { notification } from "../../../channels/__tests__/fixtures.js";
@@ -89,6 +89,10 @@ describe("signup confirmation email", () => {
     resendMock.send.mockResolvedValue(successResponse);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("decodes both confirmation variants", () => {
     const decode = Schema.decodeUnknownSync(SignupConfirmation);
     const encode = Schema.encodeUnknownSync(SignupConfirmation);
@@ -99,6 +103,9 @@ describe("signup confirmation email", () => {
 
   it.effect("renders distinct, complete text and HTML receipts", () =>
     Effect.gen(function* () {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-05-24T13:00:00.000Z"));
+
       const first = yield* renderSignupConfirmation(signupConfirmation);
       const repeat = yield* renderSignupConfirmation(repeatConfirmation);
 
@@ -110,7 +117,8 @@ describe("signup confirmation email", () => {
       for (const rendered of [first, repeat]) {
         expect(rendered.body.text).toContain("Boston Celtics");
         expect(rendered.body.text).toContain("New York Knicks & Nets <Team>");
-        expect(rendered.body.text).toContain("9:00 AM (America/New_York)");
+        expect(rendered.body.text).toContain("9:00 AM EDT");
+        expect(rendered.body.text).not.toContain("America/New_York");
         expect(rendered.body.text).toContain(
           "https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
         );
@@ -122,6 +130,18 @@ describe("signup confirmation email", () => {
           "New York Knicks & Nets <Team>",
         );
       }
+    }).pipe(Effect.provide(WebConfigLayerTest)),
+  );
+
+  it.effect("uses the standard-time abbreviation in winter", () =>
+    Effect.gen(function* () {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-01-24T14:00:00.000Z"));
+
+      const rendered = yield* renderSignupConfirmation(signupConfirmation);
+
+      expect(rendered.body.text).toContain("9:00 AM EST");
+      expect(rendered.body.text).not.toContain("America/New_York");
     }).pipe(Effect.provide(WebConfigLayerTest)),
   );
 
