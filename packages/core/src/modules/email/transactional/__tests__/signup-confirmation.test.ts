@@ -117,7 +117,7 @@ describe("signup confirmation email", () => {
       for (const rendered of [first, repeat]) {
         expect(rendered.body.text).toContain("Boston Celtics");
         expect(rendered.body.text).toContain("New York Knicks & Nets <Team>");
-        expect(rendered.body.text).toContain("9:00 AM EDT");
+        expect(rendered.body.text).toContain("9:00 AM ET");
         expect(rendered.body.text).not.toContain("America/New_York");
         expect(rendered.body.text).toContain(
           "https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
@@ -133,14 +133,14 @@ describe("signup confirmation email", () => {
     }).pipe(Effect.provide(WebConfigLayerTest)),
   );
 
-  it.effect("uses the standard-time abbreviation in winter", () =>
+  it.effect("uses the same generic timezone abbreviation in winter", () =>
     Effect.gen(function* () {
       vi.useFakeTimers();
       vi.setSystemTime(new Date("2026-01-24T14:00:00.000Z"));
 
       const rendered = yield* renderSignupConfirmation(signupConfirmation);
 
-      expect(rendered.body.text).toContain("9:00 AM EST");
+      expect(rendered.body.text).toContain("9:00 AM ET");
       expect(rendered.body.text).not.toContain("America/New_York");
     }).pipe(Effect.provide(WebConfigLayerTest)),
   );

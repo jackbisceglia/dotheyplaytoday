@@ -24,7 +24,7 @@ export const SignupConfirmation = Schema.TaggedUnion({
 const formatTimezoneAbbreviation = (timezone: string, date: Date) =>
   new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    timeZoneName: "short",
+    timeZoneName: "shortGeneric",
   })
     .formatToParts(date)
     .find((part) => part.type === "timeZoneName")?.value ?? timezone;
