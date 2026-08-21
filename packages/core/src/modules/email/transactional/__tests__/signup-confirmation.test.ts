@@ -110,7 +110,8 @@ describe("signup confirmation email", () => {
       for (const rendered of [first, repeat]) {
         expect(rendered.body.text).toContain("Boston Celtics");
         expect(rendered.body.text).toContain("New York Knicks & Nets <Team>");
-        expect(rendered.body.text).toContain("9:00 AM (America/New_York)");
+        expect(rendered.body.text).toContain("9:00 AM ET");
+        expect(rendered.body.text).not.toContain("America/New_York");
         expect(rendered.body.text).toContain(
           "https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
         );
