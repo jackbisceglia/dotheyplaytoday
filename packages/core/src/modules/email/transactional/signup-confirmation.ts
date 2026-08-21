@@ -21,24 +21,20 @@ export const SignupConfirmation = Schema.TaggedUnion({
   repeatSignup: fields,
 });
 
-const formatTimezoneAbbreviation = (timezone: string, date: Date) =>
+const formatTimezoneAbbreviation = (timezone: string) =>
   new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
     timeZoneName: "shortGeneric",
   })
-    .formatToParts(date)
+    .formatToParts()
     .find((part) => part.type === "timeZoneName")?.value ?? timezone;
 
-const formatLocalTime = (
-  seconds: number,
-  timezone: string,
-  date = new Date(),
-) => {
+const formatLocalTime = (seconds: number, timezone: string) => {
   const hour = Math.floor(seconds / 3_600);
   const minute = Math.floor((seconds % 3_600) / 60);
   const period = hour >= 12 ? "PM" : "AM";
   const hour12 = hour % 12 || 12;
-  const timezoneAbbreviation = formatTimezoneAbbreviation(timezone, date);
+  const timezoneAbbreviation = formatTimezoneAbbreviation(timezone);
 
   return `${hour12.toString()}:${minute.toString().padStart(2, "0")} ${period} ${timezoneAbbreviation}`;
 };

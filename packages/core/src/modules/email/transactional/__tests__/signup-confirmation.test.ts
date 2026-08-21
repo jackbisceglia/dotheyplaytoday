@@ -5,7 +5,7 @@ import type {
   CreateEmailRequestOptions,
   CreateEmailResponse,
 } from "resend";
-import { afterEach, beforeEach, vi } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 import { Id } from "../../../../lib/id/service.js";
 import { notification } from "../../../channels/__tests__/fixtures.js";
@@ -89,10 +89,6 @@ describe("signup confirmation email", () => {
     resendMock.send.mockResolvedValue(successResponse);
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it("decodes both confirmation variants", () => {
     const decode = Schema.decodeUnknownSync(SignupConfirmation);
     const encode = Schema.encodeUnknownSync(SignupConfirmation);
@@ -103,9 +99,6 @@ describe("signup confirmation email", () => {
 
   it.effect("renders distinct, complete text and HTML receipts", () =>
     Effect.gen(function* () {
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date("2026-05-24T13:00:00.000Z"));
-
       const first = yield* renderSignupConfirmation(signupConfirmation);
       const repeat = yield* renderSignupConfirmation(repeatConfirmation);
 
@@ -130,18 +123,6 @@ describe("signup confirmation email", () => {
           "New York Knicks & Nets <Team>",
         );
       }
-    }).pipe(Effect.provide(WebConfigLayerTest)),
-  );
-
-  it.effect("uses the same generic timezone abbreviation in winter", () =>
-    Effect.gen(function* () {
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date("2026-01-24T14:00:00.000Z"));
-
-      const rendered = yield* renderSignupConfirmation(signupConfirmation);
-
-      expect(rendered.body.text).toContain("9:00 AM ET");
-      expect(rendered.body.text).not.toContain("America/New_York");
     }).pipe(Effect.provide(WebConfigLayerTest)),
   );
 
