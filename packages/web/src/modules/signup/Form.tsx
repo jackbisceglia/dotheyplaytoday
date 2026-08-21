@@ -18,10 +18,11 @@ import {
   sendTimeIntervals,
 } from "../../lib/time.js";
 import { Success } from "./Success.jsx";
+import { useSelectionRejection } from "./useSelectionRejection.js";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
-const capacityHint = `Free tier users can subscribe to ${subjectCapacity.toString()} teams.`;
+const capacityHint = `You can select up to ${subjectCapacity.toString()} teams. Remove one before selecting another.`;
 type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -74,13 +75,30 @@ export function Form(props: FormProps) {
       : (available[0]?.id ?? "");
   });
   const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set());
+  const selectedTeams = createMemo(() => {
+    const teamsById = new Map(
+      leagues().flatMap((league) =>
+        league.teams.map((team) => [team.id as string, team] as const),
+      ),
+    );
+
+    return [...selected()].flatMap((teamId) => {
+      const team = teamsById.get(teamId);
+      return team === undefined ? [] : [team];
+    });
+  });
   const [email, setEmail] = createSignal("");
   const [sendTimeSeconds, setSendTimeSeconds] = createSignal(sendTime.default);
   const [emailError, setEmailError] = createSignal<string>();
   const [sendTimeError, setSendTimeError] = createSignal<string>();
   const [timezoneError, setTimezoneError] = createSignal<string>();
   const [teamError, setTeamError] = createSignal<string>();
-  const [teamHint, setTeamHint] = createSignal<string>();
+  const {
+    rejectedSelectionId,
+    rejectionMessage,
+    rejectSelection,
+    clearRejection,
+  } = useSelectionRejection(capacityHint);
   const [formError, setFormError] = createSignal<string>();
   const [isSubmitting, setSubmitting] = createSignal(false);
   const [isSucceeded, setSucceeded] = createSignal(false);
@@ -94,7 +112,7 @@ export function Form(props: FormProps) {
     const current = selected();
 
     if (!current.has(teamId) && current.size >= subjectCapacity) {
-      setTeamHint(capacityHint);
+      rejectSelection(teamId);
       return;
     }
 
@@ -104,7 +122,7 @@ export function Form(props: FormProps) {
 
     setSelected(next);
     setTeamError(undefined);
-    setTeamHint(next.size === subjectCapacity ? capacityHint : undefined);
+    clearRejection();
   };
 
   const validate = () => {
@@ -256,10 +274,44 @@ export function Form(props: FormProps) {
             </div>
           </fieldset>
 
-          <fieldset
-            class="form-section"
-            aria-describedby="team-error team-hint"
-          >
+          <div class="selection-summary" role="group" aria-label="Your picks">
+            <div class="selection-summary-list">
+              <Show
+                when={selectedTeams().length > 0}
+                fallback={
+                  <span class="selection-summary-empty">No picks yet</span>
+                }
+              >
+                <For each={selectedTeams()}>
+                  {(team) => (
+                    <span
+                      class="selection-summary-pick"
+                      title={team.details.display}
+                    >
+                      <span class="selection-summary-logo" aria-hidden="true">
+                        {getSportsLogo(team.details)}
+                      </span>
+                      <strong aria-hidden="true">
+                        {team.details.abbreviation}
+                      </strong>
+                      <span class="visually-hidden">
+                        {team.details.display}
+                      </span>
+                    </span>
+                  )}
+                </For>
+              </Show>
+            </div>
+            <span
+              class="form-label selection-summary-count"
+              aria-live="polite"
+              aria-label={`${selected().size.toString()} of ${subjectCapacity.toString()} teams selected`}
+            >
+              {selected().size}/{subjectCapacity}
+            </span>
+          </div>
+
+          <fieldset class="form-section" aria-describedby="team-error">
             <legend class="visually-hidden">Teams</legend>
             <For each={leagues()}>
               {(league) => (
@@ -271,6 +323,9 @@ export function Form(props: FormProps) {
                         class="team-card"
                         aria-pressed={
                           selected().has(team.id) ? "true" : "false"
+                        }
+                        data-rejected={
+                          rejectedSelectionId() === team.id ? "true" : undefined
                         }
                         onClick={() => {
                           toggleTeam(team.id);
@@ -297,14 +352,6 @@ export function Form(props: FormProps) {
                 hidden={teamError() === undefined}
               >
                 {teamError() ?? ""}
-              </p>
-              <p
-                id="team-hint"
-                class="form-hint"
-                role="status"
-                hidden={teamHint() === undefined}
-              >
-                {teamHint() ?? ""}
               </p>
             </div>
           </fieldset>
@@ -409,6 +456,14 @@ export function Form(props: FormProps) {
           >
             {formError() ?? ""}
           </p>
+
+          <Show when={rejectionMessage()}>
+            {(message) => (
+              <div class="capacity-toast" role="status" aria-live="polite">
+                {message()}
+              </div>
+            )}
+          </Show>
         </form>
       </Show>
     </div>

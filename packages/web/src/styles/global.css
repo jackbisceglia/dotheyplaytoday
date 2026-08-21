@@ -391,6 +391,65 @@ button {
   box-shadow: none;
 }
 
+/* Selection summary */
+
+.selection-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  height: 50px;
+  min-height: 50px;
+  padding: 8px 16px 8px 0;
+  border-left: 4px solid var(--kelly);
+  background: var(--kelly-wash);
+}
+
+.selection-summary-count {
+  white-space: nowrap;
+}
+
+.selection-summary-count {
+  margin-left: auto;
+  color: var(--kelly-deep);
+}
+
+.selection-summary-list {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 34px;
+  flex-wrap: nowrap;
+}
+
+.selection-summary-pick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 1 76px;
+  gap: 6px;
+  min-width: 56px;
+  min-height: 34px;
+  padding: 5px 16px;
+  font-size: 0.76rem;
+}
+
+.selection-summary-pick + .selection-summary-pick {
+  border-left: 1px solid var(--kelly-border);
+}
+
+.selection-summary-pick strong {
+  font-weight: 900;
+  font-stretch: 70%;
+  letter-spacing: 0.06em;
+}
+
+.selection-summary-empty {
+  margin-left: 16px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 /* Team grid */
 
 .team-grid {
@@ -434,6 +493,27 @@ button {
   border-color: var(--ink);
   background: var(--kelly-wash);
   box-shadow: var(--shadow);
+}
+
+.team-card[data-rejected="true"] {
+  border-color: var(--error);
+  animation: team-card-reject 280ms ease-in-out;
+}
+
+@keyframes team-card-reject {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
 }
 
 .team-glyph {
@@ -522,6 +602,30 @@ select.form-input {
   padding: 14px 18px;
   border: 2px solid var(--error);
   background: rgba(206, 58, 38, 0.06);
+}
+
+.capacity-toast {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 110;
+  max-width: 340px;
+  padding: 12px 16px;
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 4px 4px 0 var(--kelly);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.35;
+  animation: capacity-toast-in 160ms ease-out;
+}
+
+@keyframes capacity-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
 
 /* Success */
@@ -828,6 +932,39 @@ select.form-input {
   }
 }
 
+@media (max-width: 600px) {
+  .selection-summary {
+    gap: 8px;
+    padding-right: 12px;
+  }
+
+  .selection-summary-pick {
+    flex-basis: 68px;
+    min-width: 44px;
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  .capacity-toast {
+    right: 16px;
+    bottom: 88px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .selection-summary-pick {
+    flex-basis: 44px;
+    min-width: 36px;
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+
+  .selection-summary-logo {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -853,5 +990,10 @@ select.form-input {
 
   .mascot-pupil {
     transition: none;
+  }
+
+  .team-card[data-rejected="true"],
+  .capacity-toast {
+    animation: none;
   }
 }
