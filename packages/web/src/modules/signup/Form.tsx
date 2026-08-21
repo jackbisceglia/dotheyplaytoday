@@ -286,7 +286,6 @@ export function Form(props: FormProps) {
                   {(team) => (
                     <span
                       class="selection-summary-pick"
-                      aria-label={team.details.display}
                       title={team.details.display}
                     >
                       <span class="selection-summary-logo" aria-hidden="true">
@@ -295,6 +294,9 @@ export function Form(props: FormProps) {
                       <strong aria-hidden="true">
                         {team.details.abbreviation}
                       </strong>
+                      <span class="visually-hidden">
+                        {team.details.display}
+                      </span>
                     </span>
                   )}
                 </For>
