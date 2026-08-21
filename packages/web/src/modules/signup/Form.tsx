@@ -2,7 +2,7 @@ import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { DateTime, Match, Option, Result, Schema } from "effect";
-import { For, Show, createMemo, createSignal, onCleanup } from "solid-js";
+import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { withApiClient } from "../../lib/api.js";
 import {
@@ -18,6 +18,7 @@ import {
   sendTimeIntervals,
 } from "../../lib/time.js";
 import { Success } from "./Success.jsx";
+import { useSelectionRejection } from "./useSelectionRejection.js";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
@@ -74,28 +75,30 @@ export function Form(props: FormProps) {
       : (available[0]?.id ?? "");
   });
   const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set());
-  const teamsById = createMemo(
-    () =>
-      new Map(
-        leagues().flatMap((league) =>
-          league.teams.map((team) => [team.id as string, team] as const),
-        ),
+  const selectedTeams = createMemo(() => {
+    const teamsById = new Map(
+      leagues().flatMap((league) =>
+        league.teams.map((team) => [team.id as string, team] as const),
       ),
-  );
-  const selectedTeams = createMemo(() =>
-    [...selected()].flatMap((teamId) => {
-      const team = teamsById().get(teamId);
+    );
+
+    return [...selected()].flatMap((teamId) => {
+      const team = teamsById.get(teamId);
       return team === undefined ? [] : [team];
-    }),
-  );
+    });
+  });
   const [email, setEmail] = createSignal("");
   const [sendTimeSeconds, setSendTimeSeconds] = createSignal(sendTime.default);
   const [emailError, setEmailError] = createSignal<string>();
   const [sendTimeError, setSendTimeError] = createSignal<string>();
   const [timezoneError, setTimezoneError] = createSignal<string>();
   const [teamError, setTeamError] = createSignal<string>();
-  const [rejectedTeamId, setRejectedTeamId] = createSignal<string>();
-  const [capacityToast, setCapacityToast] = createSignal<string>();
+  const {
+    rejectedSelectionId,
+    rejectionMessage,
+    rejectSelection,
+    clearRejection,
+  } = useSelectionRejection(capacityHint);
   const [formError, setFormError] = createSignal<string>();
   const [isSubmitting, setSubmitting] = createSignal(false);
   const [isSucceeded, setSucceeded] = createSignal(false);
@@ -104,43 +107,12 @@ export function Form(props: FormProps) {
   let emailInput: HTMLInputElement | undefined;
   let sendTimeInput: HTMLSelectElement | undefined;
   let successTitle: HTMLHeadingElement | undefined;
-  let rejectionFrame: number | undefined;
-  let rejectionTimer: number | undefined;
-  let toastTimer: number | undefined;
-
-  const rejectTeam = (teamId: string) => {
-    setRejectedTeamId(undefined);
-    setCapacityToast(undefined);
-
-    if (rejectionFrame !== undefined)
-      window.cancelAnimationFrame(rejectionFrame);
-    if (rejectionTimer !== undefined) window.clearTimeout(rejectionTimer);
-    if (toastTimer !== undefined) window.clearTimeout(toastTimer);
-
-    rejectionFrame = window.requestAnimationFrame(() => {
-      setRejectedTeamId(teamId);
-      setCapacityToast(capacityHint);
-      rejectionTimer = window.setTimeout(() => {
-        setRejectedTeamId(undefined);
-      }, 280);
-      toastTimer = window.setTimeout(() => {
-        setCapacityToast(undefined);
-      }, 2400);
-    });
-  };
-
-  onCleanup(() => {
-    if (rejectionFrame !== undefined)
-      window.cancelAnimationFrame(rejectionFrame);
-    if (rejectionTimer !== undefined) window.clearTimeout(rejectionTimer);
-    if (toastTimer !== undefined) window.clearTimeout(toastTimer);
-  });
 
   const toggleTeam = (teamId: string) => {
     const current = selected();
 
     if (!current.has(teamId) && current.size >= subjectCapacity) {
-      rejectTeam(teamId);
+      rejectSelection(teamId);
       return;
     }
 
@@ -150,7 +122,7 @@ export function Form(props: FormProps) {
 
     setSelected(next);
     setTeamError(undefined);
-    setCapacityToast(undefined);
+    clearRejection();
   };
 
   const validate = () => {
@@ -351,7 +323,7 @@ export function Form(props: FormProps) {
                           selected().has(team.id) ? "true" : "false"
                         }
                         data-rejected={
-                          rejectedTeamId() === team.id ? "true" : undefined
+                          rejectedSelectionId() === team.id ? "true" : undefined
                         }
                         onClick={() => {
                           toggleTeam(team.id);
@@ -483,7 +455,7 @@ export function Form(props: FormProps) {
             {formError() ?? ""}
           </p>
 
-          <Show when={capacityToast()}>
+          <Show when={rejectionMessage()}>
             {(message) => (
               <div class="capacity-toast" role="status" aria-live="polite">
                 {message()}
