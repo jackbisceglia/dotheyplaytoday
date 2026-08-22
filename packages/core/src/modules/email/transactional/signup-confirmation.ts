@@ -73,7 +73,7 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
           subject: "Your picks are updated",
           headline: "Picks",
           accent: "updated.",
-          intro: "Your previous picks have been replaced with these teams:",
+          intro: "We replaced your previous picks with these teams:",
         }),
       }),
     );

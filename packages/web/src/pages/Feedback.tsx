@@ -89,7 +89,7 @@ export function Feedback(props: { readonly homeHref: string }) {
             </span>
           </h1>
           <p class="feedback-copy">
-            Request a league, team, sport, or let us know if something is not
+            Request a league, team, or sport. Or tell us if something's not
             working.
           </p>
         </div>
