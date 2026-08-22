@@ -104,8 +104,9 @@ describe("signup confirmation email", () => {
 
       expect(first.subject).toBe("Welcome to dotheyplaytoday");
       expect(first.body.text).toContain("You're on the roster");
-      expect(repeat.subject).toBe("Your Picks are Updated");
-      expect(repeat.body.text).not.toContain("Your picks are updated");
+      expect(repeat.subject).toBe("Your picks are updated");
+      expect(repeat.body.text).toContain("Picks updated");
+      expect(repeat.body.text).not.toContain("You're on the roster");
       expect(repeat.body.text).toContain("previous picks have been replaced");
 
       for (const rendered of [first, repeat]) {
@@ -140,7 +141,7 @@ describe("signup confirmation email", () => {
       ];
 
       expect(payload).toMatchObject({
-        from: "sender@example.com",
+        from: "dotheyplaytoday <sender@example.com>",
         to: "fan@example.com",
         subject: "Welcome to dotheyplaytoday",
       });

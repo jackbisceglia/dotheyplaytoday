@@ -87,9 +87,14 @@ export { ConsoleChannelLayer } from "./modules/channels/console/service.js";
 export type { ConsoleRendered } from "./modules/channels/console/service.js";
 export { EmailDelivery } from "./modules/channels/email/delivery.js";
 export type { EmailDelivery as EmailDeliveryShape } from "./modules/channels/email/delivery.js";
-export { EmailView } from "./modules/channels/email/render.js";
+export { EmailBlock, EmailView } from "./modules/channels/email/render.js";
 export { EmailChannelClient } from "./modules/channels/email/clients/service.js";
-export type { EmailRendered } from "./modules/channels/email/render.js";
+export type {
+  EmailBlock as EmailBlockShape,
+  EmailMatchup,
+  EmailRendered,
+  EmailViewProps,
+} from "./modules/channels/email/render.js";
 export { ResendConfig } from "./modules/channels/email/clients/config.js";
 export type { ResendConfig as ResendConfigShape } from "./modules/channels/email/clients/config.js";
 export { EmailChannelClientLayerResend } from "./modules/channels/email/clients/resend.js";

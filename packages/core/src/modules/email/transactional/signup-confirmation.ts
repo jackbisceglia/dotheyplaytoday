@@ -1,10 +1,15 @@
 import { Effect, Match, Schema } from "effect";
 
 import { Id } from "../../../lib/id/service.js";
+import { WebUrl } from "../../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
 import { EmailChannelClientLayerResend } from "../../channels/email/clients/resend.js";
 import { EmailChannelClient } from "../../channels/email/clients/service.js";
-import { EmailView, type EmailRendered } from "../../channels/email/render.js";
+import {
+  EmailBlock,
+  EmailView,
+  type EmailRendered,
+} from "../../channels/email/render.js";
 import { Subject } from "../../subjects/schema.js";
 import { Subscription } from "../../subscriptions/schema.js";
 import { User } from "../../users/schema.js";
@@ -41,6 +46,7 @@ const formatLocalTime = (seconds: number, timezone: string) => {
 
 export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
   function* (confirmation: SignupConfirmation) {
+    const home = yield* WebUrl;
     const unsubscribe = {
       text: "Unsubscribe",
       href: yield* buildUnsubscribeUrl(confirmation.user.unsubscribeToken),
@@ -59,12 +65,14 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
       Match.tagsExhaustive({
         firstSignup: () => ({
           subject: "Welcome to dotheyplaytoday",
-          heading: "You're on the roster",
+          headline: "You're on the",
+          accent: "roster.",
           intro: "Your game-day email signup is active for these teams:",
         }),
         repeatSignup: () => ({
-          subject: "Your Picks are Updated",
-          heading: undefined,
+          subject: "Your picks are updated",
+          headline: "Picks",
+          accent: "updated.",
           intro: "Your previous picks have been replaced with these teams:",
         }),
       }),
@@ -73,12 +81,13 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
 
     return EmailView({
       subject: copy.subject,
-      main: [
-        ...(copy.heading === undefined ? [] : [copy.heading, ""]),
-        copy.intro,
-        ...teamNames.map((name) => `- ${name}`),
-        "",
-        schedule,
+      home,
+      headline: copy.headline,
+      accent: copy.accent,
+      blocks: [
+        EmailBlock.text(copy.intro),
+        EmailBlock.list(teamNames),
+        EmailBlock.note(schedule),
       ],
       unsubscribe,
     }) satisfies EmailRendered;

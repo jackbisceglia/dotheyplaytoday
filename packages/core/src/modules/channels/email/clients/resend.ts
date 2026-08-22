@@ -57,6 +57,8 @@ export const EmailChannelClientLayerResend = Layer.effect(
       catch: (cause) => new ResendInstantiationError({ cause }),
     });
 
+    const from = `${config.from.name} <${config.from.email}>`;
+
     const use = <A>(f: (client: Resend) => PromiseLike<A>) =>
       Effect.tryPromise({
         try: () => f(client),
@@ -70,11 +72,15 @@ export const EmailChannelClientLayerResend = Layer.effect(
         const response = yield* use((client) =>
           client.emails.send(
             {
-              from: config.from,
+              from,
               to: delivery.recipient,
               subject: rendered.subject,
               text: rendered.body.text,
               html: rendered.body.html,
+              // Renders a native unsubscribe control in Gmail and Apple Mail.
+              headers: {
+                "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
+              },
             },
             { idempotencyKey: delivery.hash },
           ),

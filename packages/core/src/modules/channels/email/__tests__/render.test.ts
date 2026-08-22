@@ -69,22 +69,32 @@ describe("email rendering", () => {
         expect(resendMock.send).toHaveBeenCalledOnce();
         const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
 
-        expect(payload.subject).toBe("Boston Celtics play today");
+        // Subject and headline use the bare team name; the body keeps the
+        // full participant titles.
+        expect(payload.subject).toBe("Celtics play today");
+        // Start time leads: the subject line already names the team.
         expect(payload.text).toContain(
-          "Boston Celtics vs. New York Knicks, 4:00 PM EDT",
+          "4:00 PM EDT - Boston Celtics vs. New York Knicks",
         );
         expect(payload.text).toContain(
-          "Boston Celtics @ Miami Heat, 8:30 PM EDT",
+          "8:30 PM EDT - Boston Celtics @ Miami Heat",
         );
         expect(payload.text).toContain(
           "Unsubscribe: https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
         );
-        expect(payload.html).toContain("Boston Celtics play today");
+        expect(payload.html).toContain("Celtics play today");
         expect(payload.html).toContain(
           '<meta name="color-scheme" content="light dark" />',
         );
         expect(payload.html).toContain("@media (prefers-color-scheme: dark)");
-        expect(payload.html).toContain("Boston Celtics vs. New York Knicks");
+        // Phone layout is the inline default; the query only widens it.
+        expect(payload.html).toContain("@media screen and (min-width: 600px)");
+        // The game count restates the subject line, so it is not rendered.
+        expect(payload.html).not.toContain("games on the schedule today");
+        expect(payload.text).not.toContain("games on the schedule today");
+        expect(payload.html).toContain("Boston Celtics");
+        expect(payload.html).toContain("New York Knicks");
+        expect(payload.html).toContain("4:00 PM EDT");
         expect(payload.html).toContain("https://example.com:8080/unsubscribe/");
         expect(payload.html).toContain(
           '<a href="https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201"',
@@ -132,11 +142,12 @@ describe("email rendering", () => {
         const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
 
         expect(payload.text).toContain(
-          "Knicks & Nets @ Celtics <Home>, 4:00 PM EDT",
+          "4:00 PM EDT - Knicks & Nets @ Celtics <Home>",
         );
-        expect(payload.html).toContain(
-          "Knicks &amp; Nets @ Celtics &lt;Home&gt;",
-        );
+        expect(payload.html).toContain("Knicks &amp; Nets");
+        expect(payload.html).toContain("Celtics &lt;Home&gt;");
+        expect(payload.html).not.toContain("Knicks & Nets");
+        expect(payload.html).not.toContain("Celtics <Home>");
       });
     },
   );
