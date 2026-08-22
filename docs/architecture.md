@@ -79,20 +79,20 @@ branches on PlanetScale's PS-DEV size. Destroy non-production stages when they
 are no longer needed so their branch billing stops. Alchemy applies checked-in
 migrations before creating runtime roles, Workers, and seed Actions.
 
-The Alchemy runtime resolves one deterministic, fail-closed development stage. A
-positively identified primary Git checkout uses `dev_<user>`. A linked Git
-worktree uses `dev_<user>_<worktree-name>`, deriving the last component from
-the worktree directory rather than its branch. The resolver follows Alchemy's
-stage alphabet, sanitizes components, verifies Git's common directory and
-worktree metadata, and never accepts a non-`dev_` result. All worktree-aware
-commands therefore use the same stage: `pnpm alchemy:stage` prints the current
-name, `pnpm dev` starts it, `pnpm dev:destroy` interactively destroys it, and
-`pnpm dev:seed` destroys it with `--yes` before recreating and starting it. The
-resolver is an Effect whose Git process, path, and configuration capabilities
-are supplied through Alchemy's Effect services. It replaces the `Stage` service
-around the complete stack effect only when the CLI-selected stage starts with
-`dev_`; production and other stages pass through unchanged. Package lifecycle
-commands invoke Alchemy directly without a resolver subprocess.
+One small repository script resolves a deterministic, fail-closed development
+stage. A positively identified primary Git checkout uses `dev_<user>`. A linked
+Git worktree uses `dev_<user>_<worktree-name>`, deriving the last component
+from the worktree directory rather than its branch. The resolver follows
+Alchemy's stage alphabet, sanitizes components, verifies Git's common directory
+and worktree metadata, and never accepts a non-`dev_` result. All
+worktree-aware commands therefore use the same stage: `pnpm alchemy:stage`
+prints the current name, `pnpm dev` starts it, `pnpm dev:destroy` interactively
+destroys it, and `pnpm dev:seed` destroys it with `--yes` before recreating and
+starting it. The resolver is an Effect whose Git process, path, and
+configuration capabilities come from Effect Platform. Package lifecycle
+commands pass its result through Alchemy's supported `STAGE` input;
+`alchemy.run.ts` remains an ordinary stack definition. Generic deployment
+commands are unchanged and do not invoke the development-stage resolver.
 
 An abandoned stage can be removed after its linked worktree is gone by
 reconstructing the documented stage from the former user and directory name,

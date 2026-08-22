@@ -4,5 +4,9 @@
     "allowImportingTsExtensions": true,
     "types": ["bun"]
   },
-  "include": ["alchemy.run.ts", "alchemy.stage.ts", "alchemy.stage.test.ts"]
+  "include": [
+    "alchemy.run.ts",
+    "scripts/get-stage.ts",
+    "scripts/get-stage.test.ts"
+  ]
 }
