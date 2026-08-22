@@ -107,7 +107,7 @@ describe("signup confirmation email", () => {
       expect(repeat.subject).toBe("Your picks are updated");
       expect(repeat.body.text).toContain("Picks updated");
       expect(repeat.body.text).not.toContain("You're on the roster");
-      expect(repeat.body.text).toContain("previous picks have been replaced");
+      expect(repeat.body.text).toContain("replaced your previous picks");
 
       for (const rendered of [first, repeat]) {
         expect(rendered.body.text).toContain("Boston Celtics");
