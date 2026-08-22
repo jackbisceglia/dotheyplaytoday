@@ -2,18 +2,13 @@ import { describe, expect, it } from "vitest";
 import { ConfigProvider, Effect, Layer, Path, PlatformError } from "effect";
 import { ChildProcessSpawner } from "effect/unstable/process";
 
-import { ALCHEMY_STAGE_PATTERN, getStage, resolveStage } from "./get-stage.ts";
+import { ALCHEMY_STAGE_PATTERN, getStage } from "./get-stage.ts";
 
 const primary = ["/repo/.git", "/repo/.git", "/repo"].join("\n");
 const linked = (name: string) =>
   ["/repo/.git/worktrees/internal-id", "/repo/.git", `/worktrees/${name}`].join(
     "\n",
   );
-
-const run = <A, E>(effect: Effect.Effect<A, E, Path.Path>) =>
-  Effect.runSync(effect.pipe(Effect.provide(Path.layer)));
-const resolve = (user: string, gitOutput: string) =>
-  run(resolveStage({ user, gitOutput }));
 
 const gitFailure = new PlatformError.PlatformError(
   new PlatformError.SystemError({
@@ -41,6 +36,9 @@ const runLive = (env: Record<string, string>, output?: string) =>
     ),
     Effect.runSync,
   );
+
+const resolve = (user: string, gitOutput: string) =>
+  runLive({ USER: user }, gitOutput);
 
 describe("development Alchemy stage", () => {
   it("uses dev_<user> in the primary checkout", () => {
@@ -72,11 +70,13 @@ describe("development Alchemy stage", () => {
   });
 
   it.each(["", "   ", "!!!"])("rejects invalid users %j", (user) => {
-    expect(() => resolve(user, primary)).toThrow(/development user/);
+    expect(() => resolve(user, primary)).toThrow(
+      /USERNAME|stage component with usable characters/,
+    );
   });
 
   it("fails when the user environment is missing", () => {
-    expect(() => runLive({}, primary)).toThrow(/Development user is missing/);
+    expect(() => runLive({}, primary)).toThrow(/USER|USERNAME/);
   });
 
   it("supports Alchemy's USERNAME fallback", () => {
@@ -86,9 +86,7 @@ describe("development Alchemy stage", () => {
   });
 
   it("fails when Git discovery fails", () => {
-    expect(() => runLive({ USER: "jackb" })).toThrow(
-      /Git worktree discovery failed/,
-    );
+    expect(() => runLive({ USER: "jackb" })).toThrow(/git unavailable/);
   });
 
   it("fails for malformed Git output", () => {
@@ -110,7 +108,7 @@ describe("development Alchemy stage", () => {
     "rejects an unusable worktree directory %j",
     (name) => {
       expect(() => resolve("jackb", linked(name))).toThrow(
-        /worktree directory name/,
+        /stage component with usable characters/,
       );
     },
   );

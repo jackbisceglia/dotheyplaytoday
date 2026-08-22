@@ -1,44 +1,64 @@
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as NodeServices from "@effect/platform-node/NodeServices";
-import { Config, Console, Effect, Path, Schema } from "effect";
+import {
+  Config,
+  Console,
+  Data,
+  Effect,
+  Option,
+  Path,
+  Schema,
+  SchemaTransformation,
+} from "effect";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
 
 export const ALCHEMY_STAGE_PATTERN = /^[a-z0-9]+([-_a-z0-9]+)*$/i;
 
-export class StageError extends Schema.TaggedErrorClass<StageError>()(
-  "StageError",
-  { message: Schema.String, cause: Schema.optional(Schema.Defect()) },
-) {}
+const StageComponent = Schema.String.pipe(
+  Schema.decodeTo(
+    Schema.NonEmptyString.annotate({
+      identifier: "StageComponent",
+      expected: "an Alchemy stage component with usable characters",
+      description: "an Alchemy stage component with usable characters",
+    }),
+    SchemaTransformation.transform({
+      decode: (value) =>
+        value
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]+/g, "-")
+          .replace(/^[-_]+|[-_]+$/g, ""),
+      encode: (value) => value,
+    }),
+  ),
+);
 
-const fail = (message: string, cause?: unknown) =>
-  Effect.fail(
-    new StageError({ message, ...(cause === undefined ? {} : { cause }) }),
-  );
+const decodeStageComponent = Schema.decodeUnknownEffect(StageComponent);
 
-const sanitize = Effect.fn("Stage.sanitize")(function* (
-  value: string,
-  component: string,
-) {
-  const sanitized = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, "-")
-    .replace(/^[-_]+|[-_]+$/g, "");
+class PrimaryCheckout extends Data.TaggedError("PrimaryCheckout") {}
 
-  return sanitized.length > 0
-    ? sanitized
-    : yield* fail(`${component} has no usable characters.`);
-});
+class InvalidWorktree extends Data.TaggedError("InvalidWorktree")<{
+  readonly message: string;
+}> {}
 
-export const resolveStage = Effect.fn("Stage.resolve")(function* ({
-  user,
-  gitOutput,
-}: {
-  readonly user: string;
-  readonly gitOutput: string;
-}) {
+export const getUser = Config.string("USER").pipe(
+  Config.orElse(() => Config.string("USERNAME")),
+  Effect.flatMap(decodeStageComponent),
+);
+
+export const getWorktree = Effect.gen(function* () {
   const path = yield* Path.Path;
-  const parts = gitOutput.trim().split("\n");
+  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
+  const output = yield* spawner.string(
+    ChildProcess.make("git", [
+      "rev-parse",
+      "--path-format=absolute",
+      "--git-dir",
+      "--git-common-dir",
+      "--show-toplevel",
+    ]),
+  );
+  const parts = output.trim().split("\n");
   const gitDirectory = parts[0] ?? "";
   const commonDirectory = parts[1] ?? "";
   const topLevel = parts[2] ?? "";
@@ -49,61 +69,39 @@ export const resolveStage = Effect.fn("Stage.resolve")(function* ({
     !path.isAbsolute(commonDirectory) ||
     !path.isAbsolute(topLevel)
   ) {
-    return yield* fail("Git returned invalid worktree metadata.");
+    return yield* new InvalidWorktree({
+      message: "Git returned invalid worktree metadata.",
+    });
   }
 
-  const userName = yield* sanitize(user, "development user");
   const git = path.resolve(gitDirectory);
   const common = path.resolve(commonDirectory);
-  let stage = `dev_${userName}`;
-
-  if (git !== common) {
-    if (
-      path.basename(path.dirname(git)) !== "worktrees" ||
-      path.dirname(path.dirname(git)) !== common
-    ) {
-      return yield* fail("Git did not identify a linked worktree safely.");
-    }
-
-    const worktreeName = yield* sanitize(
-      path.basename(path.resolve(topLevel)),
-      "linked worktree directory name",
-    );
-    stage += `_${worktreeName}`;
+  if (git === common) {
+    return yield* new PrimaryCheckout();
+  }
+  if (
+    path.basename(path.dirname(git)) !== "worktrees" ||
+    path.dirname(path.dirname(git)) !== common
+  ) {
+    return yield* new InvalidWorktree({
+      message: "Git did not identify a linked worktree safely.",
+    });
   }
 
-  return ALCHEMY_STAGE_PATTERN.test(stage)
-    ? stage
-    : yield* fail(`${JSON.stringify(stage)} is not a valid Alchemy stage.`);
+  return yield* decodeStageComponent(path.basename(path.resolve(topLevel)));
 });
 
 export const getStage = Effect.gen(function* () {
-  const user = yield* Config.string("USER").pipe(
-    Config.orElse(() => Config.string("USERNAME")),
-    Effect.mapError(
-      (cause) =>
-        new StageError({ message: "Development user is missing.", cause }),
-    ),
+  const user = yield* getUser;
+  const worktree = yield* getWorktree.pipe(
+    Effect.map(Option.some),
+    Effect.catchTag("PrimaryCheckout", () => Effect.succeed(Option.none())),
   );
-  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
-  const gitOutput = yield* spawner
-    .string(
-      ChildProcess.make("git", [
-        "rev-parse",
-        "--path-format=absolute",
-        "--git-dir",
-        "--git-common-dir",
-        "--show-toplevel",
-      ]),
-    )
-    .pipe(
-      Effect.mapError(
-        (cause) =>
-          new StageError({ message: "Git worktree discovery failed.", cause }),
-      ),
-    );
 
-  return yield* resolveStage({ user, gitOutput });
+  return Option.match(worktree, {
+    onNone: () => `dev_${user}`,
+    onSome: (name) => `dev_${user}_${name}`,
+  });
 });
 
 if (import.meta.main) {
