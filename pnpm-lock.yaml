@@ -44,6 +44,9 @@ importers:
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.2
+      '@effect/platform-node':
+        specifier: 'catalog:'
+        version: 4.0.0-beta.98(effect@4.0.0-beta.98)(ioredis@5.11.1)
       '@effect/vitest':
         specifier: 'catalog:'
         version: 4.0.0-beta.98(effect@4.0.0-beta.98)(vitest@3.2.4(@types/node@20.19.27)(lightningcss@1.33.0)(yaml@2.9.0))

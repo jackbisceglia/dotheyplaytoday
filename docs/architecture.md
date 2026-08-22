@@ -38,7 +38,7 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - The API and notification workers construct the existing `Database` Effect service from a Hyperdrive binding. Alchemy's PostgreSQL bridge scopes an `@effect/sql-pg` pool to each Worker event and exposes Drizzle's ordinary interactive transaction API; no connected pool is created at module scope or shared across invocations.
 - Transactional workflows use Drizzle's Effect-native `database.transaction(...)`. Drizzle delegates to its underlying `PgClient.withTransaction(...)`, so domain-service queries inherit the transaction connection from Effect context and nested service transactions use savepoints without threading a transaction object through service APIs.
 - Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
-- Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. `pnpm dev:seed` recreates the personal development stage and seeds all subjects, NBA events, and the development user once; ordinary development restarts reuse that state. The exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
+- Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. `pnpm dev:seed` recreates only the calling checkout's development stage and seeds all subjects, NBA events, and the development user once; ordinary development restarts reuse that state. The exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
 - Resend email delivery and console dry runs. Scheduled notifications retain the
   channel abstraction; signup confirmations use the provider-facing email
@@ -78,6 +78,28 @@ branch. Other stages reference that database and own disposable development
 branches on PlanetScale's PS-DEV size. Destroy non-production stages when they
 are no longer needed so their branch billing stops. Alchemy applies checked-in
 migrations before creating runtime roles, Workers, and seed Actions.
+
+The Alchemy runtime resolves one deterministic, fail-closed development stage. A
+positively identified primary Git checkout uses `dev_<user>`. A linked Git
+worktree uses `dev_<user>_<worktree-name>`, deriving the last component from
+the worktree directory rather than its branch. The resolver follows Alchemy's
+stage alphabet, sanitizes components, verifies Git's common directory and
+worktree metadata, and never accepts a non-`dev_` result. All worktree-aware
+commands therefore use the same stage: `pnpm alchemy:stage` prints the current
+name, `pnpm dev` starts it, `pnpm dev:destroy` interactively destroys it, and
+`pnpm dev:seed` destroys it with `--yes` before recreating and starting it. The
+resolver is an Effect whose Git process, path, and configuration capabilities
+are supplied through Alchemy's Effect services. It replaces the `Stage` service
+around the complete stack effect only when the CLI-selected stage starts with
+`dev_`; production and other stages pass through unchanged. Package lifecycle
+commands invoke Alchemy directly without a resolver subprocess.
+
+An abandoned stage can be removed after its linked worktree is gone by
+reconstructing the documented stage from the former user and directory name,
+then running `pnpm destroy --stage <stage>` from another checkout. The generic
+destroy command remains available for this explicit cleanup path. Existing
+shared `dev_<user>` state is neither migrated nor automatically destroyed by
+the worktree-scoped scheme.
 
 There is no automated D1 data transfer. Seeds rebuild catalog and development
 data; the current production owner account must be recreated manually.

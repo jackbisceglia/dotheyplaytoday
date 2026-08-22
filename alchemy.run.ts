@@ -1,9 +1,13 @@
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
+import * as NodeServices from "@effect/platform-node/NodeServices";
 import * as Alchemy from "alchemy";
 import { AlchemyContext, Stage } from "alchemy";
 import * as Output from "alchemy/Output";
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
-import { Effect, Layer } from "effect";
+import { Console, Effect, Layer } from "effect";
+
+import { DevelopmentStage, withRuntimeStage } from "./alchemy.stage.ts";
 
 import ApiWorker from "./packages/api/dist/worker.js";
 import { Domain } from "./packages/core/dist/lib/alchemy/domain/resource.js";
@@ -16,14 +20,17 @@ import { CatalogSeedVersion } from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 import Web, { bindWebUrl } from "./packages/web/resource.ts";
 
-export default Alchemy.Stack(
+const providers = Layer.merge(
+  Cloudflare.providers(),
+  AlchemyPlanetscale.providers(),
+);
+const state = Cloudflare.state();
+
+const DtptStack = Alchemy.Stack(
   "dotheyplaytoday",
   {
-    providers: Layer.merge(
-      Cloudflare.providers(),
-      AlchemyPlanetscale.providers(),
-    ),
-    state: Cloudflare.state(),
+    providers,
+    state,
   },
   Effect.gen(function* () {
     const context = yield* AlchemyContext;
@@ -33,8 +40,7 @@ export default Alchemy.Stack(
 
     const planetscale = yield* Planetscale;
     const hyperdrive = yield* DatabaseHyperdrive;
-    const DatabaseTarget =
-      Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
+    const DatabaseTarget = Output.interpolate`${planetscale.database.id}/${planetscale.role.branch}`;
 
     if (stage === "production") {
       yield* SeedProduction("SeedProduction", {
@@ -69,3 +75,18 @@ export default Alchemy.Stack(
     };
   }),
 );
+
+export default Object.assign(withRuntimeStage(DtptStack), {
+  stackName: "dotheyplaytoday",
+  providers,
+  state,
+});
+
+if (import.meta.main) {
+  NodeRuntime.runMain(
+    DevelopmentStage.pipe(
+      Effect.tap(Console.log),
+      Effect.provide(NodeServices.layer),
+    ),
+  );
+}

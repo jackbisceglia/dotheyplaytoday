@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "alchemy dev alchemy.run.ts --stage dev_$USER",
-    "dev:seed": "alchemy destroy alchemy.run.ts --stage dev_$USER --yes && pnpm dev",
+    "alchemy:stage": "node --experimental-strip-types --no-warnings=ExperimentalWarning alchemy.run.ts",
+    "dev": "alchemy dev alchemy.run.ts",
+    "dev:destroy": "alchemy destroy alchemy.run.ts",
+    "dev:seed": "alchemy destroy alchemy.run.ts --yes && pnpm dev",
     "dev:web": "pnpm @web dev",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
@@ -25,6 +27,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "4.20260626.1",
     "@effect/language-service": "catalog:",
+    "@effect/platform-node": "catalog:",
     "@effect/vitest": "catalog:",
     "@eslint/js": "^9.36.0",
     "@tsconfig/bun": "^1.0.7",
