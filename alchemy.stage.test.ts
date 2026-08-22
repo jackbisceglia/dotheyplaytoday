@@ -1,23 +1,28 @@
+import { Stage } from "alchemy";
 import { describe, expect, it } from "vitest";
 import { ConfigProvider, Effect, Layer, Path, PlatformError } from "effect";
 import { ChildProcessSpawner } from "effect/unstable/process";
-import { Stage } from "alchemy";
 
 import {
   ALCHEMY_STAGE_PATTERN,
-  discoverWorktree,
-  identifyWorktree,
   DevelopmentStage,
-  resolveDevelopmentStage,
+  ResolvedDevelopmentStage,
   RuntimeStage,
+  User,
+  Worktree,
+  WorktreeLive,
   withRuntimeStage,
 } from "./alchemy.stage.ts";
 
-const primary = { kind: "primary" } as const;
-const linked = (name: string) => ({ kind: "linked", name }) as const;
+const primary = Worktree.of({ kind: "primary" });
+const linked = (name: string) => Worktree.of({ kind: "linked", name });
 const run = <A, E>(effect: Effect.Effect<A, E>) => Effect.runSync(effect);
-const runWithPath = <A, E>(effect: Effect.Effect<A, E, Path.Path>) =>
-  run(effect.pipe(Effect.provide(Path.layer)));
+const resolve = (user: string, worktree: Worktree["Service"]) =>
+  DevelopmentStage.pipe(
+    Effect.provideService(User, User.of(user)),
+    Effect.provideService(Worktree, worktree),
+    run,
+  );
 
 const gitFailure = new PlatformError.PlatformError(
   new PlatformError.SystemError({
@@ -44,132 +49,92 @@ const gitLayer = (outputs: Readonly<Record<string, string>>) =>
 const configLayer = (env: Record<string, string>) =>
   ConfigProvider.layer(ConfigProvider.fromEnv({ env }));
 
-const linkedGitOutputs = {
+const primaryGitOutputs = {
   "rev-parse --is-inside-work-tree": "true\n",
-  "rev-parse --show-toplevel": "/repo/worktrees/stable-name\n",
+  "rev-parse --show-toplevel": "/repo\n",
   "rev-parse --path-format=absolute --git-common-dir": "/repo/.git\n",
-  "rev-parse --path-format=absolute --git-dir":
-    "/repo/.git/worktrees/internal-id\n",
-  "worktree list --porcelain -z":
-    "worktree /repo\0HEAD abc\0branch refs/heads/main\0\0" +
-    "worktree /repo/worktrees/stable-name\0HEAD def\0branch refs/heads/feature-one\0\0",
+  "rev-parse --path-format=absolute --git-dir": "/repo/.git\n",
 };
 
+const linkedGitOutputs = {
+  ...primaryGitOutputs,
+  "rev-parse --show-toplevel": "/repo/worktrees/stable-name\n",
+  "rev-parse --path-format=absolute --git-dir":
+    "/repo/.git/worktrees/internal-id\n",
+};
+
+const resolveLive = (
+  outputs: Readonly<Record<string, string>>,
+  env: Record<string, string> = { USER: "jackb" },
+) =>
+  ResolvedDevelopmentStage.pipe(
+    Effect.provide(
+      Layer.mergeAll(Path.layer, gitLayer(outputs), configLayer(env)),
+    ),
+    run,
+  );
+
 describe("development Alchemy stage", () => {
-  it("uses the shared user stage in the positively identified primary checkout", () => {
-    expect(
-      run(resolveDevelopmentStage({ user: "jackb", worktree: primary })),
-    ).toBe("dev_jackb");
+  it("uses dev_<user> in the primary checkout", () => {
+    expect(resolve("jackb", primary)).toBe("dev_jackb");
+    expect(resolveLive(primaryGitOutputs)).toBe("dev_jackb");
   });
 
-  it("adds the linked worktree directory name", () => {
-    expect(
-      run(
-        resolveDevelopmentStage({
-          user: "jackb",
-          worktree: linked("t3code-b6f3eaab"),
-        }),
-      ),
-    ).toBe("dev_jackb_t3code-b6f3eaab");
+  it("uses dev_<user>_<directory> in a linked worktree", () => {
+    expect(resolve("jackb", linked("t3code-b6f3eaab"))).toBe(
+      "dev_jackb_t3code-b6f3eaab",
+    );
+    expect(resolveLive(linkedGitOutputs)).toBe("dev_jackb_stable-name");
   });
 
   it("gives differently named linked worktrees different stages", () => {
-    const first = run(
-      resolveDevelopmentStage({
-        user: "jackb",
-        worktree: linked("feature-one"),
-      }),
+    expect(resolve("jackb", linked("feature-one"))).not.toBe(
+      resolve("jackb", linked("feature-two")),
     );
-    const second = run(
-      resolveDevelopmentStage({
-        user: "jackb",
-        worktree: linked("feature-two"),
-      }),
+  });
+
+  it("does not inspect or depend on the current branch", () => {
+    expect(resolveLive(linkedGitOutputs)).toBe("dev_jackb_stable-name");
+    expect(Object.keys(linkedGitOutputs)).not.toContainEqual(
+      expect.stringContaining("branch"),
     );
-
-    expect(first).not.toBe(second);
   });
 
-  it("discovers Git through Effect DI and ignores branch metadata", () => {
-    const stage = DevelopmentStage.pipe(
-      Effect.provide(
-        Layer.mergeAll(
-          Path.layer,
-          gitLayer(linkedGitOutputs),
-          configLayer({ USER: "jackb" }),
-        ),
-      ),
-      run,
+  it("sanitizes components according to Alchemy's stage grammar", () => {
+    expect(resolve("Jane.Doe", linked("Feature One@2026"))).toBe(
+      "dev_jane-doe_feature-one-2026",
     );
-
-    expect(stage).toBe("dev_jackb_stable-name");
   });
 
-  it("does not change when only the branch changes", () => {
-    const changedBranch = {
-      ...linkedGitOutputs,
-      "worktree list --porcelain -z": linkedGitOutputs[
-        "worktree list --porcelain -z"
-      ].replace("refs/heads/feature-one", "refs/heads/completely-different"),
-    };
-    const resolve = (outputs: Readonly<Record<string, string>>) =>
-      DevelopmentStage.pipe(
-        Effect.provide(
-          Layer.mergeAll(
-            Path.layer,
-            gitLayer(outputs),
-            configLayer({ USER: "jackb" }),
-          ),
-        ),
-        run,
-      );
-
-    expect(resolve(changedBranch)).toBe(resolve(linkedGitOutputs));
-  });
-
-  it("sanitizes invalid characters consistently", () => {
-    expect(
-      run(
-        resolveDevelopmentStage({
-          user: "Jane.Doe",
-          worktree: linked("Feature One@2026"),
-        }),
-      ),
-    ).toBe("dev_jane-doe_feature-one-2026");
-  });
-
-  it.each([undefined, "", "   ", "!!!"])(
-    "fails closed for missing or invalid user identity %j",
+  it.each(["", "   ", "!!!"])(
+    "fails closed for invalid user identity %j",
     (user) => {
-      expect(() =>
-        run(resolveDevelopmentStage({ user, worktree: primary })),
-      ).toThrow(/development user/);
+      expect(() => resolve(user, primary)).toThrow(/development user/);
     },
   );
 
+  it("fails closed when the development user is missing", () => {
+    expect(() => resolveLive(primaryGitOutputs, {})).toThrow(
+      /development user is missing/,
+    );
+  });
+
   it("fails closed when Git discovery fails", () => {
-    expect(() =>
-      discoverWorktree().pipe(
-        Effect.provide(Layer.mergeAll(Path.layer, gitLayer({}))),
-        run,
-      ),
-    ).toThrow(/Git discovery failed/);
+    expect(() => resolveLive({})).toThrow(/Git discovery failed/);
   });
 
   it.each(["", "---", "___", "!@#"])(
     "fails closed for unusable worktree directory name %j",
     (name) => {
-      expect(() =>
-        run(resolveDevelopmentStage({ user: "jackb", worktree: linked(name) })),
-      ).toThrow(/worktree directory name/);
+      expect(() => resolve("jackb", linked(name))).toThrow(
+        /worktree directory name/,
+      );
     },
   );
 
   it("cannot resolve production or another non-development stage", () => {
     for (const worktree of [primary, linked("production")]) {
-      const stage = run(
-        resolveDevelopmentStage({ user: "production", worktree }),
-      );
+      const stage = resolve("production", worktree);
       expect(stage).not.toBe("production");
       expect(stage.startsWith("dev_")).toBe(true);
       expect(ALCHEMY_STAGE_PATTERN.test(stage)).toBe(true);
@@ -177,53 +142,51 @@ describe("development Alchemy stage", () => {
   });
 
   it("preserves distinct long names because Alchemy has no stage length limit", () => {
-    const first = run(
-      resolveDevelopmentStage({
-        user: "developer",
-        worktree: linked(`${"a".repeat(300)}1`),
-      }),
-    );
-    const second = run(
-      resolveDevelopmentStage({
-        user: "developer",
-        worktree: linked(`${"a".repeat(300)}2`),
-      }),
-    );
+    const first = resolve("developer", linked(`${"a".repeat(300)}1`));
+    const second = resolve("developer", linked(`${"a".repeat(300)}2`));
 
     expect(first).not.toBe(second);
     expect(ALCHEMY_STAGE_PATTERN.test(first)).toBe(true);
     expect(first.length).toBeGreaterThan(63);
   });
 
-  it("requires Git to positively identify the checkout topology", () => {
+  it("fails closed when Git cannot positively identify the topology", () => {
     expect(() =>
-      runWithPath(
-        identifyWorktree({
-          insideWorkTree: "true",
-          topLevel: "/repo/worktrees/current",
-          commonDirectory: "/repo/.git",
-          gitDirectory: "/unexpected/git-dir",
-          listedWorktrees: ["/repo/worktrees/current"],
-        }),
-      ),
+      resolveLive({
+        ...linkedGitOutputs,
+        "rev-parse --path-format=absolute --git-dir": "/unexpected/git-dir\n",
+      }),
     ).toThrow(/positively identify/);
   });
 
-  it("rejects missing Git paths instead of interpreting them as the current directory", () => {
+  it("rejects missing or non-absolute Git paths", () => {
     expect(() =>
-      runWithPath(
-        identifyWorktree({
-          insideWorkTree: "true",
-          topLevel: "",
-          commonDirectory: "/repo/.git",
-          gitDirectory: "/repo/.git",
-          listedWorktrees: ["/repo"],
-        }),
-      ),
+      resolveLive({
+        ...primaryGitOutputs,
+        "rev-parse --show-toplevel": "",
+      }),
     ).toThrow(/missing or non-absolute/);
   });
 
-  it("overrides the Stage service around the complete stack effect in development", () => {
+  it("rejects an empty linked worktree directory name", () => {
+    expect(() =>
+      Worktree.pipe(
+        Effect.provide(WorktreeLive),
+        Effect.provide(
+          Layer.mergeAll(
+            Path.layer,
+            gitLayer({
+              ...linkedGitOutputs,
+              "rev-parse --show-toplevel": "/",
+            }),
+          ),
+        ),
+        run,
+      ),
+    ).toThrow(/directory name could not be determined/);
+  });
+
+  it("overrides Stage around the complete stack effect in development", () => {
     const stack = Stage.pipe(Effect.map((stage) => ({ stage })));
     const result = withRuntimeStage(stack).pipe(
       Effect.provide(
@@ -242,18 +205,9 @@ describe("development Alchemy stage", () => {
 
   it("leaves production and other non-development stages unchanged", () => {
     for (const stage of ["production", "staging"]) {
-      const resolved = RuntimeStage.pipe(
-        Effect.provide(
-          Layer.mergeAll(
-            Path.layer,
-            gitLayer({}),
-            configLayer({}),
-            Layer.succeed(Stage, stage),
-          ),
-        ),
-        run,
-      );
-      expect(resolved).toBe(stage);
+      expect(
+        RuntimeStage.pipe(Effect.provide(Layer.succeed(Stage, stage)), run),
+      ).toBe(stage);
     }
   });
 });

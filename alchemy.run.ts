@@ -7,7 +7,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Console, Effect, Layer } from "effect";
 
-import { DevelopmentStage, withRuntimeStage } from "./alchemy.stage.ts";
+import { ResolvedDevelopmentStage, withRuntimeStage } from "./alchemy.stage.ts";
 
 import ApiWorker from "./packages/api/dist/worker.js";
 import { Domain } from "./packages/core/dist/lib/alchemy/domain/resource.js";
@@ -84,7 +84,7 @@ export default Object.assign(withRuntimeStage(DtptStack), {
 
 if (import.meta.main) {
   NodeRuntime.runMain(
-    DevelopmentStage.pipe(
+    ResolvedDevelopmentStage.pipe(
       Effect.tap(Console.log),
       Effect.provide(NodeServices.layer),
     ),
