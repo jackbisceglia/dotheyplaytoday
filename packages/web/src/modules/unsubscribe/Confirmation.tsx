@@ -91,7 +91,7 @@ export function Confirmation(props: {
           <em>the roster.</em>
         </h2>
         <p class="unsubscribe-copy">
-          We processed this unsubscribe. If you'd already used the link,
+          We processed this unsubscribe. If you've already used the link,
           nothing changes.
         </p>
         <a class="btn btn-secondary" href={props.homeHref}>
