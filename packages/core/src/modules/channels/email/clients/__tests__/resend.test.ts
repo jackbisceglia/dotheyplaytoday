@@ -39,6 +39,7 @@ vi.mock("resend", () => ({
 
 const rendered: EmailRendered = {
   subject: "Boston Celtics play today",
+  unsubscribeUrl: "https://example.com/unsubscribe/token",
   body: {
     text: "New York Knicks at Boston Celtics, 4:00 PM EDT",
     html: "<p>New York Knicks at Boston Celtics, 4:00 PM EDT</p>",
@@ -103,11 +104,14 @@ describe("EmailChannelClientLayerResend", () => {
           options: CreateEmailRequestOptions | undefined,
         ) => {
           expect(payload).toEqual({
-            from: "sender@example.com",
+            from: "dotheyplaytoday <sender@example.com>",
             to: notification.user.email,
             subject: rendered.subject,
             text: rendered.body.text,
             html: rendered.body.html,
+            headers: {
+              "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
+            },
           });
           expect(options).toEqual({
             idempotencyKey:

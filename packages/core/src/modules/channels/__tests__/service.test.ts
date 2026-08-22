@@ -9,6 +9,7 @@ import { notification } from "./fixtures.js";
 
 const rendered: EmailRendered = {
   subject: "New York Knicks at Boston Celtics today at 4:00 PM EDT",
+  unsubscribeUrl: "https://example.com/unsubscribe/token",
   body: {
     text: "email text",
     html: "<p>email html</p>",

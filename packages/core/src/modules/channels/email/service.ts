@@ -1,7 +1,7 @@
 import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 
-import { StringParts } from "../../../lib/string.js";
 import type { ExtractFromTag } from "../../../lib/types.js";
+import { WebUrl } from "../../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
 import { EventId } from "../../events/schema.js";
 import type { EventWithParticipants } from "../../events/service.js";
@@ -12,7 +12,13 @@ import { Channel } from "../service.js";
 import { EmailChannelClientLayerResend } from "./clients/resend.js";
 import { EmailChannelClient } from "./clients/service.js";
 import { EmailDelivery } from "./delivery.js";
-import { EmailView, type EmailRendered } from "./render.js";
+import {
+  EmailBlock,
+  EmailView,
+  type EmailMatchup,
+  type EmailRendered,
+  type EmailViewProps,
+} from "./render.js";
 
 const isTaggedAs =
   <const TTag extends PropertyKey>(tag: TTag) =>
@@ -178,6 +184,7 @@ const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
 const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
   function* (notification: Notification) {
     const timezone = notification.user.timezone;
+    const home = yield* WebUrl;
     const unsubscribeUrl = yield* buildUnsubscribeUrl(
       notification.user.unsubscribeToken,
     );
@@ -186,13 +193,15 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
     return yield* Match.value(notification).pipe(
       Match.when(cases.sportsTeamFeed, (notification) =>
         Effect.gen(function* () {
-          const subject = `${notification.subject.details.display} play today`;
+          // `name` is the bare team name ("Celtics"); `display` stays the
+          // matching key for participant titles below.
+          const subject = `${notification.subject.details.name} play today`;
 
           const sharedParticipantTitle = findSharedParticipantTitle(
             notification.events,
           );
 
-          const main = yield* Effect.forEach(notification.events, (game) =>
+          const matchups = yield* Effect.forEach(notification.events, (game) =>
             Effect.gen(function* () {
               const { home, away } =
                 yield* requireSportsParticipantsRoles(game);
@@ -204,12 +213,12 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
                 notification.subject.details.display,
               );
 
-              return StringParts()
-                .add(
-                  `${leading.details.title} ${separator} ${trailing.details.title}`,
-                )
-                .add(formatStartTime(game, timezone))
-                .make("\t");
+              return {
+                leading: leading.details.title,
+                separator,
+                trailing: trailing.details.title,
+                detail: formatStartTime(game, timezone),
+              } satisfies EmailMatchup;
             }),
           );
 
@@ -218,7 +227,14 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
             href: unsubscribeUrl,
           };
 
-          return { subject, main, unsubscribe };
+          return {
+            subject,
+            home,
+            headline: `${notification.subject.details.name} play`,
+            accent: "today.",
+            blocks: [EmailBlock.matchups(matchups)],
+            unsubscribe,
+          } satisfies EmailViewProps;
         }),
       ),
       Match.exhaustive,
