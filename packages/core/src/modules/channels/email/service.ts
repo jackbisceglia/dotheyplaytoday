@@ -193,8 +193,6 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
     return yield* Match.value(notification).pipe(
       Match.when(cases.sportsTeamFeed, (notification) =>
         Effect.gen(function* () {
-          // `name` is the bare team name ("Celtics"); `display` stays the
-          // matching key for participant titles below.
           const subject = `${notification.subject.details.name} play today`;
 
           const sharedParticipantTitle = findSharedParticipantTitle(

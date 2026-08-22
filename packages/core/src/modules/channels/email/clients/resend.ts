@@ -57,7 +57,7 @@ export const EmailChannelClientLayerResend = Layer.effect(
       catch: (cause) => new ResendInstantiationError({ cause }),
     });
 
-    const from = `${config.fromName} <${config.from}>`;
+    const from = `${config.from.name} <${config.from.email}>`;
 
     const use = <A>(f: (client: Resend) => PromiseLike<A>) =>
       Effect.tryPromise({
@@ -77,9 +77,7 @@ export const EmailChannelClientLayerResend = Layer.effect(
               subject: rendered.subject,
               text: rendered.body.text,
               html: rendered.body.html,
-              // Gmail and Apple Mail render their own unsubscribe control from
-              // this. One-click (RFC 8058) additionally needs the web route to
-              // accept POST, which it does not yet.
+              // Renders a native unsubscribe control in Gmail and Apple Mail.
               headers: {
                 "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
               },
