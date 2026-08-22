@@ -5,6 +5,8 @@
 Users subscribe to teams and receive a notification when their team has a game on their local calendar day. Teams and games are current implementations of the reusable **Subject** and **Event** concepts, allowing the product to support other subjects and event sources over time.
 
 See [Product](docs/product.md) for intended behavior and [Architecture](docs/architecture.md) for the current system overview.
+Production deployment setup and operations are documented in the
+[production deployment runbook](docs/runbooks/production-deploy.md).
 
 ## Tech stack
 
