@@ -95,6 +95,11 @@ Production deploys use:
 pnpm run deploy --stage production --env-file .env.production
 ```
 
+Pushes to `main` run the equivalent non-interactive deployment through GitHub
+Actions. CI injects the production GitHub environment's secrets and variables
+directly instead of creating an env file. See the
+[production deployment runbook](./runbooks/production-deploy.md).
+
 An API token deployment needs permission to read and edit the
 `dotheyplay.today` zone and its zone settings.
 

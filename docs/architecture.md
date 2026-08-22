@@ -71,7 +71,13 @@ Alchemy's workerd runner cannot safely reload an SSR program during an
 in-flight request; native ESM dependencies are transformed without
 prebundling.
 
-Production deploys load `.env.production` through `--env-file .env.production`.
+Local production deploys load `.env.production` through
+`--env-file .env.production`. Pushes to `main` run the same exact `production`
+stage through GitHub Actions, with the production GitHub environment injecting
+provider and application configuration directly into the Alchemy process.
+Production deploys are serialized, run repository checks before apply, and
+verify the Web and API health endpoints after apply. Only pushes to `main` can
+start the workflow; production has no manual dispatch path.
 
 The `production` stage owns the retained PlanetScale database and production
 branch. Other stages reference that database and own disposable development
