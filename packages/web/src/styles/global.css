@@ -385,10 +385,46 @@ button {
   box-shadow: var(--shadow);
 }
 
-.league-pill:disabled {
+.league-pill:disabled,
+.league-pill[aria-disabled="true"] {
   cursor: help;
   opacity: 0.38;
   box-shadow: none;
+}
+
+.coming-soon {
+  position: relative;
+  display: inline-flex;
+}
+
+.coming-soon-tooltip {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  left: 50%;
+  width: max-content;
+  max-width: min(220px, 80vw);
+  padding: 6px 9px;
+  transform: translateX(-50%);
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.12s,
+    visibility 0.12s;
+}
+
+.coming-soon:hover .coming-soon-tooltip,
+.coming-soon:focus-within .coming-soon-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Selection summary */
@@ -977,7 +1013,8 @@ select.form-input {
   .btn,
   .header-cta,
   .skip-link,
-  .team-card {
+  .team-card,
+  .coming-soon-tooltip {
     transition: none;
   }
 

@@ -17,12 +17,14 @@ import {
   sendTime,
   sendTimeIntervals,
 } from "../../lib/time.js";
+import { ComingSoon } from "../ui/ComingSoon.jsx";
 import { Success } from "./Success.jsx";
 import { useSelectionRejection } from "./useSelectionRejection.js";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
 const capacityHint = `You can select up to ${subjectCapacity.toString()} teams. Remove one before selecting another.`;
+const comingSoonLeagues = ["NHL", "EPL"] as const;
 type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -268,9 +270,11 @@ export function Form(props: FormProps) {
                   </button>
                 )}
               </For>
-              <button class="league-pill" type="button" disabled>
-                NHL<span class="visually-hidden"> coming soon</span>
-              </button>
+              <For each={comingSoonLeagues}>
+                {(league) => (
+                  <ComingSoon class="league-pill">{league}</ComingSoon>
+                )}
+              </For>
             </div>
           </fieldset>
 
