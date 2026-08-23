@@ -3,7 +3,6 @@ import * as NodeServices from "@effect/platform-node/NodeServices";
 import {
   Config,
   Console,
-  Data,
   Effect,
   Option,
   Path,
@@ -14,6 +13,12 @@ import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
 
 export const ALCHEMY_STAGE_PATTERN = /^[a-z0-9]+([-_a-z0-9]+)*$/i;
 
+/**
+ * Normalizes a username or worktree directory into an Alchemy stage component.
+ * Alchemy accepts letters, numbers, hyphens, and underscores, with no length
+ * limit. Normalization is followed by a non-empty check so unusable identities
+ * fail instead of selecting a shared stage.
+ */
 const StageComponent = Schema.String.pipe(
   Schema.decodeTo(
     Schema.NonEmptyString.annotate({
@@ -35,33 +40,34 @@ const StageComponent = Schema.String.pipe(
 
 const decodeStageComponent = Schema.decodeUnknownEffect(StageComponent);
 
-class PrimaryCheckout extends Data.TaggedError("PrimaryCheckout") {}
+class InvalidWorktree extends Schema.TaggedErrorClass<InvalidWorktree>()(
+  "InvalidWorktree",
+  { message: Schema.String },
+) {}
 
-class InvalidWorktree extends Data.TaggedError("InvalidWorktree")<{
-  readonly message: string;
-}> {}
+export const User = Effect.gen(function* () {
+  const user = yield* Config.string("USER").pipe(
+    Config.orElse(() => Config.string("USERNAME")),
+  );
 
-export const getUser = Config.string("USER").pipe(
-  Config.orElse(() => Config.string("USERNAME")),
-  Effect.flatMap(decodeStageComponent),
-);
+  return yield* decodeStageComponent(user);
+});
 
-export const getWorktree = Effect.gen(function* () {
+export const Worktree = Effect.gen(function* () {
   const path = yield* Path.Path;
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
-  const output = yield* spawner.string(
-    ChildProcess.make("git", [
-      "rev-parse",
-      "--path-format=absolute",
-      "--git-dir",
-      "--git-common-dir",
-      "--show-toplevel",
-    ]),
-  );
-  const parts = output.trim().split("\n");
-  const gitDirectory = parts[0] ?? "";
-  const commonDirectory = parts[1] ?? "";
-  const topLevel = parts[2] ?? "";
+
+  const command = ChildProcess.make("git", [
+    "rev-parse",
+    "--path-format=absolute",
+    "--git-dir",
+    "--git-common-dir",
+    "--show-toplevel",
+  ]);
+  const metadata = yield* spawner.string(command);
+
+  const parts = metadata.trim().split("\n");
+  const [gitDirectory = "", commonDirectory = "", topLevel = ""] = parts;
 
   if (
     parts.length !== 3 ||
@@ -76,9 +82,11 @@ export const getWorktree = Effect.gen(function* () {
 
   const git = path.resolve(gitDirectory);
   const common = path.resolve(commonDirectory);
+
   if (git === common) {
-    return yield* new PrimaryCheckout();
+    return Option.none();
   }
+
   if (
     path.basename(path.dirname(git)) !== "worktrees" ||
     path.dirname(path.dirname(git)) !== common
@@ -88,15 +96,16 @@ export const getWorktree = Effect.gen(function* () {
     });
   }
 
-  return yield* decodeStageComponent(path.basename(path.resolve(topLevel)));
+  const name = yield* decodeStageComponent(
+    path.basename(path.resolve(topLevel)),
+  );
+
+  return Option.some(name);
 });
 
 export const getStage = Effect.gen(function* () {
-  const user = yield* getUser;
-  const worktree = yield* getWorktree.pipe(
-    Effect.map(Option.some),
-    Effect.catchTag("PrimaryCheckout", () => Effect.succeed(Option.none())),
-  );
+  const user = yield* User;
+  const worktree = yield* Worktree;
 
   return Option.match(worktree, {
     onNone: () => `dev_${user}`,
