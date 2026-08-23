@@ -8,17 +8,14 @@ import type {
 import { beforeEach, vi } from "vitest";
 
 import {
-  ChannelClientRequestError,
-  ChannelClientResponseError,
-} from "../../../errors.js";
-import { EmailDelivery } from "../../delivery.js";
-import type { EmailRendered } from "../../render.js";
-import { EmailChannelClient } from "../service.js";
-import {
-  EmailChannelClientLayerResend,
-  ResendInstantiationError,
-} from "../resend.js";
-import { notification } from "../../../__tests__/fixtures.js";
+  EmailRequestError,
+  EmailResponseError,
+} from "../../notifier/errors.js";
+import { EmailDelivery } from "../../notifier/email-delivery.js";
+import { notification } from "../../notifier/__tests__/fixtures.js";
+import type { EmailRendered } from "../render.js";
+import { Email } from "../service.js";
+import { EmailLayerResend, ResendInstantiationError } from "../resend.js";
 
 const resendMock = vi.hoisted(() => ({
   constructor: vi.fn(),
@@ -77,20 +74,20 @@ const ResendConfigLayerTest = ConfigProvider.layer(
   }),
 );
 
-const EmailChannelClientLayerTest = EmailChannelClientLayerResend.pipe(
+const EmailLayerTest = EmailLayerResend.pipe(
   Layer.provideMerge(ResendConfigLayerTest),
 );
 
 const sendRendered = Effect.gen(function* () {
-  const client = yield* EmailChannelClient;
+  const email = yield* Email;
 
-  yield* client.send(
-    EmailDelivery.makeFromNotification(notification),
-    rendered,
-  );
-}).pipe(Effect.provide(EmailChannelClientLayerTest));
+  yield* email.send({
+    ...EmailDelivery.makeFromNotification(notification),
+    ...rendered,
+  });
+}).pipe(Effect.provide(EmailLayerTest));
 
-describe("EmailChannelClientLayerResend", () => {
+describe("EmailLayerResend", () => {
   beforeEach(() => {
     resendMock.constructor.mockReset();
     resendMock.send.mockReset();
@@ -138,36 +135,34 @@ describe("EmailChannelClientLayerResend", () => {
         });
 
         const error = yield* Effect.gen(function* () {
-          yield* EmailChannelClient;
-        }).pipe(Effect.provide(EmailChannelClientLayerTest), Effect.flip);
+          yield* Email;
+        }).pipe(Effect.provide(EmailLayerTest), Effect.flip);
 
         expect(error).toBeInstanceOf(ResendInstantiationError);
       }),
   );
 
-  it.effect(
-    "maps Resend provider errors to channel client response errors",
-    () =>
-      Effect.gen(function* () {
-        resendMock.send.mockResolvedValue(
-          makeErrorResponse({
-            code: "validation_error",
-            statusCode: 422,
-            message: "Invalid recipient",
-          }),
-        );
+  it.effect("maps Resend provider errors to email response errors", () =>
+    Effect.gen(function* () {
+      resendMock.send.mockResolvedValue(
+        makeErrorResponse({
+          code: "validation_error",
+          statusCode: 422,
+          message: "Invalid recipient",
+        }),
+      );
 
-        const error = yield* sendRendered.pipe(Effect.flip);
+      const error = yield* sendRendered.pipe(Effect.flip);
 
-        expect(error).toBeInstanceOf(ChannelClientResponseError);
-        if (error._tag !== "ChannelClientResponseError") {
-          return expect.fail(`Expected response error, got ${error._tag}`);
-        }
-        expect(error.channel).toBe("email");
-        expect(error.message).toBe("Invalid recipient");
-        expect(error.code).toBe("validation_error");
-        expect(error.statusCode).toBe(422);
-      }),
+      expect(error).toBeInstanceOf(EmailResponseError);
+      if (error._tag !== "EmailResponseError") {
+        return expect.fail(`Expected response error, got ${error._tag}`);
+      }
+      expect(error.channel).toBe("email");
+      expect(error.message).toBe("Invalid recipient");
+      expect(error.code).toBe("validation_error");
+      expect(error.statusCode).toBe(422);
+    }),
   );
 
   it.live("retries request failures from the Resend boundary", () =>
@@ -233,8 +228,8 @@ describe("EmailChannelClientLayerResend", () => {
 
       const error = yield* sendRendered.pipe(Effect.flip);
 
-      expect(error).toBeInstanceOf(ChannelClientRequestError);
-      if (error._tag !== "ChannelClientRequestError") {
+      expect(error).toBeInstanceOf(EmailRequestError);
+      if (error._tag !== "EmailRequestError") {
         return expect.fail(`Expected request error, got ${error._tag}`);
       }
       expect(error.channel).toBe("email");
@@ -257,7 +252,7 @@ describe("EmailChannelClientLayerResend", () => {
 
       const error = yield* sendRendered.pipe(Effect.flip);
 
-      expect(error).toBeInstanceOf(ChannelClientResponseError);
+      expect(error).toBeInstanceOf(EmailResponseError);
       expect(resendMock.send).toHaveBeenCalledOnce();
     }),
   );

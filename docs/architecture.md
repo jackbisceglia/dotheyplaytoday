@@ -2,9 +2,9 @@
 
 ## Packages and dependencies
 
-- `packages/core` owns domain models, shared HTTP contracts, persistence services, scheduling rules, and delivery channel boundaries.
+- `packages/core` owns domain models, shared HTTP contracts, persistence services, scheduling rules, notifier implementations, and provider-neutral transport boundaries.
 - `packages/api` implements the public HTTP API using `core` contracts and services.
-- `packages/jobs` implements notification orchestration and the scheduled worker using `core` services and channels.
+- `packages/jobs` implements notification orchestration and the scheduled worker using `core` services and notifiers.
 - `packages/data` owns catalog, event, and development seed data and writes through `core` domain services.
 - `packages/web` is the Solid 2 Start-mode frontend and consumes shared `core` contracts.
 
@@ -40,14 +40,18 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Deployed Workers use Hyperdrive against the PlanetScale role's direct PostgreSQL origin. `alchemy dev` bypasses Hyperdrive and uses PlanetScale's pooled origin. Both require TLS; deployed Hyperdrive starts with an origin connection limit of five and has query caching disabled.
 - Alchemy seed Actions connect directly to the stage role URL rather than a Worker binding. `pnpm dev:seed` recreates the personal development stage and seeds all subjects, NBA events, and the development user once; ordinary development restarts reuse that state. The exact `production` stage runs a versioned, non-destructive catalog-only import that does not modify users or subscriptions.
 - Cloudflare Worker cron for scheduled notifications.
-- Resend email delivery and console dry runs. Scheduled notifications retain the
-  channel abstraction; signup confirmations use the provider-facing email
-  client directly through a concrete sender.
+- Resend email delivery and console dry runs. Scheduled notifications depend on
+  the `Notifier` service, with interchangeable email and console layers. The
+  provider-neutral `Email` service sends complete outbound emails, and its
+  Resend layer owns SDK calls, retry policy, configuration, and provider error
+  mapping.
 - Typed Effect config at runtime boundaries.
 
-The notification Worker provisions its existing email channel. The transactional
-signup-confirmation helper provides its concrete Resend email client, while the
-API Worker validates the same Resend configuration at startup. After a signup
+The notification Worker provisions the email notifier, which renders a
+`Notification` and delegates the complete result to `Email`. The transactional
+signup-confirmation workflow bypasses `Notifier` and provides the same concrete
+Resend email layer internally, while the API Worker validates its configuration
+at startup. After a signup
 transaction commits, the API constructs a complete confirmation without further
 database reads and uses Alchemy's `WorkerExecutionContext.waitUntil` to attach
 best-effort delivery to the Cloudflare request lifetime. Delivery failures are

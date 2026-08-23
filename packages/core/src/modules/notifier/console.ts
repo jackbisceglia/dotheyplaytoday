@@ -1,16 +1,17 @@
 import { DateTime, Effect } from "effect";
 
-import type { Notification } from "../notification/schema.js";
-import { Channel } from "../service.js";
-import { ConsoleDelivery } from "./delivery.js";
+import { ConsoleDelivery } from "./console-delivery.js";
+import type { Notification } from "./notification.js";
+import { Notifier } from "./service.js";
 
-export type ConsoleRendered = {
+export type ConsoleRendered = ConsoleDelivery & {
   readonly message: string;
 };
 
-export const ConsoleChannelLayer = Channel.makeLayer(
+export const NotifierLayerConsole = Notifier.makeLayer(
   Effect.succeed({
     render: Effect.fn((notification: Notification) => {
+      const delivery = ConsoleDelivery.makeFromNotification(notification);
       const message = [
         `subscription=${notification.subscription.id}`,
         `user=${notification.user.email}`,
@@ -19,16 +20,12 @@ export const ConsoleChannelLayer = Channel.makeLayer(
         `sendAt=${DateTime.formatIso(notification.sendAt)}`,
       ].join(" ");
 
-      return Effect.succeed({ message });
+      return Effect.succeed({ ...delivery, message });
     }),
-    send: Effect.fn(function* (
-      notification: Notification,
-      rendered: ConsoleRendered,
-    ) {
-      const delivery = ConsoleDelivery.makeFromNotification(notification);
+    send: Effect.fn(function* (rendered: ConsoleRendered) {
       const details = [
-        `recipient=${delivery.recipient}`,
-        `hash=${delivery.hash}`,
+        `recipient=${rendered.recipient}`,
+        `hash=${rendered.hash}`,
         rendered.message,
       ].join(" ");
 

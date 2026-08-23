@@ -61,49 +61,47 @@ export {
   EventsLayer,
 } from "./modules/events/service.js";
 export {
-  ChannelClientRequestError,
-  ChannelClientResponseError,
-  ChannelError,
-  ChannelName,
-} from "./modules/channels/errors.js";
+  EmailRequestError,
+  EmailResponseError,
+  NotifierError,
+  NotifierName,
+} from "./modules/notifier/errors.js";
 export type {
-  ChannelDeliveryError,
-  ChannelClientError,
-} from "./modules/channels/errors.js";
-export { Recipient } from "./modules/channels/schema.js";
-export { Channel } from "./modules/channels/service.js";
+  EmailError,
+  NotifierDeliveryError,
+} from "./modules/notifier/errors.js";
+export { Recipient } from "./modules/notifier/schema.js";
+export { Notifier } from "./modules/notifier/service.js";
 export type {
-  ChannelDefinition,
-  ChannelDelivery,
-  ChannelService,
-} from "./modules/channels/service.js";
-export { ChannelClient } from "./modules/channels/client/service.js";
-export type { ChannelClientService } from "./modules/channels/client/service.js";
+  NotifierDefinition,
+  NotifierService,
+} from "./modules/notifier/service.js";
 export {
-  EmailChannelLayer,
   EmailRenderError,
-} from "./modules/channels/email/service.js";
-export { ConsoleChannelLayer } from "./modules/channels/console/service.js";
-export type { ConsoleRendered } from "./modules/channels/console/service.js";
-export { EmailDelivery } from "./modules/channels/email/delivery.js";
-export type { EmailDelivery as EmailDeliveryShape } from "./modules/channels/email/delivery.js";
-export { EmailBlock, EmailView } from "./modules/channels/email/render.js";
-export { EmailChannelClient } from "./modules/channels/email/clients/service.js";
+  NotifierLayerEmail,
+} from "./modules/notifier/email.js";
+export { NotifierLayerConsole } from "./modules/notifier/console.js";
+export type { ConsoleRendered } from "./modules/notifier/console.js";
+export { EmailDelivery } from "./modules/notifier/email-delivery.js";
+export type { EmailDelivery as EmailDeliveryShape } from "./modules/notifier/email-delivery.js";
+export { EmailBlock, EmailView } from "./modules/email/render.js";
+export { Email } from "./modules/email/service.js";
+export type { EmailMessage, EmailService } from "./modules/email/service.js";
 export type {
   EmailBlock as EmailBlockShape,
   EmailMatchup,
   EmailRendered,
   EmailViewProps,
-} from "./modules/channels/email/render.js";
-export { ResendConfig } from "./modules/channels/email/clients/config.js";
-export type { ResendConfig as ResendConfigShape } from "./modules/channels/email/clients/config.js";
-export { EmailChannelClientLayerResend } from "./modules/channels/email/clients/resend.js";
-export { Notification } from "./modules/channels/notification/schema.js";
+} from "./modules/email/render.js";
+export { ResendConfig } from "./modules/email/config.js";
+export type { ResendConfig as ResendConfigShape } from "./modules/email/config.js";
+export { EmailLayerResend } from "./modules/email/resend.js";
+export { Notification } from "./modules/notifier/notification.js";
 export {
   renderSignupConfirmation,
   sendSignupConfirmation,
   SignupConfirmation,
-} from "./modules/email/transactional/signup-confirmation.js";
+} from "./modules/email/transactional/confirmation.js";
 export {
   SubjectEvent,
   SubjectEventInsert,

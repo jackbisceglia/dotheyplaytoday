@@ -1,24 +1,23 @@
 import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 
-import type { ExtractFromTag } from "../../../lib/types.js";
-import { WebUrl } from "../../../lib/config/web.js";
-import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
-import { EventId } from "../../events/schema.js";
-import type { EventWithParticipants } from "../../events/service.js";
-import type { Subject } from "../../subjects/schema.js";
-import type { User } from "../../users/schema.js";
-import type { Notification } from "../notification/schema.js";
-import { Channel } from "../service.js";
-import { EmailChannelClientLayerResend } from "./clients/resend.js";
-import { EmailChannelClient } from "./clients/service.js";
-import { EmailDelivery } from "./delivery.js";
+import { WebUrl } from "../../lib/config/web.js";
+import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
+import type { ExtractFromTag } from "../../lib/types.js";
+import { EmailLayerResend } from "../email/resend.js";
+import { Email, type EmailMessage } from "../email/service.js";
 import {
   EmailBlock,
   EmailView,
   type EmailMatchup,
-  type EmailRendered,
   type EmailViewProps,
-} from "./render.js";
+} from "../email/render.js";
+import { EventId } from "../events/schema.js";
+import type { EventWithParticipants } from "../events/service.js";
+import type { Subject } from "../subjects/schema.js";
+import type { User } from "../users/schema.js";
+import { EmailDelivery } from "./email-delivery.js";
+import type { Notification } from "./notification.js";
+import { Notifier } from "./service.js";
 
 const isTaggedAs =
   <const TTag extends PropertyKey>(tag: TTag) =>
@@ -65,7 +64,7 @@ function createFeedCases() {
 }
 
 const requireSportsParticipantsRoles = Effect.fn(
-  "EmailChannel.requireSportsParticipantsRoles",
+  "Notifier.email.requireSportsParticipantsRoles",
 )(function* (event: SportsGameEvent) {
   const home = event.participants.find((p) => p.details.role === "home");
   const away = event.participants.find((p) => p.details.role === "away");
@@ -181,7 +180,7 @@ const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
   });
 };
 
-const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
+const getEmailViewProps = Effect.fn("Notifier.email.getEmailViewProps")(
   function* (notification: Notification) {
     const timezone = notification.user.timezone;
     const home = yield* WebUrl;
@@ -240,23 +239,19 @@ const getEmailViewProps = Effect.fn("EmailChannel.getEmailViewProps")(
   },
 );
 
-export const EmailChannelLayer = Channel.makeLayer(
+export const NotifierLayerEmail = Notifier.makeLayer(
   Effect.gen(function* () {
-    const client = yield* EmailChannelClient;
+    const email = yield* Email;
 
     const render = Effect.fn(function* (notification: Notification) {
       const props = yield* getEmailViewProps(notification);
-
-      return EmailView(props);
-    });
-
-    const send = Effect.fn(function* (
-      notification: Notification,
-      rendered: EmailRendered,
-    ) {
       const delivery = EmailDelivery.makeFromNotification(notification);
 
-      return yield* client.send(delivery, rendered);
+      return { ...delivery, ...EmailView(props) };
+    });
+
+    const send = Effect.fn(function* (message: EmailMessage) {
+      return yield* email.send(message);
     });
 
     return {
@@ -264,4 +259,4 @@ export const EmailChannelLayer = Channel.makeLayer(
       send,
     };
   }),
-).pipe(Layer.provide(EmailChannelClientLayerResend));
+).pipe(Layer.provide(EmailLayerResend));

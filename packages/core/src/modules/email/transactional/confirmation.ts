@@ -3,13 +3,9 @@ import { Effect, Match, Schema } from "effect";
 import { Id } from "../../../lib/id/service.js";
 import { WebUrl } from "../../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
-import { EmailChannelClientLayerResend } from "../../channels/email/clients/resend.js";
-import { EmailChannelClient } from "../../channels/email/clients/service.js";
-import {
-  EmailBlock,
-  EmailView,
-  type EmailRendered,
-} from "../../channels/email/render.js";
+import { EmailLayerResend } from "../resend.js";
+import { Email } from "../service.js";
+import { EmailBlock, EmailView, type EmailRendered } from "../render.js";
 import { Subject } from "../../subjects/schema.js";
 import { Subscription } from "../../subscriptions/schema.js";
 import { User } from "../../users/schema.js";
@@ -96,21 +92,19 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
 
 export const sendSignupConfirmation = Effect.fn("SignupConfirmation.send")(
   function* (confirmation: SignupConfirmation) {
-    const client = yield* EmailChannelClient;
+    const email = yield* Email;
     const id = yield* Id;
 
     const rendered = yield* renderSignupConfirmation(confirmation).pipe(
       Effect.orDie,
     );
 
-    yield* client
-      .send(
-        {
-          recipient: confirmation.user.email,
-          hash: yield* id.generate(),
-        },
-        rendered,
-      )
+    yield* email
+      .send({
+        recipient: confirmation.user.email,
+        idempotencyKey: yield* id.generate(),
+        ...rendered,
+      })
       .pipe(
         Effect.tap(() =>
           Effect.logInfo("signup confirmation: delivered", {
@@ -127,5 +121,5 @@ export const sendSignupConfirmation = Effect.fn("SignupConfirmation.send")(
         ),
       );
   },
-  Effect.provide(EmailChannelClientLayerResend),
+  Effect.provide(EmailLayerResend),
 );

@@ -120,7 +120,7 @@ serialized catalog transaction used in production.
 
 ## Existing coverage
 
-Keep fast schema, domain, contract, scheduling, channel, and rendering tests in
+Keep fast schema, domain, contract, scheduling, notifier, and rendering tests in
 the normal local suite. The opt-in test under
 `packages/core/src/lib/database/__tests__/infra/` deploys the actual application
 stack and remains the minimal connectivity check for Worker → Hyperdrive →

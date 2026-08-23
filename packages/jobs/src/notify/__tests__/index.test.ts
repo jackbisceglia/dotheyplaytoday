@@ -1,14 +1,14 @@
 import { describe, expect, it } from "@effect/vitest";
 import {
-  Channel,
-  ChannelClientRequestError,
-  ChannelClientResponseError,
-  ConsoleChannelLayer,
   DatabaseReadError,
   DatabaseWriteError,
   EmailAddress,
+  EmailRequestError,
+  EmailResponseError,
   Events,
   EventWithParticipants,
+  Notifier,
+  NotifierLayerConsole,
   NotificationRecipient,
   Subscriptions,
   type Notification,
@@ -135,9 +135,9 @@ type HarnessOptions = {
     readonly EventWithParticipants[],
     DatabaseReadError | Schema.SchemaError
   >;
-  readonly deliver?: (
+  readonly send?: (
     notification: Notification,
-  ) => ReturnType<Channel["Service"]["deliver"]>;
+  ) => ReturnType<Notifier["Service"]["send"]>;
   readonly markSent?: (
     input: Parameters<Subscriptions["Service"]["markSent"]>[0],
   ) => ReturnType<Subscriptions["Service"]["markSent"]>;
@@ -184,14 +184,12 @@ const makeHarness = (opts: HarnessOptions) => {
     }),
   );
 
-  const ChannelLayerTest = Layer.succeed(
-    Channel,
-    Channel.of({
-      deliver: (notification) =>
+  const NotifierLayerTest = Layer.succeed(
+    Notifier,
+    Notifier.of({
+      send: (notification) =>
         Effect.sync(() => deliveries.push(notification)).pipe(
-          Effect.andThen(
-            opts.deliver ? opts.deliver(notification) : Effect.void,
-          ),
+          Effect.andThen(opts.send ? opts.send(notification) : Effect.void),
         ),
     }),
   );
@@ -203,7 +201,7 @@ const makeHarness = (opts: HarnessOptions) => {
     layer: Layer.mergeAll(
       SubscriptionsLayerTest,
       EventsLayerTest,
-      ChannelLayerTest,
+      NotifierLayerTest,
     ),
   };
 };
@@ -278,10 +276,10 @@ describe("notify orchestration", () => {
     });
   });
 
-  it.effect("console channel layer does not require Resend config", () =>
+  it.effect("console notifier layer does not require Resend config", () =>
     Effect.gen(function* () {
-      yield* Channel;
-    }).pipe(Effect.provide(ConsoleChannelLayer)),
+      yield* Notifier;
+    }).pipe(Effect.provide(NotifierLayerConsole)),
   );
 
   it.effect(
@@ -378,17 +376,17 @@ describe("notify orchestration", () => {
           [first.subscription.subject.id, [makeEvent()]],
           [second.subscription.subject.id, [makeEvent({ id: ids.eventB })]],
         ]),
-        deliver: (notification) =>
+        send: (notification) =>
           notification.subscription.id === first.subscription.id
             ? Effect.fail(
-                new ChannelClientRequestError({
+                new EmailRequestError({
                   channel: "email",
                   message: "network",
                   cause: new Error("network"),
                 }),
               )
             : Effect.fail(
-                new ChannelClientResponseError({
+                new EmailResponseError({
                   channel: "email",
                   message: "bad recipient",
                   code: "validation_error",
@@ -489,7 +487,7 @@ describe("notify orchestration", () => {
         [first.subscription.subject.id, [makeEvent()]],
         [second.subscription.subject.id, [makeEvent({ id: ids.eventB })]],
       ]),
-      deliver: () => Effect.die(new Error("render defect")),
+      send: () => Effect.die(new Error("render defect")),
     });
 
     return Effect.gen(function* () {

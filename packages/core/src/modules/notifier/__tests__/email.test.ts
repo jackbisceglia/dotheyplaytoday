@@ -3,10 +3,10 @@ import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 import { beforeEach, vi } from "vitest";
 
-import { Channel } from "../../service.js";
-import { EmailChannelLayer, EmailRenderError } from "../service.js";
-import { notification } from "../../__tests__/fixtures.js";
-import type { Notification } from "../../notification/schema.js";
+import { NotifierLayerEmail, EmailRenderError } from "../email.js";
+import { notification } from "./fixtures.js";
+import type { Notification } from "../notification.js";
+import { Notifier } from "../service.js";
 
 const resendMock = vi.hoisted(() => ({
   constructor: vi.fn(),
@@ -42,16 +42,16 @@ const EmailConfigLayerTest = ConfigProvider.layer(
   }),
 );
 
-const EmailChannelLayerTest = EmailChannelLayer.pipe(
+const NotifierLayerEmailTest = NotifierLayerEmail.pipe(
   Layer.provideMerge(EmailConfigLayerTest),
 );
 
-const deliver = (input: Notification) =>
+const send = (input: Notification) =>
   Effect.gen(function* () {
-    const channel = yield* Channel;
+    const notifier = yield* Notifier;
 
-    yield* channel.deliver(input);
-  }).pipe(Effect.provide(EmailChannelLayerTest));
+    yield* notifier.send(input);
+  }).pipe(Effect.provide(NotifierLayerEmailTest));
 
 describe("email rendering", () => {
   beforeEach(() => {
@@ -64,7 +64,7 @@ describe("email rendering", () => {
     "renders subject-scoped email content with event-centric sections",
     () =>
       Effect.gen(function* () {
-        yield* deliver(notification);
+        yield* send(notification);
 
         expect(resendMock.send).toHaveBeenCalledOnce();
         const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
@@ -113,7 +113,7 @@ describe("email rendering", () => {
       }
 
       return Effect.gen(function* () {
-        yield* deliver({
+        yield* send({
           ...notification,
           events: [
             {
@@ -163,11 +163,11 @@ describe("email rendering", () => {
       }
 
       return Effect.gen(function* () {
-        const missingHome = yield* deliver({
+        const missingHome = yield* send({
           ...notification,
           events: [{ ...event, participants: [away] }],
         }).pipe(Effect.exit);
-        const missingAway = yield* deliver({
+        const missingAway = yield* send({
           ...notification,
           events: [{ ...event, participants: [home] }],
         }).pipe(Effect.exit);
