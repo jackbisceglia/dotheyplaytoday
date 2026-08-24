@@ -70,7 +70,7 @@ const ResendConfigLayerTest = ConfigProvider.layer(
   ConfigProvider.fromEnv({
     env: {
       RESEND_API_KEY: "re_test_key",
-      RESEND_FROM_EMAIL: "sender@example.com",
+      EMAIL_FROM_ADDRESS: "sender@example.com",
     },
   }),
 );
