@@ -25,6 +25,7 @@ these environment secrets before enabling the workflow:
 - `PLANETSCALE_API_TOKEN_ID`
 - `PLANETSCALE_API_TOKEN`
 - `RESEND_API_KEY`
+- `ADMIN_EMAIL`
 
 Configure these environment variables:
 

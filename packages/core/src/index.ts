@@ -75,7 +75,11 @@ export {
 } from "./modules/notifier/email.js";
 export { NotifierLayerConsole } from "./modules/notifier/console.js";
 export type { ConsoleRendered } from "./modules/notifier/console.js";
-export { EmailBlock, EmailView } from "./modules/email/render.js";
+export {
+  EmailBlock,
+  EmailView,
+  SubscriptionEmailView,
+} from "./modules/email/render.js";
 export { Email } from "./modules/email/service.js";
 export type { EmailDelivery } from "./modules/email/service.js";
 export type {
@@ -83,6 +87,9 @@ export type {
   EmailMatchup,
   EmailRendered,
   EmailViewProps,
+  SubscriptionEmailRendered,
+  SubscriptionEmailViewProps,
+  TransactionalEmailRendered,
 } from "./modules/email/render.js";
 export { ResendConfig } from "./modules/email/config.js";
 export type {

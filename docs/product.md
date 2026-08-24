@@ -29,7 +29,9 @@
 
 - The `/feedback` page accepts a required request of up to 2,000 characters.
 - Feedback is categorized internally as `new_subject` or `general`. The user-facing new-subject option covers requests for a league, team, or sport and is selected by default; general feedback also covers support requests.
-- Successful submissions are stored for later review and do not trigger a follow-up workflow.
+- Successful submissions are stored immediately. At 00:00 and 12:00 UTC, a
+  worker emails the preceding 12 hours of submissions to the configured
+  administrator as one digest.
 
 ## Vocabulary
 

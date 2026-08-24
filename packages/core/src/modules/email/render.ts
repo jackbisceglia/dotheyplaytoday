@@ -1,14 +1,26 @@
 import { StringParts } from "../../lib/string.js";
 
-export type EmailRendered = {
+type EmailContent = {
   readonly subject: string;
-  /** Mirrored into the List-Unsubscribe header by the transport. */
-  readonly unsubscribeUrl: string;
   readonly body: {
     readonly text: string;
     readonly html: string;
   };
 };
+
+export type TransactionalEmailRendered = EmailContent & {
+  readonly _tag: "transactional";
+};
+
+export type SubscriptionEmailRendered = EmailContent & {
+  readonly _tag: "subscription";
+  /** Mirrored into the List-Unsubscribe header by the transport. */
+  readonly unsubscribeUrl: string;
+};
+
+export type EmailRendered =
+  | TransactionalEmailRendered
+  | SubscriptionEmailRendered;
 
 export type Unsubscribe = {
   readonly href: string;
@@ -58,6 +70,9 @@ export type EmailViewProps = {
   /** Destination for the wordmark link. */
   readonly home?: string | undefined;
   readonly blocks: readonly EmailBlock[];
+};
+
+export type SubscriptionEmailViewProps = EmailViewProps & {
   readonly unsubscribe: Unsubscribe;
 };
 
@@ -112,7 +127,7 @@ const blockText = (block: EmailBlock): readonly string[] => {
   }
 };
 
-const text = (input: EmailViewProps) =>
+const text = (input: EmailViewProps, footer: readonly string[]) =>
   StringParts()
     .add(
       StringParts(input.headline ?? input.subject)
@@ -125,8 +140,7 @@ const text = (input: EmailViewProps) =>
         index === 0 ? blockText(block) : ["", ...blockText(block)],
       ),
     )
-    .add("")
-    .add(`${input.unsubscribe.text}: ${input.unsubscribe.href}`)
+    .addParts(...footer)
     .make("\n");
 
 /**
@@ -209,7 +223,7 @@ const previewText = (blocks: readonly EmailBlock[]) => {
   return first === undefined ? undefined : blockPreview(first);
 };
 
-const html = (input: EmailViewProps) => {
+const html = (input: EmailViewProps, footer: string) => {
   const preheader =
     input.preheader ?? previewText(input.blocks) ?? input.subject;
 
@@ -333,11 +347,7 @@ const html = (input: EmailViewProps) => {
                 ${Main}
               </td>
             </tr>
-            <tr>
-              <td style="padding: 22px 0 0;">
-                ${element.link(input.unsubscribe.href, input.unsubscribe.text)}
-              </td>
-            </tr>
+            ${footer}
           </table>
           <!--[if mso]></td></tr></table><![endif]-->
         </td>
@@ -347,13 +357,30 @@ const html = (input: EmailViewProps) => {
 </html>`;
 };
 
-export function EmailView(input: EmailViewProps): EmailRendered {
+export function EmailView(input: EmailViewProps): TransactionalEmailRendered {
   return {
+    _tag: "transactional",
+    subject: input.subject,
+    body: {
+      text: text(input, []),
+      html: html(input, ""),
+    },
+  };
+}
+
+export function SubscriptionEmailView(
+  input: SubscriptionEmailViewProps,
+): SubscriptionEmailRendered {
+  const unsubscribeText = `${input.unsubscribe.text}: ${input.unsubscribe.href}`;
+  const unsubscribeHtml = `<tr><td style="padding: 22px 0 0;">${element.link(input.unsubscribe.href, input.unsubscribe.text)}</td></tr>`;
+
+  return {
+    _tag: "subscription",
     subject: input.subject,
     unsubscribeUrl: input.unsubscribe.href,
     body: {
-      text: text(input),
-      html: html(input),
+      text: text(input, [unsubscribeText]),
+      html: html(input, unsubscribeHtml),
     },
   };
 }

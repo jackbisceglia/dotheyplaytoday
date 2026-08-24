@@ -5,7 +5,11 @@ import { WebUrl } from "../../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
 import { EmailLayerResend } from "../resend.js";
 import { Email, type EmailDelivery } from "../service.js";
-import { EmailBlock, EmailView, type EmailRendered } from "../render.js";
+import {
+  EmailBlock,
+  type EmailRendered,
+  SubscriptionEmailView,
+} from "../render.js";
 import { Subject } from "../../subjects/schema.js";
 import { Subscription } from "../../subscriptions/schema.js";
 import { User } from "../../users/schema.js";
@@ -75,7 +79,7 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
     );
     const schedule = `We'll email you at ${localTime} on days one of your teams plays.`;
 
-    return EmailView({
+    return SubscriptionEmailView({
       subject: copy.subject,
       home,
       headline: copy.headline,

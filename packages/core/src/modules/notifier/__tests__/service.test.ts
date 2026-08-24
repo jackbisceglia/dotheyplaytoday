@@ -8,6 +8,7 @@ import { Notifier } from "../service.js";
 import { notification } from "./fixtures.js";
 
 const rendered: EmailRendered = {
+  _tag: "subscription",
   subject: "New York Knicks at Boston Celtics today at 4:00 PM EDT",
   unsubscribeUrl: "https://example.com/unsubscribe/token",
   body: {

@@ -36,6 +36,7 @@ vi.mock("resend", () => ({
 }));
 
 const rendered: EmailRendered = {
+  _tag: "subscription",
   subject: "Boston Celtics play today",
   unsubscribeUrl: "https://example.com/unsubscribe/token",
   body: {
@@ -155,6 +156,28 @@ describe("EmailLayerResend", () => {
         },
         rendered,
       );
+    }).pipe(Effect.provide(EmailLayerStaticTest)),
+  );
+
+  it.effect("omits unsubscribe headers for operational email", () =>
+    Effect.gen(function* () {
+      resendMock.send.mockResolvedValue(successResponse);
+
+      const email = yield* Email;
+      yield* email.send(
+        {
+          recipient: notification.user.email,
+          idempotencyKey: "ops-delivery-id",
+        },
+        {
+          _tag: "transactional",
+          subject: rendered.subject,
+          body: rendered.body,
+        },
+      );
+
+      const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
+      expect(payload).not.toHaveProperty("headers");
     }).pipe(Effect.provide(EmailLayerStaticTest)),
   );
 
