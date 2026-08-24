@@ -1,14 +1,18 @@
 import { DateTime, Effect } from "effect";
 
-import type { Notification } from "../notification/schema.js";
-import { Channel } from "../service.js";
-import { ConsoleDelivery } from "./delivery.js";
+import type { Notification } from "./notification.js";
+import { Notifier } from "./service.js";
+
+const makeConsoleDelivery = (notification: Notification) => ({
+  recipient: notification.user.email,
+  hash: Notifier.createDeliveryHash(notification),
+});
 
 export type ConsoleRendered = {
   readonly message: string;
 };
 
-export const ConsoleChannelLayer = Channel.makeLayer(
+export const NotifierLayerConsole = Notifier.makeLayer(
   Effect.succeed({
     render: Effect.fn((notification: Notification) => {
       const message = [
@@ -25,7 +29,7 @@ export const ConsoleChannelLayer = Channel.makeLayer(
       notification: Notification,
       rendered: ConsoleRendered,
     ) {
-      const delivery = ConsoleDelivery.makeFromNotification(notification);
+      const delivery = makeConsoleDelivery(notification);
       const details = [
         `recipient=${delivery.recipient}`,
         `hash=${delivery.hash}`,

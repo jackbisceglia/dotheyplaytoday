@@ -2,11 +2,11 @@ import { Effect, Layer, Match, Redacted, Schedule, Schema } from "effect";
 import { Resend } from "resend";
 
 import {
-  ChannelClientRequestError,
-  ChannelClientResponseError,
-  type ChannelClientError,
-} from "../../errors.js";
-import { EmailChannelClient } from "./service.js";
+  EmailRequestError,
+  EmailResponseError,
+  type EmailError,
+} from "./errors.js";
+import { Email } from "./service.js";
 import { ResendConfig } from "./config.js";
 
 const constraints = { retry: { max: 2 } };
@@ -15,10 +15,10 @@ const retryPolicy = Schedule.exponential("250 millis").pipe(
   Schedule.upTo({ times: constraints.retry.max }),
 );
 
-const isRetriableError = (error: ChannelClientError) =>
+const isRetriableError = (error: EmailError) =>
   Match.value(error).pipe(
-    Match.tag("ChannelClientRequestError", () => true),
-    Match.tag("ChannelClientResponseError", (responseError) =>
+    Match.tag("EmailRequestError", () => true),
+    Match.tag("EmailResponseError", (responseError) =>
       Match.value(responseError).pipe(
         Match.whenOr(
           { statusCode: 429 },
@@ -47,8 +47,8 @@ export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestErr
   { cause: Schema.Defect() },
 ) {}
 
-export const EmailChannelClientLayerResend = Layer.effect(
-  EmailChannelClient,
+export const EmailLayerResend = Layer.effect(
+  Email,
   Effect.gen(function* () {
     const config = yield* ResendConfig;
 
@@ -65,9 +65,7 @@ export const EmailChannelClientLayerResend = Layer.effect(
         catch: (cause) => new ResendRequestError({ cause }),
       });
 
-    const send: EmailChannelClient["Service"]["send"] = Effect.fn(
-      "EmailChannelClient.resend.send",
-    )(
+    const send: Email["Service"]["send"] = Effect.fn("Email.resend.send")(
       function* (delivery, rendered) {
         const response = yield* use((client) =>
           client.emails.send(
@@ -82,13 +80,12 @@ export const EmailChannelClientLayerResend = Layer.effect(
                 "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
               },
             },
-            { idempotencyKey: delivery.hash },
+            { idempotencyKey: delivery.idempotencyKey },
           ),
         );
 
         if (response.error) {
-          return yield* new ChannelClientResponseError({
-            channel: "email",
+          return yield* new EmailResponseError({
             message: response.error.message,
             code: response.error.name,
             statusCode: response.error.statusCode,
@@ -97,8 +94,7 @@ export const EmailChannelClientLayerResend = Layer.effect(
       },
       Effect.catchTag("ResendRequestError", (error) =>
         Effect.fail(
-          new ChannelClientRequestError({
-            channel: "email",
+          new EmailRequestError({
             message: "Failed to reach Resend API",
             cause: error.cause,
           }),
@@ -107,6 +103,6 @@ export const EmailChannelClientLayerResend = Layer.effect(
       Effect.retry({ schedule: retryPolicy, while: isRetriableError }),
     );
 
-    return EmailChannelClient.of({ send });
+    return Email.of({ send });
   }),
 );

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Cause, Effect, Exit } from "effect";
 
-import { Channel } from "../service.js";
-import { EmailRenderError } from "../email/service.js";
-import type { EmailRendered } from "../email/render.js";
-import type { Notification } from "../notification/schema.js";
+import type { EmailRendered } from "../../email/render.js";
+import { EmailRenderError } from "../email.js";
+import type { Notification } from "../notification.js";
+import { Notifier } from "../service.js";
 import { notification } from "./fixtures.js";
 
 const rendered: EmailRendered = {
@@ -16,14 +16,14 @@ const rendered: EmailRendered = {
   },
 };
 
-describe("Channel service", () => {
-  it.effect("delivers notifications through the configured channel", () => {
+describe("Notifier service", () => {
+  it.effect("sends notifications through the configured notifier", () => {
     const renderedNotifications: string[] = [];
     const sentMessages: {
       readonly subscriptionId: string;
       readonly rendered: EmailRendered;
     }[] = [];
-    const ChannelLayerTest = Channel.makeLayer(
+    const NotifierLayerTest = Notifier.makeLayer(
       Effect.succeed({
         render: (input: Notification) => {
           return Effect.sync(() => {
@@ -43,9 +43,9 @@ describe("Channel service", () => {
     );
 
     return Effect.gen(function* () {
-      const channel = yield* Channel;
+      const notifier = yield* Notifier;
 
-      yield* channel.deliver(notification);
+      yield* notifier.send(notification);
 
       expect(renderedNotifications).toEqual([notification.subscription.id]);
       expect(sentMessages).toEqual([
@@ -54,7 +54,7 @@ describe("Channel service", () => {
           rendered,
         },
       ]);
-    }).pipe(Effect.provide(ChannelLayerTest));
+    }).pipe(Effect.provide(NotifierLayerTest));
   });
 
   it.effect("dies on render errors instead of sending fallback email", () => {
@@ -67,7 +67,7 @@ describe("Channel service", () => {
       readonly subscriptionId: string;
       readonly rendered: EmailRendered;
     }[] = [];
-    const ChannelLayerTest = Channel.makeLayer(
+    const NotifierLayerTest = Notifier.makeLayer(
       Effect.succeed({
         render: () => Effect.fail(error),
         send: (input: Notification, message: EmailRendered) =>
@@ -81,14 +81,14 @@ describe("Channel service", () => {
     );
 
     return Effect.gen(function* () {
-      const channel = yield* Channel;
-      const exit = yield* channel.deliver(notification).pipe(Effect.exit);
+      const notifier = yield* Notifier;
+      const exit = yield* notifier.send(notification).pipe(Effect.exit);
 
       expect(Exit.isFailure(exit)).toBe(true);
       if (Exit.isFailure(exit)) {
         expect(Cause.squash(exit.cause)).toBe(error);
       }
       expect(sentMessages).toEqual([]);
-    }).pipe(Effect.provide(ChannelLayerTest));
+    }).pipe(Effect.provide(NotifierLayerTest));
   });
 });

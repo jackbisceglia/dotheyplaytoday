@@ -11,9 +11,9 @@ import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/databa
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
-import { ConsoleChannelLayer } from "@dtpt/core/modules/channels/console/service";
-import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
-import { EmailChannelLayer } from "@dtpt/core/modules/channels/email/service";
+import { ResendConfig } from "@dtpt/core/modules/email/config";
+import { NotifierLayerConsole } from "@dtpt/core/modules/notifier/console";
+import { NotifierLayerEmail } from "@dtpt/core/modules/notifier/email";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { notify, NotifyOptions } from "./index.js";
@@ -69,7 +69,7 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
           yield* Effect.logInfo("notify job: scheduled");
 
           yield* notify({}).pipe(
-            Effect.provide(Layer.merge(NotifyLayer, EmailChannelLayer)),
+            Effect.provide(Layer.merge(NotifyLayer, NotifierLayerEmail)),
           );
         },
         Effect.tapCause((cause) =>
@@ -105,8 +105,8 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
         const NotifyRunLayer = Layer.merge(
           NotifyLayer,
           Boolean.match(body.dryRun, {
-            onFalse: () => EmailChannelLayer,
-            onTrue: () => ConsoleChannelLayer,
+            onFalse: () => NotifierLayerEmail,
+            onTrue: () => NotifierLayerConsole,
           }),
         );
 

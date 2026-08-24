@@ -7,7 +7,7 @@ import { Id } from "@dtpt/core/lib/id/service";
 import {
   sendSignupConfirmation,
   SignupConfirmation,
-} from "@dtpt/core/modules/email/transactional/signup-confirmation";
+} from "@dtpt/core/modules/email/transactional/confirmation";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";

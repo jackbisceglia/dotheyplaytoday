@@ -1,6 +1,6 @@
 import { Config } from "effect";
 
-import { EmailAddress } from "../../../users/schema.js";
+import { EmailAddress } from "../users/schema.js";
 
 export type ResendConfig = Config.Success<typeof ResendConfig>;
 export const ResendConfig = Config.all({

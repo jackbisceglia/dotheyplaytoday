@@ -2,14 +2,13 @@
 
 ## Type
 
-Deferred architecture refactor
+Architecture refactor
 
 ## Status
 
-Documented during signup-confirmation work. Do not implement as part of PR #94.
-The current notification channels and direct signup-confirmation email delivery
-work correctly and should remain stable until this refactor is taken on
-separately.
+The first-pass structural migration was implemented on 2026-08-23. Follow-up
+review kept rendering and workflow functions intact while colocating the small
+delivery/hash helpers with the notifier implementations that use them.
 
 ## Context
 
@@ -52,32 +51,33 @@ calls unless notification-level fan-out, fallback, or routing is introduced.
 packages/core/src/modules/
   notifier/
     service.ts
-    implementations/
-      email.ts
-      console.ts
-      sms.ts
+    email.ts
+    console.ts
+    notification.ts
+    schema.ts
+    errors.ts
 
   email/
     service.ts
-    clients/
-      resend.ts
-      ses.ts
+    errors.ts
+    resend.ts
+    config.ts
+    render.ts
     transactional/
-      signup-confirmation.ts
-      forgot-password.ts
-
-  sms/
-    service.ts
-    clients/
-      twilio.ts
+      confirmation.ts
 ```
+
+Delivery metadata helpers live beside their notifier implementations. The
+shared deterministic delivery-hash helper lives on `Notifier`; it is part of
+notification delivery identity rather than the provider-neutral `Email`
+transport.
 
 Do not add a top-level `delivery/` directory unless a real shared delivery
 domain emerges, such as cross-medium routing, fallback, auditing, status
 tracking, or fan-out.
 
 Transactional files should remain single files while small. For example,
-`email/transactional/signup-confirmation.ts` owns its input, private rendering
+`email/transactional/confirmation.ts` owns its input, private rendering
 function, and send workflow. The workflow resolves its `Email` requirement
 internally through its concrete provider layer. The caller provides only shared
 runtime requirements before handing the effect to a background runtime. It may
@@ -96,8 +96,8 @@ Notifier.send(notification);
 two-step definition into the public service:
 
 ```text
-render: Notification -> T
-send:   T -> void
+render: Notification     -> T
+send:   Notification x T -> void
 
               Notifier.makeLayer
                        |
@@ -110,23 +110,30 @@ The shared `T` statically guarantees that `send` accepts exactly what `render`
 produces. The factory is also the single place for shared rendering-error,
 tracing, and instrumentation policy.
 
-An email notifier renderer should produce a complete provider-neutral outbound
-email, including recipient, content, and deterministic notification delivery
-identity. Its `send` step delegates that value to `Email.send`. Console and SMS
+An email notifier renderer should produce only its rendered email content. Its
+`send` step combines that content with recipient and deterministic delivery
+identity from the original `Notification`, then delegates the delivery metadata
+and rendered content to `Email.send` as distinct arguments. Console and SMS
 implementations follow the same pattern with their own rendered output types.
+
+Implementation errors are mapped to `NotifierError` at that boundary. Its
+`layer` field is an open string, so adding a notifier layer does not require
+registering it in a closed schema.
 
 ## Email Contract
 
 `Email` is the provider-neutral capability for transmitting a complete email:
 
 ```ts
-Email.send({
-  recipient,
-  idempotencyKey,
-  subject,
-  body: { text, html },
-});
+Email.send(
+  { recipient, idempotencyKey },
+  { subject, unsubscribeUrl, body: { text, html } },
+);
 ```
+
+`EmailDelivery` owns transport mechanics; `EmailRendered` owns content. They
+remain separate through the provider adapter rather than being flattened into
+one record.
 
 Resend and SES are layers implementing `Email`. Provider SDK calls, credentials,
 retries, and provider error mapping remain below this boundary.
@@ -153,21 +160,22 @@ Transactional email bypasses `Notifier` because the use case has already chosen
 email. It should not be represented as a `Notification` or forced through the
 notification plugin contract.
 
-## Migration
+## Migration completed in the first pass
 
-1. Introduce the provider-neutral `Email` service using the current
-   `EmailChannelClient` contract and move the Resend layer beneath it without
-   changing behavior.
-2. Rename `Channel` to `Notifier` and preserve its public one-step service and
-   `makeLayer` implementation factory.
-3. Move the email and console notification implementations under `notifier/`
-   and keep Worker layer selection unchanged.
-4. Keep signup-confirmation email code in
-   `email/transactional/signup-confirmation.ts`. Replace its temporary internal
-   `EmailChannelClient` and Resend composition with the equivalent `Email`
-   composition.
-5. Update imports, tests, architecture documentation, and vocabulary after the
-   structural moves are complete.
+1. Introduced the provider-neutral `Email` service from the former
+   `EmailChannelClient` contract and moved the Resend layer beneath it without
+   changing delivery behavior.
+2. Renamed `Channel` to `Notifier`, retained `makeLayer`, and exposed the
+   one-step `Notifier.send(notification)` service.
+3. Moved the email and console notification implementations directly under
+   `notifier/` and kept Worker layer selection unchanged.
+4. Kept the signup-confirmation workflow intact in
+   `email/transactional/confirmation.ts` and composed it with `Email` and the
+   Resend layer.
+5. Updated imports, tests, architecture documentation, and vocabulary with the
+   structural moves.
+6. Colocated delivery/hash helpers, kept rendered output separate from delivery
+   metadata, and moved email transport errors under `email/` during review.
 
 Prefer mechanical moves and renames before behavior changes so Git history and
 review remain understandable.
@@ -182,7 +190,7 @@ review remain understandable.
   depending on `Notifier`.
 - Notification idempotency, dry runs, `markSent` behavior, retries, and provider
   error mapping remain unchanged.
-- Existing notification, email-client, signup-confirmation, lint, typecheck,
+- Existing notification, email, signup-confirmation, lint, typecheck,
   build, and test coverage pass.
 
 ## Non-Goals

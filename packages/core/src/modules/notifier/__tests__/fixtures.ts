@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { Notification } from "../notification/schema.js";
+import { Notification } from "../notification.js";
 
 const decode = Schema.decodeUnknownSync;
 

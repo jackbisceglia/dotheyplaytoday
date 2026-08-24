@@ -13,9 +13,9 @@
 - Normal notification reads exclude cancelled events.
 - Notifications are scoped to one subscription and therefore one subject.
 - Multiple matching events for the same subscribed subject on the same day are combined into one notification.
-- The subscription is marked sent only after its channel delivers successfully.
+- The subscription is marked sent only after its notifier sends successfully.
 - A forced run bypasses the due-time and already-sent-today checks, but it still requires matching events on the user's local date.
-- A dry run renders and delivers through the selected non-production channel and does not mark the subscription sent.
+- A dry run renders and sends through the console notifier and does not mark the subscription sent.
 - Production scheduling is performed by the Cloudflare Worker cron. Development triggers and command-line entry points are operational tools, not the production scheduler.
 
 ## Signup confirmations
@@ -33,15 +33,16 @@
 
 ## Vocabulary
 
-| Term | Meaning |
-| --- | --- |
-| User | A notification recipient identified by email, timezone, and unsubscribe identity. |
-| Subject | Something a user can follow; currently a supported sports team. |
-| Event | A time-bound occurrence that may cause a notification; currently a game. |
-| Subject Event | The association that says an event is relevant to a subject. |
-| Participant | An entity taking part in an event, used to describe the event independently of subscriptions. |
-| Subscription | A user's choice to follow one subject on a schedule, including its last successful send state. |
-| Schedule | The rule determining when a subscription becomes due; currently a fixed local time. |
-| Notification | The subject-scoped message assembled from a user, subscription, subject, and that day's matching events. |
-| Channel | The boundary that renders a notification and arranges its delivery. |
-| Channel Client | The provider-facing boundary that sends an already rendered delivery. |
+| Term                | Meaning                                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| User                | A notification recipient identified by email, timezone, and unsubscribe identity.                        |
+| Subject             | Something a user can follow; currently a supported sports team.                                          |
+| Event               | A time-bound occurrence that may cause a notification; currently a game.                                 |
+| Subject Event       | The association that says an event is relevant to a subject.                                             |
+| Participant         | An entity taking part in an event, used to describe the event independently of subscriptions.            |
+| Subscription        | A user's choice to follow one subject on a schedule, including its last successful send state.           |
+| Schedule            | The rule determining when a subscription becomes due; currently a fixed local time.                      |
+| Notification        | The subject-scoped message assembled from a user, subscription, subject, and that day's matching events. |
+| Notifier            | The notification-specific boundary that renders and sends a `Notification`.                              |
+| Email               | The provider-neutral transport boundary that sends a complete outbound email.                            |
+| Transactional Email | An application workflow that owns its input, rendering, and delivery through `Email`.                    |

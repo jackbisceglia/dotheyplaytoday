@@ -1,5 +1,5 @@
-import { Channel } from "@dtpt/core/modules/channels/service";
-import { Notification } from "@dtpt/core/modules/channels/notification/schema";
+import { Notification } from "@dtpt/core/modules/notifier/notification";
+import { Notifier } from "@dtpt/core/modules/notifier/service";
 import {
   Events,
   type EventWithParticipants,
@@ -83,7 +83,7 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
   ) {
     const subscriptions = yield* Subscriptions;
     const events = yield* Events;
-    const channel = yield* Channel;
+    const notifier = yield* Notifier;
 
     const { subscription, user } = recipient;
 
@@ -132,8 +132,8 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
       },
     );
 
-    yield* channel
-      .deliver(notification)
+    yield* notifier
+      .send(notification)
       .pipe(
         Effect.mapError(
           (error) => new NotifyFailed({ ...ctx, error, step: "send" }),

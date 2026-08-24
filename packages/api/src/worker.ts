@@ -7,7 +7,7 @@ import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
-import { ResendConfig } from "@dtpt/core/modules/channels/email/clients/config";
+import { ResendConfig } from "@dtpt/core/modules/email/config";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";

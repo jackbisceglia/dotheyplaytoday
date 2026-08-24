@@ -8,16 +8,16 @@ Testing architecture investigation
 
 Two suites replace the complete `resend` module with `vi.mock`:
 
-- `packages/core/src/modules/channels/email/__tests__/render.test.ts:16`
-- `packages/core/src/modules/channels/email/clients/__tests__/resend.test.ts:28`
+- `packages/core/src/modules/notifier/__tests__/email.test.ts:16`
+- `packages/core/src/modules/email/__tests__/resend.test.ts:28`
 
 The rendering suite then asserts mock call tuples at lines 70 and 128. These
 tests pass and exercise useful behavior, but global module replacement makes the
 test contract less explicit and causes call arguments to lose their vendor
 types.
 
-The application already uses Effect service layers for the channel and channel
-client boundaries. Investigate whether the remaining direct Resend SDK
+The application already uses Effect service layers for the notifier and email
+boundaries. Investigate whether the remaining direct Resend SDK
 construction needs a smaller injectable seam.
 
 ## Investigation

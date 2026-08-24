@@ -1,14 +1,13 @@
 import { describe, expect, it } from "@effect/vitest";
 import {
-  Channel,
-  ChannelClientRequestError,
-  ChannelClientResponseError,
-  ConsoleChannelLayer,
   DatabaseReadError,
   DatabaseWriteError,
   EmailAddress,
   Events,
   EventWithParticipants,
+  Notifier,
+  NotifierError,
+  NotifierLayerConsole,
   NotificationRecipient,
   Subscriptions,
   type Notification,
@@ -135,9 +134,9 @@ type HarnessOptions = {
     readonly EventWithParticipants[],
     DatabaseReadError | Schema.SchemaError
   >;
-  readonly deliver?: (
+  readonly send?: (
     notification: Notification,
-  ) => ReturnType<Channel["Service"]["deliver"]>;
+  ) => ReturnType<Notifier["Service"]["send"]>;
   readonly markSent?: (
     input: Parameters<Subscriptions["Service"]["markSent"]>[0],
   ) => ReturnType<Subscriptions["Service"]["markSent"]>;
@@ -184,14 +183,12 @@ const makeHarness = (opts: HarnessOptions) => {
     }),
   );
 
-  const ChannelLayerTest = Layer.succeed(
-    Channel,
-    Channel.of({
-      deliver: (notification) =>
+  const NotifierLayerTest = Layer.succeed(
+    Notifier,
+    Notifier.of({
+      send: (notification) =>
         Effect.sync(() => deliveries.push(notification)).pipe(
-          Effect.andThen(
-            opts.deliver ? opts.deliver(notification) : Effect.void,
-          ),
+          Effect.andThen(opts.send ? opts.send(notification) : Effect.void),
         ),
     }),
   );
@@ -203,7 +200,7 @@ const makeHarness = (opts: HarnessOptions) => {
     layer: Layer.mergeAll(
       SubscriptionsLayerTest,
       EventsLayerTest,
-      ChannelLayerTest,
+      NotifierLayerTest,
     ),
   };
 };
@@ -278,10 +275,10 @@ describe("notify orchestration", () => {
     });
   });
 
-  it.effect("console channel layer does not require Resend config", () =>
+  it.effect("console notifier layer does not require Resend config", () =>
     Effect.gen(function* () {
-      yield* Channel;
-    }).pipe(Effect.provide(ConsoleChannelLayer)),
+      yield* Notifier;
+    }).pipe(Effect.provide(NotifierLayerConsole)),
   );
 
   it.effect(
@@ -356,55 +353,50 @@ describe("notify orchestration", () => {
     },
   );
 
-  it.effect(
-    "continues later recipients after provider request and response errors",
-    () => {
-      const first = makeRecipient({
-        email: "first@example.com",
-        subjectId: ids.subjectA,
-        subscriptionId: ids.subscriptionA,
-      });
-      const second = makeRecipient({
-        userId: ids.userB,
-        email: "second@example.com",
-        unsubscribeToken: ids.unsubscribeB,
-        subjectId: ids.subjectB,
-        subscriptionId: ids.subscriptionB,
-        subjectName: "Knicks",
-      });
-      const harness = makeHarness({
-        recipients: [first, second],
-        eventsBySubject: new Map([
-          [first.subscription.subject.id, [makeEvent()]],
-          [second.subscription.subject.id, [makeEvent({ id: ids.eventB })]],
-        ]),
-        deliver: (notification) =>
-          notification.subscription.id === first.subscription.id
-            ? Effect.fail(
-                new ChannelClientRequestError({
-                  channel: "email",
-                  message: "network",
-                  cause: new Error("network"),
-                }),
-              )
-            : Effect.fail(
-                new ChannelClientResponseError({
-                  channel: "email",
-                  message: "bad recipient",
-                  code: "validation_error",
-                  statusCode: 422,
-                }),
-              ),
-      });
+  it.effect("continues later recipients after notifier send errors", () => {
+    const first = makeRecipient({
+      email: "first@example.com",
+      subjectId: ids.subjectA,
+      subscriptionId: ids.subscriptionA,
+    });
+    const second = makeRecipient({
+      userId: ids.userB,
+      email: "second@example.com",
+      unsubscribeToken: ids.unsubscribeB,
+      subjectId: ids.subjectB,
+      subscriptionId: ids.subscriptionB,
+      subjectName: "Knicks",
+    });
+    const harness = makeHarness({
+      recipients: [first, second],
+      eventsBySubject: new Map([
+        [first.subscription.subject.id, [makeEvent()]],
+        [second.subscription.subject.id, [makeEvent({ id: ids.eventB })]],
+      ]),
+      send: (notification) =>
+        notification.subscription.id === first.subscription.id
+          ? Effect.fail(
+              new NotifierError({
+                layer: "NotifierLayerEmail",
+                message: "network",
+                cause: new Error("network"),
+              }),
+            )
+          : Effect.fail(
+              new NotifierError({
+                layer: "NotifierLayerEmail",
+                message: "bad recipient",
+              }),
+            ),
+    });
 
-      return Effect.gen(function* () {
-        yield* notify({ now }).pipe(Effect.provide(harness.layer));
+    return Effect.gen(function* () {
+      yield* notify({ now }).pipe(Effect.provide(harness.layer));
 
-        expect(harness.deliveries).toHaveLength(2);
-        expect(harness.markSentCalls).toHaveLength(0);
-      });
-    },
-  );
+      expect(harness.deliveries).toHaveLength(2);
+      expect(harness.markSentCalls).toHaveLength(0);
+    });
+  });
 
   it.effect("continues later recipients after markSent fails", () => {
     const first = makeRecipient({
@@ -489,7 +481,7 @@ describe("notify orchestration", () => {
         [first.subscription.subject.id, [makeEvent()]],
         [second.subscription.subject.id, [makeEvent({ id: ids.eventB })]],
       ]),
-      deliver: () => Effect.die(new Error("render defect")),
+      send: () => Effect.die(new Error("render defect")),
     });
 
     return Effect.gen(function* () {
