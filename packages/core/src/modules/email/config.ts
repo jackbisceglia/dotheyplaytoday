@@ -2,6 +2,7 @@ import { Config } from "effect";
 
 import { EmailAddress } from "../users/schema.js";
 
+export type EmailOptions = Config.Success<typeof EmailConfig>;
 export const EmailConfig = Config.all({
   from: Config.all({
     name: Config.string("RESEND_FROM_NAME").pipe(

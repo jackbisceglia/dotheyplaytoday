@@ -9,13 +9,6 @@ export type EmailDelivery = {
   readonly idempotencyKey: string;
 };
 
-export type EmailOptions = {
-  readonly from: {
-    readonly name: string;
-    readonly email: EmailAddress;
-  };
-};
-
 export class Email extends Context.Service<
   Email,
   {

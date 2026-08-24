@@ -14,8 +14,8 @@ import {
   EmailResponseError,
   type EmailError,
 } from "./errors.js";
-import { Email, type EmailOptions } from "./service.js";
-import { EmailConfig, ResendConfig } from "./config.js";
+import { Email } from "./service.js";
+import { EmailConfig, type EmailOptions, ResendConfig } from "./config.js";
 
 const constraints = { retry: { max: 2 } };
 
