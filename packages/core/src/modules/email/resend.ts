@@ -55,66 +55,66 @@ export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestErr
   { cause: Schema.Defect() },
 ) {}
 
-const makeEmailResend = (options: EmailOptions) =>
-  Effect.gen(function* () {
-    const config = yield* ResendConfig;
+export const makeEmailLayerResend = (options: EmailOptions) =>
+  Layer.effect(
+    Email,
+    Effect.gen(function* () {
+      const config = yield* ResendConfig;
 
-    const client = yield* Effect.try({
-      try: () => new Resend(Redacted.value(config.apiKey)),
-      catch: (cause) => new ResendInstantiationError({ cause }),
-    });
-
-    const from = `${options.from.name} <${options.from.email}>`;
-
-    const use = <A>(f: (client: Resend) => PromiseLike<A>) =>
-      Effect.tryPromise({
-        try: () => f(client),
-        catch: (cause) => new ResendRequestError({ cause }),
+      const client = yield* Effect.try({
+        try: () => new Resend(Redacted.value(config.apiKey)),
+        catch: (cause) => new ResendInstantiationError({ cause }),
       });
 
-    const send: Email["Service"]["send"] = Effect.fn("Email.resend.send")(
-      function* (delivery, rendered) {
-        const response = yield* use((client) =>
-          client.emails.send(
-            {
-              from,
-              to: delivery.recipient,
-              subject: rendered.subject,
-              text: rendered.body.text,
-              html: rendered.body.html,
-              // Renders a native unsubscribe control in Gmail and Apple Mail.
-              headers: {
-                "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
+      const from = `${options.from.name} <${options.from.email}>`;
+
+      const use = <A>(f: (client: Resend) => PromiseLike<A>) =>
+        Effect.tryPromise({
+          try: () => f(client),
+          catch: (cause) => new ResendRequestError({ cause }),
+        });
+
+      const send: Email["Service"]["send"] = Effect.fn("Email.resend.send")(
+        function* (delivery, rendered) {
+          const response = yield* use((client) =>
+            client.emails.send(
+              {
+                from,
+                to: delivery.recipient,
+                subject: rendered.subject,
+                text: rendered.body.text,
+                html: rendered.body.html,
+                // Renders a native unsubscribe control in Gmail and Apple Mail.
+                headers: {
+                  "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
+                },
               },
-            },
-            { idempotencyKey: delivery.idempotencyKey },
+              { idempotencyKey: delivery.idempotencyKey },
+            ),
+          );
+
+          if (response.error) {
+            return yield* new EmailResponseError({
+              message: response.error.message,
+              code: response.error.name,
+              statusCode: response.error.statusCode,
+            });
+          }
+        },
+        Effect.catchTag("ResendRequestError", (error) =>
+          Effect.fail(
+            new EmailRequestError({
+              message: "Failed to reach Resend API",
+              cause: error.cause,
+            }),
           ),
-        );
-
-        if (response.error) {
-          return yield* new EmailResponseError({
-            message: response.error.message,
-            code: response.error.name,
-            statusCode: response.error.statusCode,
-          });
-        }
-      },
-      Effect.catchTag("ResendRequestError", (error) =>
-        Effect.fail(
-          new EmailRequestError({
-            message: "Failed to reach Resend API",
-            cause: error.cause,
-          }),
         ),
-      ),
-      Effect.retry({ schedule: retryPolicy, while: isRetriableError }),
-    );
+        Effect.retry({ schedule: retryPolicy, while: isRetriableError }),
+      );
 
-    return Email.of({ send });
-  });
-
-export const makeEmailLayerResend = (options: EmailOptions) =>
-  Layer.effect(Email, makeEmailResend(options));
+      return Email.of({ send });
+    }),
+  );
 
 export const makeEmailLayerResendConfig = (
   options: Config.Wrap<EmailOptions>,

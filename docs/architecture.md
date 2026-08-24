@@ -45,6 +45,8 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
   provider-neutral `Email` service sends complete outbound emails, and its
   Resend layer factory binds the required sender. Resend also owns SDK calls,
   API-key configuration, retry policy, and provider error mapping.
+  Email-provider modules expose a resolved-options layer constructor and a
+  Config-backed adapter with the same shape.
 - Typed Effect config at runtime boundaries.
 
 The notification Worker provisions the email notifier, which renders a
