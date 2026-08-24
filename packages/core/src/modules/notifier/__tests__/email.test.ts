@@ -3,7 +3,9 @@ import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 import { beforeEach, vi } from "vitest";
 
+import { EmailResponseError } from "../../email/errors.js";
 import { NotifierLayerEmail, EmailRenderError } from "../email.js";
+import { NotifierError } from "../errors.js";
 import { notification } from "./fixtures.js";
 import type { Notification } from "../notification.js";
 import { Notifier } from "../service.js";
@@ -196,4 +198,28 @@ describe("email rendering", () => {
       });
     },
   );
+
+  it.effect("maps email transport errors to the notifier boundary", () => {
+    resendMock.send.mockResolvedValue({
+      data: null,
+      error: {
+        name: "validation_error",
+        message: "Invalid recipient",
+        statusCode: 422,
+      },
+      headers: null,
+    } satisfies CreateEmailResponse);
+
+    return Effect.gen(function* () {
+      const error = yield* send(notification).pipe(Effect.flip);
+
+      expect(error).toBeInstanceOf(NotifierError);
+      if (!(error instanceof NotifierError)) {
+        return expect.fail(`Expected NotifierError, got ${error._tag}`);
+      }
+      expect(error.layer).toBe("NotifierLayerEmail");
+      expect(error.message).toBe("Invalid recipient");
+      expect(error.cause).toBeInstanceOf(EmailResponseError);
+    });
+  });
 });

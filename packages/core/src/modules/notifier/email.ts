@@ -9,15 +9,26 @@ import {
   EmailBlock,
   EmailView,
   type EmailMatchup,
+  type EmailRendered,
   type EmailViewProps,
 } from "../email/render.js";
 import { EventId } from "../events/schema.js";
 import type { EventWithParticipants } from "../events/service.js";
 import type { Subject } from "../subjects/schema.js";
-import type { User } from "../users/schema.js";
-import { EmailDelivery } from "./email-delivery.js";
+import type { EmailAddress, User } from "../users/schema.js";
+import { NotifierError } from "./errors.js";
 import type { Notification } from "./notification.js";
 import { Notifier } from "./service.js";
+
+type EmailDelivery = {
+  readonly recipient: EmailAddress;
+  readonly idempotencyKey: string;
+};
+
+const makeEmailDelivery = (notification: Notification): EmailDelivery => ({
+  recipient: notification.user.email,
+  idempotencyKey: Notifier.createDeliveryHash(notification),
+});
 
 const isTaggedAs =
   <const TTag extends PropertyKey>(tag: TTag) =>
@@ -64,7 +75,7 @@ function createFeedCases() {
 }
 
 const requireSportsParticipantsRoles = Effect.fn(
-  "Notifier.email.requireSportsParticipantsRoles",
+  "NotifierLayerEmail.requireSportsParticipantsRoles",
 )(function* (event: SportsGameEvent) {
   const home = event.participants.find((p) => p.details.role === "home");
   const away = event.participants.find((p) => p.details.role === "away");
@@ -180,7 +191,7 @@ const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
   });
 };
 
-const getEmailViewProps = Effect.fn("Notifier.email.getEmailViewProps")(
+const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
   function* (notification: Notification) {
     const timezone = notification.user.timezone;
     const home = yield* WebUrl;
@@ -245,13 +256,29 @@ export const NotifierLayerEmail = Notifier.makeLayer(
 
     const render = Effect.fn(function* (notification: Notification) {
       const props = yield* getEmailViewProps(notification);
-      const delivery = EmailDelivery.makeFromNotification(notification);
 
-      return { ...delivery, ...EmailView(props) };
+      return EmailView(props);
     });
 
-    const send = Effect.fn(function* (message: EmailMessage) {
-      return yield* email.send(message);
+    const send = Effect.fn(function* (
+      notification: Notification,
+      rendered: EmailRendered,
+    ) {
+      const message: EmailMessage = {
+        ...makeEmailDelivery(notification),
+        ...rendered,
+      };
+
+      return yield* email.send(message).pipe(
+        Effect.mapError(
+          (cause) =>
+            new NotifierError({
+              layer: "NotifierLayerEmail",
+              message: cause.message,
+              cause,
+            }),
+        ),
+      );
     });
 
     return {

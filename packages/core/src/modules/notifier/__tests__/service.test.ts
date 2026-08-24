@@ -20,6 +20,7 @@ describe("Notifier service", () => {
   it.effect("sends notifications through the configured notifier", () => {
     const renderedNotifications: string[] = [];
     const sentMessages: {
+      readonly subscriptionId: string;
       readonly rendered: EmailRendered;
     }[] = [];
     const NotifierLayerTest = Notifier.makeLayer(
@@ -31,9 +32,10 @@ describe("Notifier service", () => {
             return rendered;
           });
         },
-        send: (message: EmailRendered) =>
+        send: (input: Notification, message: EmailRendered) =>
           Effect.sync(() => {
             sentMessages.push({
+              subscriptionId: input.subscription.id,
               rendered: message,
             });
           }),
@@ -48,6 +50,7 @@ describe("Notifier service", () => {
       expect(renderedNotifications).toEqual([notification.subscription.id]);
       expect(sentMessages).toEqual([
         {
+          subscriptionId: notification.subscription.id,
           rendered,
         },
       ]);
@@ -61,14 +64,16 @@ describe("Notifier service", () => {
       role: "home",
     });
     const sentMessages: {
+      readonly subscriptionId: string;
       readonly rendered: EmailRendered;
     }[] = [];
     const NotifierLayerTest = Notifier.makeLayer(
       Effect.succeed({
         render: () => Effect.fail(error),
-        send: (message: EmailRendered) =>
+        send: (input: Notification, message: EmailRendered) =>
           Effect.sync(() => {
             sentMessages.push({
+              subscriptionId: input.subscription.id,
               rendered: message,
             });
           }),

@@ -13,7 +13,6 @@ domain role:
 - `packages/api/src/rate-limit/service.ts:14` imports `RateLimitConfigShape`.
 - `packages/core/src/index.ts:22` exports `ApiConfigShape`.
 - `packages/core/src/index.ts:24` exports `WebConfigShape`.
-- `packages/core/src/index.ts:88` exports `EmailDeliveryShape`.
 - `packages/core/src/index.ts:93` exports `ResendConfigShape`.
 
 The local `shaped` variable can likely be named for the recipient rows it

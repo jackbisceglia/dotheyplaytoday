@@ -3,11 +3,10 @@ import {
   DatabaseReadError,
   DatabaseWriteError,
   EmailAddress,
-  EmailRequestError,
-  EmailResponseError,
   Events,
   EventWithParticipants,
   Notifier,
+  NotifierError,
   NotifierLayerConsole,
   NotificationRecipient,
   Subscriptions,
@@ -354,55 +353,50 @@ describe("notify orchestration", () => {
     },
   );
 
-  it.effect(
-    "continues later recipients after provider request and response errors",
-    () => {
-      const first = makeRecipient({
-        email: "first@example.com",
-        subjectId: ids.subjectA,
-        subscriptionId: ids.subscriptionA,
-      });
-      const second = makeRecipient({
-        userId: ids.userB,
-        email: "second@example.com",
-        unsubscribeToken: ids.unsubscribeB,
-        subjectId: ids.subjectB,
-        subscriptionId: ids.subscriptionB,
-        subjectName: "Knicks",
-      });
-      const harness = makeHarness({
-        recipients: [first, second],
-        eventsBySubject: new Map([
-          [first.subscription.subject.id, [makeEvent()]],
-          [second.subscription.subject.id, [makeEvent({ id: ids.eventB })]],
-        ]),
-        send: (notification) =>
-          notification.subscription.id === first.subscription.id
-            ? Effect.fail(
-                new EmailRequestError({
-                  channel: "email",
-                  message: "network",
-                  cause: new Error("network"),
-                }),
-              )
-            : Effect.fail(
-                new EmailResponseError({
-                  channel: "email",
-                  message: "bad recipient",
-                  code: "validation_error",
-                  statusCode: 422,
-                }),
-              ),
-      });
+  it.effect("continues later recipients after notifier send errors", () => {
+    const first = makeRecipient({
+      email: "first@example.com",
+      subjectId: ids.subjectA,
+      subscriptionId: ids.subscriptionA,
+    });
+    const second = makeRecipient({
+      userId: ids.userB,
+      email: "second@example.com",
+      unsubscribeToken: ids.unsubscribeB,
+      subjectId: ids.subjectB,
+      subscriptionId: ids.subscriptionB,
+      subjectName: "Knicks",
+    });
+    const harness = makeHarness({
+      recipients: [first, second],
+      eventsBySubject: new Map([
+        [first.subscription.subject.id, [makeEvent()]],
+        [second.subscription.subject.id, [makeEvent({ id: ids.eventB })]],
+      ]),
+      send: (notification) =>
+        notification.subscription.id === first.subscription.id
+          ? Effect.fail(
+              new NotifierError({
+                layer: "NotifierLayerEmail",
+                message: "network",
+                cause: new Error("network"),
+              }),
+            )
+          : Effect.fail(
+              new NotifierError({
+                layer: "NotifierLayerEmail",
+                message: "bad recipient",
+              }),
+            ),
+    });
 
-      return Effect.gen(function* () {
-        yield* notify({ now }).pipe(Effect.provide(harness.layer));
+    return Effect.gen(function* () {
+      yield* notify({ now }).pipe(Effect.provide(harness.layer));
 
-        expect(harness.deliveries).toHaveLength(2);
-        expect(harness.markSentCalls).toHaveLength(0);
-      });
-    },
-  );
+      expect(harness.deliveries).toHaveLength(2);
+      expect(harness.markSentCalls).toHaveLength(0);
+    });
+  });
 
   it.effect("continues later recipients after markSent fails", () => {
     const first = makeRecipient({

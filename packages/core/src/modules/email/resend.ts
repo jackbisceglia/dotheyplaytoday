@@ -5,7 +5,7 @@ import {
   EmailRequestError,
   EmailResponseError,
   type EmailError,
-} from "../notifier/errors.js";
+} from "./errors.js";
 import { Email } from "./service.js";
 import { ResendConfig } from "./config.js";
 
@@ -86,7 +86,6 @@ export const EmailLayerResend = Layer.effect(
 
         if (response.error) {
           return yield* new EmailResponseError({
-            channel: "email",
             message: response.error.message,
             code: response.error.name,
             statusCode: response.error.statusCode,
@@ -96,7 +95,6 @@ export const EmailLayerResend = Layer.effect(
       Effect.catchTag("ResendRequestError", (error) =>
         Effect.fail(
           new EmailRequestError({
-            channel: "email",
             message: "Failed to reach Resend API",
             cause: error.cause,
           }),

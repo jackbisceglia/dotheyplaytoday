@@ -7,11 +7,7 @@ import type {
 } from "resend";
 import { beforeEach, vi } from "vitest";
 
-import {
-  EmailRequestError,
-  EmailResponseError,
-} from "../../notifier/errors.js";
-import { EmailDelivery } from "../../notifier/email-delivery.js";
+import { EmailRequestError, EmailResponseError } from "../errors.js";
 import { notification } from "../../notifier/__tests__/fixtures.js";
 import type { EmailRendered } from "../render.js";
 import { Email } from "../service.js";
@@ -82,7 +78,9 @@ const sendRendered = Effect.gen(function* () {
   const email = yield* Email;
 
   yield* email.send({
-    ...EmailDelivery.makeFromNotification(notification),
+    recipient: notification.user.email,
+    idempotencyKey:
+      "00000000-0000-4000-8000-000000000401:2026-05-24T13:00:00.000Z",
     ...rendered,
   });
 }).pipe(Effect.provide(EmailLayerTest));
@@ -158,7 +156,6 @@ describe("EmailLayerResend", () => {
       if (error._tag !== "EmailResponseError") {
         return expect.fail(`Expected response error, got ${error._tag}`);
       }
-      expect(error.channel).toBe("email");
       expect(error.message).toBe("Invalid recipient");
       expect(error.code).toBe("validation_error");
       expect(error.statusCode).toBe(422);
@@ -232,7 +229,6 @@ describe("EmailLayerResend", () => {
       if (error._tag !== "EmailRequestError") {
         return expect.fail(`Expected request error, got ${error._tag}`);
       }
-      expect(error.channel).toBe("email");
       expect(error.message).toBe("Failed to reach Resend API");
 
       const attempts = yield* Ref.get(attemptsRef);

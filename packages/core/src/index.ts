@@ -63,30 +63,21 @@ export {
 export {
   EmailRequestError,
   EmailResponseError,
-  NotifierError,
-  NotifierName,
-} from "./modules/notifier/errors.js";
-export type {
-  EmailError,
-  NotifierDeliveryError,
-} from "./modules/notifier/errors.js";
+} from "./modules/email/errors.js";
+export type { EmailError } from "./modules/email/errors.js";
+export { NotifierError } from "./modules/notifier/errors.js";
 export { Recipient } from "./modules/notifier/schema.js";
 export { Notifier } from "./modules/notifier/service.js";
-export type {
-  NotifierDefinition,
-  NotifierService,
-} from "./modules/notifier/service.js";
+export type { NotifierLayerFactoryDefinition } from "./modules/notifier/service.js";
 export {
   EmailRenderError,
   NotifierLayerEmail,
 } from "./modules/notifier/email.js";
 export { NotifierLayerConsole } from "./modules/notifier/console.js";
 export type { ConsoleRendered } from "./modules/notifier/console.js";
-export { EmailDelivery } from "./modules/notifier/email-delivery.js";
-export type { EmailDelivery as EmailDeliveryShape } from "./modules/notifier/email-delivery.js";
 export { EmailBlock, EmailView } from "./modules/email/render.js";
 export { Email } from "./modules/email/service.js";
-export type { EmailMessage, EmailService } from "./modules/email/service.js";
+export type { EmailMessage } from "./modules/email/service.js";
 export type {
   EmailBlock as EmailBlockShape,
   EmailMatchup,

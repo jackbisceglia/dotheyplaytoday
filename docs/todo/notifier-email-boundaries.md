@@ -6,9 +6,9 @@ Architecture refactor
 
 ## Status
 
-First-pass structural migration implemented on 2026-08-23, pending review.
-Existing modules were moved and renamed as units; their rendering and workflow
-functions were not redistributed across files.
+The first-pass structural migration was implemented on 2026-08-23. Follow-up
+review kept rendering and workflow functions intact while colocating the small
+delivery/hash helpers with the notifier implementations that use them.
 
 ## Context
 
@@ -54,13 +54,12 @@ packages/core/src/modules/
     email.ts
     console.ts
     notification.ts
+    schema.ts
     errors.ts
-    hash.ts
-    email-delivery.ts
-    console-delivery.ts
 
   email/
     service.ts
+    errors.ts
     resend.ts
     config.ts
     render.ts
@@ -68,10 +67,10 @@ packages/core/src/modules/
       confirmation.ts
 ```
 
-The delivery helper files remain separate in this pass because folding their
-functions into the notifier implementation files would go beyond the requested
-mechanical reorganization. Future providers or transactional workflows should
-be added only when product requirements justify them.
+Delivery metadata helpers live beside their notifier implementations. The
+shared deterministic delivery-hash helper lives on `Notifier`; it is part of
+notification delivery identity rather than the provider-neutral `Email`
+transport.
 
 Do not add a top-level `delivery/` directory unless a real shared delivery
 domain emerges, such as cross-medium routing, fallback, auditing, status
@@ -97,8 +96,8 @@ Notifier.send(notification);
 two-step definition into the public service:
 
 ```text
-render: Notification -> T
-send:   T -> void
+render: Notification     -> T
+send:   Notification x T -> void
 
               Notifier.makeLayer
                        |
@@ -111,10 +110,15 @@ The shared `T` statically guarantees that `send` accepts exactly what `render`
 produces. The factory is also the single place for shared rendering-error,
 tracing, and instrumentation policy.
 
-An email notifier renderer should produce a complete provider-neutral outbound
-email, including recipient, content, and deterministic notification delivery
-identity. Its `send` step delegates that value to `Email.send`. Console and SMS
-implementations follow the same pattern with their own rendered output types.
+An email notifier renderer should produce only its rendered email content. Its
+`send` step combines that content with recipient and deterministic delivery
+identity from the original `Notification`, then delegates the complete outbound
+email to `Email.send`. Console and SMS implementations follow the same pattern
+with their own rendered output types.
+
+Implementation errors are mapped to `NotifierError` at that boundary. Its
+`layer` field is an open string, so adding a notifier layer does not require
+registering it in a closed schema.
 
 ## Email Contract
 
@@ -169,6 +173,8 @@ notification plugin contract.
    Resend layer.
 5. Updated imports, tests, architecture documentation, and vocabulary with the
    structural moves.
+6. Colocated delivery/hash helpers, kept rendered output separate from delivery
+   metadata, and moved email transport errors under `email/` during review.
 
 Prefer mechanical moves and renames before behavior changes so Git history and
 review remain understandable.

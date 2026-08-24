@@ -9,7 +9,7 @@ import { beforeEach, vi } from "vitest";
 
 import { Id } from "../../../../lib/id/service.js";
 import { notification } from "../../../notifier/__tests__/fixtures.js";
-import { EmailResponseError } from "../../../notifier/errors.js";
+import { EmailResponseError } from "../../errors.js";
 import {
   renderSignupConfirmation,
   sendSignupConfirmation,
@@ -153,7 +153,6 @@ describe("signup confirmation email", () => {
 
   it.effect("maps typed provider failures", () => {
     const expected = new EmailResponseError({
-      channel: "email",
       message: "Rejected",
       code: "validation_error",
       statusCode: 422,
