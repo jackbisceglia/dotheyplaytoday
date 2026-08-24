@@ -43,8 +43,8 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Resend email delivery and console dry runs. Scheduled notifications depend on
   the `Notifier` service, with interchangeable email and console layers. The
   provider-neutral `Email` service sends complete outbound emails, and its
-  Resend layer owns SDK calls, retry policy, configuration, and provider error
-  mapping.
+  Resend layer factory binds the required sender. Resend also owns SDK calls,
+  API-key configuration, retry policy, and provider error mapping.
 - Typed Effect config at runtime boundaries.
 
 The notification Worker provisions the email notifier, which renders a

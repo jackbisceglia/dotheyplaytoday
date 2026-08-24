@@ -9,9 +9,14 @@ import { beforeEach, vi } from "vitest";
 
 import { EmailRequestError, EmailResponseError } from "../errors.js";
 import { notification } from "../../notifier/__tests__/fixtures.js";
+import { EmailAddress } from "../../users/schema.js";
 import type { EmailRendered } from "../render.js";
 import { Email } from "../service.js";
-import { EmailLayerResend, ResendInstantiationError } from "../resend.js";
+import {
+  EmailLayerResend,
+  makeEmailLayerResend,
+  ResendInstantiationError,
+} from "../resend.js";
 
 const resendMock = vi.hoisted(() => ({
   constructor: vi.fn(),
@@ -74,6 +79,13 @@ const EmailLayerTest = EmailLayerResend.pipe(
   Layer.provideMerge(ResendConfigLayerTest),
 );
 
+const EmailLayerStaticTest = makeEmailLayerResend({
+  from: {
+    name: "dotheyplaytoday ops",
+    email: EmailAddress.make("ops@dotheyplay.today"),
+  },
+}).pipe(Layer.provideMerge(ResendConfigLayerTest));
+
 const sendRendered = Effect.gen(function* () {
   const email = yield* Email;
 
@@ -124,6 +136,26 @@ describe("EmailLayerResend", () => {
       expect(resendMock.constructor).toHaveBeenCalledWith("re_test_key");
       expect(resendMock.send).toHaveBeenCalledOnce();
     }),
+  );
+
+  it.effect("supports a statically configured sender", () =>
+    Effect.gen(function* () {
+      resendMock.send.mockImplementation((payload: CreateEmailOptions) => {
+        expect(payload.from).toBe("dotheyplaytoday ops <ops@dotheyplay.today>");
+
+        return Promise.resolve(successResponse);
+      });
+
+      const email = yield* Email;
+
+      yield* email.send(
+        {
+          recipient: notification.user.email,
+          idempotencyKey: "ops-delivery-id",
+        },
+        rendered,
+      );
+    }).pipe(Effect.provide(EmailLayerStaticTest)),
   );
 
   it.effect(

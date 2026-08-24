@@ -1,4 +1,12 @@
-import { Effect, Layer, Match, Redacted, Schedule, Schema } from "effect";
+import {
+  Config,
+  Effect,
+  Layer,
+  Match,
+  Redacted,
+  Schedule,
+  Schema,
+} from "effect";
 import { Resend } from "resend";
 
 import {
@@ -6,8 +14,8 @@ import {
   EmailResponseError,
   type EmailError,
 } from "./errors.js";
-import { Email } from "./service.js";
-import { ResendConfig } from "./config.js";
+import { Email, type EmailOptions } from "./service.js";
+import { EmailConfig, ResendConfig } from "./config.js";
 
 const constraints = { retry: { max: 2 } };
 
@@ -47,8 +55,7 @@ export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestErr
   { cause: Schema.Defect() },
 ) {}
 
-export const EmailLayerResend = Layer.effect(
-  Email,
+const makeEmailResend = (options: EmailOptions) =>
   Effect.gen(function* () {
     const config = yield* ResendConfig;
 
@@ -57,7 +64,7 @@ export const EmailLayerResend = Layer.effect(
       catch: (cause) => new ResendInstantiationError({ cause }),
     });
 
-    const from = `${config.from.name} <${config.from.email}>`;
+    const from = `${options.from.name} <${options.from.email}>`;
 
     const use = <A>(f: (client: Resend) => PromiseLike<A>) =>
       Effect.tryPromise({
@@ -104,5 +111,14 @@ export const EmailLayerResend = Layer.effect(
     );
 
     return Email.of({ send });
-  }),
-);
+  });
+
+export const makeEmailLayerResend = (options: EmailOptions) =>
+  Layer.effect(Email, makeEmailResend(options));
+
+export const makeEmailLayerResendConfig = (
+  options: Config.Wrap<EmailOptions>,
+) =>
+  Layer.unwrap(Config.unwrap(options).pipe(Effect.map(makeEmailLayerResend)));
+
+export const EmailLayerResend = makeEmailLayerResendConfig(EmailConfig);
