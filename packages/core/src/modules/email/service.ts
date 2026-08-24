@@ -4,7 +4,7 @@ import type { EmailAddress } from "../users/schema.js";
 import type { EmailError } from "./errors.js";
 import type { EmailRendered } from "./render.js";
 
-export type EmailMessage = EmailRendered & {
+export type EmailDelivery = {
   readonly recipient: EmailAddress;
   readonly idempotencyKey: string;
 };
@@ -12,6 +12,9 @@ export type EmailMessage = EmailRendered & {
 export class Email extends Context.Service<
   Email,
   {
-    readonly send: (message: EmailMessage) => Effect.Effect<void, EmailError>;
+    readonly send: (
+      delivery: EmailDelivery,
+      rendered: EmailRendered,
+    ) => Effect.Effect<void, EmailError>;
   }
 >()("@dtpt/core/Email") {}

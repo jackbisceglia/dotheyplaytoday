@@ -1,15 +1,9 @@
 import { DateTime, Effect } from "effect";
 
-import type { EmailAddress } from "../users/schema.js";
 import type { Notification } from "./notification.js";
 import { Notifier } from "./service.js";
 
-type ConsoleDelivery = {
-  readonly recipient: EmailAddress;
-  readonly hash: string;
-};
-
-const makeConsoleDelivery = (notification: Notification): ConsoleDelivery => ({
+const makeConsoleDelivery = (notification: Notification) => ({
   recipient: notification.user.email,
   hash: Notifier.createDeliveryHash(notification),
 });

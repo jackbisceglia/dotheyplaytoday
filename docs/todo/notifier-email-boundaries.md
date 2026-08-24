@@ -112,9 +112,9 @@ tracing, and instrumentation policy.
 
 An email notifier renderer should produce only its rendered email content. Its
 `send` step combines that content with recipient and deterministic delivery
-identity from the original `Notification`, then delegates the complete outbound
-email to `Email.send`. Console and SMS implementations follow the same pattern
-with their own rendered output types.
+identity from the original `Notification`, then delegates the delivery metadata
+and rendered content to `Email.send` as distinct arguments. Console and SMS
+implementations follow the same pattern with their own rendered output types.
 
 Implementation errors are mapped to `NotifierError` at that boundary. Its
 `layer` field is an open string, so adding a notifier layer does not require
@@ -125,14 +125,15 @@ registering it in a closed schema.
 `Email` is the provider-neutral capability for transmitting a complete email:
 
 ```ts
-Email.send({
-  recipient,
-  idempotencyKey,
-  subject,
-  unsubscribeUrl,
-  body: { text, html },
-});
+Email.send(
+  { recipient, idempotencyKey },
+  { subject, unsubscribeUrl, body: { text, html } },
+);
 ```
+
+`EmailDelivery` owns transport mechanics; `EmailRendered` owns content. They
+remain separate through the provider adapter rather than being flattened into
+one record.
 
 Resend and SES are layers implementing `Email`. Provider SDK calls, credentials,
 retries, and provider error mapping remain below this boundary.

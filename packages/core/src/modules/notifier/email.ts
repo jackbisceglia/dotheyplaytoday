@@ -4,7 +4,7 @@ import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
 import type { ExtractFromTag } from "../../lib/types.js";
 import { EmailLayerResend } from "../email/resend.js";
-import { Email, type EmailMessage } from "../email/service.js";
+import { Email, type EmailDelivery } from "../email/service.js";
 import {
   EmailBlock,
   EmailView,
@@ -15,15 +15,10 @@ import {
 import { EventId } from "../events/schema.js";
 import type { EventWithParticipants } from "../events/service.js";
 import type { Subject } from "../subjects/schema.js";
-import type { EmailAddress, User } from "../users/schema.js";
+import type { User } from "../users/schema.js";
 import { NotifierError } from "./errors.js";
 import type { Notification } from "./notification.js";
 import { Notifier } from "./service.js";
-
-type EmailDelivery = {
-  readonly recipient: EmailAddress;
-  readonly idempotencyKey: string;
-};
 
 const makeEmailDelivery = (notification: Notification): EmailDelivery => ({
   recipient: notification.user.email,
@@ -264,12 +259,7 @@ export const NotifierLayerEmail = Notifier.makeLayer(
       notification: Notification,
       rendered: EmailRendered,
     ) {
-      const message: EmailMessage = {
-        ...makeEmailDelivery(notification),
-        ...rendered,
-      };
-
-      return yield* email.send(message).pipe(
+      return yield* email.send(makeEmailDelivery(notification), rendered).pipe(
         Effect.mapError(
           (cause) =>
             new NotifierError({

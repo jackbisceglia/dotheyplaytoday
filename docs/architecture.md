@@ -48,10 +48,10 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 - Typed Effect config at runtime boundaries.
 
 The notification Worker provisions the email notifier, which renders a
-`Notification` and delegates the complete result to `Email`. The transactional
-signup-confirmation workflow bypasses `Notifier` and provides the same concrete
-Resend email layer internally, while the API Worker validates its configuration
-at startup. After a signup
+`Notification` and delegates separate delivery metadata and rendered content to
+`Email`. The transactional signup-confirmation workflow bypasses `Notifier` and
+provides the same concrete Resend email layer internally, while the API Worker
+validates its configuration at startup. After a signup
 transaction commits, the API constructs a complete confirmation without further
 database reads and uses Alchemy's `WorkerExecutionContext.waitUntil` to attach
 best-effort delivery to the Cloudflare request lifetime. Delivery failures are

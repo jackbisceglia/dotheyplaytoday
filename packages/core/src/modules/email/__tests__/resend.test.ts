@@ -77,12 +77,14 @@ const EmailLayerTest = EmailLayerResend.pipe(
 const sendRendered = Effect.gen(function* () {
   const email = yield* Email;
 
-  yield* email.send({
-    recipient: notification.user.email,
-    idempotencyKey:
-      "00000000-0000-4000-8000-000000000401:2026-05-24T13:00:00.000Z",
-    ...rendered,
-  });
+  yield* email.send(
+    {
+      recipient: notification.user.email,
+      idempotencyKey:
+        "00000000-0000-4000-8000-000000000401:2026-05-24T13:00:00.000Z",
+    },
+    rendered,
+  );
 }).pipe(Effect.provide(EmailLayerTest));
 
 describe("EmailLayerResend", () => {

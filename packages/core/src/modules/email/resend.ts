@@ -66,21 +66,21 @@ export const EmailLayerResend = Layer.effect(
       });
 
     const send: Email["Service"]["send"] = Effect.fn("Email.resend.send")(
-      function* (message) {
+      function* (delivery, rendered) {
         const response = yield* use((client) =>
           client.emails.send(
             {
               from,
-              to: message.recipient,
-              subject: message.subject,
-              text: message.body.text,
-              html: message.body.html,
+              to: delivery.recipient,
+              subject: rendered.subject,
+              text: rendered.body.text,
+              html: rendered.body.html,
               // Renders a native unsubscribe control in Gmail and Apple Mail.
               headers: {
-                "List-Unsubscribe": `<${message.unsubscribeUrl}>`,
+                "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
               },
             },
-            { idempotencyKey: message.idempotencyKey },
+            { idempotencyKey: delivery.idempotencyKey },
           ),
         );
 
