@@ -30,7 +30,8 @@ Configure these environment variables:
 
 - `CLOUDFLARE_ACCOUNT_ID`
 - `PLANETSCALE_ORGANIZATION`
-- `RESEND_FROM_EMAIL`
+- `EMAIL_FROM_ADDRESS`
+- `EMAIL_FROM_NAME`
 
 As defense in depth, configure the environment's deployment branches and tags
 policy to allow only the `main` branch. Do not use the broader "protected

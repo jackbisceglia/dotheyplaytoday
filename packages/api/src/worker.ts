@@ -7,7 +7,10 @@ import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
-import { ResendConfig } from "@dtpt/core/modules/email/config";
+import {
+  EmailConfig,
+  ResendConfig,
+} from "@dtpt/core/modules/email/config";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
@@ -48,6 +51,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
     // Validate email delivery config before the Worker begins serving requests.
+    yield* EmailConfig;
     yield* ResendConfig;
 
     // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.

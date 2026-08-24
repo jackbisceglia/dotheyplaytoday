@@ -85,8 +85,15 @@ export type {
   EmailViewProps,
 } from "./modules/email/render.js";
 export { ResendConfig } from "./modules/email/config.js";
-export type { ResendConfig as ResendConfigShape } from "./modules/email/config.js";
-export { EmailLayerResend } from "./modules/email/resend.js";
+export type {
+  EmailOptions,
+  ResendConfig as ResendConfigShape,
+} from "./modules/email/config.js";
+export {
+  EmailLayerResend,
+  makeEmailLayerResend,
+  makeEmailLayerResendConfig,
+} from "./modules/email/resend.js";
 export { Notification } from "./modules/notifier/notification.js";
 export {
   renderSignupConfirmation,

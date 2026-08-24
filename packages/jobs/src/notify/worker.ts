@@ -11,7 +11,10 @@ import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/databa
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
-import { ResendConfig } from "@dtpt/core/modules/email/config";
+import {
+  EmailConfig,
+  ResendConfig,
+} from "@dtpt/core/modules/email/config";
 import { NotifierLayerConsole } from "@dtpt/core/modules/notifier/console";
 import { NotifierLayerEmail } from "@dtpt/core/modules/notifier/email";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
@@ -55,6 +58,7 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
     // Configs
+    yield* EmailConfig;
     yield* ResendConfig;
 
     // Notification layers read WebConfig at runtime from the Stack's late binding.
