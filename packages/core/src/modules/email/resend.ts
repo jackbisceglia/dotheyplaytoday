@@ -77,12 +77,12 @@ export const makeEmailLayerResend = (options: EmailOptions) =>
       const send: Email["Service"]["send"] = Effect.fn("Email.resend.send")(
         function* (delivery, rendered) {
           const headers =
-            rendered._tag === "subscription"
-              ? {
+            rendered.unsubscribeUrl === undefined
+              ? undefined
+              : {
                   // Renders a native unsubscribe control in Gmail and Apple Mail.
                   "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
-                }
-              : undefined;
+                };
 
           const response = yield* use((client) =>
             client.emails.send(

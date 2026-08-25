@@ -1,30 +1,13 @@
 import { StringParts } from "../../lib/string.js";
 
-type EmailContent = {
+export type EmailRendered = {
   readonly subject: string;
+  /** Mirrored into the List-Unsubscribe header by the transport. */
+  readonly unsubscribeUrl?: string | undefined;
   readonly body: {
     readonly text: string;
     readonly html: string;
   };
-};
-
-export type TransactionalEmailRendered = EmailContent & {
-  readonly _tag: "transactional";
-};
-
-export type SubscriptionEmailRendered = EmailContent & {
-  readonly _tag: "subscription";
-  /** Mirrored into the List-Unsubscribe header by the transport. */
-  readonly unsubscribeUrl: string;
-};
-
-export type EmailRendered =
-  | TransactionalEmailRendered
-  | SubscriptionEmailRendered;
-
-export type Unsubscribe = {
-  readonly href: string;
-  readonly text: string;
 };
 
 /** One matchup entry: "leading <separator> trailing", plus its start time. */
@@ -43,7 +26,8 @@ export type EmailBlock =
   | { readonly _tag: "text"; readonly value: string }
   | { readonly _tag: "list"; readonly items: readonly string[] }
   | { readonly _tag: "matchups"; readonly items: readonly EmailMatchup[] }
-  | { readonly _tag: "note"; readonly value: string };
+  | { readonly _tag: "note"; readonly value: string }
+  | { readonly _tag: "link"; readonly href: string; readonly text: string };
 
 export const EmailBlock = {
   /** A paragraph of body copy. */
@@ -57,6 +41,12 @@ export const EmailBlock = {
   }),
   /** Closing fine print, set apart by a rule. */
   note: (value: string): EmailBlock => ({ _tag: "note", value }),
+  /** A standalone link, such as a visual unsubscribe action. */
+  link: (href: string, text: string): EmailBlock => ({
+    _tag: "link",
+    href,
+    text,
+  }),
 };
 
 export type EmailViewProps = {
@@ -70,10 +60,8 @@ export type EmailViewProps = {
   /** Destination for the wordmark link. */
   readonly home?: string | undefined;
   readonly blocks: readonly EmailBlock[];
-};
-
-export type SubscriptionEmailViewProps = EmailViewProps & {
-  readonly unsubscribe: Unsubscribe;
+  /** Provider metadata for native unsubscribe controls. */
+  readonly unsubscribeUrl?: string | undefined;
 };
 
 const color = {
@@ -107,6 +95,8 @@ const blockPreview = (block: EmailBlock): string => {
     case "text":
     case "note":
       return block.value;
+    case "link":
+      return block.text;
     case "list":
       return block.items.join(", ");
     case "matchups":
@@ -124,10 +114,12 @@ const blockText = (block: EmailBlock): readonly string[] => {
       return block.items.map(matchupText);
     case "note":
       return [block.value];
+    case "link":
+      return [`${block.text}: ${block.href}`];
   }
 };
 
-const text = (input: EmailViewProps, footer: readonly string[]) =>
+const text = (input: EmailViewProps) =>
   StringParts()
     .add(
       StringParts(input.headline ?? input.subject)
@@ -140,7 +132,6 @@ const text = (input: EmailViewProps, footer: readonly string[]) =>
         index === 0 ? blockText(block) : ["", ...blockText(block)],
       ),
     )
-    .addParts(...footer)
     .make("\n");
 
 /**
@@ -214,6 +205,8 @@ const blockHtml = (block: EmailBlock): string => {
       );
     case "note":
       return element.note(escapeHtml(block.value));
+    case "link":
+      return element.link(block.href, block.text);
   }
 };
 
@@ -223,7 +216,7 @@ const previewText = (blocks: readonly EmailBlock[]) => {
   return first === undefined ? undefined : blockPreview(first);
 };
 
-const html = (input: EmailViewProps, footer: string) => {
+const html = (input: EmailViewProps) => {
   const preheader =
     input.preheader ?? previewText(input.blocks) ?? input.subject;
 
@@ -347,7 +340,6 @@ const html = (input: EmailViewProps, footer: string) => {
                 ${Main}
               </td>
             </tr>
-            ${footer}
           </table>
           <!--[if mso]></td></tr></table><![endif]-->
         </td>
@@ -357,30 +349,15 @@ const html = (input: EmailViewProps, footer: string) => {
 </html>`;
 };
 
-export function EmailView(input: EmailViewProps): TransactionalEmailRendered {
+export function EmailView(input: EmailViewProps): EmailRendered {
   return {
-    _tag: "transactional",
     subject: input.subject,
+    ...(input.unsubscribeUrl === undefined
+      ? {}
+      : { unsubscribeUrl: input.unsubscribeUrl }),
     body: {
-      text: text(input, []),
-      html: html(input, ""),
-    },
-  };
-}
-
-export function SubscriptionEmailView(
-  input: SubscriptionEmailViewProps,
-): SubscriptionEmailRendered {
-  const unsubscribeText = `${input.unsubscribe.text}: ${input.unsubscribe.href}`;
-  const unsubscribeHtml = `<tr><td style="padding: 22px 0 0;">${element.link(input.unsubscribe.href, input.unsubscribe.text)}</td></tr>`;
-
-  return {
-    _tag: "subscription",
-    subject: input.subject,
-    unsubscribeUrl: input.unsubscribe.href,
-    body: {
-      text: text(input, [unsubscribeText]),
-      html: html(input, unsubscribeHtml),
+      text: text(input),
+      html: html(input),
     },
   };
 }

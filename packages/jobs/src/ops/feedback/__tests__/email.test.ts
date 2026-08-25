@@ -58,7 +58,6 @@ describe("feedback digest email", () => {
         recipient: "owner@example.com",
         idempotencyKey: "feedback-digest-id",
         rendered: {
-          _tag: "transactional",
           subject: "2 new feedback submissions",
         },
       });

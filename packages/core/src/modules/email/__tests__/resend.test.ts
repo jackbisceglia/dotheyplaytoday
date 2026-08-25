@@ -36,7 +36,6 @@ vi.mock("resend", () => ({
 }));
 
 const rendered: EmailRendered = {
-  _tag: "subscription",
   subject: "Boston Celtics play today",
   unsubscribeUrl: "https://example.com/unsubscribe/token",
   body: {
@@ -113,6 +112,10 @@ describe("EmailLayerResend", () => {
           payload: CreateEmailOptions,
           options: CreateEmailRequestOptions | undefined,
         ) => {
+          if (rendered.unsubscribeUrl === undefined) {
+            throw new Error("Expected notification email to be unsubscribable");
+          }
+
           expect(payload).toEqual({
             from: "dotheyplaytoday <sender@example.com>",
             to: notification.user.email,
@@ -170,7 +173,6 @@ describe("EmailLayerResend", () => {
           idempotencyKey: "ops-delivery-id",
         },
         {
-          _tag: "transactional",
           subject: rendered.subject,
           body: rendered.body,
         },

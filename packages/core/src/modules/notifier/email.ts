@@ -7,10 +7,10 @@ import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
 import {
   EmailBlock,
+  EmailView,
   type EmailMatchup,
   type EmailRendered,
-  type SubscriptionEmailViewProps,
-  SubscriptionEmailView,
+  type EmailViewProps,
 } from "../email/render.js";
 import { EventId } from "../events/schema.js";
 import type { EventWithParticipants } from "../events/service.js";
@@ -225,19 +225,17 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
             }),
           );
 
-          const unsubscribe = {
-            text: "Unsubscribe",
-            href: unsubscribeUrl,
-          };
-
           return {
             subject,
             home,
             headline: `${notification.subject.details.name} play`,
             accent: "today.",
-            blocks: [EmailBlock.matchups(matchups)],
-            unsubscribe,
-          } satisfies SubscriptionEmailViewProps;
+            blocks: [
+              EmailBlock.matchups(matchups),
+              EmailBlock.link(unsubscribeUrl, "Unsubscribe"),
+            ],
+            unsubscribeUrl,
+          } satisfies EmailViewProps;
         }),
       ),
       Match.exhaustive,
@@ -252,7 +250,7 @@ export const NotifierLayerEmail = Notifier.makeLayer(
     const render = Effect.fn(function* (notification: Notification) {
       const props = yield* getEmailViewProps(notification);
 
-      return SubscriptionEmailView(props);
+      return EmailView(props);
     });
 
     const send = Effect.fn(function* (

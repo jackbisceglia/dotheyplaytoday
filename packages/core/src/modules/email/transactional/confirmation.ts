@@ -5,11 +5,7 @@ import { WebUrl } from "../../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
 import { EmailLayerResend } from "../resend.js";
 import { Email, type EmailDelivery } from "../service.js";
-import {
-  EmailBlock,
-  type EmailRendered,
-  SubscriptionEmailView,
-} from "../render.js";
+import { EmailBlock, EmailView, type EmailRendered } from "../render.js";
 import { Subject } from "../../subjects/schema.js";
 import { Subscription } from "../../subscriptions/schema.js";
 import { User } from "../../users/schema.js";
@@ -47,10 +43,9 @@ const formatLocalTime = (seconds: number, timezone: string) => {
 export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
   function* (confirmation: SignupConfirmation) {
     const home = yield* WebUrl;
-    const unsubscribe = {
-      text: "Unsubscribe",
-      href: yield* buildUnsubscribeUrl(confirmation.user.unsubscribeToken),
-    };
+    const unsubscribeUrl = yield* buildUnsubscribeUrl(
+      confirmation.user.unsubscribeToken,
+    );
 
     const localTime = formatLocalTime(
       confirmation.schedule.sendAtSecondsLocal,
@@ -79,7 +74,7 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
     );
     const schedule = `We'll email you at ${localTime} on days one of your teams plays.`;
 
-    return SubscriptionEmailView({
+    return EmailView({
       subject: copy.subject,
       home,
       headline: copy.headline,
@@ -88,8 +83,9 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
         EmailBlock.text(copy.intro),
         EmailBlock.list(teamNames),
         EmailBlock.note(schedule),
+        EmailBlock.link(unsubscribeUrl, "Unsubscribe"),
       ],
-      unsubscribe,
+      unsubscribeUrl,
     }) satisfies EmailRendered;
   },
 );
