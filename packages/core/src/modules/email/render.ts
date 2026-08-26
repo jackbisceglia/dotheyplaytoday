@@ -1,53 +1,48 @@
+import { Schema } from "effect";
+
 import { StringParts } from "../../lib/string.js";
+import { exactOptional } from "../../lib/utils.js";
+
+export type EmailMetadata = {
+  readonly unsubscribe: string;
+};
 
 export type EmailRendered = {
   readonly subject: string;
-  /** Mirrored into the List-Unsubscribe header by the transport. */
-  readonly unsubscribeUrl?: string | undefined;
+  readonly metadata?: EmailMetadata | undefined;
   readonly body: {
     readonly text: string;
     readonly html: string;
   };
 };
 
+// TODO: Move sports-specific matchup rendering into an email/render/sports module.
 /** One matchup entry: "leading <separator> trailing", plus its start time. */
-export type EmailMatchup = {
-  readonly leading: string;
-  readonly separator: string;
-  readonly trailing: string;
-  readonly detail: string;
-};
+export type EmailMatchup = typeof EmailMatchup.Type;
+export const EmailMatchup = Schema.Struct({
+  leading: Schema.String,
+  separator: Schema.String,
+  trailing: Schema.String,
+  detail: Schema.String,
+});
 
 /**
  * Content is described as blocks rather than pre-formatted lines so the text
  * and html renderers can each lay a block out on their own terms.
  */
-export type EmailBlock =
-  | { readonly _tag: "text"; readonly value: string }
-  | { readonly _tag: "list"; readonly items: readonly string[] }
-  | { readonly _tag: "matchups"; readonly items: readonly EmailMatchup[] }
-  | { readonly _tag: "note"; readonly value: string }
-  | { readonly _tag: "link"; readonly href: string; readonly text: string };
-
-export const EmailBlock = {
+export type EmailBlock = typeof EmailBlock.Type;
+export const EmailBlock = Schema.TaggedUnion({
   /** A paragraph of body copy. */
-  text: (value: string): EmailBlock => ({ _tag: "text", value }),
+  text: { value: Schema.String },
   /** Emphasized single-line entries, one row each. */
-  list: (items: readonly string[]): EmailBlock => ({ _tag: "list", items }),
+  list: { items: Schema.Array(Schema.String) },
   /** Emphasized matchup entries with a secondary detail line. */
-  matchups: (items: readonly EmailMatchup[]): EmailBlock => ({
-    _tag: "matchups",
-    items,
-  }),
+  matchups: { items: Schema.Array(EmailMatchup) },
   /** Closing fine print, set apart by a rule. */
-  note: (value: string): EmailBlock => ({ _tag: "note", value }),
+  note: { value: Schema.String },
   /** A standalone link, such as a visual unsubscribe action. */
-  link: (href: string, text: string): EmailBlock => ({
-    _tag: "link",
-    href,
-    text,
-  }),
-};
+  link: { href: Schema.String, text: Schema.String },
+});
 
 export type EmailViewProps = {
   readonly subject: string;
@@ -60,8 +55,7 @@ export type EmailViewProps = {
   /** Destination for the wordmark link. */
   readonly home?: string | undefined;
   readonly blocks: readonly EmailBlock[];
-  /** Provider metadata for native unsubscribe controls. */
-  readonly unsubscribeUrl?: string | undefined;
+  readonly metadata?: EmailMetadata | undefined;
 };
 
 const color = {
@@ -352,9 +346,7 @@ const html = (input: EmailViewProps) => {
 export function EmailView(input: EmailViewProps): EmailRendered {
   return {
     subject: input.subject,
-    ...(input.unsubscribeUrl === undefined
-      ? {}
-      : { unsubscribeUrl: input.unsubscribeUrl }),
+    ...exactOptional(input.metadata, (metadata) => ({ metadata })),
     body: {
       text: text(input),
       html: html(input),

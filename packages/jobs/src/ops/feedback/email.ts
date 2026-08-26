@@ -33,10 +33,12 @@ function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
     accent: "landed.",
     preheader: feedback[0].request,
     blocks: [
-      EmailBlock.text(
-        `${count.toString()} ${count === 1 ? "submission is" : "submissions are"} waiting for review:`,
+      EmailBlock.cases.text.make({
+        value: `${count.toString()} ${count === 1 ? "submission is" : "submissions are"} waiting for review:`,
+      }),
+      ...feedback.map((item) =>
+        EmailBlock.cases.note.make({ value: feedbackLine(item) }),
       ),
-      ...feedback.map((item) => EmailBlock.note(feedbackLine(item))),
     ],
   }) satisfies EmailRendered;
 }

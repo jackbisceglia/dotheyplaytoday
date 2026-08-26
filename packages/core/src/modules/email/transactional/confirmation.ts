@@ -80,12 +80,15 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
       headline: copy.headline,
       accent: copy.accent,
       blocks: [
-        EmailBlock.text(copy.intro),
-        EmailBlock.list(teamNames),
-        EmailBlock.note(schedule),
-        EmailBlock.link(unsubscribeUrl, "Unsubscribe"),
+        EmailBlock.cases.text.make({ value: copy.intro }),
+        EmailBlock.cases.list.make({ items: teamNames }),
+        EmailBlock.cases.note.make({ value: schedule }),
+        EmailBlock.cases.link.make({
+          href: unsubscribeUrl,
+          text: "Unsubscribe",
+        }),
       ],
-      unsubscribeUrl,
+      metadata: { unsubscribe: unsubscribeUrl },
     }) satisfies EmailRendered;
   },
 );

@@ -9,13 +9,15 @@ import {
 } from "effect";
 import { Resend } from "resend";
 
+import { exactOptional } from "../../lib/utils.js";
+import { EmailConfig, type EmailOptions, ResendConfig } from "./config.js";
 import {
   EmailRequestError,
   EmailResponseError,
   type EmailError,
 } from "./errors.js";
+import type { EmailMetadata } from "./render.js";
 import { Email } from "./service.js";
-import { EmailConfig, type EmailOptions, ResendConfig } from "./config.js";
 
 const constraints = { retry: { max: 2 } };
 
@@ -55,6 +57,14 @@ export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestErr
   { cause: Schema.Defect() },
 ) {}
 
+const buildHeaders = (metadata: EmailMetadata | undefined) =>
+  exactOptional(metadata?.unsubscribe, (unsubscribe) => ({
+    headers: {
+      // Renders a native unsubscribe control in Gmail and Apple Mail.
+      "List-Unsubscribe": `<${unsubscribe}>`,
+    },
+  }));
+
 export const makeEmailLayerResend = (options: EmailOptions) =>
   Layer.effect(
     Email,
@@ -76,14 +86,6 @@ export const makeEmailLayerResend = (options: EmailOptions) =>
 
       const send: Email["Service"]["send"] = Effect.fn("Email.resend.send")(
         function* (delivery, rendered) {
-          const headers =
-            rendered.unsubscribeUrl === undefined
-              ? undefined
-              : {
-                  // Renders a native unsubscribe control in Gmail and Apple Mail.
-                  "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
-                };
-
           const response = yield* use((client) =>
             client.emails.send(
               {
@@ -92,7 +94,7 @@ export const makeEmailLayerResend = (options: EmailOptions) =>
                 subject: rendered.subject,
                 text: rendered.body.text,
                 html: rendered.body.html,
-                ...(headers === undefined ? {} : { headers }),
+                ...buildHeaders(rendered.metadata),
               },
               { idempotencyKey: delivery.idempotencyKey },
             ),

@@ -231,10 +231,13 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
             headline: `${notification.subject.details.name} play`,
             accent: "today.",
             blocks: [
-              EmailBlock.matchups(matchups),
-              EmailBlock.link(unsubscribeUrl, "Unsubscribe"),
+              EmailBlock.cases.matchups.make({ items: matchups }),
+              EmailBlock.cases.link.make({
+                href: unsubscribeUrl,
+                text: "Unsubscribe",
+              }),
             ],
-            unsubscribeUrl,
+            metadata: { unsubscribe: unsubscribeUrl },
           } satisfies EmailViewProps;
         }),
       ),

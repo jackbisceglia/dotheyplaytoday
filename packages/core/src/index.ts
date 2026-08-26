@@ -81,6 +81,7 @@ export type { EmailDelivery } from "./modules/email/service.js";
 export type {
   EmailBlock as EmailBlockShape,
   EmailMatchup,
+  EmailMetadata,
   EmailRendered,
   EmailViewProps,
 } from "./modules/email/render.js";

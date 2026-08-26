@@ -37,7 +37,7 @@ vi.mock("resend", () => ({
 
 const rendered: EmailRendered = {
   subject: "Boston Celtics play today",
-  unsubscribeUrl: "https://example.com/unsubscribe/token",
+  metadata: { unsubscribe: "https://example.com/unsubscribe/token" },
   body: {
     text: "New York Knicks at Boston Celtics, 4:00 PM EDT",
     html: "<p>New York Knicks at Boston Celtics, 4:00 PM EDT</p>",
@@ -112,7 +112,7 @@ describe("EmailLayerResend", () => {
           payload: CreateEmailOptions,
           options: CreateEmailRequestOptions | undefined,
         ) => {
-          if (rendered.unsubscribeUrl === undefined) {
+          if (rendered.metadata === undefined) {
             throw new Error("Expected notification email to be unsubscribable");
           }
 
@@ -123,7 +123,7 @@ describe("EmailLayerResend", () => {
             text: rendered.body.text,
             html: rendered.body.html,
             headers: {
-              "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
+              "List-Unsubscribe": `<${rendered.metadata.unsubscribe}>`,
             },
           });
           expect(options).toEqual({

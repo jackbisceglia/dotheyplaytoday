@@ -61,6 +61,7 @@ describe("feedback digest email", () => {
           subject: "2 new feedback submissions",
         },
       });
+      expect(delivery?.rendered).not.toHaveProperty("metadata");
       expect(delivery?.rendered.body.text).toContain("New subject");
       expect(delivery?.rendered.body.text).toContain(
         "2026-08-22T00:15:00.000Z",
