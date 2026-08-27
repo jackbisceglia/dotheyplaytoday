@@ -7,7 +7,7 @@ import { ResendConfig } from "@dtpt/core/modules/email/config";
 import { makeEmailLayerResend } from "@dtpt/core/modules/email/resend";
 import { EmailAddress } from "@dtpt/core/modules/users/schema";
 import { AdminEmail } from "./config.js";
-import { EmailRecentFeedback } from "./feedback/index.js";
+import { SendFeedbackEmail } from "./feedback/index.js";
 
 const FeedbackScheduleTwiceDailyUtc = "0 0,12 * * *";
 
@@ -43,7 +43,7 @@ export default class OpsWorker extends Cloudflare.Worker<OpsWorker>()(
       Effect.fn(
         function* () {
           yield* Effect.logInfo("feedback job: scheduled");
-          yield* EmailRecentFeedback;
+          yield* SendFeedbackEmail;
         },
         Effect.provide(OpsLayer),
         Effect.tapCause((cause) =>

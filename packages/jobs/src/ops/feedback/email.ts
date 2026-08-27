@@ -12,14 +12,14 @@ export function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
   const count = feedback.length;
   const subject = `${count.toString()} new feedback ${count === 1 ? "submission" : "submissions"}`;
 
-  const entry = (f: Feedback) => {
-    const label = Match.value(f.type).pipe(
+  const entry = (feedback: Feedback) => {
+    const label = Match.value(feedback.type).pipe(
       Match.when("new_subject", () => "New subject"),
       Match.when("general", () => "General"),
       Match.exhaustive,
     );
 
-    return `${DateTime.formatIso(f.createdAt)} · ${label} — ${f.request}`;
+    return `${DateTime.formatIso(feedback.createdAt)} · ${label} — ${feedback.request}`;
   };
 
   return EmailView({
@@ -29,7 +29,7 @@ export function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
     preheader: feedback[0].request,
     blocks: [
       Text.make({ value: `${subject} waiting for review:` }),
-      ...feedback.map((f) => Note.make({ value: entry(f) })),
+      ...feedback.map((item) => Note.make({ value: entry(item) })),
     ],
   }) satisfies EmailRendered;
 }

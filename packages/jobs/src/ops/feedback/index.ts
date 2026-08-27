@@ -24,7 +24,7 @@ export const FeedbackWindow = Effect.gen(function* () {
 
 const decodeFeedback = Schema.decodeUnknownEffect(Schema.Array(Feedback));
 
-export const EmailRecentFeedback = Effect.gen(function* () {
+export const SendFeedbackEmail = Effect.gen(function* () {
   const database = yield* Database;
   const window = yield* FeedbackWindow;
 
@@ -54,7 +54,7 @@ export const EmailRecentFeedback = Effect.gen(function* () {
     .send(
       {
         recipient,
-        idempotencyKey: `feedback-digest:${window.from}:${window.to}`,
+        idempotencyKey: `feedback:${window.from}:${window.to}`,
       },
       render(feedback),
     )
