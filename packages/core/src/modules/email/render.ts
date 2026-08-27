@@ -27,30 +27,21 @@ export const EmailMatchup = Schema.Struct({
   detail: Schema.String,
 });
 
-/**
- * Content is described as blocks rather than pre-formatted lines so the text
- * and html renderers can each lay a block out on their own terms.
- */
-/** A paragraph of body copy. */
 export const Text = Schema.TaggedStruct("text", { value: Schema.String });
-/** Emphasized single-line entries, one row each. */
 export const List = Schema.TaggedStruct("list", {
   items: Schema.Array(Schema.String),
 });
-/** Emphasized matchup entries with a secondary detail line. */
 export const Matchups = Schema.TaggedStruct("matchups", {
   items: Schema.Array(EmailMatchup),
 });
-/** Closing fine print, set apart by a rule. */
 export const Note = Schema.TaggedStruct("note", { value: Schema.String });
-/** A standalone link, such as a visual unsubscribe action. */
 export const Link = Schema.TaggedStruct("link", {
   href: Schema.String,
   text: Schema.String,
 });
 
-export const Blocks = TaggedUnion([Text, List, Matchups, Note, Link]);
 export type Block = typeof Blocks.Type;
+export const Blocks = TaggedUnion([Text, List, Matchups, Note, Link]);
 
 export type EmailViewProps = {
   readonly subject: string;
