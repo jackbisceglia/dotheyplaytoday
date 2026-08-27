@@ -4,11 +4,19 @@ import { Effect, Layer } from "effect";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
 import { ResendConfig } from "@dtpt/core/modules/email/config";
+import { makeEmailLayerResend } from "@dtpt/core/modules/email/resend";
+import { EmailAddress } from "@dtpt/core/modules/users/schema";
 import { AdminEmail } from "./config.js";
-import { FeedbackEmailLayer } from "./feedback/email.js";
-import { emailRecentFeedback } from "./feedback/index.js";
+import { EmailRecentFeedback } from "./feedback/index.js";
 
 const FeedbackScheduleTwiceDailyUtc = "0 0,12 * * *";
+
+const EmailLayerOps = makeEmailLayerResend({
+  from: {
+    name: "ops, dotheyplaytoday",
+    email: EmailAddress.make("ops@dotheyplay.today"),
+  },
+});
 
 const WorkerLayer = Layer.merge(
   Cloudflare.Hyperdrive.ConnectBinding,
@@ -28,15 +36,16 @@ export default class OpsWorker extends Cloudflare.Worker<OpsWorker>()(
     yield* AdminEmail;
 
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
-    const OpsLayer = Layer.merge(DatabaseLayer, FeedbackEmailLayer);
+    const OpsLayer = Layer.merge(DatabaseLayer, EmailLayerOps);
 
     yield* Cloudflare.Workers.cron(
       FeedbackScheduleTwiceDailyUtc,
       Effect.fn(
         function* () {
           yield* Effect.logInfo("feedback job: scheduled");
-          yield* emailRecentFeedback().pipe(Effect.provide(OpsLayer));
+          yield* EmailRecentFeedback;
         },
+        Effect.provide(OpsLayer),
         Effect.tapCause((cause) =>
           Effect.logError("feedback job: cron failed", cause),
         ),

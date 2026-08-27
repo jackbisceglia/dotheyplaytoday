@@ -56,14 +56,11 @@ export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestErr
   { cause: Schema.Defect() },
 ) {}
 
-const buildHeaders = (metadata: EmailMetadata | undefined) => {
-  if (metadata === undefined) {
-    return {};
-  }
+const headers = (metadata: EmailMetadata | undefined) => {
+  if (!metadata) return {};
 
   return {
     headers: {
-      // Renders a native unsubscribe control in Gmail and Apple Mail.
       "List-Unsubscribe": `<${metadata.unsubscribe}>`,
     },
   };
@@ -98,7 +95,7 @@ export const makeEmailLayerResend = (options: EmailOptions) =>
                 subject: rendered.subject,
                 text: rendered.body.text,
                 html: rendered.body.html,
-                ...buildHeaders(rendered.metadata),
+                ...headers(rendered.metadata),
               },
               { idempotencyKey: delivery.idempotencyKey },
             ),

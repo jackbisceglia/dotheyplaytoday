@@ -1,10 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
-import { ConfigProvider, DateTime, Effect, Layer, Ref } from "effect";
+import { DateTime } from "effect";
 
-import type { EmailRendered } from "@dtpt/core/modules/email/render";
-import { Email } from "@dtpt/core/modules/email/service";
 import { Feedback, FeedbackId } from "@dtpt/core/modules/feedback/schema";
-import { sendFeedback } from "../email.js";
+import { render } from "../email.js";
 
 const feedback = [
   Feedback.make({
@@ -21,58 +19,20 @@ const feedback = [
   }),
 ] as const;
 
-const ConfigLayerTest = ConfigProvider.layer(
-  ConfigProvider.fromEnv({ env: { ADMIN_EMAIL: "owner@example.com" } }),
-);
-
 describe("feedback digest email", () => {
-  it.effect("renders and sends to the configured administrator", () =>
-    Effect.gen(function* () {
-      const sent = yield* Ref.make<
-        readonly {
-          readonly recipient: string;
-          readonly idempotencyKey: string;
-          readonly rendered: EmailRendered;
-        }[]
-      >([]);
+  it("renders a feedback digest", () => {
+    const rendered = render(feedback);
 
-      const EmailLayerTest = Layer.succeed(
-        Email,
-        Email.of({
-          send: (delivery, rendered) =>
-            Ref.update(sent, (deliveries) => [
-              ...deliveries,
-              { ...delivery, rendered },
-            ]),
-        }),
-      );
-
-      yield* sendFeedback(feedback, "feedback-digest-id").pipe(
-        Effect.provide([EmailLayerTest, ConfigLayerTest]),
-      );
-
-      const deliveries = yield* Ref.get(sent);
-      const delivery = deliveries[0];
-
-      expect(delivery).toMatchObject({
-        recipient: "owner@example.com",
-        idempotencyKey: "feedback-digest-id",
-        rendered: {
-          subject: "2 new feedback submissions",
-        },
-      });
-      expect(delivery?.rendered).not.toHaveProperty("metadata");
-      expect(delivery?.rendered.body.text).toContain("New subject");
-      expect(delivery?.rendered.body.text).toContain(
-        "2026-08-22T00:15:00.000Z",
-      );
-      expect(delivery?.rendered.body.text).toContain(
-        "Please add the Liberty & WNBA <schedule>.",
-      );
-      expect(delivery?.rendered.body.html).toContain(
-        "Please add the Liberty &amp; WNBA &lt;schedule&gt;.",
-      );
-      expect(delivery?.rendered.body.text).not.toContain("Unsubscribe");
-    }),
-  );
+    expect(rendered.subject).toBe("2 new feedback submissions");
+    expect(rendered).not.toHaveProperty("metadata");
+    expect(rendered.body.text).toContain("New subject");
+    expect(rendered.body.text).toContain("2026-08-22T00:15:00.000Z");
+    expect(rendered.body.text).toContain(
+      "Please add the Liberty & WNBA <schedule>.",
+    );
+    expect(rendered.body.html).toContain(
+      "Please add the Liberty &amp; WNBA &lt;schedule&gt;.",
+    );
+    expect(rendered.body.text).not.toContain("Unsubscribe");
+  });
 });

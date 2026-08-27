@@ -1,4 +1,4 @@
-import { Array, DateTime, Effect } from "effect";
+import { Array, DateTime, Match } from "effect";
 
 import {
   EmailView,
@@ -6,65 +6,30 @@ import {
   Text,
   type EmailRendered,
 } from "@dtpt/core/modules/email/render";
-import { makeEmailLayerResend } from "@dtpt/core/modules/email/resend";
-import { Email } from "@dtpt/core/modules/email/service";
 import { type Feedback } from "@dtpt/core/modules/feedback/schema";
-import { EmailAddress } from "@dtpt/core/modules/users/schema";
-import { AdminEmail } from "../config.js";
 
-export const FeedbackEmailLayer = makeEmailLayerResend({
-  from: {
-    name: "ops, dotheyplaytoday",
-    email: EmailAddress.make("ops@dotheyplay.today"),
-  },
-});
-
-const feedbackLabel = (feedback: Feedback) =>
-  feedback.type === "new_subject" ? "New subject" : "General";
-
-const feedbackLine = (feedback: Feedback) =>
-  `${DateTime.formatIso(feedback.createdAt)} · ${feedbackLabel(feedback)} — ${feedback.request}`;
-
-function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
+export function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
   const count = feedback.length;
+  const subject = `${count.toString()} new feedback ${count === 1 ? "submission" : "submissions"}`;
+
+  const entry = (f: Feedback) => {
+    const label = Match.value(f.type).pipe(
+      Match.when("new_subject", () => "New subject"),
+      Match.when("general", () => "General"),
+      Match.exhaustive,
+    );
+
+    return `${DateTime.formatIso(f.createdAt)} · ${label} — ${f.request}`;
+  };
 
   return EmailView({
-    subject: `${count.toString()} new feedback ${count === 1 ? "submission" : "submissions"}`,
+    subject,
     headline: "New feedback",
     accent: "landed.",
     preheader: feedback[0].request,
     blocks: [
-      Text.make({
-        value: `${count.toString()} ${count === 1 ? "submission is" : "submissions are"} waiting for review:`,
-      }),
-      ...feedback.map((item) =>
-        Note.make({ value: feedbackLine(item) }),
-      ),
+      Text.make({ value: `${subject} waiting for review:` }),
+      ...feedback.map((f) => Note.make({ value: entry(f) })),
     ],
   }) satisfies EmailRendered;
 }
-
-export const sendFeedback = Effect.fn("Feedback.send")(function* (
-  feedback: Array.NonEmptyReadonlyArray<Feedback>,
-  idempotencyKey: string,
-) {
-  const recipient = yield* AdminEmail;
-  const email = yield* Email;
-  const rendered = render(feedback);
-
-  yield* email.send({ recipient, idempotencyKey }, rendered).pipe(
-    Effect.tap(() =>
-      Effect.logInfo("feedback digest: delivered", {
-        feedbackCount: feedback.length,
-        recipient,
-      }),
-    ),
-    Effect.tapCause((cause) =>
-      Effect.logError("feedback digest: delivery failed", {
-        cause,
-        feedbackCount: feedback.length,
-        recipient,
-      }),
-    ),
-  );
-});
