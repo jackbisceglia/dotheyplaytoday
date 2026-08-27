@@ -13,7 +13,7 @@ const FeedbackScheduleTwiceDailyUtc = "0 0,12 * * *";
 
 const EmailLayerOps = makeEmailLayerResend({
   from: {
-    name: "Feedback from dotheyplaytoday",
+    name: "dtpt ops",
     email: EmailAddress.make("ops@dotheyplay.today"),
   },
 });
