@@ -9,7 +9,6 @@ import {
 } from "effect";
 import { Resend } from "resend";
 
-import { exactOptional } from "../../lib/utils.js";
 import { EmailConfig, type EmailOptions, ResendConfig } from "./config.js";
 import {
   EmailRequestError,
@@ -57,13 +56,18 @@ export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestErr
   { cause: Schema.Defect() },
 ) {}
 
-const buildHeaders = (metadata: EmailMetadata | undefined) =>
-  exactOptional(metadata?.unsubscribe, (unsubscribe) => ({
+const buildHeaders = (metadata: EmailMetadata | undefined) => {
+  if (metadata === undefined) {
+    return {};
+  }
+
+  return {
     headers: {
       // Renders a native unsubscribe control in Gmail and Apple Mail.
-      "List-Unsubscribe": `<${unsubscribe}>`,
+      "List-Unsubscribe": `<${metadata.unsubscribe}>`,
     },
-  }));
+  };
+};
 
 export const makeEmailLayerResend = (options: EmailOptions) =>
   Layer.effect(
