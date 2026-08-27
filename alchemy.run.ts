@@ -14,6 +14,7 @@ import {
 import { SeedDev, SeedProduction } from "./packages/data/dist/seed/action.js";
 import { CatalogSeedVersion } from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
+import OpsWorker from "./packages/jobs/dist/ops/worker.js";
 import Web, { bindWebUrl } from "./packages/web/resource.ts";
 
 export default Alchemy.Stack(
@@ -48,6 +49,7 @@ export default Alchemy.Stack(
     const web = yield* Web;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
+    const opsWorker = yield* OpsWorker;
 
     // Move these reverse dependencies into Worker props once Website.Vite
     // supports separate definition and implementation declarations.
@@ -66,6 +68,7 @@ export default Alchemy.Stack(
       webWorkerUrl: web.url,
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
+      opsWorkerName: opsWorker.workerName,
     };
   }),
 );

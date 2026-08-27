@@ -9,13 +9,14 @@ import {
 } from "effect";
 import { Resend } from "resend";
 
+import { EmailConfig, type EmailOptions, ResendConfig } from "./config.js";
 import {
   EmailRequestError,
   EmailResponseError,
   type EmailError,
 } from "./errors.js";
+import type { EmailMetadata } from "./render.js";
 import { Email } from "./service.js";
-import { EmailConfig, type EmailOptions, ResendConfig } from "./config.js";
 
 const constraints = { retry: { max: 2 } };
 
@@ -55,6 +56,16 @@ export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestErr
   { cause: Schema.Defect() },
 ) {}
 
+const headers = (metadata: EmailMetadata | undefined) => {
+  if (!metadata) return {};
+
+  return {
+    headers: {
+      "List-Unsubscribe": `<${metadata.unsubscribe}>`,
+    },
+  };
+};
+
 export const makeEmailLayerResend = (options: EmailOptions) =>
   Layer.effect(
     Email,
@@ -84,10 +95,7 @@ export const makeEmailLayerResend = (options: EmailOptions) =>
                 subject: rendered.subject,
                 text: rendered.body.text,
                 html: rendered.body.html,
-                // Renders a native unsubscribe control in Gmail and Apple Mail.
-                headers: {
-                  "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
-                },
+                ...headers(rendered.metadata),
               },
               { idempotencyKey: delivery.idempotencyKey },
             ),

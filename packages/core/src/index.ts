@@ -75,12 +75,13 @@ export {
 } from "./modules/notifier/email.js";
 export { NotifierLayerConsole } from "./modules/notifier/console.js";
 export type { ConsoleRendered } from "./modules/notifier/console.js";
-export { EmailBlock, EmailView } from "./modules/email/render.js";
+export { Blocks, EmailView } from "./modules/email/render.js";
 export { Email } from "./modules/email/service.js";
 export type { EmailDelivery } from "./modules/email/service.js";
 export type {
-  EmailBlock as EmailBlockShape,
+  Block as BlockShape,
   EmailMatchup,
+  EmailMetadata,
   EmailRendered,
   EmailViewProps,
 } from "./modules/email/render.js";

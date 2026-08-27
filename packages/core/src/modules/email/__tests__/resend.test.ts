@@ -37,7 +37,7 @@ vi.mock("resend", () => ({
 
 const rendered: EmailRendered = {
   subject: "Boston Celtics play today",
-  unsubscribeUrl: "https://example.com/unsubscribe/token",
+  metadata: { unsubscribe: "https://example.com/unsubscribe/token" },
   body: {
     text: "New York Knicks at Boston Celtics, 4:00 PM EDT",
     html: "<p>New York Knicks at Boston Celtics, 4:00 PM EDT</p>",
@@ -112,6 +112,10 @@ describe("EmailLayerResend", () => {
           payload: CreateEmailOptions,
           options: CreateEmailRequestOptions | undefined,
         ) => {
+          if (rendered.metadata === undefined) {
+            throw new Error("Expected notification email to be unsubscribable");
+          }
+
           expect(payload).toEqual({
             from: "dotheyplaytoday <sender@example.com>",
             to: notification.user.email,
@@ -119,7 +123,7 @@ describe("EmailLayerResend", () => {
             text: rendered.body.text,
             html: rendered.body.html,
             headers: {
-              "List-Unsubscribe": `<${rendered.unsubscribeUrl}>`,
+              "List-Unsubscribe": `<${rendered.metadata.unsubscribe}>`,
             },
           });
           expect(options).toEqual({
@@ -155,6 +159,27 @@ describe("EmailLayerResend", () => {
         },
         rendered,
       );
+    }).pipe(Effect.provide(EmailLayerStaticTest)),
+  );
+
+  it.effect("omits unsubscribe headers for operational email", () =>
+    Effect.gen(function* () {
+      resendMock.send.mockResolvedValue(successResponse);
+
+      const email = yield* Email;
+      yield* email.send(
+        {
+          recipient: notification.user.email,
+          idempotencyKey: "ops-delivery-id",
+        },
+        {
+          subject: rendered.subject,
+          body: rendered.body,
+        },
+      );
+
+      const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
+      expect(payload).not.toHaveProperty("headers");
     }).pipe(Effect.provide(EmailLayerStaticTest)),
   );
 

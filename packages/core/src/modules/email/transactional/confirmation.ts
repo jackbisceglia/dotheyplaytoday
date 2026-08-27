@@ -5,7 +5,14 @@ import { WebUrl } from "../../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
 import { EmailLayerResend } from "../resend.js";
 import { Email, type EmailDelivery } from "../service.js";
-import { EmailBlock, EmailView, type EmailRendered } from "../render.js";
+import {
+  EmailView,
+  Link,
+  List,
+  Note,
+  Text,
+  type EmailRendered,
+} from "../render.js";
 import { Subject } from "../../subjects/schema.js";
 import { Subscription } from "../../subscriptions/schema.js";
 import { User } from "../../users/schema.js";
@@ -43,10 +50,9 @@ const formatLocalTime = (seconds: number, timezone: string) => {
 export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
   function* (confirmation: SignupConfirmation) {
     const home = yield* WebUrl;
-    const unsubscribe = {
-      text: "Unsubscribe",
-      href: yield* buildUnsubscribeUrl(confirmation.user.unsubscribeToken),
-    };
+    const unsubscribeUrl = yield* buildUnsubscribeUrl(
+      confirmation.user.unsubscribeToken,
+    );
 
     const localTime = formatLocalTime(
       confirmation.schedule.sendAtSecondsLocal,
@@ -81,11 +87,15 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
       headline: copy.headline,
       accent: copy.accent,
       blocks: [
-        EmailBlock.text(copy.intro),
-        EmailBlock.list(teamNames),
-        EmailBlock.note(schedule),
+        Text.make({ value: copy.intro }),
+        List.make({ items: teamNames }),
+        Note.make({ value: schedule }),
+        Link.make({
+          href: unsubscribeUrl,
+          text: "Unsubscribe",
+        }),
       ],
-      unsubscribe,
+      metadata: { unsubscribe: unsubscribeUrl },
     }) satisfies EmailRendered;
   },
 );

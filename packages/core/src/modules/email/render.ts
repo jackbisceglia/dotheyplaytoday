@@ -1,51 +1,52 @@
+import { Schema } from "effect";
+
+import { TaggedUnion } from "../../lib/effect/index.js";
 import { StringParts } from "../../lib/string.js";
+import { exactOptional } from "../../lib/utils.js";
+
+export type EmailMetadata = {
+  readonly unsubscribe: string;
+};
 
 export type EmailRendered = {
   readonly subject: string;
-  /** Mirrored into the List-Unsubscribe header by the transport. */
-  readonly unsubscribeUrl: string;
+  readonly metadata?: EmailMetadata | undefined;
   readonly body: {
     readonly text: string;
     readonly html: string;
   };
 };
 
-export type Unsubscribe = {
-  readonly href: string;
-  readonly text: string;
-};
-
+// TODO: Move sports-specific matchup rendering into an email/render/sports module.
 /** One matchup entry: "leading <separator> trailing", plus its start time. */
-export type EmailMatchup = {
-  readonly leading: string;
-  readonly separator: string;
-  readonly trailing: string;
-  readonly detail: string;
-};
+export type EmailMatchup = typeof EmailMatchup.Type;
+export const EmailMatchup = Schema.Struct({
+  leading: Schema.String,
+  separator: Schema.String,
+  trailing: Schema.String,
+  detail: Schema.String,
+});
 
-/**
- * Content is described as blocks rather than pre-formatted lines so the text
- * and html renderers can each lay a block out on their own terms.
- */
-export type EmailBlock =
-  | { readonly _tag: "text"; readonly value: string }
-  | { readonly _tag: "list"; readonly items: readonly string[] }
-  | { readonly _tag: "matchups"; readonly items: readonly EmailMatchup[] }
-  | { readonly _tag: "note"; readonly value: string };
+export const Text = Schema.TaggedStruct("text", { value: Schema.String });
+export const List = Schema.TaggedStruct("list", {
+  items: Schema.Array(Schema.String),
+});
+export const Matchups = Schema.TaggedStruct("matchups", {
+  items: Schema.Array(EmailMatchup),
+});
+export const Note = Schema.TaggedStruct("note", { value: Schema.String });
+export const Entry = Schema.TaggedStruct("entry", {
+  label: Schema.String,
+  detail: Schema.String,
+  value: Schema.String,
+});
+export const Link = Schema.TaggedStruct("link", {
+  href: Schema.String,
+  text: Schema.String,
+});
 
-export const EmailBlock = {
-  /** A paragraph of body copy. */
-  text: (value: string): EmailBlock => ({ _tag: "text", value }),
-  /** Emphasized single-line entries, one row each. */
-  list: (items: readonly string[]): EmailBlock => ({ _tag: "list", items }),
-  /** Emphasized matchup entries with a secondary detail line. */
-  matchups: (items: readonly EmailMatchup[]): EmailBlock => ({
-    _tag: "matchups",
-    items,
-  }),
-  /** Closing fine print, set apart by a rule. */
-  note: (value: string): EmailBlock => ({ _tag: "note", value }),
-};
+export type Block = typeof Blocks.Type;
+export const Blocks = TaggedUnion([Text, List, Matchups, Note, Entry, Link]);
 
 export type EmailViewProps = {
   readonly subject: string;
@@ -57,8 +58,8 @@ export type EmailViewProps = {
   readonly preheader?: string | undefined;
   /** Destination for the wordmark link. */
   readonly home?: string | undefined;
-  readonly blocks: readonly EmailBlock[];
-  readonly unsubscribe: Unsubscribe;
+  readonly blocks: readonly Block[];
+  readonly metadata?: EmailMetadata | undefined;
 };
 
 const color = {
@@ -87,11 +88,15 @@ const matchupText = (matchup: EmailMatchup) =>
   `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
 
 /** One-line summary of a block, used for inbox preview text. */
-const blockPreview = (block: EmailBlock): string => {
+const blockPreview = (block: Block): string => {
   switch (block._tag) {
     case "text":
     case "note":
       return block.value;
+    case "entry":
+      return `${block.label}: ${block.value}`;
+    case "link":
+      return block.text;
     case "list":
       return block.items.join(", ");
     case "matchups":
@@ -99,7 +104,7 @@ const blockPreview = (block: EmailBlock): string => {
   }
 };
 
-const blockText = (block: EmailBlock): readonly string[] => {
+const blockText = (block: Block): readonly string[] => {
   switch (block._tag) {
     case "text":
       return [block.value];
@@ -109,6 +114,10 @@ const blockText = (block: EmailBlock): readonly string[] => {
       return block.items.map(matchupText);
     case "note":
       return [block.value];
+    case "entry":
+      return [block.label, block.detail, block.value];
+    case "link":
+      return [`${block.text}: ${block.href}`];
   }
 };
 
@@ -125,8 +134,6 @@ const text = (input: EmailViewProps) =>
         index === 0 ? blockText(block) : ["", ...blockText(block)],
       ),
     )
-    .add("")
-    .add(`${input.unsubscribe.text}: ${input.unsubscribe.href}`)
     .make("\n");
 
 /**
@@ -166,6 +173,19 @@ ${content}
   note: (value: string) =>
     `<p class="email-muted" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 13px; line-height: 1.5; color: ${color.muted};">${value}</p>`,
 
+  entry: (label: string, detail: string, value: string) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td class="email-ink" style="font-family: ${font.body}; font-weight: 700; font-size: 13px; line-height: 1.4; color: ${color.ink};">${label}</td>
+<td class="email-muted" align="right" style="padding-left: 12px; font-family: ${font.body}; font-size: 12px; line-height: 1.4; color: ${color.muted}; white-space: nowrap;">${detail}</td>
+</tr>
+<tr>
+<td colspan="2" style="padding-top: 8px;">
+${element.paragraph(value)}
+</td>
+</tr>
+</table>`,
+
   link: (href: string, label: string) =>
     `<a href="${escapeHtml(href)}" class="email-muted" style="display: inline-block; padding: 8px 4px; font-family: ${font.body}; font-weight: 700; font-size: 12px; color: ${color.muted}; text-decoration: underline;">${escapeHtml(label)}</a>`,
 };
@@ -173,7 +193,7 @@ ${content}
 const stack = (parts: readonly string[], gap: number) =>
   parts.join(`\n${element.spacer(gap)}\n`);
 
-const blockHtml = (block: EmailBlock): string => {
+const blockHtml = (block: Block): string => {
   switch (block._tag) {
     case "text":
       return element.paragraph(escapeHtml(block.value));
@@ -200,10 +220,20 @@ const blockHtml = (block: EmailBlock): string => {
       );
     case "note":
       return element.note(escapeHtml(block.value));
+    case "entry":
+      return element.panel(
+        element.entry(
+          escapeHtml(block.label),
+          escapeHtml(block.detail),
+          escapeHtml(block.value),
+        ),
+      );
+    case "link":
+      return element.link(block.href, block.text);
   }
 };
 
-const previewText = (blocks: readonly EmailBlock[]) => {
+const previewText = (blocks: readonly Block[]) => {
   const [first] = blocks;
 
   return first === undefined ? undefined : blockPreview(first);
@@ -333,11 +363,6 @@ const html = (input: EmailViewProps) => {
                 ${Main}
               </td>
             </tr>
-            <tr>
-              <td style="padding: 22px 0 0;">
-                ${element.link(input.unsubscribe.href, input.unsubscribe.text)}
-              </td>
-            </tr>
           </table>
           <!--[if mso]></td></tr></table><![endif]-->
         </td>
@@ -350,7 +375,7 @@ const html = (input: EmailViewProps) => {
 export function EmailView(input: EmailViewProps): EmailRendered {
   return {
     subject: input.subject,
-    unsubscribeUrl: input.unsubscribe.href,
+    ...exactOptional(input.metadata, (metadata) => ({ metadata })),
     body: {
       text: text(input),
       html: html(input),
