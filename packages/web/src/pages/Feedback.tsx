@@ -43,7 +43,7 @@ export function Feedback(props: { readonly homeHref: string }) {
 
     const normalizedRequest = request().trim();
     if (normalizedRequest.length === 0) {
-      setRequestError("Tell us what you would like to see.");
+      setRequestError("Tell us what you have in mind.");
       requestInput?.focus();
       return;
     }
@@ -151,7 +151,7 @@ export function Feedback(props: { readonly homeHref: string }) {
                 class="form-input feedback-request"
                 name="request"
                 maxlength={FeedbackRequestMaxLength}
-                placeholder="Tell us what you would like to see..."
+                placeholder="Tell us what you have in mind..."
                 required
                 aria-describedby="feedback-request-error"
                 aria-invalid={requestError() === undefined ? undefined : "true"}

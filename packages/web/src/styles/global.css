@@ -706,20 +706,20 @@ select.form-input {
 /* Feedback */
 
 .feedback-page {
-  min-height: 68vh;
-  padding: 76px 0 84px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(48px, 6vw, 72px);
-  align-content: center;
+  --feedback-card: 34rem;
+  padding: clamp(56px, 7vh, 88px) 0 72px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: clamp(36px, 4vw, 48px);
+  text-align: center;
 }
 
 .feedback-heading {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
+  align-items: center;
+  gap: 16px;
 }
 
 .feedback-title {
@@ -745,7 +745,6 @@ select.form-input {
 }
 
 .feedback-copy {
-  max-width: 38ch;
   color: var(--muted);
   font-size: 1.08rem;
   line-height: 1.55;
@@ -756,10 +755,13 @@ select.form-input {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  padding: 24px;
+  width: 100%;
+  max-width: var(--feedback-card);
+  padding: clamp(20px, 2.4vw, 28px);
   border: 3px solid var(--ink);
   background: var(--kelly-wash);
   box-shadow: var(--shadow);
+  text-align: left;
 }
 
 .feedback-request-label {
@@ -786,7 +788,9 @@ select.form-input {
 }
 
 .feedback-success {
-  align-self: start;
+  width: 100%;
+  max-width: var(--feedback-card);
+  text-align: left;
 }
 
 /* Unsubscribe */
@@ -913,10 +917,6 @@ select.form-input {
   .form-fields {
     grid-template-columns: 1fr;
   }
-
-  .feedback-page {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 560px) {
@@ -939,15 +939,11 @@ select.form-input {
 
   .feedback-page {
     padding: 56px 0 48px;
-    gap: 36px;
+    gap: 32px;
   }
 
   .feedback-title {
     font-size: clamp(2.25rem, 11.5vw, 3rem);
-  }
-
-  .feedback-form {
-    padding: 20px;
   }
 
   .unsubscribe-title {
