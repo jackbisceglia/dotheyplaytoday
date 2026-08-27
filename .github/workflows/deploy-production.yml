@@ -67,7 +67,7 @@ jobs:
           EMAIL_FROM_ADDRESS: ${{ vars.EMAIL_FROM_ADDRESS }}
           EMAIL_FROM_NAME: ${{ vars.EMAIL_FROM_NAME }}
 
-          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
 
       - name: Verify production
         timeout-minutes: 3

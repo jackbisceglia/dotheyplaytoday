@@ -25,7 +25,6 @@ these environment secrets before enabling the workflow:
 - `PLANETSCALE_API_TOKEN_ID`
 - `PLANETSCALE_API_TOKEN`
 - `RESEND_API_KEY`
-- `ADMIN_EMAIL`
 
 Configure these environment variables:
 
@@ -33,6 +32,7 @@ Configure these environment variables:
 - `PLANETSCALE_ORGANIZATION`
 - `EMAIL_FROM_ADDRESS`
 - `EMAIL_FROM_NAME`
+- `ADMIN_EMAIL`
 
 As defense in depth, configure the environment's deployment branches and tags
 policy to allow only the `main` branch. Do not use the broader "protected
