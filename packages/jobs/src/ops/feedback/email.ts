@@ -1,8 +1,8 @@
 import { Array, DateTime, Match } from "effect";
 
 import {
+  Entry,
   EmailView,
-  Note,
   Text,
   type EmailRendered,
 } from "@dtpt/core/modules/email/render";
@@ -19,7 +19,17 @@ export function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
       Match.exhaustive,
     );
 
-    return `${DateTime.formatIso(feedback.createdAt)} · ${label} — ${feedback.request}`;
+    const detail = DateTime.formatUtc(feedback.createdAt, {
+      locale: "en-US",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short",
+    });
+
+    return Entry.make({ label, detail, value: feedback.request });
   };
 
   return EmailView({
@@ -29,7 +39,7 @@ export function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
     preheader: feedback[0].request,
     blocks: [
       Text.make({ value: `${subject} waiting for review:` }),
-      ...feedback.map((item) => Note.make({ value: entry(item) })),
+      ...feedback.map(entry),
     ],
   }) satisfies EmailRendered;
 }

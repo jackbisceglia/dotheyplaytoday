@@ -26,10 +26,14 @@ describe("feedback digest email", () => {
     expect(rendered.subject).toBe("2 new feedback submissions");
     expect(rendered).not.toHaveProperty("metadata");
     expect(rendered.body.text).toContain("New subject");
-    expect(rendered.body.text).toContain("2026-08-22T00:15:00.000Z");
+    expect(rendered.body.text).toContain("Aug 22, 12:15 AM UTC");
+    expect(rendered.body.text).not.toContain("2026-08-22T00:15:00.000Z");
+    expect(rendered.body.text).not.toContain("—");
     expect(rendered.body.text).toContain(
       "Please add the Liberty & WNBA <schedule>.",
     );
+    expect(rendered.body.html).toContain(">New subject</td>");
+    expect(rendered.body.html).toContain("font-weight: 700");
     expect(rendered.body.html).toContain(
       "Please add the Liberty &amp; WNBA &lt;schedule&gt;.",
     );

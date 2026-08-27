@@ -35,13 +35,18 @@ export const Matchups = Schema.TaggedStruct("matchups", {
   items: Schema.Array(EmailMatchup),
 });
 export const Note = Schema.TaggedStruct("note", { value: Schema.String });
+export const Entry = Schema.TaggedStruct("entry", {
+  label: Schema.String,
+  detail: Schema.String,
+  value: Schema.String,
+});
 export const Link = Schema.TaggedStruct("link", {
   href: Schema.String,
   text: Schema.String,
 });
 
 export type Block = typeof Blocks.Type;
-export const Blocks = TaggedUnion([Text, List, Matchups, Note, Link]);
+export const Blocks = TaggedUnion([Text, List, Matchups, Note, Entry, Link]);
 
 export type EmailViewProps = {
   readonly subject: string;
@@ -88,6 +93,8 @@ const blockPreview = (block: Block): string => {
     case "text":
     case "note":
       return block.value;
+    case "entry":
+      return `${block.label}: ${block.value}`;
     case "link":
       return block.text;
     case "list":
@@ -107,6 +114,8 @@ const blockText = (block: Block): readonly string[] => {
       return block.items.map(matchupText);
     case "note":
       return [block.value];
+    case "entry":
+      return [block.label, block.detail, block.value];
     case "link":
       return [`${block.text}: ${block.href}`];
   }
@@ -164,6 +173,19 @@ ${content}
   note: (value: string) =>
     `<p class="email-muted" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 13px; line-height: 1.5; color: ${color.muted};">${value}</p>`,
 
+  entry: (label: string, detail: string, value: string) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td class="email-ink" style="font-family: ${font.body}; font-weight: 700; font-size: 13px; line-height: 1.4; color: ${color.ink};">${label}</td>
+<td class="email-muted" align="right" style="padding-left: 12px; font-family: ${font.body}; font-size: 12px; line-height: 1.4; color: ${color.muted}; white-space: nowrap;">${detail}</td>
+</tr>
+<tr>
+<td colspan="2" style="padding-top: 8px;">
+${element.paragraph(value)}
+</td>
+</tr>
+</table>`,
+
   link: (href: string, label: string) =>
     `<a href="${escapeHtml(href)}" class="email-muted" style="display: inline-block; padding: 8px 4px; font-family: ${font.body}; font-weight: 700; font-size: 12px; color: ${color.muted}; text-decoration: underline;">${escapeHtml(label)}</a>`,
 };
@@ -198,6 +220,14 @@ const blockHtml = (block: Block): string => {
       );
     case "note":
       return element.note(escapeHtml(block.value));
+    case "entry":
+      return element.panel(
+        element.entry(
+          escapeHtml(block.label),
+          escapeHtml(block.detail),
+          escapeHtml(block.value),
+        ),
+      );
     case "link":
       return element.link(block.href, block.text);
   }
