@@ -5,7 +5,14 @@ import { WebUrl } from "../../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../../lib/unsubscribe.js";
 import { EmailLayerResend } from "../resend.js";
 import { Email, type EmailDelivery } from "../service.js";
-import { EmailBlock, EmailView, type EmailRendered } from "../render.js";
+import {
+  EmailView,
+  Link,
+  List,
+  Note,
+  Text,
+  type EmailRendered,
+} from "../render.js";
 import { Subject } from "../../subjects/schema.js";
 import { Subscription } from "../../subscriptions/schema.js";
 import { User } from "../../users/schema.js";
@@ -80,10 +87,10 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
       headline: copy.headline,
       accent: copy.accent,
       blocks: [
-        EmailBlock.cases.text.make({ value: copy.intro }),
-        EmailBlock.cases.list.make({ items: teamNames }),
-        EmailBlock.cases.note.make({ value: schedule }),
-        EmailBlock.cases.link.make({
+        Text.make({ value: copy.intro }),
+        List.make({ items: teamNames }),
+        Note.make({ value: schedule }),
+        Link.make({
           href: unsubscribeUrl,
           text: "Unsubscribe",
         }),

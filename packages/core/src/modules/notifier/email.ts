@@ -6,8 +6,9 @@ import type { ExtractFromTag } from "../../lib/types.js";
 import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
 import {
-  EmailBlock,
   EmailView,
+  Link,
+  Matchups,
   type EmailMatchup,
   type EmailRendered,
   type EmailViewProps,
@@ -231,8 +232,8 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
             headline: `${notification.subject.details.name} play`,
             accent: "today.",
             blocks: [
-              EmailBlock.cases.matchups.make({ items: matchups }),
-              EmailBlock.cases.link.make({
+              Matchups.make({ items: matchups }),
+              Link.make({
                 href: unsubscribeUrl,
                 text: "Unsubscribe",
               }),

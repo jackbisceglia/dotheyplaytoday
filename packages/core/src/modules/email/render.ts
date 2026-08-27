@@ -1,5 +1,6 @@
 import { Schema } from "effect";
 
+import { TaggedUnion } from "../../lib/effect/index.js";
 import { StringParts } from "../../lib/string.js";
 import { exactOptional } from "../../lib/utils.js";
 
@@ -30,19 +31,26 @@ export const EmailMatchup = Schema.Struct({
  * Content is described as blocks rather than pre-formatted lines so the text
  * and html renderers can each lay a block out on their own terms.
  */
-export type EmailBlock = typeof EmailBlock.Type;
-export const EmailBlock = Schema.TaggedUnion({
-  /** A paragraph of body copy. */
-  text: { value: Schema.String },
-  /** Emphasized single-line entries, one row each. */
-  list: { items: Schema.Array(Schema.String) },
-  /** Emphasized matchup entries with a secondary detail line. */
-  matchups: { items: Schema.Array(EmailMatchup) },
-  /** Closing fine print, set apart by a rule. */
-  note: { value: Schema.String },
-  /** A standalone link, such as a visual unsubscribe action. */
-  link: { href: Schema.String, text: Schema.String },
+/** A paragraph of body copy. */
+export const Text = Schema.TaggedStruct("text", { value: Schema.String });
+/** Emphasized single-line entries, one row each. */
+export const List = Schema.TaggedStruct("list", {
+  items: Schema.Array(Schema.String),
 });
+/** Emphasized matchup entries with a secondary detail line. */
+export const Matchups = Schema.TaggedStruct("matchups", {
+  items: Schema.Array(EmailMatchup),
+});
+/** Closing fine print, set apart by a rule. */
+export const Note = Schema.TaggedStruct("note", { value: Schema.String });
+/** A standalone link, such as a visual unsubscribe action. */
+export const Link = Schema.TaggedStruct("link", {
+  href: Schema.String,
+  text: Schema.String,
+});
+
+export const Blocks = TaggedUnion([Text, List, Matchups, Note, Link]);
+export type Block = typeof Blocks.Type;
 
 export type EmailViewProps = {
   readonly subject: string;
@@ -54,7 +62,7 @@ export type EmailViewProps = {
   readonly preheader?: string | undefined;
   /** Destination for the wordmark link. */
   readonly home?: string | undefined;
-  readonly blocks: readonly EmailBlock[];
+  readonly blocks: readonly Block[];
   readonly metadata?: EmailMetadata | undefined;
 };
 
@@ -84,7 +92,7 @@ const matchupText = (matchup: EmailMatchup) =>
   `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
 
 /** One-line summary of a block, used for inbox preview text. */
-const blockPreview = (block: EmailBlock): string => {
+const blockPreview = (block: Block): string => {
   switch (block._tag) {
     case "text":
     case "note":
@@ -98,7 +106,7 @@ const blockPreview = (block: EmailBlock): string => {
   }
 };
 
-const blockText = (block: EmailBlock): readonly string[] => {
+const blockText = (block: Block): readonly string[] => {
   switch (block._tag) {
     case "text":
       return [block.value];
@@ -172,7 +180,7 @@ ${content}
 const stack = (parts: readonly string[], gap: number) =>
   parts.join(`\n${element.spacer(gap)}\n`);
 
-const blockHtml = (block: EmailBlock): string => {
+const blockHtml = (block: Block): string => {
   switch (block._tag) {
     case "text":
       return element.paragraph(escapeHtml(block.value));
@@ -204,7 +212,7 @@ const blockHtml = (block: EmailBlock): string => {
   }
 };
 
-const previewText = (blocks: readonly EmailBlock[]) => {
+const previewText = (blocks: readonly Block[]) => {
   const [first] = blocks;
 
   return first === undefined ? undefined : blockPreview(first);

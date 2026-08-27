@@ -1,8 +1,9 @@
 import { Array, DateTime, Effect } from "effect";
 
 import {
-  EmailBlock,
   EmailView,
+  Note,
+  Text,
   type EmailRendered,
 } from "@dtpt/core/modules/email/render";
 import { makeEmailLayerResend } from "@dtpt/core/modules/email/resend";
@@ -33,11 +34,11 @@ function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
     accent: "landed.",
     preheader: feedback[0].request,
     blocks: [
-      EmailBlock.cases.text.make({
+      Text.make({
         value: `${count.toString()} ${count === 1 ? "submission is" : "submissions are"} waiting for review:`,
       }),
       ...feedback.map((item) =>
-        EmailBlock.cases.note.make({ value: feedbackLine(item) }),
+        Note.make({ value: feedbackLine(item) }),
       ),
     ],
   }) satisfies EmailRendered;
