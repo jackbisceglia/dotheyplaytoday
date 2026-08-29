@@ -24,11 +24,12 @@
     "@dtpt/core": "workspace:*",
     "alchemy": "catalog:",
     "better-auth": "1.7.2",
-    "drizzle-orm": "1.0.0-rc.4",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@effect/platform-node": "catalog:",
-    "@effect/vitest": "catalog:"
+    "@effect/vitest": "catalog:",
+    "@types/pg": "catalog:"
   }
 }

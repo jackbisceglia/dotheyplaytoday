@@ -3,7 +3,7 @@ import { Effect } from "effect";
 import { Auth } from "./auth.js";
 
 export const getSession = Effect.fn("Auth.getSession")(function* (
-  auth: Auth,
+  auth: Auth["Service"],
   headers: Headers,
 ) {
   return yield* Effect.tryPromise(() => auth.api.getSession({ headers })).pipe(
@@ -15,10 +15,9 @@ export const getSession = Effect.fn("Auth.getSession")(function* (
 export const getRequestSession = Effect.fn("Auth.getRequestSession")(function* (
   headers: Headers,
 ) {
-  const makeAuth = yield* Auth;
-  const context = yield* Effect.context();
+  const auth = yield* Auth;
 
-  return yield* getSession(makeAuth(context), headers);
+  return yield* getSession(auth, headers);
 });
 
 export type RequestSession = NonNullable<

@@ -7,8 +7,10 @@ catalog:
   "@effect/platform-node": 4.0.0-beta.98
   "@effect/sql-pg": 4.0.0-beta.98
   "@effect/vitest": 4.0.0-beta.98
+  "@types/pg": 8.15.5
   alchemy: 2.0.0-beta.63
   effect: 4.0.0-beta.98
+  pg: 8.22.0
   resend: ^6.9.1
 
 catalogMode: manual

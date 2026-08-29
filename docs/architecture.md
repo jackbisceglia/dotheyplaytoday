@@ -81,25 +81,27 @@ created. Auth adds the required `name`, `email_verified`, `created_at`, and
 `User` remains the single table-backed domain schema, and its insert schema
 keeps database-managed defaults optional. Existing rows are backfilled with
 their email as `name`, begin unverified, and are claimed when a magic link
-proves email ownership. The magic-link sender normalizes the address and uses
-the existing `Users` service to silently skip unknown addresses. Better Auth
+proves email ownership. The magic-link sender normalizes the address and asks
+Better Auth's internal adapter to silently skip unknown addresses. Better Auth
 also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
-Better Auth's official Drizzle adapter requires Promise-based queries, while
-application persistence uses Drizzle's Effect execution model. Auth therefore
-uses Drizzle's PostgreSQL proxy driver as a Promise facade over the existing
-Effect `PgClient`; it does not create another client, pool, connection, or
-transaction model. Query execution stays in the active request context and
-uses the same Alchemy-managed Hyperdrive lifecycle as application persistence.
+Better Auth receives a dedicated Promise-native `pg.Pool` through the existing
+Hyperdrive binding, while application persistence remains on Drizzle's Effect
+execution model. The pool is limited to one connection and belongs to the
+Worker execution scope: background auth and email promises drain first, then
+the pool closes through the scope's cascading finalizers. Auth and application
+persistence share the physical database and Hyperdrive resource without a
+custom Effect-to-Promise query bridge or a cross-invocation socket.
 
 Magic-link messages follow the same transactional-email structure as signup
 confirmations: a schema-owned input, dedicated rendering workflow,
 provider-neutral `Email` delivery, internally provided Resend layer, and
-consistent delivery logging. Delivery is registered on the Cloudflare execution
-context with `waitUntil`, is best effort, and does not delay or change the
-public response. The reusable `getRequestSession` server boundary accepts
+consistent delivery logging. Delivery is tracked by the auth scope; Alchemy
+attaches scope finalization to Cloudflare `waitUntil`, so delivery is best
+effort and does not delay or change the public response. The reusable
+`getRequestSession` server boundary accepts
 request headers and resolves Better Auth's persistent session for future
 protected API handlers.
 

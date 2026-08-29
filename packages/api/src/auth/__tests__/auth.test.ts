@@ -1,13 +1,11 @@
-import { ConfigProvider, Effect } from "effect";
+import { ConfigProvider, Effect, Redacted } from "effect";
 import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
 import { magicLink } from "better-auth/plugins";
 import { describe, expect, it, vi } from "vitest";
 
-import { usersTable } from "@dtpt/core/modules/users/schema";
-
 import { AuthConfig } from "../config.js";
-import { makeAuthDatabase } from "../database.js";
+import { openAuthPool } from "../pool.js";
 
 describe("authentication boundaries", () => {
   it("keeps environment configuration limited to the auth secret", async () => {
@@ -26,21 +24,30 @@ describe("authentication boundaries", () => {
     expect(Object.keys(config)).toEqual(["secret"]);
   });
 
-  it("backs Promise Drizzle with the existing Effect SQL client", async () => {
-    const unsafe = vi.fn(() => ({
-      raw: Effect.succeed({ rowCount: 1 }),
-      values: Effect.succeed([["user-id"]]),
-    }));
-    const database = makeAuthDatabase({ unsafe }, Effect.runPromise);
+  it("closes the Better Auth PostgreSQL pool with its Effect scope", async () => {
+    let openDuringInnerFinalizer = false;
+    const pool = await Effect.runPromise(
+      Effect.scoped(
+        Effect.gen(function* () {
+          const pool = yield* openAuthPool(
+            Effect.succeed(
+              Redacted.make("postgres://user:password@localhost:5432/database"),
+            ),
+          );
 
-    const selected = await database
-      .select({ id: usersTable.id })
-      .from(usersTable);
-    const deleted = await database.delete(usersTable);
+          yield* Effect.addFinalizer(() =>
+            Effect.sync(() => {
+              openDuringInnerFinalizer = !pool.ending;
+            }),
+          );
 
-    expect(selected).toEqual([{ id: "user-id" }]);
-    expect(deleted).toEqual([{ rowCount: 1 }]);
-    expect(unsafe).toHaveBeenCalledTimes(2);
+          return pool;
+        }),
+      ),
+    );
+
+    expect(openDuringInnerFinalizer).toBe(true);
+    expect(pool.ended).toBe(true);
   });
 
   it("returns the ordinary success response before eligibility filtering", async () => {

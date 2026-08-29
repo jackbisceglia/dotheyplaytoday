@@ -8,17 +8,16 @@ import { Auth } from "./auth/auth.js";
 
 export const AuthGroupLayer = HttpApiBuilder.group(Api, "auth", (handlers) =>
   Effect.gen(function* () {
-    const makeAuth = yield* Auth.pipe(Effect.orDie);
+    const auth = yield* Auth;
 
     const handler = Effect.fn("BetterAuth.handler")(function* (input: {
       readonly request: HttpServerRequest.HttpServerRequest;
     }) {
-      const context = yield* Effect.context();
       const request = yield* HttpServerRequest.toWeb(input.request).pipe(
         Effect.orDie,
       );
       const response = yield* Effect.tryPromise(() =>
-        makeAuth(context).handler(request),
+        auth.handler(request),
       ).pipe(Effect.orDie);
 
       return HttpServerResponse.fromWeb(response);

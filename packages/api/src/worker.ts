@@ -13,14 +13,9 @@ import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
+import { makeAuthLayer } from "./auth/auth.js";
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
-
-const ApiBaseLayer = pipe(
-  Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
-  Layer.provideMerge(IdLayer),
-  Layer.provide(CloudflareCryptoLayer),
-);
 
 const WorkerLayer = Layer.merge(
   Cloudflare.Hyperdrive.ConnectBinding,
@@ -54,9 +49,20 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
+    const ApiServicesLayer = pipe(
+      Layer.mergeAll(
+        SubjectsLayer,
+        SubscriptionsLayer,
+        UsersLayer,
+        makeAuthLayer(hyperdrive.connectionString),
+      ),
+      Layer.provideMerge(IdLayer),
+      Layer.provide(CloudflareCryptoLayer),
+      Layer.provideMerge(DatabaseLayer),
+    );
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
-      Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
+      Layer.provide(ApiServicesLayer),
       Layer.provide(CloudflareHttpApiPlatformLayer),
     );
 

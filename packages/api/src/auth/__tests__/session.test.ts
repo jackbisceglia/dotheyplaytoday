@@ -34,7 +34,7 @@ describe("server session lookup", () => {
     const headers = new Headers({ cookie });
 
     const result = await Effect.runPromise(
-      getSession(auth as unknown as Auth, headers),
+      getSession(auth as unknown as Auth["Service"], headers),
     );
 
     expect(result?.user.email).toBe("user@example.com");
