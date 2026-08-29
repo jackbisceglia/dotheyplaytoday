@@ -4,8 +4,10 @@ import { memoryAdapter } from "better-auth/adapters/memory";
 import { magicLink } from "better-auth/plugins";
 import { describe, expect, it, vi } from "vitest";
 
+import { usersTable } from "@dtpt/core/modules/users/schema";
+
 import { AuthConfig } from "../config.js";
-import { toPromiseDatabase } from "../database.js";
+import { makeAuthDatabase } from "../database.js";
 
 describe("authentication boundaries", () => {
   it("keeps environment configuration limited to the auth secret", async () => {
@@ -24,21 +26,21 @@ describe("authentication boundaries", () => {
     expect(Object.keys(config)).toEqual(["secret"]);
   });
 
-  it("runs Promise-based Drizzle calls through Effect", async () => {
-    const selectBuilder = Object.assign(() => undefined, {
-      from: vi.fn(() => Effect.succeed([{ id: "user-id" }])),
-    });
-    const select = vi.fn(() => selectBuilder);
-    const findFirst = vi.fn(() => Effect.succeed({ id: "user-id" }));
-    const usersQuery = Object.assign(() => undefined, { findFirst });
-    const query = Object.assign(() => undefined, { usersTable: usersQuery });
-    const database = toPromiseDatabase({ select, query }, Effect.runPromise);
+  it("backs Promise Drizzle with the existing Effect SQL client", async () => {
+    const unsafe = vi.fn(() => ({
+      raw: Effect.succeed({ rowCount: 1 }),
+      values: Effect.succeed([["user-id"]]),
+    }));
+    const database = makeAuthDatabase({ unsafe }, Effect.runPromise);
 
-    const selected = await Promise.resolve(database.select().from());
-    const found = await Promise.resolve(database.query.usersTable.findFirst());
+    const selected = await database
+      .select({ id: usersTable.id })
+      .from(usersTable);
+    const deleted = await database.delete(usersTable);
 
     expect(selected).toEqual([{ id: "user-id" }]);
-    expect(found).toEqual({ id: "user-id" });
+    expect(deleted).toEqual([{ rowCount: 1 }]);
+    expect(unsafe).toHaveBeenCalledTimes(2);
   });
 
   it("returns the ordinary success response before eligibility filtering", async () => {

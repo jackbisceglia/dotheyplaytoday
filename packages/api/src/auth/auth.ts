@@ -23,7 +23,7 @@ import { magicLink } from "better-auth/plugins";
 import { Context, Effect, Redacted, Schema } from "effect";
 
 import { AuthConfig } from "./config.js";
-import { toPromiseDatabase } from "./database.js";
+import { makeAuthDatabase } from "./database.js";
 
 const schema = {
   user: usersTable,
@@ -50,9 +50,10 @@ export const Auth = Effect.gen(function* () {
       baseURL: apiUrl.origin,
       secret: Redacted.value(authConfig.secret),
       trustedOrigins: [apiUrl.origin, webUrl.origin],
-      database: drizzleAdapter(toPromiseDatabase(database, runPromise), {
+      database: drizzleAdapter(makeAuthDatabase(database.$client, runPromise), {
         provider: "pg",
         schema,
+        transaction: false,
       }),
       emailAndPassword: { enabled: false },
       socialProviders: {},

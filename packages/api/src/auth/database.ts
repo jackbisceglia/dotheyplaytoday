@@ -1,64 +1,33 @@
-import { Effect } from "effect";
+import { drizzle } from "drizzle-orm/pg-proxy";
+import type { Effect } from "effect";
 
 type RunPromise = <A, E>(effect: Effect.Effect<A, E>) => Promise<A>;
-
-const isObjectLike = (value: unknown): value is object =>
-  (typeof value === "object" && value !== null) || typeof value === "function";
-
-const bridgeQuery = (query: object, runPromise: RunPromise): object =>
-  new Proxy(query, {
-    get(target, property, receiver) {
-      if (property === "then" && Effect.isEffect(target)) {
-        const promise = runPromise(target as Effect.Effect<unknown, unknown>);
-        return promise.then.bind(promise);
-      }
-
-      const value = Reflect.get(target, property, receiver) as unknown;
-
-      if (typeof value !== "function") return value;
-
-      return (...args: readonly unknown[]) => {
-        const result = Reflect.apply(value, target, args) as unknown;
-
-        return isObjectLike(result) ? bridgeQuery(result, runPromise) : result;
-      };
-    },
-  });
+type SqlClient = {
+  readonly unsafe: (
+    sql: string,
+    params?: readonly unknown[],
+  ) => {
+    readonly raw: Effect.Effect<unknown, unknown>;
+    readonly values: Effect.Effect<readonly (readonly unknown[])[], unknown>;
+  };
+};
 
 /**
- * Lets Promise-based Drizzle integrations execute this request's Effect
- * Drizzle queries without creating another database client or lifecycle.
+ * Gives Better Auth a Promise-based Drizzle facade over the existing Effect
+ * PostgreSQL client. This creates no additional client, pool, or lifecycle.
  */
-export const toPromiseDatabase = <Database extends object>(
-  database: Database,
+export const makeAuthDatabase = (
+  client: SqlClient,
   runPromise: RunPromise,
-): Database =>
-  new Proxy(database, {
-    get(target, property, receiver) {
-      const value = Reflect.get(target, property, receiver) as unknown;
+) =>
+  drizzle(async (sql, params, method) => {
+    const statement = client.unsafe(sql, params);
 
-      if (property === "query" && isObjectLike(value)) {
-        return new Proxy(value, {
-          get(query, model, queryReceiver) {
-            const relationalQuery = Reflect.get(
-              query,
-              model,
-              queryReceiver,
-            ) as unknown;
+    if (method === "all") {
+      const rows = await runPromise(statement.values);
 
-            return isObjectLike(relationalQuery)
-              ? bridgeQuery(relationalQuery, runPromise)
-              : relationalQuery;
-          },
-        });
-      }
+      return { rows: rows.map((row) => Array.from(row)) };
+    }
 
-      if (typeof value !== "function") return value;
-
-      return (...args: readonly unknown[]) => {
-        const result = Reflect.apply(value, target, args) as unknown;
-
-        return isObjectLike(result) ? bridgeQuery(result, runPromise) : result;
-      };
-    },
+    return { rows: [await runPromise(statement.raw)] };
   });

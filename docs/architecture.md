@@ -87,12 +87,12 @@ also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
-Better Auth receives the existing `EffectPgDatabase` service. A narrow adapter
-bridge makes its Effect-returning Drizzle queries awaitable for Better Auth's
-official Promise-based Drizzle adapter; it does not create another client,
-pool, connection, or transaction model. Query execution therefore stays in the
-active request context and uses the same Alchemy-managed Hyperdrive lifecycle
-as application persistence.
+Better Auth's official Drizzle adapter requires Promise-based queries, while
+application persistence uses Drizzle's Effect execution model. Auth therefore
+uses Drizzle's PostgreSQL proxy driver as a Promise facade over the existing
+Effect `PgClient`; it does not create another client, pool, connection, or
+transaction model. Query execution stays in the active request context and
+uses the same Alchemy-managed Hyperdrive lifecycle as application persistence.
 
 Magic-link messages follow the same transactional-email structure as signup
 confirmations: a schema-owned input, dedicated rendering workflow,
