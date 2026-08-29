@@ -24,7 +24,7 @@ import { useSelectionRejection } from "./useSelectionRejection.js";
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
 const capacityHint = `You can select up to ${subjectCapacity.toString()} teams. Remove one before selecting another.`;
-const comingSoonLeagues = ["NHL", "EPL"] as const;
+const comingSoonLeagues = ["EPL"] as const;
 type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
