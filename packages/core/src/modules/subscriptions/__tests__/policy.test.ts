@@ -5,21 +5,21 @@ import { notification } from "../../notifier/__tests__/fixtures.js";
 import { SubscriptionPolicy } from "../policy.js";
 
 describe("SubscriptionPolicy", () => {
-  it.effect("allows four subjects and rejects a fifth", () =>
+  it.effect("accepts the maximum subscriptions and rejects more", () =>
     Effect.gen(function* () {
       const policy = SubscriptionPolicy.subject;
+      const { max } = policy.constraints;
 
-      expect(policy.constraints.max).toBe(4);
-      yield* policy.ensureAllowance(notification.user, 4);
+      yield* policy.ensureAllowance(notification.user, max);
 
       const error = yield* policy
-        .ensureAllowance(notification.user, 5)
+        .ensureAllowance(notification.user, max + 1)
         .pipe(Effect.flip);
 
       expect(error).toMatchObject({
         _tag: "SubjectCapacityReached",
-        limit: 4,
-        received: 5,
+        limit: max,
+        received: max + 1,
       });
     }),
   );
