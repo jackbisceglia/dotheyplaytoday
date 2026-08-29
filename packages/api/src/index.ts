@@ -16,8 +16,8 @@ const CorsLayer = Layer.unwrap(
 
     return HttpRouter.cors({
       allowedOrigins: [origin],
-      allowedMethods: ["GET", "POST"],
-      credentials: false,
+      allowedMethods: ["GET", "POST", "OPTIONS"],
+      credentials: true,
     });
   }),
 );

@@ -23,7 +23,10 @@
   "dependencies": {
     "@dtpt/core": "workspace:*",
     "alchemy": "catalog:",
-    "effect": "catalog:"
+    "better-auth": "1.7.2",
+    "drizzle-orm": "1.0.0-rc.4",
+    "effect": "catalog:",
+    "postgres": "3.4.9"
   },
   "devDependencies": {
     "@effect/platform-node": "catalog:",

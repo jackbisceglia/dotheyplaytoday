@@ -160,6 +160,7 @@ export const UsersLayer = Layer.effect(
           User.fields.unsubscribeToken,
         ),
         email,
+        name: email,
         timezone,
       });
 
@@ -168,7 +169,7 @@ export const UsersLayer = Layer.effect(
         .values(insertable)
         .onConflictDoUpdate({
           target: usersTable.email,
-          set: { timezone: insertable.timezone },
+          set: { timezone: insertable.timezone, updatedAt: new Date() },
         })
         .returning()
         .pipe(

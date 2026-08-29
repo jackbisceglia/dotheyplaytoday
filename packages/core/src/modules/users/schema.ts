@@ -2,7 +2,7 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { text, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { Schema } from "effect";
 import * as SchemaTransformation from "effect/SchemaTransformation";
 
@@ -11,7 +11,7 @@ import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 
 export type UserSchemasMatchTable = Check<
-  TableSchemasMatch<typeof usersTable, typeof User, typeof UserInsert>
+  TableSchemasMatch<typeof usersTable, typeof UserRow, typeof UserInsert>
 >;
 
 export type UserId = typeof UserId.Type;
@@ -40,6 +40,17 @@ const domainOverrides = {
   email: EmailAddress,
   timezone: Schema.TimeZoneNamedFromString,
   unsubscribeToken: UnsubscribeToken,
+  createdAt: Schema.DateTimeUtcFromDate,
+  updatedAt: Schema.DateTimeUtcFromDate,
+};
+
+const insertOverrides = {
+  ...domainOverrides,
+  emailVerified: Schema.optional(Schema.Boolean),
+  name: Schema.optional(Schema.String),
+  image: Schema.optional(Schema.NullOr(Schema.String)),
+  createdAt: Schema.optional(Schema.DateTimeUtcFromDate),
+  updatedAt: Schema.optional(Schema.DateTimeUtcFromDate),
 };
 
 export const usersTable = postgresTable(
@@ -49,6 +60,15 @@ export const usersTable = postgresTable(
     email: text().notNull(),
     timezone: text().notNull(),
     unsubscribeToken: text().notNull(),
+    name: text().default("").notNull(),
+    emailVerified: boolean().default(false).notNull(),
+    image: text(),
+    createdAt: timestamp({ withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp({ withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     uniqueIndex("users_email_idx").on(table.email),
@@ -56,8 +76,16 @@ export const usersTable = postgresTable(
   ],
 );
 
+const UserRow = createSelectSchema(usersTable, domainOverrides);
+
+/** Application user projection; auth-owned columns stay behind the auth boundary. */
 export type User = typeof User.Type;
-export const User = createSelectSchema(usersTable, domainOverrides);
+export const User = Schema.Struct({
+  id: UserRow.fields.id,
+  email: UserRow.fields.email,
+  timezone: UserRow.fields.timezone,
+  unsubscribeToken: UserRow.fields.unsubscribeToken,
+});
 
 export type UserInsert = typeof UserInsert.Type;
-export const UserInsert = createInsertSchema(usersTable, domainOverrides);
+export const UserInsert = createInsertSchema(usersTable, insertOverrides);

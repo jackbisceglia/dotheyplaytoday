@@ -61,6 +61,47 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
   Config-backed adapter with the same shape.
 - Typed Effect config at runtime boundaries.
 
+### Authentication boundary
+
+Better Auth is mounted in the API Worker at `/api/auth/*`. Its standard Web
+`Request`/`Response` handler is selected before the existing Effect `HttpApi`
+router, so the public API contracts and routes are unchanged. The Better Auth
+instance enables only the magic-link plugin: email/password and social
+providers are disabled, plugin signup is disabled, tokens are hashed at rest,
+and sessions are persisted in `auth_sessions`. Cookies remain host-only to the
+API origin; production HTTPS origins receive secure cookies. The API and Web
+origins are explicit trusted origins, and auth responses allow only the Web
+origin through credentialed CORS.
+
+The existing `users` table is Better Auth's user model. Its normalized email
+and existing ID remain the identity key; no parallel application-user table is
+created. Auth adds `name`, `email_verified`, `image`, `created_at`, and
+`updated_at` columns. The application `User` codec deliberately remains a
+projection of the original notification fields, so existing signup,
+notification, and unsubscribe workflows do not acquire auth concerns. Existing
+rows are backfilled with their email as `name`, begin unverified, and are
+claimed when a magic link proves email ownership. The magic-link sender checks
+the normalized address against `users` and silently skips unknown addresses;
+Better Auth also has signup disabled, so an unknown address cannot create a row
+missing timezone or unsubscribe identity. Both known and unknown requests
+receive Better Auth's ordinary success response.
+
+Better Auth is the one database-client exception. For every auth request, the
+API creates a conventional Promise-based Drizzle/Postgres.js client over the
+same Hyperdrive connection string. It is never given the Effect database and
+is never stored at module scope. The client uses one connection, prepared
+statements, and no type-fetch round trip. An Effect request-scope finalizer
+closes it after response processing; Alchemy registers request-scope cleanup
+with Cloudflare `waitUntil`. Application persistence continues to use the
+`EffectPgDatabase` service unchanged.
+
+Magic-link messages use the shared provider-neutral `Email` renderer and
+delivery service with the existing Resend layer. Delivery is registered on the
+Cloudflare execution context with `waitUntil`, is best effort, and does not
+delay or change the public response. The reusable `getRequestSession` server
+boundary accepts request headers and resolves Better Auth's persistent session
+for future protected API handlers.
+
 The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to
 `Email`. The transactional signup-confirmation workflow bypasses `Notifier` and
@@ -139,3 +180,7 @@ Separate follow-ups are:
 1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
 3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
+4. Add the Web auth client, account/manage routes, session-driven redirects,
+   and authenticated team-management APIs. Cookie sharing across subdomains is
+   intentionally still disabled; browser calls target the API origin with
+   credentials.

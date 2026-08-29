@@ -25,6 +25,8 @@ these environment secrets before enabling the workflow:
 - `PLANETSCALE_API_TOKEN_ID`
 - `PLANETSCALE_API_TOKEN`
 - `RESEND_API_KEY`
+- `BETTER_AUTH_SECRET` (at least 32 cryptographically random characters; for
+  example, generate it with `openssl rand -base64 32`)
 
 Configure these environment variables:
 
@@ -55,6 +57,14 @@ domains, DNS and zone settings in this stack. Because the stack uses
 `Cloudflare.state()`, it must also be able to access and bind the account's
 Alchemy Secrets Store state credentials. The PlanetScale service token must be
 able to manage the existing production database, branch, roles, and migrations.
+
+The API derives Better Auth's base URL and allowed host from the existing
+resolved API URL, and its trusted browser origin from the resolved Web URL.
+There are no additional origin variables. Keep `BETTER_AUTH_SECRET` stable
+across deploys or existing signed session cookies will be invalidated. The
+`0004_better_auth.sql` migration is forward-only: it extends `users`, backfills
+existing rows as unverified, and creates `auth_sessions`, `auth_accounts`, and
+`auth_verifications` before the updated Worker starts.
 
 Alchemy can manage credentials with `GitHub.Secret` and `GitHub.Variable`. Its
 current CI guide recommends a separate, locally applied bootstrap stack that
