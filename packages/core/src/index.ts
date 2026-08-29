@@ -4,6 +4,7 @@ export {
   createDatabaseLayerFromHyperdriveResource,
 } from "./lib/database/service.js";
 export { Api } from "./contracts/api.js";
+export { AuthGroup } from "./contracts/auth.js";
 export { PingGroup, PingResponse } from "./contracts/ping.js";
 export {
   SignupGroup,
@@ -101,6 +102,11 @@ export {
   sendSignupConfirmation,
   SignupConfirmation,
 } from "./modules/email/transactional/confirmation.js";
+export {
+  MagicLink,
+  renderMagicLink,
+  sendMagicLink,
+} from "./modules/email/transactional/magic-link.js";
 export {
   SubjectEvent,
   SubjectEventInsert,

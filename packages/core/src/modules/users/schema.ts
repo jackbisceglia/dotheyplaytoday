@@ -11,7 +11,7 @@ import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 
 export type UserSchemasMatchTable = Check<
-  TableSchemasMatch<typeof usersTable, typeof UserRow, typeof UserInsert>
+  TableSchemasMatch<typeof usersTable, typeof User, typeof UserInsert>
 >;
 
 export type UserId = typeof UserId.Type;
@@ -48,7 +48,6 @@ const insertOverrides = {
   ...domainOverrides,
   emailVerified: Schema.optional(Schema.Boolean),
   name: Schema.optional(Schema.String),
-  image: Schema.optional(Schema.NullOr(Schema.String)),
   createdAt: Schema.optional(Schema.DateTimeUtcFromDate),
   updatedAt: Schema.optional(Schema.DateTimeUtcFromDate),
 };
@@ -62,12 +61,12 @@ export const usersTable = postgresTable(
     unsubscribeToken: text().notNull(),
     name: text().default("").notNull(),
     emailVerified: boolean().default(false).notNull(),
-    image: text(),
     createdAt: timestamp({ withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
     updatedAt: timestamp({ withTimezone: true, mode: "date" })
       .defaultNow()
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [
@@ -76,16 +75,8 @@ export const usersTable = postgresTable(
   ],
 );
 
-const UserRow = createSelectSchema(usersTable, domainOverrides);
-
-/** Application user projection; auth-owned columns stay behind the auth boundary. */
 export type User = typeof User.Type;
-export const User = Schema.Struct({
-  id: UserRow.fields.id,
-  email: UserRow.fields.email,
-  timezone: UserRow.fields.timezone,
-  unsubscribeToken: UserRow.fields.unsubscribeToken,
-});
+export const User = createSelectSchema(usersTable, domainOverrides);
 
 export type UserInsert = typeof UserInsert.Type;
 export const UserInsert = createInsertSchema(usersTable, insertOverrides);

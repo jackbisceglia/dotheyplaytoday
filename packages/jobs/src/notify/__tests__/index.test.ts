@@ -52,9 +52,13 @@ const makeRecipient = (
   decode(NotificationRecipient)({
     user: {
       id: opts.userId ?? ids.userA,
+      name: opts.email ?? "fan@example.com",
       email: opts.email ?? "fan@example.com",
+      emailVerified: false,
       timezone: opts.timezone ?? "America/New_York",
       unsubscribeToken: opts.unsubscribeToken ?? ids.unsubscribeA,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
     },
     subscription: {
       id: opts.subscriptionId ?? ids.subscriptionA,

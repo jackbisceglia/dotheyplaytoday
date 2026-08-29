@@ -1,73 +1,53 @@
-import { describe, expect, it, vi } from "vitest";
+import { ConfigProvider, Effect } from "effect";
 import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
 import { magicLink } from "better-auth/plugins";
+import { describe, expect, it, vi } from "vitest";
 
-import { authModelNames, makeMagicLinkSender } from "../auth.js";
-import { authDatabaseSchema } from "../database.js";
+import { AuthConfig } from "../config.js";
+import { toPromiseDatabase } from "../database.js";
 
-describe("Better Auth configuration boundaries", () => {
-  it("maps every Better Auth model to the explicit application table", () => {
-    expect(Object.keys(authDatabaseSchema)).toEqual(
-      Object.values(authModelNames),
+describe("authentication boundaries", () => {
+  it("keeps environment configuration limited to the auth secret", async () => {
+    const config = await Effect.runPromise(
+      AuthConfig.pipe(
+        Effect.provide(
+          ConfigProvider.layer(
+            ConfigProvider.fromEnv({
+              env: { BETTER_AUTH_SECRET: "test-secret" },
+            }),
+          ),
+        ),
+      ),
     );
-    expect(authDatabaseSchema.users).toBeDefined();
-    expect(authDatabaseSchema.authSessions).toBeDefined();
-    expect(authDatabaseSchema.authAccounts).toBeDefined();
-    expect(authDatabaseSchema.authVerifications).toBeDefined();
+
+    expect(Object.keys(config)).toEqual(["secret"]);
   });
 
-  it("normalizes and defers delivery for an existing user", async () => {
-    const deliver = vi.fn(() => Promise.resolve());
-    const deferred: Promise<unknown>[] = [];
-    const sender = makeMagicLinkSender({
-      userExists: (email) => Promise.resolve(email === "user@example.com"),
-      deliver,
-      defer: (promise) => deferred.push(promise),
+  it("runs Promise-based Drizzle calls through Effect", async () => {
+    const selectBuilder = Object.assign(() => undefined, {
+      from: vi.fn(() => Effect.succeed([{ id: "user-id" }])),
     });
+    const select = vi.fn(() => selectBuilder);
+    const findFirst = vi.fn(() => Effect.succeed({ id: "user-id" }));
+    const usersQuery = Object.assign(() => undefined, { findFirst });
+    const query = Object.assign(() => undefined, { usersTable: usersQuery });
+    const database = toPromiseDatabase({ select, query }, Effect.runPromise);
 
-    await sender({
-      email: " User@Example.COM ",
-      url: "https://example.com/link",
-    });
-    await Promise.all(deferred);
+    const selected = await Promise.resolve(database.select().from());
+    const found = await Promise.resolve(database.query.usersTable.findFirst());
 
-    expect(deliver).toHaveBeenCalledWith(
-      "user@example.com",
-      "https://example.com/link",
-    );
+    expect(selected).toEqual([{ id: "user-id" }]);
+    expect(found).toEqual({ id: "user-id" });
   });
 
-  it("does not deliver or defer work for an unknown user", async () => {
-    const deliver = vi.fn(() => Promise.resolve());
-    const defer = vi.fn();
-    const sender = makeMagicLinkSender({
-      userExists: () => Promise.resolve(false),
-      deliver,
-      defer,
-    });
-
-    await sender({
-      email: "unknown@example.com",
-      url: "https://example.com/link",
-    });
-
-    expect(deliver).not.toHaveBeenCalled();
-    expect(defer).not.toHaveBeenCalled();
-  });
-
-  it("returns the ordinary success response for an unknown email", async () => {
-    const deliver = vi.fn(() => Promise.resolve());
-    const sender = makeMagicLinkSender({
-      userExists: () => Promise.resolve(false),
-      deliver,
-      defer: vi.fn(),
-    });
+  it("returns the ordinary success response before eligibility filtering", async () => {
+    const sendMagicLink = vi.fn(() => Promise.resolve());
     const auth = betterAuth({
       baseURL: "https://api.example.com",
       secret: "test-secret-that-is-at-least-thirty-two-characters",
       database: memoryAdapter({}),
-      plugins: [magicLink({ disableSignUp: true, sendMagicLink: sender })],
+      plugins: [magicLink({ disableSignUp: true, sendMagicLink })],
     });
 
     const response = await auth.handler(
@@ -83,6 +63,6 @@ describe("Better Auth configuration boundaries", () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ status: true });
-    expect(deliver).not.toHaveBeenCalled();
+    expect(sendMagicLink).toHaveBeenCalledOnce();
   });
 });

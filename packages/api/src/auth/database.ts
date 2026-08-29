@@ -1,31 +1,64 @@
-import {
-  authAccountsTable,
-  authSessionsTable,
-  authVerificationsTable,
-} from "@dtpt/core/modules/auth/schema";
-import { usersTable } from "@dtpt/core/modules/users/schema";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { Effect } from "effect";
 
-export const authDatabaseSchema = {
-  users: usersTable,
-  authSessions: authSessionsTable,
-  authAccounts: authAccountsTable,
-  authVerifications: authVerificationsTable,
-} as const;
+type RunPromise = <A, E>(effect: Effect.Effect<A, E>) => Promise<A>;
 
-export type AuthDatabase = ReturnType<typeof createAuthDatabase>["database"];
+const isObjectLike = (value: unknown): value is object =>
+  (typeof value === "object" && value !== null) || typeof value === "function";
 
-/** A Promise Drizzle client dedicated to one Worker request. */
-export const createAuthDatabase = (connectionString: string) => {
-  const client = postgres(connectionString, {
-    max: 1,
-    fetch_types: false,
-    prepare: true,
+const bridgeQuery = (query: object, runPromise: RunPromise): object =>
+  new Proxy(query, {
+    get(target, property, receiver) {
+      if (property === "then" && Effect.isEffect(target)) {
+        const promise = runPromise(target as Effect.Effect<unknown, unknown>);
+        return promise.then.bind(promise);
+      }
+
+      const value = Reflect.get(target, property, receiver) as unknown;
+
+      if (typeof value !== "function") return value;
+
+      return (...args: readonly unknown[]) => {
+        const result = Reflect.apply(value, target, args) as unknown;
+
+        return isObjectLike(result) ? bridgeQuery(result, runPromise) : result;
+      };
+    },
   });
 
-  return {
-    database: drizzle({ client }),
-    close: () => client.end({ timeout: 0 }),
-  };
-};
+/**
+ * Lets Promise-based Drizzle integrations execute this request's Effect
+ * Drizzle queries without creating another database client or lifecycle.
+ */
+export const toPromiseDatabase = <Database extends object>(
+  database: Database,
+  runPromise: RunPromise,
+): Database =>
+  new Proxy(database, {
+    get(target, property, receiver) {
+      const value = Reflect.get(target, property, receiver) as unknown;
+
+      if (property === "query" && isObjectLike(value)) {
+        return new Proxy(value, {
+          get(query, model, queryReceiver) {
+            const relationalQuery = Reflect.get(
+              query,
+              model,
+              queryReceiver,
+            ) as unknown;
+
+            return isObjectLike(relationalQuery)
+              ? bridgeQuery(relationalQuery, runPromise)
+              : relationalQuery;
+          },
+        });
+      }
+
+      if (typeof value !== "function") return value;
+
+      return (...args: readonly unknown[]) => {
+        const result = Reflect.apply(value, target, args) as unknown;
+
+        return isObjectLike(result) ? bridgeQuery(result, runPromise) : result;
+      };
+    },
+  });

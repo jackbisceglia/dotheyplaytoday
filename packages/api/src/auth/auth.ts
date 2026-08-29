@@ -1,108 +1,112 @@
-import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
-import { eq } from "drizzle-orm";
-import { Redacted, Schema } from "effect";
+import * as Cloudflare from "alchemy/Cloudflare";
+import { ApiUrl } from "@dtpt/core/lib/config/api";
+import { WebUrl } from "@dtpt/core/lib/config/web";
+import { Database } from "@dtpt/core/lib/database/service";
+import { Id } from "@dtpt/core/lib/id/service";
+import {
+  authAccountsTable,
+  authSessionsTable,
+  authVerificationsTable,
+} from "@dtpt/core/modules/auth/schema";
+import {
+  MagicLink,
+  sendMagicLink,
+} from "@dtpt/core/modules/email/transactional/magic-link";
+import {
+  EmailAddressFromString,
+  usersTable,
+} from "@dtpt/core/modules/users/schema";
+import { Users } from "@dtpt/core/modules/users/service";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
+import { Context, Effect, Redacted, Schema } from "effect";
 
-import type { AuthConfig } from "./config.js";
-import { type AuthDatabase, authDatabaseSchema } from "./database.js";
+import { AuthConfig } from "./config.js";
+import { toPromiseDatabase } from "./database.js";
 
-export const authModelNames = {
-  user: "users",
-  session: "authSessions",
-  account: "authAccounts",
-  verification: "authVerifications",
-} as const;
+const schema = {
+  user: usersTable,
+  session: authSessionsTable,
+  account: authAccountsTable,
+  verification: authVerificationsTable,
+};
 
-export type MagicLinkDelivery = (
-  email: typeof EmailAddressFromString.Type,
-  url: string,
-) => Promise<void>;
+export const Auth = Effect.gen(function* () {
+  const authConfig = yield* AuthConfig;
+  const apiUrl = new URL(yield* ApiUrl);
+  const webUrl = new URL(yield* WebUrl);
+  const database = yield* Database;
+  const users = yield* Users;
+  const id = yield* Id;
+  const executionContext = yield* Cloudflare.WorkerExecutionContext;
 
-export const makeMagicLinkSender =
-  (options: {
-    readonly userExists: (
-      email: typeof EmailAddressFromString.Type,
-    ) => Promise<boolean>;
-    readonly deliver: MagicLinkDelivery;
-    readonly defer: (promise: Promise<unknown>) => void;
-  }) =>
-  async ({ email, url }: { readonly email: string; readonly url: string }) => {
-    const normalized = Schema.decodeUnknownSync(EmailAddressFromString)(email);
-    const userExists = await options.userExists(normalized);
+  return (context: Context.Context<never>) => {
+    const runPromise = Effect.runPromiseWith(context);
 
-    // The endpoint still returns the same success response for an unknown
-    // address, but no message is sent and Better Auth cannot provision it.
-    if (!userExists) return;
-
-    options.defer(
-      options.deliver(normalized, url).catch((error: unknown) => {
-        console.error("magic link: delivery failed", error);
+    return betterAuth({
+      appName: "dotheyplaytoday",
+      basePath: "/api/auth",
+      baseURL: apiUrl.origin,
+      secret: Redacted.value(authConfig.secret),
+      trustedOrigins: [apiUrl.origin, webUrl.origin],
+      database: drizzleAdapter(toPromiseDatabase(database, runPromise), {
+        provider: "pg",
+        schema,
       }),
-    );
-  };
-
-export const createAuth = (options: {
-  readonly database: AuthDatabase;
-  readonly config: AuthConfig;
-  readonly deliver: MagicLinkDelivery;
-  readonly defer: (promise: Promise<unknown>) => void;
-  readonly secureCookies: boolean;
-}) =>
-  betterAuth({
-    appName: "dotheyplaytoday",
-    basePath: "/api/auth",
-    baseURL: options.config.baseURL,
-    secret: Redacted.value(options.config.secret),
-    trustedOrigins: options.config.trustedOrigins,
-    database: drizzleAdapter(options.database, {
-      provider: "pg",
-      schema: authDatabaseSchema,
-      transaction: true,
-    }),
-    user: { modelName: authModelNames.user },
-    session: { modelName: authModelNames.session },
-    account: { modelName: authModelNames.account },
-    verification: { modelName: authModelNames.verification },
-    emailAndPassword: { enabled: false },
-    socialProviders: {},
-    rateLimit: {
-      enabled: true,
-      window: 60,
-      max: 100,
-      customRules: {
-        "/sign-in/magic-link": { window: 60, max: 5 },
-        "/magic-link/verify": { window: 60, max: 10 },
+      emailAndPassword: { enabled: false },
+      socialProviders: {},
+      rateLimit: {
+        enabled: true,
+        window: 60,
+        max: 100,
+        customRules: {
+          "/sign-in/magic-link": { window: 60, max: 5 },
+          "/magic-link/verify": { window: 60, max: 10 },
+        },
       },
-    },
-    advanced: {
-      useSecureCookies: options.secureCookies,
-      crossSubDomainCookies: { enabled: false },
-      ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
-      backgroundTasks: { handler: options.defer },
-    },
-    plugins: [
-      magicLink({
-        disableSignUp: true,
-        expiresIn: 15 * 60,
-        storeToken: "hashed",
-        rateLimit: { window: 60, max: 5 },
-        sendMagicLink: makeMagicLinkSender({
-          userExists: async (email) => {
-            const [user] = await options.database
-              .select({ id: authDatabaseSchema.users.id })
-              .from(authDatabaseSchema.users)
-              .where(eq(authDatabaseSchema.users.email, email))
-              .limit(1);
-
-            return user !== undefined;
+      advanced: {
+        useSecureCookies: apiUrl.protocol === "https:",
+        crossSubDomainCookies: { enabled: false },
+        ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
+        backgroundTasks: {
+          handler: (promise) => {
+            executionContext.raw.waitUntil(promise);
           },
-          deliver: options.deliver,
-          defer: options.defer,
-        }),
-      }),
-    ],
-  });
+        },
+      },
+      plugins: [
+        magicLink({
+          disableSignUp: true,
+          expiresIn: 15 * 60,
+          storeToken: "hashed",
+          rateLimit: { window: 60, max: 5 },
+          sendMagicLink: ({ email, url }) =>
+            runPromise(
+              Effect.gen(function* () {
+                const normalized = yield* Schema.decodeUnknownEffect(
+                  EmailAddressFromString,
+                )(email);
+                const user = yield* users.getByEmail(normalized);
 
-export type Auth = ReturnType<typeof createAuth>;
+                yield* Effect.sync(() => {
+                  executionContext.raw.waitUntil(
+                    runPromise(
+                      sendMagicLink(
+                        MagicLink.make({ recipient: user.email, url }),
+                      ).pipe(Effect.provideService(Id, id), Effect.ignore),
+                    ),
+                  );
+                });
+              }).pipe(
+                Effect.catchTag("UserNotFound", () => Effect.void),
+                Effect.orDie,
+              ),
+            ),
+        }),
+      ],
+    });
+  };
+});
+
+export type Auth = ReturnType<Effect.Success<typeof Auth>>;

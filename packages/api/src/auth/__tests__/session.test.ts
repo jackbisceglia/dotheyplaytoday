@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { betterAuth } from "better-auth";
 import { memoryAdapter } from "better-auth/adapters/memory";
+import { Effect } from "effect";
 
 import type { Auth } from "../auth.js";
-import { getRequestSession } from "../session.js";
+import { getSession } from "../session.js";
 
 describe("server session lookup", () => {
   it("resolves the user created with a persistent session cookie", async () => {
@@ -32,7 +33,9 @@ describe("server session lookup", () => {
     if (cookie === undefined) throw new Error("Missing session cookie value");
     const headers = new Headers({ cookie });
 
-    const result = await getRequestSession(auth as unknown as Auth, headers);
+    const result = await Effect.runPromise(
+      getSession(auth as unknown as Auth, headers),
+    );
 
     expect(result?.user.email).toBe("user@example.com");
     expect(result?.session.token).toBeTruthy();

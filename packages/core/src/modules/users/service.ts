@@ -169,7 +169,7 @@ export const UsersLayer = Layer.effect(
         .values(insertable)
         .onConflictDoUpdate({
           target: usersTable.email,
-          set: { timezone: insertable.timezone, updatedAt: new Date() },
+          set: { timezone: insertable.timezone },
         })
         .returning()
         .pipe(

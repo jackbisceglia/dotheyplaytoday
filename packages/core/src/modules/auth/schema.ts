@@ -9,6 +9,7 @@ const timestamps = {
     .notNull(),
   updatedAt: timestamp({ withTimezone: true, mode: "date" })
     .defaultNow()
+    .$onUpdate(() => new Date())
     .notNull(),
 };
 

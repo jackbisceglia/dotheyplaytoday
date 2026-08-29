@@ -15,9 +15,13 @@ const due = {
 
 const userInput = {
   id: "00000000-0000-4000-8000-000000000101",
+  name: "test@example.com",
   email: "test@example.com",
+  emailVerified: false,
   timezone: "America/New_York",
   unsubscribeToken: "00000000-0000-4000-8000-000000000201",
+  createdAt: new Date("2026-01-01T00:00:00.000Z"),
+  updatedAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
 const makeUser = (timezone: string) =>

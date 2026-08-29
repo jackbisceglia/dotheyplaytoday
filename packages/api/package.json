@@ -25,8 +25,7 @@
     "alchemy": "catalog:",
     "better-auth": "1.7.2",
     "drizzle-orm": "1.0.0-rc.4",
-    "effect": "catalog:",
-    "postgres": "3.4.9"
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@effect/platform-node": "catalog:",

@@ -58,12 +58,12 @@ domains, DNS and zone settings in this stack. Because the stack uses
 Alchemy Secrets Store state credentials. The PlanetScale service token must be
 able to manage the existing production database, branch, roles, and migrations.
 
-The API derives Better Auth's base URL and allowed host from the existing
-resolved API URL, and its trusted browser origin from the resolved Web URL.
-There are no additional origin variables. Keep `BETTER_AUTH_SECRET` stable
-across deploys or existing signed session cookies will be invalidated. The
-`0004_better_auth.sql` migration is forward-only: it extends `users`, backfills
-existing rows as unverified, and creates `auth_sessions`, `auth_accounts`, and
+The API derives Better Auth's base URL from the existing resolved API URL and
+its trusted browser origin from the resolved Web URL. There are no additional
+origin variables. Keep `BETTER_AUTH_SECRET` stable across deploys or existing
+signed session cookies will be invalidated. The `0004_better_auth.sql`
+migration is forward-only: it extends `users`, backfills existing rows as
+unverified, and creates `auth_sessions`, `auth_accounts`, and
 `auth_verifications` before the updated Worker starts.
 
 Alchemy can manage credentials with `GitHub.Secret` and `GitHub.Variable`. Its
