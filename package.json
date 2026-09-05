@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "alchemy:stage": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/get-stage.ts",
-    "dev": "STAGE=\"$(pnpm -s alchemy:stage)\" && STAGE=\"$STAGE\" alchemy dev alchemy.run.ts",
-    "dev:destroy": "STAGE=\"$(pnpm -s alchemy:stage)\" && STAGE=\"$STAGE\" alchemy destroy alchemy.run.ts",
-    "dev:seed": "STAGE=\"$(pnpm -s alchemy:stage)\" && STAGE=\"$STAGE\" alchemy destroy alchemy.run.ts --yes && STAGE=\"$STAGE\" alchemy dev alchemy.run.ts",
+    "dev": "STAGE=\"$(pnpm -s alchemy:stage)\" && export STAGE && alchemy dev alchemy.run.ts",
+    "dev:destroy": "STAGE=\"$(pnpm -s alchemy:stage)\" && export STAGE && alchemy destroy alchemy.run.ts",
+    "dev:seed": "STAGE=\"$(pnpm -s alchemy:stage)\" && export STAGE && alchemy destroy alchemy.run.ts --yes && alchemy dev alchemy.run.ts",
     "dev:web": "pnpm @web dev",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
