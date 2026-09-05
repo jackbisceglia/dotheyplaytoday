@@ -5,7 +5,7 @@ import { HttpRouter } from "effect/unstable/http";
 
 describe("authentication boundaries", () => {
   it("returns identical success for existing and unknown emails, sending only to the existing user", async () => {
-    const { auth, database, sendMagicLink, request, pending } =
+    const { auth, rows, sendMagicLink, request, pending } =
       await makeAuthFixture();
     for (const email of ["User@Example.COM", "unknown@example.com"]) {
       const response = await auth.handler(
@@ -20,7 +20,7 @@ describe("authentication boundaries", () => {
     expect(sendMagicLink.mock.calls[0]?.[0].url).toContain(
       "https://api.example.com/api/auth/magic-link/verify?token=",
     );
-    expect(database.users).toHaveLength(1);
+    expect(await rows("users")).toHaveLength(1);
   });
 
   it("rejects untrusted request origins and callback URLs", async () => {

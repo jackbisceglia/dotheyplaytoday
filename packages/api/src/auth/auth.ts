@@ -6,16 +6,21 @@ import {
   MagicLink,
   sendMagicLink,
 } from "@dtpt/core/modules/email/transactional/magic-link";
-import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
+import {
+  EmailAddressFromString,
+  usersTable,
+} from "@dtpt/core/modules/users/schema";
+import {
+  authAccountsTable,
+  authSessionsTable,
+  authVerificationsTable,
+} from "@dtpt/core/modules/auth/schema";
 import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { magicLink } from "better-auth/plugins";
 import { Config, Context, Effect, Layer, Redacted, Schema } from "effect";
 import { Pool } from "pg";
-
-const timestamps = {
-  createdAt: "created_at",
-  updatedAt: "updated_at",
-} as const;
 
 const createAuthPool = Effect.fn("Auth.createPool")(function* <E, R>(
   connectionString: Effect.Effect<Redacted.Redacted, E, R>,
@@ -44,48 +49,19 @@ export const createAuth = Effect.fn("Auth.create")(function* <E, R>(
     baseURL: apiUrl.origin,
     secret: Redacted.value(secret),
     trustedOrigins: [apiUrl.origin, webUrl],
-    database: pool,
+    database: drizzleAdapter(drizzle({ client: pool }), {
+      provider: "pg",
+      transaction: true,
+      schema: {
+        user: usersTable,
+        session: authSessionsTable,
+        account: authAccountsTable,
+        verification: authVerificationsTable,
+      },
+    }),
     // Profile editing belongs to the deferred account experience. In particular,
     // the shared users table intentionally has no Better Auth image column.
     disabledPaths: ["/update-user"],
-    user: {
-      modelName: "users",
-      fields: {
-        emailVerified: "email_verified",
-        ...timestamps,
-      },
-    },
-    session: {
-      modelName: "auth_sessions",
-      fields: {
-        expiresAt: "expires_at",
-        ipAddress: "ip_address",
-        userAgent: "user_agent",
-        userId: "user_id",
-        ...timestamps,
-      },
-    },
-    account: {
-      modelName: "auth_accounts",
-      fields: {
-        accountId: "account_id",
-        providerId: "provider_id",
-        userId: "user_id",
-        accessToken: "access_token",
-        refreshToken: "refresh_token",
-        idToken: "id_token",
-        accessTokenExpiresAt: "access_token_expires_at",
-        refreshTokenExpiresAt: "refresh_token_expires_at",
-        ...timestamps,
-      },
-    },
-    verification: {
-      modelName: "auth_verifications",
-      fields: {
-        expiresAt: "expires_at",
-        ...timestamps,
-      },
-    },
     emailAndPassword: { enabled: false },
     socialProviders: {},
     rateLimit: {

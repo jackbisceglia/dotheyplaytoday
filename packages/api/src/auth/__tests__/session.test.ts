@@ -3,7 +3,7 @@ import { makeAuthFixture } from "./fixtures.js";
 
 describe("server session lookup", () => {
   it("claims the existing notification user, persists a session, and consumes the token once", async () => {
-    const { auth, makeAuth, database, sendMagicLink, request } =
+    const { auth, makeAuth, rows, sendMagicLink, request } =
       await makeAuthFixture();
     const response = await auth.handler(
       request("/sign-in/magic-link", { email: "User@Example.COM" }),
@@ -13,8 +13,8 @@ describe("server session lookup", () => {
     if (!message) throw new Error("Missing magic link");
     const token = new URL(message.url).searchParams.get("token");
     expect(token).toBeTruthy();
-    expect(database.auth_verifications).toHaveLength(1);
-    expect(database.auth_verifications[0]?.identifier).not.toBe(token);
+    expect(await rows("auth_verifications")).toHaveLength(1);
+    expect((await rows("auth_verifications"))[0]?.identifier).not.toBe(token);
 
     const verified = await auth.handler(new Request(message.url));
     expect(verified.status).toBe(302);
@@ -32,54 +32,56 @@ describe("server session lookup", () => {
       email: "user@example.com",
       emailVerified: true,
     });
-    expect(database.users).toHaveLength(1);
-    expect(database.users[0]).toMatchObject({
+    expect(await rows("users")).toHaveLength(1);
+    expect((await rows("users"))[0]).toMatchObject({
       timezone: "America/New_York",
       unsubscribe_token: "existing-unsubscribe-token",
     });
-    expect(database.auth_sessions).toHaveLength(1);
-    expect(database.auth_verifications).toHaveLength(0);
+    expect(await rows("auth_sessions")).toHaveLength(1);
+    expect(await rows("auth_verifications")).toHaveLength(0);
 
     const replay = await auth.handler(new Request(message.url));
     expect(replay.headers.get("location")).toContain("error=INVALID_TOKEN");
-    expect(database.auth_sessions).toHaveLength(1);
+    expect(await rows("auth_sessions")).toHaveLength(1);
 
     await auth.api.signOut({ headers });
     expect(await (await makeAuth()).api.getSession({ headers })).toBeNull();
-    expect(database.auth_sessions).toHaveLength(0);
+    expect(await rows("auth_sessions")).toHaveLength(0);
   });
 
   it("does not recreate a notification user removed after requesting a link", async () => {
-    const { auth, database, sendMagicLink, request } = await makeAuthFixture();
+    const { auth, database, rows, sendMagicLink, request } =
+      await makeAuthFixture();
     await auth.handler(
       request("/sign-in/magic-link", { email: "user@example.com" }),
     );
     const message = sendMagicLink.mock.calls[0]?.[0];
     if (!message) throw new Error("Missing magic link");
-    database.users.splice(0);
+    await database.exec("DELETE FROM users");
 
     const response = await auth.handler(new Request(message.url));
     expect(response.headers.get("location")).toContain(
       "error=new_user_signup_disabled",
     );
-    expect(database.users).toHaveLength(0);
-    expect(database.auth_sessions).toHaveLength(0);
+    expect(await rows("users")).toHaveLength(0);
+    expect(await rows("auth_sessions")).toHaveLength(0);
   });
 
   it("rejects expired magic links", async () => {
-    const { auth, database, sendMagicLink, request } = await makeAuthFixture();
+    const { auth, database, rows, sendMagicLink, request } =
+      await makeAuthFixture();
     await auth.handler(
       request("/sign-in/magic-link", { email: "user@example.com" }),
     );
     const message = sendMagicLink.mock.calls[0]?.[0];
-    const verification = database.auth_verifications[0];
-    if (!message || !verification)
-      throw new Error("Missing magic link verification");
-    verification.expires_at = new Date(0);
+    if (!message) throw new Error("Missing magic link");
+    await database.exec(
+      "UPDATE auth_verifications SET expires_at = '2000-01-01'",
+    );
 
     const response = await auth.handler(new Request(message.url));
     expect(response.headers.get("location")).toContain("error=INVALID_TOKEN");
-    expect(database.auth_sessions).toHaveLength(0);
+    expect(await rows("auth_sessions")).toHaveLength(0);
   });
 
   it("returns no session for absent or invalid cookies", async () => {

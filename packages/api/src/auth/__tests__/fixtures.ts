@@ -1,27 +1,22 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Id } from "@dtpt/core/lib/id/service";
 import { sendMagicLink } from "@dtpt/core/modules/email/transactional/magic-link";
-import { memoryAdapter } from "better-auth/adapters/memory";
+import { readFile } from "node:fs/promises";
+import { PGlite } from "@electric-sql/pglite";
+import { drizzle } from "drizzle-orm/pglite";
 import { ConfigProvider, Effect, Layer, Redacted } from "effect";
-import { vi } from "vitest";
+import { onTestFinished, vi } from "vitest";
 
 import { createAuth } from "../auth.js";
 
-// Replace only persistence and email delivery; exercise the production constructor.
-const storage = vi.hoisted(() => ({
-  current: {} as Record<string, Record<string, unknown>[]>,
+// Keep the production auth/adapter configuration; replace only the DB driver.
+const storage = vi.hoisted<{ current?: PGlite }>(() => ({}));
+vi.mock("drizzle-orm/node-postgres", () => ({
+  drizzle: () => {
+    if (!storage.current) throw new Error("Missing test database");
+    return drizzle({ client: storage.current });
+  },
 }));
-vi.mock("better-auth", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("better-auth")>();
-  return {
-    ...actual,
-    betterAuth: (options: Parameters<typeof actual.betterAuth>[0]) =>
-      actual.betterAuth({
-        ...options,
-        database: memoryAdapter(storage.current),
-      }),
-  };
-});
 vi.mock(
   "@dtpt/core/modules/email/transactional/magic-link",
   async (importOriginal) => ({
@@ -35,24 +30,34 @@ vi.mock(
 let client = 0;
 
 export const makeAuthFixture = async () => {
-  const database = {
-    users: [
-      {
-        id: "existing-notification-user",
-        email: "user@example.com",
-        name: "Test User",
-        email_verified: false,
-        timezone: "America/New_York",
-        unsubscribe_token: "existing-unsubscribe-token",
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-    ],
-    auth_sessions: [] as Record<string, unknown>[],
-    auth_accounts: [] as Record<string, unknown>[],
-    auth_verifications: [] as Record<string, unknown>[],
-  };
+  const database = new PGlite();
+  onTestFinished(() => database.close());
+  await database.exec(
+    await readFile(
+      new URL(
+        "../../../../data/migrations/postgres/0001_initial.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  await database.exec(`INSERT INTO users (id, email, timezone, unsubscribe_token)
+    VALUES ('existing-notification-user', 'user@example.com', 'America/New_York', 'existing-unsubscribe-token')`);
+  await database.exec(
+    await readFile(
+      new URL(
+        "../../../../data/migrations/postgres/0004_better_auth.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
   storage.current = database;
+  const rows = async (
+    table: "users" | "auth_sessions" | "auth_verifications",
+  ) =>
+    (await database.query<Record<string, unknown>>(`SELECT * FROM ${table}`))
+      .rows;
   const sender = vi.mocked(sendMagicLink).mockClear();
   const pending: Promise<unknown>[] = [];
   const layer = Layer.mergeAll(
@@ -68,9 +73,7 @@ export const makeAuthFixture = async () => {
     ),
     Layer.mock(Id, {}),
     Layer.mock(Cloudflare.WorkerExecutionContext, {
-      get cache(): never {
-        throw new Error("Cache is not used by auth");
-      },
+      cache: { purge: () => Effect.die("Cache is not used by auth") },
       raw: {
         waitUntil: (promise) => {
           pending.push(promise);
@@ -110,5 +113,13 @@ export const makeAuthFixture = async () => {
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
 
-  return { auth, makeAuth, database, sendMagicLink: sender, pending, request };
+  return {
+    auth,
+    makeAuth,
+    database,
+    rows,
+    sendMagicLink: sender,
+    pending,
+    request,
+  };
 };

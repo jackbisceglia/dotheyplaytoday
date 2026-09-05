@@ -88,9 +88,13 @@ timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
 `createAuth` reads runtime configuration, opens a scoped Promise-native
-`pg.Pool` through Hyperdrive, and constructs Better Auth. Application persistence
-remains on Effect + Drizzle. Better Auth awaits its database work before returning;
-its optional background-task handler is not enabled. The pool has one connection
+`pg.Pool` through Hyperdrive, and constructs Better Auth with its Drizzle adapter.
+Auth uses standard Promise-native Drizzle over that pool, reusing the existing
+user, session, account, and verification table definitions. Drizzle owns the SQL
+column names; auth no longer repeats column mappings. Adapter transactions are
+enabled. Application persistence remains on Effect + Drizzle. Better Auth awaits
+its database work before returning; its optional background-task handler is not
+enabled. The pool has one connection
 and closes with the Worker execution scope, without crossing invocations.
 
 Magic-link email uses the existing transactional Email/Resend workflow. After

@@ -24,12 +24,14 @@
     "@dtpt/core": "workspace:*",
     "alchemy": "catalog:",
     "better-auth": "catalog:",
+    "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "pg": "catalog:"
   },
   "devDependencies": {
     "@effect/platform-node": "catalog:",
     "@effect/vitest": "catalog:",
+    "@electric-sql/pglite": "0.3.15",
     "@types/pg": "catalog:"
   }
 }
