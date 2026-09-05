@@ -26,3 +26,6 @@ packages/data/**/*.sqlite-wal
 
 # reference repositories for AI assistance
 reference/
+
+# open graph renderer fonts (downloaded binaries)
+packages/web/assets/fonts/

@@ -83,6 +83,13 @@ notification Worker consume the Web Worker's resolved URL through late
 bindings, avoiding a props-level resource cycle without reconstructing deployed
 URLs. See [Alchemy service URL wiring](./alchemy-service-urls.md).
 
+Link previews are served from a committed `public/og.png`, rendered offline by
+`pnpm @web og:generate` (`packages/web/scripts/og.ts`) through satori and resvg. Keeping
+it a build artifact rather than a request-time route keeps native rendering
+dependencies out of the deploy and gives crawlers a cacheable static asset.
+Crawlers fetch `og:image` from their own servers rather than resolving it
+against the page, so the tag is absolutized against the incoming request URL.
+
 Web uses all-SSR rendering. The attempted mixed-render design was rejected
 because Solid Start mode has no SSR route-prerender hook; producing a static
 home document would require post-build output mutation coupled to Alchemy's
