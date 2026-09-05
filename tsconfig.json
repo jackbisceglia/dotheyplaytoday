@@ -3,5 +3,5 @@
   "compilerOptions": {
     "types": ["bun"]
   },
-  "include": ["alchemy.run.ts"]
+  "include": ["alchemy.run.ts", "scripts/get-stage.ts"]
 }
