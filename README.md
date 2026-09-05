@@ -24,10 +24,8 @@ See [Product](docs/product.md) for intended behavior and [Architecture](docs/arc
 
 ## Commands
 
-Use Node.js 24.18.0 or newer. `.nvmrc` pins the tested version; with nvm,
-run `nvm install` and `nvm use` before installing dependencies. The Node
-engine requirement is enforced by pnpm. The stage script uses native
-TypeScript execution and needs no build step.
+Use Node.js 24.18.0 or newer, as documented in `package.json` engines.
+The stage script uses native TypeScript execution and needs no build step.
 
 ```bash
 pnpm install

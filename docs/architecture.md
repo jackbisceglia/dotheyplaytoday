@@ -94,8 +94,8 @@ commands pass its result through Alchemy's supported `STAGE` input;
 `alchemy.run.ts` remains an ordinary stack definition. Generic deployment
 commands are unchanged and do not invoke the development-stage resolver.
 
-Repository tooling requires Node.js 24.18.0 or newer, with the tested version
-pinned in `.nvmrc`. The stage script runs directly through Node's native
+Repository tooling targets Node.js 24.18.0 or newer, as documented in
+`package.json` engines. The stage script runs directly through Node's native
 TypeScript support. Only the stage subprocess uses pnpm's silent flag;
 ordinary pnpm commands retain their normal diagnostics.
 
