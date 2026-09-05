@@ -38,7 +38,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL(yield* WebUrl);
     const pool = yield* createAuthPool(connectionString);
-    const ctx = yield* Cloudflare.WorkerExecutionContext;
+    const cloudflare = yield* Cloudflare.WorkerExecutionContext;
     // Preserve runtime config and Id when Better Auth calls back into Effect.
     const runPromise = Effect.runPromiseWith(yield* Effect.context<Id>());
 
@@ -91,7 +91,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
 
             if (user === null) return;
 
-            ctx.raw.waitUntil(
+            cloudflare.raw.waitUntil(
               runPromise(
                 sendMagicLink(
                   MagicLink.make({ recipient: normalized, url: options.url }),
@@ -108,12 +108,10 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
     Layer.effect(Auth, Auth.make(connectionString));
 }
 
-export const createAuthLayerFromHyperdriveResource = (
-  client: Cloudflare.Hyperdrive.ConnectClient,
-) =>
+export const createAuthLayerFromHyperdriveResource = Effect.fn(
+  "Auth.createLayerFromHyperdriveResource",
+)(function* (client: Cloudflare.Hyperdrive.ConnectClient) {
   // Hyperdrive credentials are only available during a Worker invocation.
-  Layer.unwrap(
-    client.connectionString.pipe(
-      Effect.map((connection) => Auth.layer(Redacted.value(connection))),
-    ),
-  );
+  const connection = yield* client.connectionString;
+  return Auth.layer(Redacted.value(connection));
+}, Layer.unwrap);

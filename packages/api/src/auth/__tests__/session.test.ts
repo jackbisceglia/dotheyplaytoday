@@ -31,9 +31,11 @@ describe("server session lookup", () => {
       id: "existing-notification-user",
       email: "user@example.com",
       emailVerified: true,
+      name: null,
     });
     expect(await rows("users")).toHaveLength(1);
     expect((await rows("users"))[0]).toMatchObject({
+      name: null,
       timezone: "America/New_York",
       unsubscribe_token: "existing-unsubscribe-token",
     });

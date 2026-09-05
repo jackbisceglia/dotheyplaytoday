@@ -74,13 +74,13 @@ host-only to the API origin and secure on HTTPS. API and Web origins are trusted
 
 The existing `users` table is Better Auth's user model. Its normalized email
 and existing ID remain the identity key; no parallel application-user table is
-created. Auth adds the required `name`, `email_verified`, `created_at`, and
+created. Auth adds `name`, `email_verified`, `created_at`, and
 `updated_at` columns; Better Auth's optional profile-image field is not stored.
 The built-in `/update-user` endpoint is disabled until account editing is
 implemented, so it cannot write unsupported profile fields.
 `User` remains the single table-backed domain schema, and its insert schema
-keeps database-managed defaults optional. Existing rows are backfilled with
-their email as `name`, begin unverified, and are claimed when a magic link
+keeps database-managed defaults optional. The unused name is nullable and
+optional on insert. Existing rows begin unverified and are claimed when a magic link
 proves email ownership. The magic-link sender normalizes the address and asks
 Better Auth's internal adapter to silently skip unknown addresses. Better Auth
 also has signup disabled, so an unknown address cannot create a row missing

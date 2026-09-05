@@ -8,7 +8,7 @@ const encode = Schema.encodeSync;
 
 const userInput = {
   id: "00000000-0000-4000-8000-000000000101",
-  name: "Test User",
+  name: null,
   email: "test@example.com",
   emailVerified: false,
   timezone: "America/New_York",

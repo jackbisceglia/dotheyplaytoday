@@ -47,7 +47,6 @@ const domainOverrides = {
 const insertOverrides = {
   ...domainOverrides,
   emailVerified: Schema.optional(Schema.Boolean),
-  name: Schema.optional(Schema.String),
   createdAt: Schema.optional(Schema.DateTimeUtcFromDate),
   updatedAt: Schema.optional(Schema.DateTimeUtcFromDate),
 };
@@ -59,7 +58,7 @@ export const usersTable = postgresTable(
     email: text().notNull(),
     timezone: text().notNull(),
     unsubscribeToken: text().notNull(),
-    name: text().default("").notNull(),
+    name: text(),
     emailVerified: boolean().default(false).notNull(),
     createdAt: timestamp({ withTimezone: true, mode: "date" })
       .defaultNow()
