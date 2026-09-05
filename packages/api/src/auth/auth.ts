@@ -34,7 +34,7 @@ const createAuthPool = (connectionString: string) =>
 
 export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
   make: Effect.fn("Auth.make")(function* (connectionString: string) {
-    const { secret } = yield* AuthConfig;
+    const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL(yield* WebUrl);
     const pool = yield* createAuthPool(connectionString);
@@ -46,7 +46,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
       appName: "dotheyplaytoday",
       basePath: AuthBasePath,
       baseURL: apiUrl.origin,
-      secret: Redacted.value(secret),
+      secret: Redacted.value(config.secret),
       trustedOrigins: [apiUrl.origin, webUrl.origin],
       database: drizzleAdapter(drizzle({ client: pool }), {
         provider: "pg",
@@ -80,19 +80,21 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           disableSignUp: true,
           expiresIn: 15 * 60,
           storeToken: "hashed",
-          sendMagicLink: async ({ email, url }, context) => {
-            if (context === undefined) return;
+          sendMagicLink: async (options, endpoint) => {
+            if (endpoint === undefined) return;
 
-            const normalized = decodeEmail(email);
+            const normalized = decodeEmail(options.email);
             const user =
-              await context.context.internalAdapter.findUserByEmail(normalized);
+              await endpoint.context.internalAdapter.findUserByEmail(
+                normalized,
+              );
 
             if (user === null) return;
 
             ctx.raw.waitUntil(
               runPromise(
                 sendMagicLink(
-                  MagicLink.make({ recipient: normalized, url }),
+                  MagicLink.make({ recipient: normalized, url: options.url }),
                 ).pipe(Effect.ignore),
               ),
             );
@@ -105,3 +107,13 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
   static layer = (connectionString: string) =>
     Layer.effect(Auth, Auth.make(connectionString));
 }
+
+export const createAuthLayerFromHyperdriveResource = (
+  client: Cloudflare.Hyperdrive.ConnectClient,
+) =>
+  // Hyperdrive credentials are only available during a Worker invocation.
+  Layer.unwrap(
+    client.connectionString.pipe(
+      Effect.map((connection) => Auth.layer(Redacted.value(connection))),
+    ),
+  );

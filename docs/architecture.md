@@ -63,11 +63,11 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 
 ### Authentication boundary
 
-Better Auth is mounted in the API Worker at `/api/auth/*` through a single
-wildcard `HttpRouter` route. The handler adapts Effect's server request to
+Better Auth is mounted in the API Worker at `/api/auth/*` through an
+`HttpApi` group with GET and POST wildcard handlers. The handler adapts Effect's server request to
 Better Auth's Web `Request`/`Response` boundary, sharing the API's credentialed
-CORS middleware and Worker entry point. Better Auth owns its endpoint contract;
-the application does not duplicate it in the shared `HttpApi`.
+CORS middleware and Worker entry point. Better Auth owns endpoint validation and responses; the shared `HttpApi` group
+only declares the wildcard transport routes.
 Only magic-link authentication is enabled, signup is disabled, tokens are
 hashed at rest, and sessions are persisted in `auth_sessions`. Cookies remain
 host-only to the API origin and secure on HTTPS. API and Web origins are trusted.

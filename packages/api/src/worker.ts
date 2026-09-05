@@ -11,9 +11,9 @@ import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
-import { Effect, Layer, Redacted, pipe } from "effect";
+import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
-import { Auth } from "./auth/auth.js";
+import { createAuthLayerFromHyperdriveResource } from "./auth/auth.js";
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
@@ -55,17 +55,13 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
-    // Hyperdrive credentials are only available during a Worker invocation.
-    const AuthLayer = Layer.unwrap(
-      hyperdrive.connectionString.pipe(
-        Effect.map((connection) => Auth.layer(Redacted.value(connection))),
-      ),
+    const AuthLayer = createAuthLayerFromHyperdriveResource(hyperdrive);
+    const ApiServicesLayer = AuthLayer.pipe(
+      Layer.provideMerge(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
     );
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
-      Layer.provide(AuthLayer),
-      Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
-      Layer.provide(CloudflareHttpApiPlatformLayer),
+      Layer.provide([ApiServicesLayer, CloudflareHttpApiPlatformLayer]),
     );
 
     const rateLimiter = yield* RateLimiter;
@@ -76,7 +72,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
           HttpRouter.toHttpEffect(ApiWorkerLayer),
         );
 
-        return yield* handler.pipe(Effect.orDie);
+        return yield* handler;
       }).pipe(Effect.provideService(RateLimiter, rateLimiter)),
     };
   }).pipe(Effect.provide(WorkerLayer)),

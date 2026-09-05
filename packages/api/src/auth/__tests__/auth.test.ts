@@ -1,6 +1,7 @@
 import { makeAuthFixture } from "./fixtures.js";
 import { describe, expect, it } from "vitest";
-import { Effect, Layer } from "effect";
+import { Effect, FileSystem, Layer, Path } from "effect";
+import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 import { HttpRouter } from "effect/unstable/http";
 
@@ -60,12 +61,24 @@ describe("authentication boundaries", () => {
     }
   });
 
-  it("mounts Better Auth on the API wildcard route", async () => {
+  it("mounts Better Auth on the API auth group", async () => {
     const { Auth } = await import("../auth.js");
-    const { AuthRoutesLayer } = await import("../../routes.auth.js");
+    const { AuthGroupLayer } = await import("../../routes.auth.js");
+    const { AuthGroup } = await import("@dtpt/core/contracts/auth");
+    const { HttpApi, HttpApiBuilder } = await import("effect/unstable/httpapi");
     const { auth, request } = await makeAuthFixture();
     const { handler, dispose } = HttpRouter.toWebHandler(
-      AuthRoutesLayer.pipe(Layer.provide(Layer.succeed(Auth, auth))),
+      HttpApiBuilder.layer(
+        HttpApi.make("ApiV2").add(AuthGroup).prefix("/api"),
+      ).pipe(
+        Layer.provide(AuthGroupLayer),
+        Layer.provide([
+          Layer.succeed(Auth, auth),
+          CloudflareHttpApiPlatformLayer,
+          FileSystem.layerNoop({}),
+          Path.layer,
+        ]),
+      ),
     );
     try {
       const response = await handler(
