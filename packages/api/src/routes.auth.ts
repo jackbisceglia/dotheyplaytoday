@@ -6,13 +6,14 @@ import {
 } from "effect/unstable/http";
 
 import { Auth } from "./auth/auth.js";
+import { AuthBasePath } from "./auth/config.js";
 
 export const AuthRoutesLayer = HttpRouter.use(
   Effect.fn("Auth.routes")(function* (router) {
     const auth = yield* Auth;
     yield* router.add(
       "*",
-      "/api/auth/*",
+      `${AuthBasePath}/*`,
       Effect.fn("BetterAuth.handler")(function* (request) {
         const webRequest = yield* HttpServerRequest.toWeb(request).pipe(
           Effect.orDie,

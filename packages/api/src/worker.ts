@@ -11,9 +11,9 @@ import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
-import { Effect, Layer, pipe } from "effect";
+import { Effect, Layer, Redacted, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
-import { createAuthLayer } from "./auth/auth.js";
+import { Auth } from "./auth/auth.js";
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
@@ -55,7 +55,12 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
-    const AuthLayer = createAuthLayer(hyperdrive.connectionString);
+    // Hyperdrive credentials are only available during a Worker invocation.
+    const AuthLayer = Layer.unwrap(
+      hyperdrive.connectionString.pipe(
+        Effect.map((connection) => Auth.layer(Redacted.value(connection))),
+      ),
+    );
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
       Layer.provide(AuthLayer),

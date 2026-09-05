@@ -1,6 +1,7 @@
 import { makeAuthFixture } from "./fixtures.js";
 import { describe, expect, it } from "vitest";
 import { Effect, Layer } from "effect";
+import { WebUrl } from "@dtpt/core/lib/config/web";
 import { HttpRouter } from "effect/unstable/http";
 
 describe("authentication boundaries", () => {
@@ -83,8 +84,12 @@ describe("authentication boundaries", () => {
   it("registers email delivery without delaying the response", async () => {
     const { auth, request, sendMagicLink, pending } = await makeAuthFixture();
     const delivery = Promise.withResolvers<undefined>();
+    let webUrl: string | undefined;
     sendMagicLink.mockImplementationOnce(() =>
-      Effect.promise(() => delivery.promise),
+      Effect.gen(function* () {
+        webUrl = yield* WebUrl;
+        yield* Effect.promise(() => delivery.promise);
+      }),
     );
     try {
       const response = await auth.handler(
@@ -92,6 +97,7 @@ describe("authentication boundaries", () => {
       );
       expect(response.status).toBe(200);
       expect(pending).toHaveLength(1);
+      expect(webUrl).toBe("https://www.example.com");
     } finally {
       delivery.resolve(undefined);
       await Promise.all(pending);

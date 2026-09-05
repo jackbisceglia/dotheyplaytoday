@@ -4,10 +4,10 @@ import { sendMagicLink } from "@dtpt/core/modules/email/transactional/magic-link
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
-import { ConfigProvider, Effect, Layer, Redacted } from "effect";
+import { ConfigProvider, Effect, Layer } from "effect";
 import { onTestFinished, vi } from "vitest";
 
-import { createAuth } from "../auth.js";
+import { Auth } from "../auth.js";
 
 // Keep the production auth/adapter configuration; replace only the DB driver.
 const storage = vi.hoisted<{ current?: PGlite }>(() => ({}));
@@ -88,12 +88,12 @@ export const makeAuthFixture = async () => {
   );
   const makeAuth = () =>
     Effect.runPromise(
-      Effect.scoped(
-        createAuth(
-          Effect.succeed(
-            Redacted.make("postgres://user:password@localhost:5432/database"),
+      Auth.pipe(
+        Effect.provide(
+          Auth.layer("postgres://user:password@localhost:5432/database").pipe(
+            Layer.provide(layer),
           ),
-        ).pipe(Effect.provide(layer)),
+        ),
       ),
     );
   const auth = await makeAuth();
