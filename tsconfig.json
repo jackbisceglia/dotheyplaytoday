@@ -1,12 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
     "types": ["bun"]
   },
-  "include": [
-    "alchemy.run.ts",
-    "scripts/get-stage.ts",
-    "scripts/get-stage.test.ts"
-  ]
+  "include": ["alchemy.run.ts", "scripts/get-stage.ts"]
 }

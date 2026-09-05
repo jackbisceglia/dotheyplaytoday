@@ -11,8 +11,6 @@ import {
 } from "effect";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
 
-export const ALCHEMY_STAGE_PATTERN = /^[a-z0-9]+([-_a-z0-9]+)*$/i;
-
 /**
  * Normalizes a username or worktree directory into an Alchemy stage component.
  * Alchemy accepts letters, numbers, hyphens, and underscores, with no length
@@ -109,7 +107,7 @@ export const getStage = Effect.gen(function* () {
 
   return Option.match(worktree, {
     onNone: () => `dev_${user}`,
-    onSome: (name) => `dev_${user}_${name}`,
+    onSome: (worktree) => `dev_${user}_${worktree}`,
   });
 });
 
