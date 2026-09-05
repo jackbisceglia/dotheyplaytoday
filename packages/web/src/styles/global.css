@@ -343,6 +343,7 @@ button {
 }
 
 .form-section {
+  min-width: 0;
   border: none;
   display: flex;
   flex-direction: column;
@@ -362,13 +363,40 @@ button {
 }
 
 .league-row {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  /* Leave room for focus outlines and selected shadows. */
+  padding: 5px 5px 10px;
+  margin: -5px -5px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
+}
+
+.league-row::-webkit-scrollbar {
+  height: 6px;
+}
+
+.league-row::-webkit-scrollbar-thumb {
+  background: var(--rule);
+  border-radius: 3px;
+}
+
+.league-row .coming-soon-tooltip {
+  top: 50%;
+  right: 0;
+  left: auto;
+  transform: translateY(-50%);
+}
+
+.league-row > * {
+  flex: 0 0 auto;
 }
 
 .league-pill {
+  white-space: nowrap;
   font-weight: 900;
   font-stretch: 70%;
   font-size: 0.92rem;

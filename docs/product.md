@@ -6,6 +6,8 @@
 
 **Subject** and **Event** are intentionally reusable domain terms. Sports teams and games are the current production implementation, but the model can support other event-driven subjects without redefining the core behavior.
 
+Users can subscribe to up to four teams. Submitting signup again replaces the user's existing team selections and schedule.
+
 ## Notifications
 
 - A schedule is a fixed local wall-clock time interpreted in the user's IANA timezone.
