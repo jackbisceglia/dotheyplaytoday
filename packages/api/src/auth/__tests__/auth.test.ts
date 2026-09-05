@@ -1,77 +1,108 @@
-import { ConfigProvider, Effect, Redacted } from "effect";
-import { betterAuth } from "better-auth";
-import { memoryAdapter } from "better-auth/adapters/memory";
-import { magicLink } from "better-auth/plugins";
-import { describe, expect, it, vi } from "vitest";
-
-import { AuthConfig } from "../config.js";
-import { openAuthPool } from "../pool.js";
+import { makeAuthFixture } from "./fixtures.js";
+import { describe, expect, it } from "vitest";
+import { Effect, Layer } from "effect";
+import { HttpRouter } from "effect/unstable/http";
 
 describe("authentication boundaries", () => {
-  it("keeps environment configuration limited to the auth secret", async () => {
-    const config = await Effect.runPromise(
-      AuthConfig.pipe(
-        Effect.provide(
-          ConfigProvider.layer(
-            ConfigProvider.fromEnv({
-              env: { BETTER_AUTH_SECRET: "test-secret" },
-            }),
-          ),
-        ),
-      ),
+  it("returns identical success for existing and unknown emails, sending only to the existing user", async () => {
+    const { auth, database, sendMagicLink, request, pending } =
+      await makeAuthFixture();
+    for (const email of ["User@Example.COM", "unknown@example.com"]) {
+      const response = await auth.handler(
+        request("/sign-in/magic-link", { email }),
+      );
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ status: true });
+    }
+    await Promise.all(pending);
+    expect(sendMagicLink).toHaveBeenCalledOnce();
+    expect(sendMagicLink.mock.calls[0]?.[0].recipient).toBe("user@example.com");
+    expect(sendMagicLink.mock.calls[0]?.[0].url).toContain(
+      "https://api.example.com/api/auth/magic-link/verify?token=",
     );
-
-    expect(Object.keys(config)).toEqual(["secret"]);
+    expect(database.users).toHaveLength(1);
   });
 
-  it("closes the Better Auth PostgreSQL pool with its Effect scope", async () => {
-    let openDuringInnerFinalizer = false;
-    const pool = await Effect.runPromise(
-      Effect.scoped(
-        Effect.gen(function* () {
-          const pool = yield* openAuthPool(
-            Effect.succeed(
-              Redacted.make("postgres://user:password@localhost:5432/database"),
-            ),
-          );
-
-          yield* Effect.addFinalizer(() =>
-            Effect.sync(() => {
-              openDuringInnerFinalizer = !pool.ending;
-            }),
-          );
-
-          return pool;
-        }),
-      ),
-    );
-
-    expect(openDuringInnerFinalizer).toBe(true);
-    expect(pool.ended).toBe(true);
-  });
-
-  it("returns the ordinary success response before eligibility filtering", async () => {
-    const sendMagicLink = vi.fn(() => Promise.resolve());
-    const auth = betterAuth({
-      baseURL: "https://api.example.com",
-      secret: "test-secret-that-is-at-least-thirty-two-characters",
-      database: memoryAdapter({}),
-      plugins: [magicLink({ disableSignUp: true, sendMagicLink })],
-    });
-
+  it("rejects untrusted request origins and callback URLs", async () => {
+    const { auth, sendMagicLink, request } = await makeAuthFixture();
     const response = await auth.handler(
-      new Request("https://api.example.com/api/auth/sign-in/magic-link", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          origin: "https://api.example.com",
+      request(
+        "/sign-in/magic-link",
+        {
+          email: "user@example.com",
         },
-        body: JSON.stringify({ email: "unknown@example.com" }),
+        "https://untrusted.example",
+      ),
+    );
+    expect(response.status).toBe(403);
+    const callback = await auth.handler(
+      request("/sign-in/magic-link", {
+        email: "user@example.com",
+        callbackURL: "https://untrusted.example/account",
       }),
     );
+    expect(callback.status).toBe(403);
+    expect(sendMagicLink).not.toHaveBeenCalled();
+  });
 
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ status: true });
-    expect(sendMagicLink).toHaveBeenCalledOnce();
+  it("enforces magic-link rate limits across request-scoped auth instances", async () => {
+    const { makeAuth, request } = await makeAuthFixture();
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const response = await (
+        await makeAuth()
+      ).handler(
+        request("/sign-in/magic-link", {
+          email: "unknown@example.com",
+        }),
+      );
+      expect(response.status).toBe(attempt < 5 ? 200 : 429);
+    }
+  });
+
+  it("mounts Better Auth on the API wildcard route", async () => {
+    const { Auth } = await import("../auth.js");
+    const { AuthRoutesLayer } = await import("../../routes.auth.js");
+    const { auth, request } = await makeAuthFixture();
+    const { handler, dispose } = HttpRouter.toWebHandler(
+      AuthRoutesLayer.pipe(Layer.provide(Layer.succeed(Auth, auth))),
+    );
+    try {
+      const response = await handler(
+        request("/sign-in/magic-link", { email: "unknown@example.com" }),
+      );
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ status: true });
+      const session = await handler(request("/get-session"));
+      expect(session.status).toBe(200);
+      await expect(session.json()).resolves.toBeNull();
+    } finally {
+      await dispose();
+    }
+  });
+
+  it("registers email delivery without delaying the response", async () => {
+    const { auth, request, sendMagicLink, pending } = await makeAuthFixture();
+    const delivery = Promise.withResolvers<undefined>();
+    sendMagicLink.mockImplementationOnce(() =>
+      Effect.promise(() => delivery.promise),
+    );
+    try {
+      const response = await auth.handler(
+        request("/sign-in/magic-link", { email: "user@example.com" }),
+      );
+      expect(response.status).toBe(200);
+      expect(pending).toHaveLength(1);
+    } finally {
+      delivery.resolve(undefined);
+      await Promise.all(pending);
+    }
+  });
+
+  it("keeps profile updates outside this foundation", async () => {
+    const { auth, request } = await makeAuthFixture();
+    const response = await auth.handler(
+      request("/update-user", { image: "https://example.com/photo.png" }),
+    );
+    expect(response.status).toBe(404);
   });
 });

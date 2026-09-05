@@ -1,6 +1,5 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Drizzle from "alchemy/Drizzle";
-import type * as PgClient from "@effect/sql-pg/PgClient";
 import type { EffectPgDatabase } from "drizzle-orm/effect-postgres";
 import { Context, Layer } from "effect";
 import type * as Effect from "effect/Effect";
@@ -8,9 +7,7 @@ import type * as Redacted from "effect/Redacted";
 
 import { relations } from "./definitions/relations.js";
 
-export type Database = EffectPgDatabase<typeof relations> & {
-  readonly $client: PgClient.PgClient;
-};
+export type Database = EffectPgDatabase<typeof relations>;
 export const Database = Context.Service<Database>("@dtpt/core/Database");
 
 /**

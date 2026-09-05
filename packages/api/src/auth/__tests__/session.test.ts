@@ -1,43 +1,96 @@
 import { describe, expect, it } from "vitest";
-import { betterAuth } from "better-auth";
-import { memoryAdapter } from "better-auth/adapters/memory";
-import { Effect } from "effect";
-
-import type { Auth } from "../auth.js";
-import { getSession } from "../session.js";
+import { makeAuthFixture } from "./fixtures.js";
 
 describe("server session lookup", () => {
-  it("resolves the user created with a persistent session cookie", async () => {
-    const auth = betterAuth({
-      baseURL: "https://api.example.com",
-      secret: "test-secret-that-is-at-least-thirty-two-characters",
-      database: memoryAdapter({
-        user: [],
-        session: [],
-        account: [],
-        verification: [],
-      }),
-      emailAndPassword: { enabled: true },
-    });
-    const signUp = await auth.api.signUpEmail({
-      body: {
-        name: "Test User",
-        email: "user@example.com",
-        password: "test-password-123",
-      },
-      asResponse: true,
-    });
-    const setCookie = signUp.headers.get("set-cookie");
-    if (setCookie === null) throw new Error("Missing session cookie");
-    const [cookie] = setCookie.split(";", 1);
-    if (cookie === undefined) throw new Error("Missing session cookie value");
-    const headers = new Headers({ cookie });
-
-    const result = await Effect.runPromise(
-      getSession(auth as unknown as Auth["Service"], headers),
+  it("claims the existing notification user, persists a session, and consumes the token once", async () => {
+    const { auth, makeAuth, database, sendMagicLink, request } =
+      await makeAuthFixture();
+    const response = await auth.handler(
+      request("/sign-in/magic-link", { email: "User@Example.COM" }),
     );
+    expect(response.status).toBe(200);
+    const message = sendMagicLink.mock.calls[0]?.[0];
+    if (!message) throw new Error("Missing magic link");
+    const token = new URL(message.url).searchParams.get("token");
+    expect(token).toBeTruthy();
+    expect(database.auth_verifications).toHaveLength(1);
+    expect(database.auth_verifications[0]?.identifier).not.toBe(token);
 
-    expect(result?.user.email).toBe("user@example.com");
-    expect(result?.session.token).toBeTruthy();
+    const verified = await auth.handler(new Request(message.url));
+    expect(verified.status).toBe(302);
+    const setCookie = verified.headers.get("set-cookie");
+    expect(setCookie).toContain("Secure");
+    expect(setCookie).toContain("HttpOnly");
+    expect(setCookie).toContain("SameSite=Lax");
+    expect(setCookie).not.toContain("Domain=");
+    const cookie = setCookie?.split(";", 1)[0];
+    if (!cookie) throw new Error("Missing session cookie");
+    const headers = new Headers({ cookie });
+    const session = await (await makeAuth()).api.getSession({ headers });
+    expect(session?.user).toMatchObject({
+      id: "existing-notification-user",
+      email: "user@example.com",
+      emailVerified: true,
+    });
+    expect(database.users).toHaveLength(1);
+    expect(database.users[0]).toMatchObject({
+      timezone: "America/New_York",
+      unsubscribe_token: "existing-unsubscribe-token",
+    });
+    expect(database.auth_sessions).toHaveLength(1);
+    expect(database.auth_verifications).toHaveLength(0);
+
+    const replay = await auth.handler(new Request(message.url));
+    expect(replay.headers.get("location")).toContain("error=INVALID_TOKEN");
+    expect(database.auth_sessions).toHaveLength(1);
+
+    await auth.api.signOut({ headers });
+    expect(await (await makeAuth()).api.getSession({ headers })).toBeNull();
+    expect(database.auth_sessions).toHaveLength(0);
+  });
+
+  it("does not recreate a notification user removed after requesting a link", async () => {
+    const { auth, database, sendMagicLink, request } = await makeAuthFixture();
+    await auth.handler(
+      request("/sign-in/magic-link", { email: "user@example.com" }),
+    );
+    const message = sendMagicLink.mock.calls[0]?.[0];
+    if (!message) throw new Error("Missing magic link");
+    database.users.splice(0);
+
+    const response = await auth.handler(new Request(message.url));
+    expect(response.headers.get("location")).toContain(
+      "error=new_user_signup_disabled",
+    );
+    expect(database.users).toHaveLength(0);
+    expect(database.auth_sessions).toHaveLength(0);
+  });
+
+  it("rejects expired magic links", async () => {
+    const { auth, database, sendMagicLink, request } = await makeAuthFixture();
+    await auth.handler(
+      request("/sign-in/magic-link", { email: "user@example.com" }),
+    );
+    const message = sendMagicLink.mock.calls[0]?.[0];
+    const verification = database.auth_verifications[0];
+    if (!message || !verification)
+      throw new Error("Missing magic link verification");
+    verification.expires_at = new Date(0);
+
+    const response = await auth.handler(new Request(message.url));
+    expect(response.headers.get("location")).toContain("error=INVALID_TOKEN");
+    expect(database.auth_sessions).toHaveLength(0);
+  });
+
+  it("returns no session for absent or invalid cookies", async () => {
+    const { auth } = await makeAuthFixture();
+    expect(await auth.api.getSession({ headers: new Headers() })).toBeNull();
+    expect(
+      await auth.api.getSession({
+        headers: new Headers({
+          cookie: "__Secure-better-auth.session_token=invalid",
+        }),
+      }),
+    ).toBeNull();
   });
 });

@@ -63,21 +63,21 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 
 ### Authentication boundary
 
-Better Auth is mounted in the API Worker at `/api/auth/*`. A shared `AuthGroup`
-declares GET and POST wildcard endpoints in the Effect `HttpApi`; their raw
-handlers adapt Effect's server request to Better Auth's standard Web
-`Request`/`Response` boundary. Auth therefore uses the same API router,
-credentialed CORS middleware, layer graph, and Worker entry point as every
-other endpoint. The Better Auth instance enables only the magic-link plugin:
-email/password and social providers are disabled, plugin signup is disabled,
-tokens are hashed at rest, and sessions are persisted in `auth_sessions`.
-Cookies remain host-only to the API origin; production HTTPS origins receive
-secure cookies. The API and Web origins are explicit trusted origins.
+Better Auth is mounted in the API Worker at `/api/auth/*` through a single
+wildcard `HttpRouter` route. The handler adapts Effect's server request to
+Better Auth's Web `Request`/`Response` boundary, sharing the API's credentialed
+CORS middleware and Worker entry point. Better Auth owns its endpoint contract;
+the application does not duplicate it in the shared `HttpApi`.
+Only magic-link authentication is enabled, signup is disabled, tokens are
+hashed at rest, and sessions are persisted in `auth_sessions`. Cookies remain
+host-only to the API origin and secure on HTTPS. API and Web origins are trusted.
 
 The existing `users` table is Better Auth's user model. Its normalized email
 and existing ID remain the identity key; no parallel application-user table is
 created. Auth adds the required `name`, `email_verified`, `created_at`, and
 `updated_at` columns; Better Auth's optional profile-image field is not stored.
+The built-in `/update-user` endpoint is disabled until account editing is
+implemented, so it cannot write unsupported profile fields.
 `User` remains the single table-backed domain schema, and its insert schema
 keeps database-managed defaults optional. Existing rows are backfilled with
 their email as `name`, begin unverified, and are claimed when a magic link
@@ -87,23 +87,25 @@ also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
-Better Auth receives a dedicated Promise-native `pg.Pool` through the existing
-Hyperdrive binding, while application persistence remains on Drizzle's Effect
-execution model. The pool is limited to one connection and belongs to the
-Worker execution scope: background auth and email promises drain first, then
-the pool closes through the scope's cascading finalizers. Auth and application
-persistence share the physical database and Hyperdrive resource without a
-custom Effect-to-Promise query bridge or a cross-invocation socket.
+`createAuth` reads runtime configuration, opens a scoped Promise-native
+`pg.Pool` through Hyperdrive, and constructs Better Auth. Application persistence
+remains on Effect + Drizzle. Better Auth awaits its database work before returning;
+its optional background-task handler is not enabled. The pool has one connection
+and closes with the Worker execution scope, without crossing invocations.
 
-Magic-link messages follow the same transactional-email structure as signup
-confirmations: a schema-owned input, dedicated rendering workflow,
-provider-neutral `Email` delivery, internally provided Resend layer, and
-consistent delivery logging. Delivery is tracked by the auth scope; Alchemy
-attaches scope finalization to Cloudflare `waitUntil`, so delivery is best
-effort and does not delay or change the public response. The reusable
-`getRequestSession` server boundary accepts
-request headers and resolves Better Auth's persistent session for future
-protected API handlers.
+Magic-link email uses the existing transactional Email/Resend workflow. After
+eligibility is checked, delivery is registered directly with the Worker's
+`waitUntil`; it needs no further database access and does not delay the response.
+There is no separate auth task queue. Future protected handlers can use
+`auth.api.getSession({ headers })` from the `Auth` service; no session-specific
+or generic API wrapper is introduced before it has a consumer.
+
+Auth rate limiting uses Better Auth's in-memory store, shared across auth
+instances within a Worker isolate. It allows five magic-link requests and ten
+verification attempts per client IP per minute, using Cloudflare's
+`cf-connecting-ip` header. These are per-isolate limits, not a global quota;
+multiple isolates and isolate restarts do not share counters. A distributed
+limit would require shared storage or an edge rate-limiting rule.
 
 The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to

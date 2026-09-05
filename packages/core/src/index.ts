@@ -4,7 +4,6 @@ export {
   createDatabaseLayerFromHyperdriveResource,
 } from "./lib/database/service.js";
 export { Api } from "./contracts/api.js";
-export { AuthGroup } from "./contracts/auth.js";
 export { PingGroup, PingResponse } from "./contracts/ping.js";
 export {
   SignupGroup,

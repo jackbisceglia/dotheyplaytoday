@@ -1,4 +1,4 @@
-import type * as Cloudflare from "alchemy/Cloudflare";
+import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 import { Id } from "@dtpt/core/lib/id/service";
@@ -9,35 +9,45 @@ import {
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins";
-import { Context, Effect, Layer, Redacted, Schema } from "effect";
-import type { Pool } from "pg";
-
-import { AuthConfig } from "./config.js";
-import { openAuthPool } from "./pool.js";
+import { Config, Context, Effect, Layer, Redacted, Schema } from "effect";
+import { Pool } from "pg";
 
 const timestamps = {
   createdAt: "created_at",
   updatedAt: "updated_at",
 } as const;
 
-type RunPromise = <A, E>(effect: Effect.Effect<A, E>) => Promise<A>;
+const createAuthPool = Effect.fn("Auth.createPool")(function* <E, R>(
+  connectionString: Effect.Effect<Redacted.Redacted, E, R>,
+) {
+  const url = Redacted.value(yield* connectionString);
+  return yield* Effect.acquireRelease(
+    Effect.sync(() => new Pool({ connectionString: url, max: 1 })),
+    (pool) => Effect.promise(() => pool.end()),
+  );
+});
 
-const createAuth = (input: {
-  readonly apiUrl: URL;
-  readonly webUrl: URL;
-  readonly secret: Redacted.Redacted;
-  readonly pool: Pool;
-  readonly id: Id["Service"];
-  readonly runPromise: RunPromise;
-  readonly defer: (promise: Promise<unknown>) => void;
-}) =>
-  betterAuth({
+export const createAuth = Effect.fn("Auth.create")(function* <E, R>(
+  connectionString: Effect.Effect<Redacted.Redacted, E, R>,
+) {
+  const secret = yield* Config.redacted("BETTER_AUTH_SECRET");
+  const apiUrl = new URL(yield* ApiUrl);
+  const webUrl = yield* WebUrl;
+  const pool = yield* createAuthPool(connectionString);
+  const id = yield* Id;
+  const { raw: executionContext } = yield* Cloudflare.WorkerExecutionContext;
+  const runPromise = Effect.runPromiseWith(yield* Effect.context());
+
+  return betterAuth({
     appName: "dotheyplaytoday",
     basePath: "/api/auth",
-    baseURL: input.apiUrl.origin,
-    secret: Redacted.value(input.secret),
-    trustedOrigins: [input.apiUrl.origin, input.webUrl.origin],
-    database: input.pool,
+    baseURL: apiUrl.origin,
+    secret: Redacted.value(secret),
+    trustedOrigins: [apiUrl.origin, webUrl],
+    database: pool,
+    // Profile editing belongs to the deferred account experience. In particular,
+    // the shared users table intentionally has no Better Auth image column.
+    disabledPaths: ["/update-user"],
     user: {
       modelName: "users",
       fields: {
@@ -80,6 +90,7 @@ const createAuth = (input: {
     socialProviders: {},
     rateLimit: {
       enabled: true,
+      storage: "memory",
       window: 60,
       max: 100,
       customRules: {
@@ -88,79 +99,45 @@ const createAuth = (input: {
       },
     },
     advanced: {
-      useSecureCookies: input.apiUrl.protocol === "https:",
+      disableOriginCheck: false,
+      useSecureCookies: apiUrl.protocol === "https:",
       crossSubDomainCookies: { enabled: false },
       ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
-      backgroundTasks: { handler: input.defer },
     },
     plugins: [
       magicLink({
         disableSignUp: true,
         expiresIn: 15 * 60,
         storeToken: "hashed",
-        rateLimit: { window: 60, max: 5 },
         sendMagicLink: async ({ email, url }, context) => {
           if (context === undefined) return;
 
-          const normalized = await input.runPromise(
-            Schema.decodeUnknownEffect(EmailAddressFromString)(email),
+          const normalized = Schema.decodeUnknownSync(EmailAddressFromString)(
+            email,
           );
           const user =
             await context.context.internalAdapter.findUserByEmail(normalized);
 
           if (user === null) return;
 
-          input.defer(
-            input.runPromise(
+          executionContext.waitUntil(
+            runPromise(
               sendMagicLink(
                 MagicLink.make({ recipient: normalized, url }),
-              ).pipe(Effect.provideService(Id, input.id), Effect.ignore),
+              ).pipe(Effect.provideService(Id, id), Effect.ignore),
             ),
           );
         },
       }),
     ],
   });
+});
 
-export type AuthInstance = ReturnType<typeof createAuth>;
+export class Auth extends Context.Service<
+  Auth,
+  Effect.Success<ReturnType<typeof createAuth>>
+>()("@dtpt/api/Auth") {}
 
-export class Auth extends Context.Service<Auth, AuthInstance>()(
-  "@dtpt/api/Auth",
-) {}
-
-export const makeAuthLayer = (
-  connectionString: Cloudflare.Hyperdrive.ConnectClient["connectionString"],
-) =>
-  Layer.effect(
-    Auth,
-    Effect.gen(function* () {
-      const authConfig = yield* AuthConfig;
-      const apiUrl = new URL(yield* ApiUrl);
-      const webUrl = new URL(yield* WebUrl);
-      const id = yield* Id;
-      const pool = yield* openAuthPool(connectionString);
-      const pending: Promise<unknown>[] = [];
-
-      // Registered after the pool finalizer so LIFO cleanup drains pending
-      // auth and email work before closing PostgreSQL.
-      yield* Effect.addFinalizer(() =>
-        Effect.promise(() => Promise.allSettled(pending)).pipe(Effect.asVoid),
-      );
-
-      const context = yield* Effect.context();
-
-      return Auth.of(
-        createAuth({
-          apiUrl,
-          webUrl,
-          secret: authConfig.secret,
-          pool,
-          id,
-          runPromise: Effect.runPromiseWith(context),
-          defer: (promise) => {
-            pending.push(promise);
-          },
-        }),
-      );
-    }),
-  );
+export const createAuthLayer = <E, R>(
+  connectionString: Effect.Effect<Redacted.Redacted, E, R>,
+) => Layer.effect(Auth, createAuth(connectionString));
