@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=24.18.0"
+  },
   "scripts": {
     "dev": "STAGE=\"$(pnpm -s alchemy:stage)\" && export STAGE && alchemy dev alchemy.run.ts",
     "dev:seed": "STAGE=\"$(pnpm -s alchemy:stage)\" && export STAGE && alchemy destroy alchemy.run.ts --yes && alchemy dev alchemy.run.ts",
     "dev:destroy": "STAGE=\"$(pnpm -s alchemy:stage)\" && export STAGE && alchemy destroy alchemy.run.ts",
-    "alchemy:stage": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/get-stage.ts",
+    "alchemy:stage": "node scripts/get-stage.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
     "build": "pnpm -r run build",

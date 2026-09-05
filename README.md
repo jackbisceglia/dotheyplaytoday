@@ -24,6 +24,11 @@ See [Product](docs/product.md) for intended behavior and [Architecture](docs/arc
 
 ## Commands
 
+Use Node.js 24.18.0 or newer. `.nvmrc` pins the tested version; with nvm,
+run `nvm install` and `nvm use` before installing dependencies. The Node
+engine requirement is enforced by pnpm. The stage script uses native
+TypeScript execution and needs no build step.
+
 ```bash
 pnpm install
 pnpm build
@@ -60,7 +65,7 @@ cannot be established safely.
 Use these worktree-aware commands:
 
 ```bash
-pnpm alchemy:stage  # print only this checkout's stage name
+pnpm -s alchemy:stage  # print only this checkout's stage name
 pnpm dev            # start this checkout's stage
 pnpm dev:destroy    # interactively destroy this checkout's stage
 pnpm dev:seed       # destroy --yes, recreate, seed, and start this checkout's stage
@@ -68,7 +73,7 @@ pnpm dev:seed       # destroy --yes, recreate, seed, and start this checkout's s
 
 `pnpm dev:seed` affects only the calling worktree's stage. Ordinary `pnpm dev`
 restarts reuse that stage's seed data. Before removing a worktree, record its
-stage with `pnpm alchemy:stage` and run `pnpm dev:destroy`. If the worktree has
+stage with `pnpm -s alchemy:stage` and run `pnpm dev:destroy`. If the worktree has
 already been removed, reconstruct the documented name from its former
 directory and user components, then clean it up from another checkout with
 `pnpm destroy --stage <stage>`; inspect the target carefully because the

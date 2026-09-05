@@ -85,7 +85,7 @@ Git worktree uses `dev_<user>_<worktree-name>`, deriving the last component
 from the worktree directory rather than its branch. The resolver follows
 Alchemy's stage alphabet, sanitizes components, verifies Git's common directory
 and worktree metadata, and never accepts a non-`dev_` result. All
-worktree-aware commands therefore use the same stage: `pnpm alchemy:stage`
+worktree-aware commands therefore use the same stage: `pnpm -s alchemy:stage`
 prints the current name, `pnpm dev` starts it, `pnpm dev:destroy` interactively
 destroys it, and `pnpm dev:seed` destroys it with `--yes` before recreating and
 starting it. The resolver is an Effect whose Git process, path, and
@@ -93,6 +93,11 @@ configuration capabilities come from Effect Platform. Package lifecycle
 commands pass its result through Alchemy's supported `STAGE` input;
 `alchemy.run.ts` remains an ordinary stack definition. Generic deployment
 commands are unchanged and do not invoke the development-stage resolver.
+
+Repository tooling requires Node.js 24.18.0 or newer, with the tested version
+pinned in `.nvmrc`. The stage script runs directly through Node's native
+TypeScript support. Only the stage subprocess uses pnpm's silent flag;
+ordinary pnpm commands retain their normal diagnostics.
 
 An abandoned stage can be removed after its linked worktree is gone by
 reconstructing the documented stage from the former user and directory name,
