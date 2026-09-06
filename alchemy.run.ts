@@ -5,8 +5,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect, Layer } from "effect";
 
-import ApiWorker from "./packages/api/dist/worker.js";
-import { bindApiUrl } from "./packages/api/resource.ts";
+import ApiWorker, { bindApiUrl } from "./packages/api/dist/worker.js";
 import { Domain } from "./packages/core/dist/lib/alchemy/domain/resource.js";
 import {
   DatabaseHyperdrive,
