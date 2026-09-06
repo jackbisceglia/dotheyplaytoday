@@ -68,6 +68,8 @@ Better Auth is mounted in the API Worker at `/api/auth/*` through an
 Better Auth's Web `Request`/`Response` boundary, sharing the API's credentialed
 CORS middleware and Worker entry point. Better Auth owns endpoint validation and responses; the shared `HttpApi` group
 only declares the wildcard transport routes.
+The stack binds the API Worker’s resolved URL back into its own environment
+for Better Auth, alongside the resolved Web URL.
 Only magic-link authentication is enabled, signup is disabled, tokens are
 hashed at rest, and sessions are persisted in `auth_sessions`. Cookies remain
 host-only to the API origin and secure on HTTPS. API and Web origins are trusted.
