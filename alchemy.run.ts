@@ -52,15 +52,6 @@ export default Alchemy.Stack(
 
     // Move these reverse dependencies into Worker props once Website.Vite
     // supports separate definition and implementation declarations.
-    yield* apiWorker.bind("ApiUrl", {
-      bindings: [
-        {
-          type: "plain_text",
-          name: "VITE_API_URL_BASE",
-          text: apiWorker.url.as<string>(),
-        },
-      ],
-    });
     yield* bindWebUrl(apiWorker, web);
     yield* bindWebUrl(notifyJobWorker, web);
 
