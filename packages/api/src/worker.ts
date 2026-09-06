@@ -46,17 +46,6 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     };
   }) as unknown as Cloudflare.WorkerProps,
   Effect.gen(function* () {
-    const worker = yield* Cloudflare.Worker;
-    yield* worker.bind("ApiUrl", {
-      bindings: [
-        {
-          type: "plain_text",
-          name: "VITE_API_URL_BASE",
-          text: worker.url.as<string>(),
-        },
-      ],
-    });
-
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
