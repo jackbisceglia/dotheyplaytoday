@@ -14,6 +14,7 @@ import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
 import { createAuthLayerFromHyperdriveResource } from "./auth/auth.js";
+import { AuthConfig } from "./auth/config.js";
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
@@ -48,7 +49,8 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
-    // Validate email delivery config before the Worker begins serving requests.
+    // Read deferred auth/email config during init so Alchemy binds it to the Worker.
+    yield* AuthConfig;
     yield* EmailConfig;
     yield* ResendConfig;
 
