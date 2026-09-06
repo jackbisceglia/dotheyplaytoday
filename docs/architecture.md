@@ -125,7 +125,8 @@ prints the current name, `pnpm dev` starts it, `pnpm dev:destroy` interactively
 destroys it, and `pnpm dev:seed` destroys it with `--yes` before recreating and
 starting it. The resolver is an Effect whose Git process, path, and
 configuration capabilities come from Effect Platform. Package lifecycle
-commands pass its result through Alchemy's supported `STAGE` input;
+commands export its result through Alchemy's lowercase `stage` environment
+variable; the lookup is case-sensitive and ignores uppercase `STAGE`.
 `alchemy.run.ts` remains an ordinary stack definition. Generic deployment
 commands are unchanged and do not invoke the development-stage resolver.
 
