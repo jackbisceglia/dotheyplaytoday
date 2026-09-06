@@ -160,7 +160,6 @@ export const UsersLayer = Layer.effect(
           User.fields.unsubscribeToken,
         ),
         email,
-        name: email,
         timezone,
       });
 
