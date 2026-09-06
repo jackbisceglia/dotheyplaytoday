@@ -61,6 +61,59 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
   Config-backed adapter with the same shape.
 - Typed Effect config at runtime boundaries.
 
+### Authentication boundary
+
+Better Auth is mounted in the API Worker at `/api/auth/*` through an
+`HttpApi` group with GET and POST wildcard handlers. The handler adapts Effect's server request to
+Better Auth's Web `Request`/`Response` boundary, sharing the API's credentialed
+CORS middleware and Worker entry point. Better Auth owns endpoint validation and responses; the shared `HttpApi` group
+only declares the wildcard transport routes.
+The stack supplies the resolved API and Web URLs through `bindApiUrl` and
+`bindWebUrl` helpers, keeping URL bindings outside resource construction.
+Only magic-link authentication is enabled, signup is disabled, tokens are
+hashed at rest, and sessions are persisted in `auth_sessions`. Cookies remain
+host-only to the API origin and secure on HTTPS. API and Web origins are trusted.
+
+The existing `users` table is Better Auth's user model. Its normalized email
+and existing ID remain the identity key; no parallel application-user table is
+created. Auth adds `name`, `email_verified`, `created_at`, and
+`updated_at` columns; Better Auth's optional profile-image field is not stored.
+The built-in `/update-user` endpoint is disabled until account editing is
+implemented, so it cannot write unsupported profile fields.
+`User` remains the single table-backed domain schema, and its insert schema
+keeps database-managed defaults optional. The unused name is nullable and
+optional on insert. Existing rows begin unverified and are claimed when a magic link
+proves email ownership. The magic-link sender normalizes the address and asks
+Better Auth's internal adapter to silently skip unknown addresses. Better Auth
+also has signup disabled, so an unknown address cannot create a row missing
+timezone or unsubscribe identity. Both known and unknown requests receive
+Better Auth's ordinary success response.
+
+`Auth.make` reads runtime configuration, opens a scoped Promise-native
+`pg.Pool` through Hyperdrive, and constructs Better Auth with its Drizzle adapter.
+Auth uses standard Promise-native Drizzle over that pool, reusing the existing
+user, session, account, and verification table definitions. Drizzle owns the SQL
+column names; auth no longer repeats column mappings. Adapter transactions are
+enabled. Application persistence remains on Effect + Drizzle. Better Auth awaits
+its database work before returning; its optional background-task handler is not
+enabled. `Auth.make(connectionString)` accepts a resolved string; the Worker
+resolves Hyperdrive credentials when building that layer during an invocation.
+The pool has one connection and closes with the Worker execution scope.
+
+Magic-link email uses the existing transactional Email/Resend workflow. After
+eligibility is checked, delivery is registered directly with the Worker's
+`waitUntil`; it needs no further database access and does not delay the response.
+There is no separate auth task queue. Future protected handlers can use
+`auth.api.getSession({ headers })` from the `Auth` service; no session-specific
+or generic API wrapper is introduced before it has a consumer.
+
+Auth rate limiting uses Better Auth's in-memory store, shared across auth
+instances within a Worker isolate. It allows five magic-link requests and ten
+verification attempts per client IP per minute, using Cloudflare's
+`cf-connecting-ip` header. These are per-isolate limits, not a global quota;
+multiple isolates and isolate restarts do not share counters. A distributed
+limit would require shared storage or an edge rate-limiting rule.
+
 The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to
 `Email`. The transactional signup-confirmation workflow bypasses `Notifier` and
@@ -174,3 +227,7 @@ Separate follow-ups are:
 1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
 3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
+4. Add the Web auth client, account/manage routes, session-driven redirects,
+   and authenticated team-management APIs. Cookie sharing across subdomains is
+   intentionally still disabled; browser calls target the API origin with
+   credentials.

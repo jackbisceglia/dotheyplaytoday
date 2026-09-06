@@ -7,15 +7,14 @@ import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
-import {
-  EmailConfig,
-  ResendConfig,
-} from "@dtpt/core/modules/email/config";
+import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
+import { createAuthLayerFromHyperdriveResource } from "./auth/auth.js";
+import { AuthConfig } from "./auth/config.js";
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
@@ -50,17 +49,21 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
 
-    // Validate email delivery config before the Worker begins serving requests.
+    // Read deferred auth/email config during init so Alchemy binds it to the Worker.
+    yield* AuthConfig;
     yield* EmailConfig;
     yield* ResendConfig;
 
     // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
+    const AuthLayer = createAuthLayerFromHyperdriveResource(hyperdrive);
+    const ApiServicesLayer = AuthLayer.pipe(
+      Layer.provideMerge(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
+    );
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
-      Layer.provide(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
-      Layer.provide(CloudflareHttpApiPlatformLayer),
+      Layer.provide([ApiServicesLayer, CloudflareHttpApiPlatformLayer]),
     );
 
     const rateLimiter = yield* RateLimiter;
@@ -76,3 +79,18 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     };
   }).pipe(Effect.provide(WorkerLayer)),
 ) {}
+
+/**
+ * Binds the API's resolved public URL into a Worker's environment.
+ * @returns {Effect.Effect<void>}
+ */
+export const bindApiUrl = (worker: Cloudflare.Worker, api: Cloudflare.Worker) =>
+  worker.bind("ApiUrl", {
+    bindings: [
+      {
+        type: "plain_text",
+        name: "VITE_API_URL_BASE",
+        text: api.url.as<string>(),
+      },
+    ],
+  });

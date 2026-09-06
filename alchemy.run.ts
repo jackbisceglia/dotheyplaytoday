@@ -5,7 +5,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as AlchemyPlanetscale from "alchemy/Planetscale";
 import { Effect, Layer } from "effect";
 
-import ApiWorker from "./packages/api/dist/worker.js";
+import ApiWorker, { bindApiUrl } from "./packages/api/dist/worker.js";
 import { Domain } from "./packages/core/dist/lib/alchemy/domain/resource.js";
 import {
   DatabaseHyperdrive,
@@ -52,6 +52,7 @@ export default Alchemy.Stack(
 
     // Move these reverse dependencies into Worker props once Website.Vite
     // supports separate definition and implementation declarations.
+    yield* bindApiUrl(apiWorker, apiWorker);
     yield* bindWebUrl(apiWorker, web);
     yield* bindWebUrl(notifyJobWorker, web);
 

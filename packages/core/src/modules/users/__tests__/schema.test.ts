@@ -8,9 +8,13 @@ const encode = Schema.encodeSync;
 
 const userInput = {
   id: "00000000-0000-4000-8000-000000000101",
+  name: null,
   email: "test@example.com",
+  emailVerified: false,
   timezone: "America/New_York",
   unsubscribeToken: "00000000-0000-4000-8000-000000000201",
+  createdAt: new Date("2026-01-01T00:00:00.000Z"),
+  updatedAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
 describe("User model", () => {
@@ -35,5 +39,21 @@ describe("User model", () => {
     expect(insert).toEqual(userInput);
     expect(selected.email).toBe(user.email);
     expect(selected.unsubscribeToken).toBe(user.unsubscribeToken);
+  });
+
+  it("leaves database-managed fields optional on insert", () => {
+    const insert = decode(UserInsert)({
+      id: userInput.id,
+      email: userInput.email,
+      timezone: userInput.timezone,
+      unsubscribeToken: userInput.unsubscribeToken,
+    });
+
+    expect(encode(UserInsert)(insert)).toEqual({
+      id: userInput.id,
+      email: userInput.email,
+      timezone: userInput.timezone,
+      unsubscribeToken: userInput.unsubscribeToken,
+    });
   });
 });

@@ -24,7 +24,7 @@
     "@effect/platform-browser": "catalog:",
     "@effect/sql-pg": "catalog:",
     "alchemy": "catalog:",
-    "drizzle-orm": "1.0.0-rc.4",
+    "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "resend": "catalog:"
   },

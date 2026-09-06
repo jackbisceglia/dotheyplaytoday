@@ -8,9 +8,13 @@ export const notification = decode(Notification)({
   sendAt: "2026-05-24T13:00:00.000Z",
   user: {
     id: "00000000-0000-4000-8000-000000000101",
+    name: "fan@example.com",
     email: "fan@example.com",
+    emailVerified: false,
     timezone: "America/New_York",
     unsubscribeToken: "00000000-0000-4000-8000-000000000201",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   },
   subscription: {
     id: "00000000-0000-4000-8000-000000000401",

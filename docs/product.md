@@ -27,6 +27,12 @@ Users can subscribe to up to four teams. Submitting signup again replaces the us
 - Confirmations list the selected teams and local send time and include the user's unsubscribe link.
 - Confirmation delivery runs after the signup transaction in the API Worker's background execution lifetime. Rendering or provider failures are logged and do not change the successful signup response.
 
+## Authentication
+
+- Authentication is passwordless and available only to notification users who already exist under their normalized email address.
+- Requesting a magic link returns the same success response for known and unknown addresses; unknown addresses do not receive email and cannot create users.
+- A valid magic link verifies the existing user and creates a persistent server-side session. Authentication cookies remain host-only to the API origin.
+
 ## Feedback
 
 - The `/feedback` page accepts a required request of up to 2,000 characters.

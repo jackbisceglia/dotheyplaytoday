@@ -2,7 +2,7 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { text, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { Schema } from "effect";
 import * as SchemaTransformation from "effect/SchemaTransformation";
 
@@ -40,6 +40,15 @@ const domainOverrides = {
   email: EmailAddress,
   timezone: Schema.TimeZoneNamedFromString,
   unsubscribeToken: UnsubscribeToken,
+  createdAt: Schema.DateTimeUtcFromDate,
+  updatedAt: Schema.DateTimeUtcFromDate,
+};
+
+const insertOverrides = {
+  ...domainOverrides,
+  emailVerified: Schema.optional(Schema.Boolean),
+  createdAt: Schema.optional(Schema.DateTimeUtcFromDate),
+  updatedAt: Schema.optional(Schema.DateTimeUtcFromDate),
 };
 
 export const usersTable = postgresTable(
@@ -49,6 +58,15 @@ export const usersTable = postgresTable(
     email: text().notNull(),
     timezone: text().notNull(),
     unsubscribeToken: text().notNull(),
+    name: text(),
+    emailVerified: boolean().default(false).notNull(),
+    createdAt: timestamp({ withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp({ withTimezone: true, mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (table) => [
     uniqueIndex("users_email_idx").on(table.email),
@@ -60,4 +78,4 @@ export type User = typeof User.Type;
 export const User = createSelectSchema(usersTable, domainOverrides);
 
 export type UserInsert = typeof UserInsert.Type;
-export const UserInsert = createInsertSchema(usersTable, domainOverrides);
+export const UserInsert = createInsertSchema(usersTable, insertOverrides);

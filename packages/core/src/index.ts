@@ -102,6 +102,11 @@ export {
   SignupConfirmation,
 } from "./modules/email/transactional/confirmation.js";
 export {
+  MagicLink,
+  renderMagicLink,
+  sendMagicLink,
+} from "./modules/email/transactional/magic-link.js";
+export {
   SubjectEvent,
   SubjectEventInsert,
   subjectEventsTable,

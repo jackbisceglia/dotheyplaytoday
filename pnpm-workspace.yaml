@@ -7,8 +7,12 @@ catalog:
   "@effect/platform-node": 4.0.0-beta.98
   "@effect/sql-pg": 4.0.0-beta.98
   "@effect/vitest": 4.0.0-beta.98
+  "@types/pg": 8.15.5
   alchemy: 2.0.0-beta.63
+  better-auth: 1.7.2
+  drizzle-orm: 1.0.0-rc.4
   effect: 4.0.0-beta.98
+  pg: 8.22.0
   resend: ^6.9.1
 
 catalogMode: manual
