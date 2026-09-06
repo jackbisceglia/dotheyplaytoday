@@ -22,7 +22,7 @@ import { magicLink } from "better-auth/plugins";
 import { Context, Effect, Layer, Redacted, Schema } from "effect";
 import { Pool } from "pg";
 
-import { AuthBasePath, AuthConfig } from "./config.js";
+import { AuthConfig } from "./config.js";
 
 const decodeEmail = Schema.decodeUnknownSync(EmailAddressFromString);
 
@@ -44,7 +44,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
 
     return betterAuth({
       appName: "dotheyplaytoday",
-      basePath: AuthBasePath,
+      basePath: "/api/auth",
       baseURL: apiUrl.origin,
       secret: Redacted.value(config.secret),
       trustedOrigins: [apiUrl.origin, webUrl.origin],
