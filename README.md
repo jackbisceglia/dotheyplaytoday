@@ -79,6 +79,10 @@ directory and user components, then clean it up from another checkout with
 `pnpm destroy --stage <stage>`; inspect the target carefully because the
 generic destroy command is intentionally not worktree-scoped.
 
+Each command exports the computed name through Alchemy's lowercase `stage`
+environment variable. Earlier scripts exported uppercase `STAGE`, which Alchemy ignored,
+so linked worktrees could still have used the shared `dev_<user>` stage.
+
 The switch is immediate. Existing shared `dev_<user>` resources are not
 migrated or automatically destroyed. A primary checkout continues to use that
 name, while linked worktrees start with their new isolated names; clean up any
