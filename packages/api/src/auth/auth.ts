@@ -103,15 +103,12 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
       ],
     });
   }),
-}) {
-  static layer = (connectionString: string) =>
-    Layer.effect(Auth, Auth.make(connectionString));
-}
+}) {}
 
 export const createAuthLayerFromHyperdriveResource = Effect.fn(
   "Auth.createLayerFromHyperdriveResource",
 )(function* (client: Cloudflare.Hyperdrive.ConnectClient) {
   // Hyperdrive credentials are only available during a Worker invocation.
   const connection = yield* client.connectionString;
-  return Auth.layer(Redacted.value(connection));
-}, Layer.unwrap);
+  return yield* Auth.make(Redacted.value(connection));
+}, Layer.effect(Auth));

@@ -96,7 +96,7 @@ user, session, account, and verification table definitions. Drizzle owns the SQL
 column names; auth no longer repeats column mappings. Adapter transactions are
 enabled. Application persistence remains on Effect + Drizzle. Better Auth awaits
 its database work before returning; its optional background-task handler is not
-enabled. `Auth.layer(connectionString)` accepts a resolved string; the Worker
+enabled. `Auth.make(connectionString)` accepts a resolved string; the Worker
 resolves Hyperdrive credentials when building that layer during an invocation.
 The pool has one connection and closes with the Worker execution scope.
 

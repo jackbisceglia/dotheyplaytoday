@@ -88,12 +88,9 @@ export const makeAuthFixture = async () => {
   );
   const makeAuth = () =>
     Effect.runPromise(
-      Auth.pipe(
-        Effect.provide(
-          Auth.layer("postgres://user:password@localhost:5432/database").pipe(
-            Layer.provide(layer),
-          ),
-        ),
+      Auth.make("postgres://user:password@localhost:5432/database").pipe(
+        Effect.provide(layer),
+        Effect.scoped,
       ),
     );
   const auth = await makeAuth();
