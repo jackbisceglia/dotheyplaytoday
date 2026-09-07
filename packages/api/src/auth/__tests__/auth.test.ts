@@ -10,7 +10,7 @@ describe("authentication boundaries", () => {
     const { auth, rows, sendMagicLink, request, pending } =
       await makeAuthFixture();
     for (const email of ["User@Example.COM", "unknown@example.com"]) {
-      const response = await auth.handler(
+      const response = await auth.client.handler(
         request("/sign-in/magic-link", { email }),
       );
       expect(response.status).toBe(200);
@@ -27,7 +27,7 @@ describe("authentication boundaries", () => {
 
   it("rejects untrusted request origins and callback URLs", async () => {
     const { auth, sendMagicLink, request } = await makeAuthFixture();
-    const response = await auth.handler(
+    const response = await auth.client.handler(
       request(
         "/sign-in/magic-link",
         {
@@ -37,7 +37,7 @@ describe("authentication boundaries", () => {
       ),
     );
     expect(response.status).toBe(403);
-    const callback = await auth.handler(
+    const callback = await auth.client.handler(
       request("/sign-in/magic-link", {
         email: "user@example.com",
         callbackURL: "https://untrusted.example/account",
@@ -52,7 +52,7 @@ describe("authentication boundaries", () => {
     for (let attempt = 0; attempt < 6; attempt++) {
       const response = await (
         await makeAuth()
-      ).handler(
+      ).client.handler(
         request("/sign-in/magic-link", {
           email: "unknown@example.com",
         }),
@@ -63,13 +63,13 @@ describe("authentication boundaries", () => {
 
   it("mounts Better Auth on the API auth group", async () => {
     const { Auth } = await import("../auth.js");
-    const { AuthGroupLayer } = await import("../../routes.auth.js");
-    const { AuthGroup } = await import("@dtpt/core/contracts/auth");
+    const { AuthGroupLayer } = await import("../../handlers/auth.js");
+    const { AuthApi } = await import("@dtpt/core/contracts/auth");
     const { HttpApi, HttpApiBuilder } = await import("effect/unstable/httpapi");
     const { auth, request } = await makeAuthFixture();
     const { handler, dispose } = HttpRouter.toWebHandler(
       HttpApiBuilder.layer(
-        HttpApi.make("ApiV2").add(AuthGroup).prefix("/api"),
+        HttpApi.make("ApiV2").addHttpApi(AuthApi).prefix("/api"),
       ).pipe(
         Layer.provide(AuthGroupLayer),
         Layer.provide([
@@ -105,7 +105,7 @@ describe("authentication boundaries", () => {
       }),
     );
     try {
-      const response = await auth.handler(
+      const response = await auth.client.handler(
         request("/sign-in/magic-link", { email: "user@example.com" }),
       );
       expect(response.status).toBe(200);
@@ -119,7 +119,7 @@ describe("authentication boundaries", () => {
 
   it("keeps profile updates outside this foundation", async () => {
     const { auth, request } = await makeAuthFixture();
-    const response = await auth.handler(
+    const response = await auth.client.handler(
       request("/update-user", { image: "https://example.com/photo.png" }),
     );
     expect(response.status).toBe(404);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 
-import { SignupRequest } from "../signup.js";
+import { SignupRequest } from "../user.js";
 
 const decodeSignup = Schema.decodeUnknownSync(SignupRequest);
 

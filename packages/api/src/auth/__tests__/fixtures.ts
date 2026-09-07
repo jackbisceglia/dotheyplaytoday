@@ -111,6 +111,7 @@ export const makeAuthFixture = async () => {
     });
 
   return {
+    layer,
     auth,
     makeAuth,
     database,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 
-import { UnsubscribeRequest } from "../unsubscribe.js";
+import { UnsubscribeRequest } from "../user.js";
 
 const decodeUnsubscribe = Schema.decodeUnknownSync(UnsubscribeRequest);
 
