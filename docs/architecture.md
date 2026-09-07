@@ -245,7 +245,8 @@ Separate follow-ups are:
 
 `UserGroupLayer` in the API root combines the base and subscription handlers.
 Registration and unsubscribe contracts live with the user group in
-`contracts/user.ts`. The generated
+`contracts/user.ts`. `UserApi` composes both groups and applies `/user` once;
+the subscription group declares only `/subscription`. The generated
 client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
 `userSubscription.list()`. Read responses compose existing domain schemas;
 there is no Account model. Identity comes exclusively from the session.

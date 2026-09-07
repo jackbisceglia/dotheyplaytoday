@@ -1,5 +1,6 @@
 import { Schema, Struct } from "effect";
 import {
+  HttpApi,
   HttpApiEndpoint,
   HttpApiError,
   HttpApiGroup,
@@ -12,6 +13,8 @@ import {
   UnsubscribeToken,
   User,
 } from "../modules/users/schema.js";
+
+import { UserSubscriptionGroup } from "./user.subscription.js";
 
 export const UserResponse = User.mapFields(Struct.pick(["email", "timezone"]));
 
@@ -42,25 +45,27 @@ export class UnsubscribeRateLimited extends Schema.TaggedErrorClass<UnsubscribeR
   { httpApiStatus: 429 },
 ) {}
 
-export const UserGroup = HttpApiGroup.make("user")
-  .add(
-    HttpApiEndpoint.get("get", "/", {
-      success: UserResponse,
-      error: [HttpApiError.Unauthorized, HttpApiError.InternalServerError],
-    }),
-    HttpApiEndpoint.post("create", "/", {
-      payload: SignupRequest,
-      success: SignupResponse,
-      error: [
-        HttpApiError.BadRequest,
-        HttpApiError.InternalServerError,
-        SignupRateLimited,
-      ],
-    }),
-    HttpApiEndpoint.post("unsubscribe", "/unsubscribe", {
-      payload: UnsubscribeRequest,
-      success: UnsubscribeResponse,
-      error: [HttpApiError.InternalServerError, UnsubscribeRateLimited],
-    }),
-  )
+export const UserGroup = HttpApiGroup.make("user").add(
+  HttpApiEndpoint.get("get", "/", {
+    success: UserResponse,
+    error: [HttpApiError.Unauthorized, HttpApiError.InternalServerError],
+  }),
+  HttpApiEndpoint.post("create", "/", {
+    payload: SignupRequest,
+    success: SignupResponse,
+    error: [
+      HttpApiError.BadRequest,
+      HttpApiError.InternalServerError,
+      SignupRateLimited,
+    ],
+  }),
+  HttpApiEndpoint.post("unsubscribe", "/unsubscribe", {
+    payload: UnsubscribeRequest,
+    success: UnsubscribeResponse,
+    error: [HttpApiError.InternalServerError, UnsubscribeRateLimited],
+  }),
+);
+
+export const UserApi = HttpApi.make("UserApi")
+  .add(UserGroup, UserSubscriptionGroup)
   .prefix("/user");

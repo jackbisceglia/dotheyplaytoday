@@ -143,6 +143,7 @@ export { UserNotFound, Users, UsersLayer } from "./modules/users/service.js";
 export type { UpsertContext } from "./modules/users/service.js";
 
 export {
+  UserApi,
   UserGroup,
   UserResponse,
   SignupRateLimited,

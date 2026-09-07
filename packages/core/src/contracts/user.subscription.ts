@@ -16,4 +16,4 @@ export const UserSubscriptionGroup = HttpApiGroup.make("userSubscription")
       error: [HttpApiError.Unauthorized, HttpApiError.InternalServerError],
     }),
   )
-  .prefix("/user/subscription");
+  .prefix("/subscription");
