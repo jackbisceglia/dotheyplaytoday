@@ -243,7 +243,12 @@ Separate follow-ups are:
 - `POST /api/user/unsubscribe`: delete a user and subscriptions using an emailed token.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
 
-`UserGroupLayer` in the API root combines the base and subscription handlers.
+Contracts follow OpenCode's instance HttpApi structure: each domain exports a
+`*Api`, and `contracts/api.ts` composes them with chained `addHttpApi` calls.
+The shared contracts remain in `core`; matching implementation files live in
+`api/src/handlers` and export `*Handlers` layers built with `HttpApiBuilder.group`.
+The API root assembles those layers. `userHandlers` combines the base and
+subscription handlers.
 Registration and unsubscribe contracts live with the user group in
 `contracts/user.ts`. `UserApi` composes both groups and applies `/user` once;
 the subscription group declares only `/subscription`. The generated

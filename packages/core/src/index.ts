@@ -4,8 +4,8 @@ export {
   createDatabaseLayerFromHyperdriveResource,
 } from "./lib/database/service.js";
 export { Api } from "./contracts/api.js";
-export { PingGroup, PingResponse } from "./contracts/ping.js";
-export { SubjectsGroup, SubjectsResponse } from "./contracts/subjects.js";
+export { PingApi, PingResponse } from "./contracts/ping.js";
+export { SubjectsApi, SubjectsResponse } from "./contracts/subjects.js";
 export { ApiConfig, ApiUrl, ServerBoundPort } from "./lib/config/api.js";
 export type { ApiConfig as ApiConfigShape } from "./lib/config/api.js";
 export { WebConfig, WebUrl } from "./lib/config/web.js";

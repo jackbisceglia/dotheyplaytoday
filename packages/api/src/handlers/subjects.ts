@@ -5,7 +5,7 @@ import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 const UnexpectedErrorTags = ["DatabaseReadError", "SchemaError"] as const;
 
-export const SubjectsGroupLayer = HttpApiBuilder.group(
+export const subjectsHandlers = HttpApiBuilder.group(
   Api,
   "subjects",
   Effect.fn("SubjectsHttpApi.group")(function* (handlers) {

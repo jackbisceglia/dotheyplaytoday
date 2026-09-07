@@ -4,9 +4,9 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
 
-import { Auth } from "./auth/auth.js";
+import { Auth } from "../auth/auth.js";
 
-export const AuthGroupLayer = HttpApiBuilder.group(Api, "auth", (handlers) =>
+export const authHandlers = HttpApiBuilder.group(Api, "auth", (handlers) =>
   Effect.gen(function* () {
     const auth = yield* Auth;
 

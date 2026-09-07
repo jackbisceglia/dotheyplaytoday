@@ -6,7 +6,7 @@ import { Effect } from "effect";
 import { HttpEffect, HttpServerResponse } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
-import { Auth } from "./auth/auth.js";
+import { Auth } from "../auth/auth.js";
 
 const UnexpectedErrorTags = [
   "AuthRequestError",
@@ -14,7 +14,7 @@ const UnexpectedErrorTags = [
   "SchemaError",
 ] as const;
 
-export const UserSubscriptionGroupLayer = HttpApiBuilder.group(
+export const userSubscriptionHandlers = HttpApiBuilder.group(
   Api,
   "userSubscription",
   Effect.fn("UserSubscriptionHttpApi.group")(function* (handlers) {

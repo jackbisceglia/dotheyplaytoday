@@ -45,7 +45,7 @@ export class UnsubscribeRateLimited extends Schema.TaggedErrorClass<UnsubscribeR
   { httpApiStatus: 429 },
 ) {}
 
-export const UserApi = HttpApi.make("UserApi")
+export const UserApi = HttpApi.make("user")
   .add(
     HttpApiGroup.make("user").add(
       HttpApiEndpoint.get("get", "/", {
