@@ -14,7 +14,7 @@ const UnexpectedErrorTags = [
   "SchemaError",
 ] as const;
 
-export const userSubscriptionHandlers = HttpApiBuilder.group(
+export const UserSubscriptionGroupLayer = HttpApiBuilder.group(
   Api,
   "userSubscription",
   Effect.fn("UserSubscriptionHttpApi.group")(function* (handlers) {

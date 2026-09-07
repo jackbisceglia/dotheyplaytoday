@@ -9,7 +9,7 @@ import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
 
-export const feedbackHandlers = HttpApiBuilder.group(
+export const FeedbackGroupLayer = HttpApiBuilder.group(
   Api,
   "feedback",
   (handlers) =>

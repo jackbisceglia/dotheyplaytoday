@@ -2,7 +2,7 @@ import { Api } from "@dtpt/core/contracts/api";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
 import { Effect } from "effect";
 
-export const pingHandlers = HttpApiBuilder.group(Api, "ping", (handlers) =>
+export const PingGroupLayer = HttpApiBuilder.group(Api, "ping", (handlers) =>
   handlers.handle(
     "get",
     Effect.fn("PingHttpApi.get")(function* () {

@@ -6,7 +6,7 @@ import { HttpApiBuilder } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
 
-export const authHandlers = HttpApiBuilder.group(Api, "auth", (handlers) =>
+export const AuthGroupLayer = HttpApiBuilder.group(Api, "auth", (handlers) =>
   Effect.gen(function* () {
     const auth = yield* Auth;
 
