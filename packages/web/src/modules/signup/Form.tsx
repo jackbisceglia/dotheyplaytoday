@@ -202,7 +202,7 @@ export function Form(props: FormProps) {
 
     setSubmitting(true);
     void withApiClient((client) =>
-      client.signup.submit({
+      client.user.create({
         payload: {
           email: emailAddress,
           timezone: timezoneValue,

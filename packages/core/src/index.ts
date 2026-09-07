@@ -6,7 +6,6 @@ export {
 export { Api } from "./contracts/api.js";
 export { PingGroup, PingResponse } from "./contracts/ping.js";
 export {
-  SignupGroup,
   SignupRateLimited,
   SignupRequest,
   SignupResponse,
@@ -15,7 +14,6 @@ export { SubjectsGroup, SubjectsResponse } from "./contracts/subjects.js";
 export {
   UnsubscribeRequest,
   UnsubscribeResponse,
-  UnsubscribeGroup,
   UnsubscribeRateLimited,
 } from "./contracts/unsubscribe.js";
 export { ApiConfig, ApiUrl, ServerBoundPort } from "./lib/config/api.js";
@@ -153,3 +151,9 @@ export {
 } from "./modules/users/schema.js";
 export { UserNotFound, Users, UsersLayer } from "./modules/users/service.js";
 export type { UpsertContext } from "./modules/users/service.js";
+
+export { UserGroup, UserResponse } from "./contracts/user.js";
+export {
+  UserSubscriptionGroup,
+  UserSubscriptionsResponse,
+} from "./contracts/user.subscription.js";

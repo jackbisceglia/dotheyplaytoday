@@ -1,9 +1,4 @@
 import { Schema } from "effect";
-import {
-  HttpApiEndpoint,
-  HttpApiError,
-  HttpApiGroup,
-} from "effect/unstable/httpapi";
 
 import { UnsubscribeToken } from "../modules/users/schema.js";
 
@@ -16,11 +11,3 @@ export class UnsubscribeRateLimited extends Schema.TaggedErrorClass<UnsubscribeR
   {},
   { httpApiStatus: 429 },
 ) {}
-
-export const UnsubscribeGroup = HttpApiGroup.make("unsubscribe").add(
-  HttpApiEndpoint.post("submit", "/unsubscribe", {
-    payload: UnsubscribeRequest,
-    success: UnsubscribeResponse,
-    error: [HttpApiError.InternalServerError, UnsubscribeRateLimited],
-  }),
-);

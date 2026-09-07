@@ -103,9 +103,12 @@ The pool has one connection and closes with the Worker execution scope.
 Magic-link email uses the existing transactional Email/Resend workflow. After
 eligibility is checked, delivery is registered directly with the Worker's
 `waitUntil`; it needs no further database access and does not delay the response.
-There is no separate auth task queue. Future protected handlers can use
-`auth.api.getSession({ headers })` from the `Auth` service; no session-specific
-or generic API wrapper is introduced before it has a consumer.
+There is no separate auth task queue. Protected reads use
+`auth.use(client => client.api.getSession({ headers }))`; the adapter maps SDK
+rejections to `AuthRequestError` and also exposes the underlying `auth.client`.
+Both reads validate the session user ID through `UserId.makeEffect` and delegate
+persistence and decoding to `Users.get` and `Subscriptions.listForUser`.
+Responses, including errors, set `Cache-Control: no-store`.
 
 Auth rate limiting uses Better Auth's in-memory store, shared across auth
 instances within a Worker isolate. It allows five magic-link requests and ten
@@ -231,3 +234,21 @@ Separate follow-ups are:
    and authenticated team-management APIs. Cookie sharing across subdomains is
    intentionally still disabled; browser calls target the API origin with
    credentials.
+
+## Public API
+
+- `GET /api/user`: authenticated user's email and timezone.
+- `POST /api/user`: existing signup operation, including replacement of preferences on repeat signup.
+- `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
+- `POST /api/user/unsubscribe`: delete a user and subscriptions using an emailed token.
+- Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
+
+`UserGroupLayer` combines the base and subscription handlers. The generated
+client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
+`userSubscription.list()`. Read responses compose existing domain schemas;
+there is no Account model. Identity comes exclusively from the session.
+
+Browser API requests include credentials. API cookies remain host-only, so Web
+SSR cannot assume it has the session cookie. Account and sign-in pages remain
+separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose
+typed caller uses the new endpoint; no legacy API alias is needed.

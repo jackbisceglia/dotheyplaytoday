@@ -103,3 +103,12 @@ artifact. Roll back by reverting the faulty change through the normal review
 path and landing that revert on `main`; its push triggers a new production
 deployment. Database migrations must remain forward-compatible because
 deploying older application code does not reverse an applied migration.
+
+## API route restructure
+
+Registration and token deletion now use `POST /api/user` and
+`POST /api/user/unsubscribe`. Release the Web callers with the API changes.
+Existing emailed links still land on Web `/unsubscribe/:token`, so no old API
+alias is retained. Authenticated reads use `GET /api/user` and
+`GET /api/user/subscription`. This restructure adds no migration or change to
+signup, confirmation-email, or notification behavior.

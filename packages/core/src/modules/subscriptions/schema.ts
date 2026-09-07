@@ -9,7 +9,7 @@ import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
-import { SubjectId, subjectsTable } from "../subjects/schema.js";
+import { Subject, SubjectId, subjectsTable } from "../subjects/schema.js";
 import { UserId, usersTable } from "../users/schema.js";
 import { FixedSchedule as FixedScheduleSchema } from "./schedules/fixed.schema.js";
 
@@ -76,3 +76,9 @@ export const SubscriptionInsert = createInsertSchema(
   subscriptionsTable,
   insertOverrides,
 );
+
+export type SubscriptionWithSubject = typeof SubscriptionWithSubject.Type;
+export const SubscriptionWithSubject = Schema.Struct({
+  ...Subscription.fields,
+  subject: Subject,
+});

@@ -1,9 +1,4 @@
 import { Schema } from "effect";
-import {
-  HttpApiEndpoint,
-  HttpApiError,
-  HttpApiGroup,
-} from "effect/unstable/httpapi";
 
 import { SubjectId } from "../modules/subjects/schema.js";
 import { FixedSchedule } from "../modules/subscriptions/schema.js";
@@ -25,15 +20,3 @@ export class SignupRateLimited extends Schema.TaggedErrorClass<SignupRateLimited
   {},
   { httpApiStatus: 429 },
 ) {}
-
-export const SignupGroup = HttpApiGroup.make("signup").add(
-  HttpApiEndpoint.post("submit", "/signup", {
-    payload: SignupRequest,
-    success: SignupResponse,
-    error: [
-      HttpApiError.BadRequest,
-      HttpApiError.InternalServerError,
-      SignupRateLimited,
-    ],
-  }),
-);
