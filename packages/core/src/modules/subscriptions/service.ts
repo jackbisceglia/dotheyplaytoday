@@ -28,6 +28,7 @@ import {
   Subscription,
   SubscriptionId,
   SubscriptionInsert,
+  SubscriptionWithSubject,
   subscriptionsTable,
 } from "./schema.js";
 import { SubscriptionPolicy } from "./policy.js";
@@ -35,10 +36,7 @@ import { SubscriptionPolicy } from "./policy.js";
 export type NotificationRecipient = typeof NotificationRecipient.Type;
 export const NotificationRecipient = Schema.Struct({
   user: User,
-  subscription: Schema.Struct({
-    ...Subscription.fields,
-    subject: Subject,
-  }),
+  subscription: SubscriptionWithSubject,
 });
 
 export class Subscriptions extends Context.Service<
@@ -46,6 +44,13 @@ export class Subscriptions extends Context.Service<
   {
     readonly list: () => Effect.Effect<
       readonly Subscription[],
+      DatabaseReadError | Schema.SchemaError
+    >;
+
+    readonly listForUser: (
+      userId: User["id"],
+    ) => Effect.Effect<
+      readonly SubscriptionWithSubject[],
       DatabaseReadError | Schema.SchemaError
     >;
 
@@ -77,6 +82,9 @@ export class Subscriptions extends Context.Service<
 
 const decodeSubscriptions = Schema.decodeUnknownEffect(
   Schema.Array(Subscription),
+);
+const decodeSubscriptionsWithSubject = Schema.decodeUnknownEffect(
+  Schema.Array(SubscriptionWithSubject),
 );
 const decodeSubjects = Schema.decodeUnknownEffect(Schema.Array(Subject));
 const decodeNotificationRecipients = Schema.decodeUnknownEffect(
@@ -134,10 +142,25 @@ export const SubscriptionsLayer = Layer.effect(
       return subscriptions;
     });
 
+    const listForUser: Subscriptions["Service"]["listForUser"] = Effect.fn(
+      "Subscriptions.listForUser",
+    )(function* (userId) {
+      const rows = yield* database.query.subscriptionsTable
+        .findMany({
+          where: { userId },
+          with: { subject: true },
+          orderBy: { id: "asc" },
+        })
+        .pipe(mapToReadError("Subscriptions.listForUser", { userId }));
+
+      return yield* decodeSubscriptionsWithSubject(rows);
+    });
+
     const listNotificationRecipients: Subscriptions["Service"]["listNotificationRecipients"] =
       Effect.fn("Subscriptions.listNotificationRecipients")(function* () {
         const rows = yield* database.query.subscriptionsTable
           .findMany({
+            where: { user: { emailVerified: true } },
             with: {
               user: true,
               subject: true,
@@ -253,6 +276,7 @@ export const SubscriptionsLayer = Layer.effect(
 
     return Subscriptions.of({
       list,
+      listForUser,
       listNotificationRecipients,
       replaceForUser,
       markSent,

@@ -82,8 +82,9 @@ The built-in `/update-user` endpoint is disabled until account editing is
 implemented, so it cannot write unsupported profile fields.
 `User` remains the single table-backed domain schema, and its insert schema
 keeps database-managed defaults optional. The unused name is nullable and
-optional on insert. Existing rows begin unverified and are claimed when a magic link
-proves email ownership. The magic-link sender normalizes the address and asks
+optional on insert. New rows begin unverified and are claimed when a magic link
+proves email ownership. Migration 0005 grants delivery eligibility only to a fixed
+cohort of ten owner-trusted production IDs; it creates no sessions. The magic-link sender normalizes the address and asks
 Better Auth's internal adapter to silently skip unknown addresses. Better Auth
 also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
@@ -103,9 +104,41 @@ The pool has one connection and closes with the Worker execution scope.
 Magic-link email uses the existing transactional Email/Resend workflow. After
 eligibility is checked, delivery is registered directly with the Worker's
 `waitUntil`; it needs no further database access and does not delay the response.
-There is no separate auth task queue. Future protected handlers can use
-`auth.api.getSession({ headers })` from the `Auth` service; no session-specific
-or generic API wrapper is introduced before it has a consumer.
+There is no separate auth task queue. The account-read handler uses
+`auth.use(client => client.api.getSession({ headers }))` and derives its user ID
+exclusively from that session. `Auth.use` adapts SDK Promises to Effect and maps
+rejections to `AuthRequestError`, following the existing Resend adapter pattern.
+The service also exposes `client` for direct SDK access.
+The handler delegates persistence and decoding to `Users.get` and
+`Subscriptions.listForUser`; it does not issue database queries itself.
+
+The account HTTP contract composes a projection of `User` (email and timezone)
+with `SubscriptionWithSubject`, the same joined subscription schema used by
+notification recipients. This is a query read model, not an aggregate: it introduces no new identity,
+lifecycle, or transactional invariants. HttpApi owns
+response encoding, including timezone and last-sent timestamps; an Effect
+pre-response hook sets `Cache-Control: no-store` on successes and errors.
+Caller-supplied email or IDs never select an account.
+
+Signup uses `INSERT ... ON CONFLICT DO NOTHING` on normalized email inside the
+existing transaction. Only the successful insert writes subscriptions; a losing
+concurrent insert waits for the winner and reads the existing user in a fresh
+statement. It never updates the existing row or subscriptions. After commit,
+signup calls Better Auth's magic-link API, then returns `DuplicateSignup` (HTTP
+409) for existing users or success for newly created users. The frontend displays
+the duplicate-account message without changing saved preferences. The signup
+write limiter runs before the transaction and bounds this direct issuance path;
+Better Auth's HTTP rate-limit middleware does not run for direct API calls.
+Issuance or background delivery failure leaves preferences saved and replacement
+requests available. The sender chooses confirmation or sign-in copy using the
+persisted `emailVerified` value. The signup handler and browser sign-in form pass absolute Web account and
+sign-in URLs as Better Auth’s `callbackURL` and `errorCallbackURL` inputs.
+The sender delivers Better Auth’s generated URL unchanged.
+
+`Subscriptions.listNotificationRecipients()` filters on the related user's
+`emailVerified = true` in the database query. Both normal and forced job runs
+consume this query; force only changes scheduling checks. Link redemption changes
+eligibility without invoking the notification worker.
 
 Auth rate limiting uses Better Auth's in-memory store, shared across auth
 instances within a Worker isolate. It allows five magic-link requests and ten
@@ -116,13 +149,7 @@ limit would require shared storage or an edge rate-limiting rule.
 
 The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to
-`Email`. The transactional signup-confirmation workflow bypasses `Notifier` and
-provides the same concrete Resend email layer internally, while the API Worker
-validates its configuration at startup. After a signup
-transaction commits, the API constructs a complete confirmation without further
-database reads and uses Alchemy's `WorkerExecutionContext.waitUntil` to attach
-best-effort delivery to the Cloudflare request lifetime. Delivery failures are
-logged in that background effect and do not alter the `{ ok: true }` response.
+`Email`. Magic links use the transactional Email/Resend workflow directly.
 The operations Worker owns feedback's administrator config, digest rendering,
 and a static Resend email layer with its operations-specific sender; `core`
 retains the generic email rendering and provider boundaries used by that
@@ -135,6 +162,16 @@ application calls are independent of that transport choice. API CORS and the
 notification Worker consume the Web Worker's resolved URL through late
 bindings, avoiding a props-level resource cycle without reconstructing deployed
 URLs. See [Alchemy service URL wiring](./alchemy-service-urls.md).
+
+The frontend uses Better Auth's vanilla client with the magic-link plugin for
+sign-in, session lookup, and sign-out. Its client is lazily initialized once
+using Effect memoization; sessions themselves are not memoized by the application.
+Session-dependent reads run in browser
+Effects after hydration, because API cookies are host-only and unavailable to
+Web SSR. Both the auth client and typed account client include credentials.
+Account loading, unauthenticated access, errors with retry, verification success,
+and invalid/expired/reused links have explicit UI states. Preference editing,
+account-update APIs, and profile-name editing remain deferred.
 
 Link previews are served from a committed `public/og.png`, rendered offline by
 `pnpm @web og:generate` (`packages/web/scripts/og.ts`) through satori and resvg. Keeping
@@ -227,7 +264,6 @@ Separate follow-ups are:
 1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
 3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
-4. Add the Web auth client, account/manage routes, session-driven redirects,
-   and authenticated team-management APIs. Cookie sharing across subdomains is
-   intentionally still disabled; browser calls target the API origin with
-   credentials.
+4. Add authenticated preference editing in a separate follow-up. The Web auth
+   client and read-only account route are implemented. Cookies remain host-only
+   to the API origin; authenticated browser calls include credentials.

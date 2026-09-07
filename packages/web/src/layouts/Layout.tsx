@@ -1,5 +1,7 @@
-import { Show } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
+
+import { getAuthClient } from "../lib/auth.js";
 import { BrandMark } from "../modules/ui/BrandMark.jsx";
 
 type HeaderAction = {
@@ -14,6 +16,20 @@ type LayoutProps = ParentProps<{
 
 export function Layout(props: LayoutProps) {
   let main: HTMLElement | undefined;
+
+  const [signedIn, setSignedIn] = createSignal(false);
+
+  createEffect(
+    () => undefined,
+    () => {
+      void getAuthClient()
+        .then((auth) => auth.getSession())
+        .then((result) => {
+          setSignedIn(Boolean(result.data));
+        })
+        .catch(() => setSignedIn(false));
+    },
+  );
 
   return (
     <>
@@ -35,15 +51,18 @@ export function Layout(props: LayoutProps) {
             dothey<em>play</em>today
           </span>
         </a>
-        <Show when={props.headerAction}>
-          {(action) => (
-            <div class="site-header-actions">
+        <div class="site-header-actions">
+          <a class="header-cta" href={signedIn() ? "/account" : "/sign-in"}>
+            {signedIn() ? "Your account" : "Sign in"}
+          </a>
+          <Show when={!signedIn() && props.headerAction}>
+            {(action) => (
               <a class="header-cta" href={action().href}>
                 {action().label}
               </a>
-            </div>
-          )}
-        </Show>
+            )}
+          </Show>
+        </div>
       </header>
 
       <main id="main-content" tabindex="-1" ref={main}>

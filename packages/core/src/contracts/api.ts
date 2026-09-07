@@ -1,5 +1,6 @@
 import { HttpApi } from "effect/unstable/httpapi";
 
+import { AccountGroup } from "./account.js";
 import { AuthGroup } from "./auth.js";
 import { FeedbackGroup } from "./feedback.js";
 import { PingGroup } from "./ping.js";
@@ -9,6 +10,7 @@ import { UnsubscribeGroup } from "./unsubscribe.js";
 
 export const Api = HttpApi.make("ApiV2")
   .add(
+    AccountGroup,
     AuthGroup,
     FeedbackGroup,
     PingGroup,

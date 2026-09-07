@@ -107,6 +107,8 @@ button {
   margin: 0 auto;
   padding: 24px 32px;
   display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
   border-bottom: 3px solid var(--ink);
@@ -140,11 +142,13 @@ button {
 
 .site-header-actions {
   display: flex;
+  margin-left: auto;
   align-items: center;
   gap: 12px;
 }
 
 .header-cta {
+  white-space: nowrap;
   font-weight: 800;
   font-stretch: 75%;
   font-size: 0.85rem;

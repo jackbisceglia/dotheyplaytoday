@@ -1,21 +1,19 @@
-import * as Cloudflare from "alchemy/Cloudflare";
 import { Api } from "@dtpt/core/contracts/api";
-import { SignupRateLimited } from "@dtpt/core/contracts/signup";
+import { WebUrl } from "@dtpt/core/lib/config/web";
+import {
+  DuplicateSignup,
+  SignupRateLimited,
+} from "@dtpt/core/contracts/signup";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
-import { Id } from "@dtpt/core/lib/id/service";
-import {
-  sendSignupConfirmation,
-  SignupConfirmation,
-} from "@dtpt/core/modules/email/transactional/confirmation";
-import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
+import { Auth } from "./auth/auth.js";
 import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
 
 const UnexpectedErrorTags = [
@@ -23,11 +21,8 @@ const UnexpectedErrorTags = [
   "DatabaseTransactionError",
   "DatabaseWriteError",
   "SchemaError",
+  "UserNotFound",
 ] as const;
-
-const decodeSelectedSubjects = Schema.decodeUnknownEffect(
-  Schema.NonEmptyArray(Subject),
-);
 
 export const SignupGroupLayer = HttpApiBuilder.group(
   Api,
@@ -38,8 +33,8 @@ export const SignupGroupLayer = HttpApiBuilder.group(
       const database = yield* Database;
       const subscriptions = yield* Subscriptions;
       const users = yield* Users;
-      const id = yield* Id;
-      const executionContext = yield* Cloudflare.WorkerExecutionContext;
+      const auth = yield* Auth;
+      const webUrl = yield* WebUrl;
 
       return handlers.handle(
         "submit",
@@ -62,34 +57,50 @@ export const SignupGroupLayer = HttpApiBuilder.group(
             const signup = yield* database
               .transaction(() =>
                 Effect.gen(function* () {
-                  const { user, isFirstSignup } = yield* users.upsertForSignup(
-                    ctx.payload.email,
-                    ctx.payload.timezone,
-                  );
-                  const subjects = yield* subscriptions.replaceForUser({
-                    user,
-                    subjectIds: ctx.payload.subjectIds,
-                    schedule: ctx.payload.schedule,
-                  });
+                  const { user, isFirstSignup } =
+                    yield* users.getOrCreateForSignup(
+                      ctx.payload.email,
+                      ctx.payload.timezone,
+                    );
 
-                  return { user, isFirstSignup, subjects };
+                  if (isFirstSignup) {
+                    yield* subscriptions.replaceForUser({
+                      user,
+                      subjectIds: ctx.payload.subjectIds,
+                      schedule: ctx.payload.schedule,
+                    });
+                  }
+
+                  return { user, isFirstSignup };
                 }),
               )
               .pipe(mapToTransactionError("Signup.submit"));
 
-            const confirmation = SignupConfirmation.make({
-              _tag: signup.isFirstSignup ? "firstSignup" : "repeatSignup",
-              user: signup.user,
-              subjects: yield* decodeSelectedSubjects(signup.subjects),
-              schedule: ctx.payload.schedule,
-            });
-
-            yield* executionContext.waitUntil(
-              sendSignupConfirmation(confirmation).pipe(
-                Effect.provideService(Id, id),
+            // The signup write limiter above also bounds this direct auth API call;
+            // Better Auth's HTTP rate-limit middleware does not run here.
+            yield* auth
+              .use((client) =>
+                client.api.signInMagicLink({
+                  headers: ctx.request.headers,
+                  body: {
+                    email: signup.user.email,
+                    callbackURL: new URL("/account?confirmed=1", webUrl).href,
+                    errorCallbackURL: new URL("/sign-in", webUrl).href,
+                  },
+                }),
+              )
+              .pipe(
+                Effect.tapError(() =>
+                  Effect.logError(
+                    "signup: magic-link issuance failed; request a replacement",
+                  ),
+                ),
                 Effect.ignore,
-              ),
-            );
+              );
+
+            if (!signup.isFirstSignup) {
+              return yield* new DuplicateSignup({});
+            }
 
             return { ok: true as const };
           },

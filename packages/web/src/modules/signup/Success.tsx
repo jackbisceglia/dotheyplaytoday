@@ -1,6 +1,5 @@
 type SuccessProps = {
   readonly hidden: boolean;
-  readonly onEdit: () => void;
   readonly titleRef: (element: HTMLHeadingElement) => void;
 };
 
@@ -12,24 +11,16 @@ export function Success(props: SuccessProps) {
       role="status"
       aria-atomic="true"
     >
-      <p class="signup-success-mark" aria-hidden="true">
-        ✓
-      </p>
       <h3 class="signup-success-title" tabindex="-1" ref={props.titleRef}>
-        You're on the roster
+        Check your email to start your updates.
       </h3>
       <p class="signup-success-copy">
-        Game-day emails for your teams will land at your chosen time, only on
-        days they play.
+        Your teams and schedule are saved. Confirm your email to start receiving
+        updates.
       </p>
-      <p class="signup-success-copy">A confirmation email is on its way.</p>
-      <p class="signup-success-copy">
-        Change your mind later? Sign up again with the same email and your new
-        picks replace the old ones.
-      </p>
-      <button class="btn btn-secondary" type="button" onClick={props.onEdit}>
-        Edit my picks
-      </button>
+      <a class="btn btn-secondary" href="/sign-in">
+        Request another link
+      </a>
     </div>
   );
 }

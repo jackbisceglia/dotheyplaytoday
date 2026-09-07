@@ -9,6 +9,8 @@ import {
 import { createMemo, Show } from "solid-js";
 
 import { withApiClient } from "./lib/api.js";
+import { Account } from "./pages/Account.jsx";
+import { SignIn } from "./pages/SignIn.jsx";
 import { Feedback } from "./pages/Feedback.jsx";
 import { Home } from "./pages/Home.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
@@ -24,6 +26,14 @@ const getSubjects = query(
 );
 
 const routes = defineRoutes([
+  defineRoute({
+    path: "/sign-in",
+    component: () => <SignIn homeHref={paths()} />,
+  }),
+  defineRoute({
+    path: "/account",
+    component: () => <Account homeHref={paths()} />,
+  }),
   defineRoute({
     path: "/",
     preload: () => getSubjects(),

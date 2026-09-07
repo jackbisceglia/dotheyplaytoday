@@ -4,6 +4,7 @@ import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
 
+import { AccountGroupLayer } from "./routes.account.js";
 import { AuthGroupLayer } from "./routes.auth.js";
 import { FeedbackGroupLayer } from "./routes.feedback.js";
 import { PingGroupLayer } from "./routes.ping.js";
@@ -26,6 +27,7 @@ const CorsLayer = Layer.unwrap(
 export const HttpApiLayer = Layer.mergeAll(
   HttpApiBuilder.layer(Api).pipe(
     Layer.provide([
+      AccountGroupLayer,
       AuthGroupLayer,
       PingGroupLayer,
       FeedbackGroupLayer,

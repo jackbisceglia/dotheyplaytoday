@@ -17,6 +17,7 @@
     "@solidjs/web": "2.0.0-rc.0",
     "alchemy": "catalog:",
     "effect": "catalog:",
+    "better-auth": "catalog:",
     "solid-js": "2.0.0-rc.0"
   },
   "devDependencies": {

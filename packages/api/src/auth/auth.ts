@@ -32,17 +32,24 @@ const createAuthPool = (connectionString: string) =>
     (pool) => Effect.promise(() => pool.end()),
   );
 
+export class AuthRequestError extends Schema.TaggedErrorClass<AuthRequestError>()(
+  "AuthRequestError",
+  { cause: Schema.Defect() },
+) {}
+
 export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
   make: Effect.fn("Auth.make")(function* (connectionString: string) {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL(yield* WebUrl);
+
     const pool = yield* createAuthPool(connectionString);
     const cloudflare = yield* Cloudflare.WorkerExecutionContext;
+
     // Preserve runtime config and Id when Better Auth calls back into Effect.
     const runPromise = Effect.runPromiseWith(yield* Effect.context<Id>());
 
-    return betterAuth({
+    const client = betterAuth({
       appName: "dotheyplaytoday",
       basePath: "/api/auth",
       baseURL: apiUrl.origin,
@@ -84,6 +91,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
             if (endpoint === undefined) return;
 
             const normalized = decodeEmail(options.email);
+
             const user =
               await endpoint.context.internalAdapter.findUserByEmail(
                 normalized,
@@ -94,7 +102,11 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
             cloudflare.raw.waitUntil(
               runPromise(
                 sendMagicLink(
-                  MagicLink.make({ recipient: normalized, url: options.url }),
+                  MagicLink.make({
+                    recipient: normalized,
+                    url: options.url,
+                    emailVerified: user.user.emailVerified,
+                  }),
                 ).pipe(Effect.ignore),
               ),
             );
@@ -102,6 +114,14 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
         }),
       ],
     });
+
+    const use = <A>(f: (auth: typeof client) => PromiseLike<A>) =>
+      Effect.tryPromise({
+        try: () => f(client),
+        catch: (cause) => new AuthRequestError({ cause }),
+      });
+
+    return { use, client };
   }),
 }) {}
 
@@ -110,5 +130,6 @@ export const createAuthLayerFromHyperdriveResource = Effect.fn(
 )(function* (client: Cloudflare.Hyperdrive.ConnectClient) {
   // Hyperdrive credentials are only available during a Worker invocation.
   const connection = yield* client.connectionString;
+
   return yield* Auth.make(Redacted.value(connection));
 }, Layer.effect(Auth));

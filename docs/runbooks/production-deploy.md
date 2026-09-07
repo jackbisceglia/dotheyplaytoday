@@ -103,3 +103,57 @@ artifact. Roll back by reverting the faulty change through the normal review
 path and landing that revert on `main`; its push triggers a new production
 deployment. Database migrations must remain forward-compatible because
 deploying older application code does not reverse an applied migration.
+
+## Passwordless account rollout
+
+Migration `0005_grandfather_subscribers.sql` is forward-only and names exactly
+ten subscriber IDs. A read-only production audit on 2026-09-06 verified branch
+`production` (`owc7rj5x6bk3`), the deployed Hyperdrive role's matching branch ID,
+and migration 0004 applied at `2026-09-06T01:17:55.851Z`. All ten users had that
+same migration-assigned `created_at` and active saved subscriptions. The #115
+production workflow (run `34003426410`) completed successfully before the audit.
+The fixed ID list is the eligibility boundary; this is not a rolling timestamp
+cutoff or “everyone present at migration time” backfill. Do not expand it to
+include subsequent pending signups. Keep the database default false.
+
+Grandfathering preserves delivery for the owner's trusted subscribers. It does
+not establish mailbox verification or create sessions. Existing subscribers still
+request and redeem a magic link to sign in. Apply migrations before deploying
+the pending-signup/recipient-filter behavior through the normal release workflow.
+Do not rewrite migration 0004 or 0005 after shipping.
+
+The signup transaction saves new preferences but preserves existing accounts,
+including concurrent and pending signups. The API sends one background magic-link
+email with confirmation or sign-in copy. Failed delivery is recoverable at
+`/sign-in`; it requires no preference restoration. Redemption enables ordinary
+scheduled delivery, without an immediate notification. `/account` is read-only;
+preference editing is a separate follow-up.
+
+For isolated validation, first compare the PlanetScale branch ID with the actual
+role username suffix and connection host. `pnpm -s alchemy:stage` alone is not
+evidence of isolation. Never send test emails to the production cohort. Use a
+unique Resend test recipient for a real delivery smoke test.
+
+The implementation smoke run used stage `dev_jackb_t3code-5fcfe034`, branch
+`dotheyplaytoday-dtptpostgresbranch-dev-jackb-t3jtq355gdg3vbuigz`
+(`1ydd0xdo0rh8`), on `us-east-4.pg.psdb.cloud`. Provider role metadata and a
+`current_user` database query confirmed the target independently of the stage
+helper. The local API Worker used the branch's pooled connection, as expected
+for `alchemy dev`. The real Chromium/Resend flow covered pending and verified
+repeat signup, replacement links, verification, account reads, and sign-out;
+loading, failure/retry, reused-link UI and narrow-screen layout were also checked.
+Production was not deployed, and the separate deployed Worker/Hyperdrive
+infrastructure suite was not run for this change. The temporary test role and
+dedicated dev stage were removed after validation.
+
+After the service-boundary refactor, validation was repeated on a fresh branch
+`dotheyplaytoday-dtptpostgresbranch-dev-jackb-t3rp7rx7nowkcf6lgk`
+(`mmpucshbk7j8`, `us-east-5.pg.psdb.cloud`) in the same dedicated stage.
+Provider branch/role metadata and the actual database user confirmed isolation.
+Lint, typecheck, and the real Chromium/Resend flow passed. Browser checks also
+covered loading, failure/retry, signed-out access, and mobile width. The temporary
+role was revoked and the dedicated stage removed again after validation.
+
+Implementation-time auth/account tests have been removed from this review.
+After the code is agreed, a separate testing pass will outline the program
+surface, identify changed areas, and define targeted cases before adding tests.
