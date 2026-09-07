@@ -144,7 +144,6 @@ export type { UpsertContext } from "./modules/users/service.js";
 
 export {
   UserApi,
-  UserGroup,
   UserResponse,
   SignupRateLimited,
   SignupRequest,
