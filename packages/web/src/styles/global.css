@@ -368,6 +368,10 @@ button {
   align-items: center;
   gap: 8px;
   overflow-x: auto;
+  /* Only the inline axis scrolls; clip the block axis with enough margin for
+     the coming-soon tooltip to hang beneath the row. */
+  overflow-y: clip;
+  overflow-clip-margin: 64px;
   /* Leave room for focus outlines and selected shadows. */
   padding: 5px 5px 10px;
   margin: -5px -5px 0;
@@ -384,11 +388,11 @@ button {
   border-radius: 3px;
 }
 
+/* Anchor to the pill's right edge so the tooltip never widens the scroll area. */
 .league-row .coming-soon-tooltip {
-  top: 50%;
   right: 0;
   left: auto;
-  transform: translateY(-50%);
+  transform: none;
 }
 
 .league-row > * {
