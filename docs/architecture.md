@@ -203,6 +203,13 @@ data; the current production owner account must be recreated manually.
 
 ## Testing and validation
 
+API contract tests live in `packages/core/src/contracts/__tests__`, named for
+their owning contract modules. The assembled HTTP API and its transaction
+fixture live in `packages/api/src/__tests__`; auth and rate-limiter tests stay
+beside those services. Browser typed-client tests live in
+`packages/web/src/lib/__tests__`. HTTP write tests mock persistence and verify
+orchestration, not database rollback.
+
 - Schema-only and domain-only tests continue to run locally.
 - The removed SQLite suites are represented by the behavior-focused [PostgreSQL persistence test plan](./test-plan/postgres.md). Reintroduce and prune those cases against disposable Alchemy-managed branches.
 - The opt-in PostgreSQL infrastructure test deploys a disposable database and Worker stack, queries PlanetScale through Worker → Hyperdrive, and destroys the stack. It requires both provider credentials.

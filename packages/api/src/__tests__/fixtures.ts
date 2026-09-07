@@ -4,8 +4,8 @@ import { Effect, Layer } from "effect";
 import { Reactivity } from "effect/unstable/reactivity";
 import { vi } from "vitest";
 
-import { relations } from "../definitions/relations.js";
-import { Database } from "../service.js";
+import { relations } from "@dtpt/core/lib/database/definitions/relations";
+import { Database } from "@dtpt/core/lib/database/service";
 
 // Runs handler orchestration with domain services mocked. This does not test
 // database atomicity. The supplied pool must never execute a query.

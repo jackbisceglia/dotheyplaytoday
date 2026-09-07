@@ -1,4 +1,4 @@
-import { makeAuthFixture } from "../../auth/__tests__/fixtures.js";
+import { makeAuthFixture } from "../auth/__tests__/fixtures.js";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { RuntimeContext } from "alchemy/RuntimeContext";
 import { DatabaseReadError } from "@dtpt/core/lib/database/errors";
@@ -15,11 +15,11 @@ import { HttpRouter } from "effect/unstable/http";
 import { Pool } from "pg";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 
-import { mockTransactions } from "@dtpt/core/lib/database/__tests__/mock-transactions";
-import { Auth } from "../../auth/auth.js";
-import { HttpApiLayer } from "../../index.js";
-import { RateLimitExceeded } from "../../rate-limit/errors.js";
-import { RateLimiter } from "../../rate-limit/service.js";
+import { mockTransactions } from "./fixtures.js";
+import { Auth } from "../auth/auth.js";
+import { HttpApiLayer } from "../index.js";
+import { RateLimitExceeded } from "../rate-limit/errors.js";
+import { RateLimiter } from "../rate-limit/service.js";
 
 vi.mock(
   "@dtpt/core/modules/email/transactional/confirmation",
@@ -86,6 +86,9 @@ const makeFixture = async () => {
   const replace = vi.fn<Subscriptions["Service"]["replaceForUser"]>(() =>
     Effect.succeed([subject]),
   );
+  const subjects = vi.fn<Subjects["Service"]["list"]>(() =>
+    Effect.succeed([subject]),
+  );
   const check = vi.fn<RateLimiter["Service"]["check"]>(() => Effect.void);
   const confirmation = vi.mocked(sendSignupConfirmation).mockClear();
   const pending: Promise<unknown>[] = [];
@@ -109,7 +112,7 @@ const makeFixture = async () => {
           listForUser: list,
           replaceForUser: replace,
         }),
-        Layer.mock(Subjects, { list: () => Effect.succeed([subject]) }),
+        Layer.mock(Subjects, { list: subjects }),
         Layer.succeed(RateLimiter, { check }),
         Layer.succeed(
           Cloudflare.WorkerExecutionContext,
@@ -171,6 +174,7 @@ const makeFixture = async () => {
     ...fixture,
     request,
     signIn,
+    subjects,
     get,
     upsert,
     getByToken,
@@ -185,7 +189,40 @@ const makeFixture = async () => {
 
 const reads = ["/user", "/user/subscription"];
 
-describe("current-user HTTP API", () => {
+describe("assembled HTTP API", () => {
+  it("mounts Better Auth beneath /api/auth", async () => {
+    const f = await makeFixture();
+    const response = await f.request("/auth/sign-in/magic-link", {
+      email: "unknown@example.com",
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ status: true });
+    const session = await f.request("/auth/get-session");
+    expect(session.status).toBe(200);
+    expect(await session.json()).toBeNull();
+  });
+
+  it("maps subject failures and validates and rate limits feedback", async () => {
+    const f = await makeFixture();
+    f.subjects.mockReturnValue(
+      Effect.fail(new DatabaseReadError({ operation: "Subjects.list" })),
+    );
+    expect((await f.request("/subjects")).status).toBe(500);
+
+    expect(
+      (await f.request("/feedback", { type: "general", request: "   " }))
+        .status,
+    ).toBe(400);
+    expect(f.check).not.toHaveBeenCalled();
+    f.check.mockReturnValue(
+      Effect.fail(new RateLimitExceeded({ key: "test", limit: 1, window: 60 })),
+    );
+    expect(
+      (await f.request("/feedback", { type: "general", request: "Thanks!" }))
+        .status,
+    ).toBe(429);
+  });
+
   it("rejects signed-out and invalid-cookie reads without caching or querying users", async () => {
     const f = await makeFixture();
     for (const path of reads) {

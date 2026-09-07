@@ -1,9 +1,7 @@
 import { makeAuthFixture } from "./fixtures.js";
 import { describe, expect, it } from "vitest";
-import { Effect, FileSystem, Layer, Path } from "effect";
-import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import { Effect } from "effect";
 import { WebUrl } from "@dtpt/core/lib/config/web";
-import { HttpRouter } from "effect/unstable/http";
 
 describe("authentication boundaries", () => {
   it("returns identical success for existing and unknown emails, sending only to the existing user", async () => {
@@ -58,39 +56,6 @@ describe("authentication boundaries", () => {
         }),
       );
       expect(response.status).toBe(attempt < 5 ? 200 : 429);
-    }
-  });
-
-  it("mounts Better Auth on the API auth group", async () => {
-    const { Auth } = await import("../auth.js");
-    const { AuthGroupLayer } = await import("../../handlers/auth.js");
-    const { AuthApi } = await import("@dtpt/core/contracts/auth");
-    const { HttpApi, HttpApiBuilder } = await import("effect/unstable/httpapi");
-    const { auth, request } = await makeAuthFixture();
-    const { handler, dispose } = HttpRouter.toWebHandler(
-      HttpApiBuilder.layer(
-        HttpApi.make("ApiV2").addHttpApi(AuthApi).prefix("/api"),
-      ).pipe(
-        Layer.provide(AuthGroupLayer),
-        Layer.provide([
-          Layer.succeed(Auth, auth),
-          CloudflareHttpApiPlatformLayer,
-          FileSystem.layerNoop({}),
-          Path.layer,
-        ]),
-      ),
-    );
-    try {
-      const response = await handler(
-        request("/sign-in/magic-link", { email: "unknown@example.com" }),
-      );
-      expect(response.status).toBe(200);
-      await expect(response.json()).resolves.toEqual({ status: true });
-      const session = await handler(request("/get-session"));
-      expect(session.status).toBe(200);
-      await expect(session.json()).resolves.toBeNull();
-    } finally {
-      await dispose();
     }
   });
 
