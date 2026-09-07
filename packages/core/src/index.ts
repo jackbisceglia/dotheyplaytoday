@@ -153,6 +153,6 @@ export {
   UnsubscribeResponse,
 } from "./contracts/user.js";
 export {
-  UserSubscriptionGroup,
-  UserSubscriptionsResponse,
-} from "./contracts/user.subscription.js";
+  SubscriptionGroup,
+  SubscriptionsResponse,
+} from "./contracts/subscription.js";

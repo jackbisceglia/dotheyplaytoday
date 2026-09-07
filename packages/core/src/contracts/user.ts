@@ -14,7 +14,7 @@ import {
   User,
 } from "../modules/users/schema.js";
 
-import { UserSubscriptionGroup } from "./user.subscription.js";
+import { SubscriptionGroup } from "./subscription.js";
 
 export const UserResponse = User.mapFields(Struct.pick(["email", "timezone"]));
 
@@ -68,5 +68,5 @@ export const UserApi = HttpApi.make("user")
       }),
     ),
   )
-  .add(UserSubscriptionGroup)
+  .add(SubscriptionGroup)
   .prefix("/user");

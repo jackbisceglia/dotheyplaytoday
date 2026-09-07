@@ -9,7 +9,7 @@ import { FeedbackGroupLayer } from "./handlers/feedback.js";
 import { PingGroupLayer } from "./handlers/ping.js";
 import { SubjectsGroupLayer } from "./handlers/subjects.js";
 import { UserGroupLayer } from "./handlers/user.js";
-import { UserSubscriptionGroupLayer } from "./handlers/user.subscription.js";
+import { SubscriptionGroupLayer } from "./handlers/subscription.js";
 
 const CorsLayer = Layer.unwrap(
   Effect.gen(function* () {
@@ -27,7 +27,7 @@ export const HttpApiLayer = Layer.mergeAll(
   HttpApiBuilder.layer(Api).pipe(
     Layer.provide([
       UserGroupLayer,
-      UserSubscriptionGroupLayer,
+      SubscriptionGroupLayer,
       AuthGroupLayer,
       PingGroupLayer,
       FeedbackGroupLayer,

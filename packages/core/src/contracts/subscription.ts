@@ -7,12 +7,12 @@ import {
 
 import { SubscriptionWithSubject } from "../modules/subscriptions/schema.js";
 
-export const UserSubscriptionsResponse = Schema.Array(SubscriptionWithSubject);
+export const SubscriptionsResponse = Schema.Array(SubscriptionWithSubject);
 
-export const UserSubscriptionGroup = HttpApiGroup.make("userSubscription")
+export const SubscriptionGroup = HttpApiGroup.make("subscription")
   .add(
     HttpApiEndpoint.get("list", "/", {
-      success: UserSubscriptionsResponse,
+      success: SubscriptionsResponse,
       error: [HttpApiError.Unauthorized, HttpApiError.InternalServerError],
     }),
   )

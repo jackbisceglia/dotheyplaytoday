@@ -14,10 +14,10 @@ const UnexpectedErrorTags = [
   "SchemaError",
 ] as const;
 
-export const UserSubscriptionGroupLayer = HttpApiBuilder.group(
+export const SubscriptionGroupLayer = HttpApiBuilder.group(
   Api,
-  "userSubscription",
-  Effect.fn("UserSubscriptionHttpApi.group")(function* (handlers) {
+  "subscription",
+  Effect.fn("SubscriptionHttpApi.group")(function* (handlers) {
     const auth = yield* Auth;
 
     const users = yield* Users;
@@ -25,7 +25,7 @@ export const UserSubscriptionGroupLayer = HttpApiBuilder.group(
 
     return handlers.handle(
       "list",
-      Effect.fn("UserSubscriptionHttpApi.list")(
+      Effect.fn("SubscriptionHttpApi.list")(
         function* (ctx) {
           const session = yield* auth.use((client) =>
             client.api.getSession({ headers: ctx.request.headers }),

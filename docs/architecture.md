@@ -248,12 +248,12 @@ Contracts follow OpenCode's instance HttpApi structure: each domain exports a
 The shared contracts remain in `core`; matching implementation files live in
 `api/src/handlers` and export `*GroupLayer` layers built with `HttpApiBuilder.group`.
 The API root provides each group layer directly, including `UserGroupLayer`
-and `UserSubscriptionGroupLayer`.
+and `SubscriptionGroupLayer`.
 Registration and unsubscribe contracts live with the user group in
 `contracts/user.ts`. `UserApi` composes both groups and applies `/user` once;
 the subscription group declares only `/subscription`. The generated
 client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
-`userSubscription.list()`. Read responses compose existing domain schemas;
+`subscription.list()`. Read responses compose existing domain schemas;
 there is no Account model. Identity comes exclusively from the session.
 
 Browser API requests include credentials. API cookies remain host-only, so Web
