@@ -243,7 +243,9 @@ Separate follow-ups are:
 - `POST /api/user/unsubscribe`: delete a user and subscriptions using an emailed token.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
 
-`UserGroupLayer` combines the base and subscription handlers. The generated
+`UserGroupLayer` in the API root combines the base and subscription handlers.
+Registration and unsubscribe contracts live with the user group in
+`contracts/user.ts`. The generated
 client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
 `userSubscription.list()`. Read responses compose existing domain schemas;
 there is no Account model. Identity comes exclusively from the session.

@@ -8,7 +8,8 @@ import { AuthGroupLayer } from "./routes.auth.js";
 import { FeedbackGroupLayer } from "./routes.feedback.js";
 import { PingGroupLayer } from "./routes.ping.js";
 import { SubjectsGroupLayer } from "./routes.subjects.js";
-import { UserGroupLayer } from "./routes.user.js";
+import { UserBaseGroupLayer } from "./routes.user.js";
+import { UserSubscriptionGroupLayer } from "./routes.user.subscription.js";
 
 const CorsLayer = Layer.unwrap(
   Effect.gen(function* () {
@@ -20,6 +21,11 @@ const CorsLayer = Layer.unwrap(
       credentials: true,
     });
   }),
+);
+
+const UserGroupLayer = Layer.merge(
+  UserBaseGroupLayer,
+  UserSubscriptionGroupLayer,
 );
 
 export const HttpApiLayer = Layer.mergeAll(

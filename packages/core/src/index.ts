@@ -5,17 +5,7 @@ export {
 } from "./lib/database/service.js";
 export { Api } from "./contracts/api.js";
 export { PingGroup, PingResponse } from "./contracts/ping.js";
-export {
-  SignupRateLimited,
-  SignupRequest,
-  SignupResponse,
-} from "./contracts/signup.js";
 export { SubjectsGroup, SubjectsResponse } from "./contracts/subjects.js";
-export {
-  UnsubscribeRequest,
-  UnsubscribeResponse,
-  UnsubscribeRateLimited,
-} from "./contracts/unsubscribe.js";
 export { ApiConfig, ApiUrl, ServerBoundPort } from "./lib/config/api.js";
 export type { ApiConfig as ApiConfigShape } from "./lib/config/api.js";
 export { WebConfig, WebUrl } from "./lib/config/web.js";
@@ -152,7 +142,16 @@ export {
 export { UserNotFound, Users, UsersLayer } from "./modules/users/service.js";
 export type { UpsertContext } from "./modules/users/service.js";
 
-export { UserGroup, UserResponse } from "./contracts/user.js";
+export {
+  UserGroup,
+  UserResponse,
+  SignupRateLimited,
+  SignupRequest,
+  SignupResponse,
+  UnsubscribeRateLimited,
+  UnsubscribeRequest,
+  UnsubscribeResponse,
+} from "./contracts/user.js";
 export {
   UserSubscriptionGroup,
   UserSubscriptionsResponse,
