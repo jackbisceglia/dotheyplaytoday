@@ -67,6 +67,6 @@ export const UserApi = HttpApi.make("UserApi")
         error: [HttpApiError.InternalServerError, UnsubscribeRateLimited],
       }),
     ),
-    UserSubscriptionGroup,
   )
+  .add(UserSubscriptionGroup)
   .prefix("/user");
