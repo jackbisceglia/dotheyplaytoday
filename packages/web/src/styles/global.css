@@ -368,10 +368,6 @@ button {
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  /* Only the inline axis scrolls; clip the block axis with enough margin for
-     the coming-soon tooltip to hang beneath the row. */
-  overflow-y: clip;
-  overflow-clip-margin: 64px;
   /* Leave room for focus outlines and selected shadows. */
   padding: 5px 5px 10px;
   margin: -5px -5px 0;
@@ -386,13 +382,6 @@ button {
 .league-row::-webkit-scrollbar-thumb {
   background: var(--rule);
   border-radius: 3px;
-}
-
-/* Anchor to the pill's right edge so the tooltip never widens the scroll area. */
-.league-row .coming-soon-tooltip {
-  right: 0;
-  left: auto;
-  transform: none;
 }
 
 .league-row > * {
@@ -425,19 +414,20 @@ button {
 }
 
 .coming-soon {
-  position: relative;
   display: inline-flex;
 }
 
+/* Fixed, with top/left set by the component: the league row scrolls, and any
+   scroll container clips on both axes, so an absolute tooltip cannot sit
+   beneath its pill. */
 .coming-soon-tooltip {
-  position: absolute;
+  position: fixed;
   z-index: 10;
-  top: calc(100% + 8px);
-  left: 50%;
   width: max-content;
   max-width: min(220px, 80vw);
   padding: 6px 9px;
   transform: translateX(-50%);
+  pointer-events: none;
   border: 2px solid var(--ink);
   background: var(--ink);
   color: var(--paper);
@@ -453,8 +443,7 @@ button {
     visibility 0.12s;
 }
 
-.coming-soon:hover .coming-soon-tooltip,
-.coming-soon:focus-within .coming-soon-tooltip {
+.coming-soon-tooltip[data-visible="true"] {
   opacity: 1;
   visibility: visible;
 }
