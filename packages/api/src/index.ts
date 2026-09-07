@@ -8,7 +8,7 @@ import { AuthGroupLayer } from "./handlers/auth.js";
 import { FeedbackGroupLayer } from "./handlers/feedback.js";
 import { PingGroupLayer } from "./handlers/ping.js";
 import { SubjectsGroupLayer } from "./handlers/subjects.js";
-import { UserBaseGroupLayer } from "./handlers/user.js";
+import { UserGroupLayer } from "./handlers/user.js";
 import { UserSubscriptionGroupLayer } from "./handlers/user.subscription.js";
 
 const CorsLayer = Layer.unwrap(
@@ -23,15 +23,11 @@ const CorsLayer = Layer.unwrap(
   }),
 );
 
-const UserGroupLayer = Layer.merge(
-  UserBaseGroupLayer,
-  UserSubscriptionGroupLayer,
-);
-
 export const HttpApiLayer = Layer.mergeAll(
   HttpApiBuilder.layer(Api).pipe(
     Layer.provide([
       UserGroupLayer,
+      UserSubscriptionGroupLayer,
       AuthGroupLayer,
       PingGroupLayer,
       FeedbackGroupLayer,
