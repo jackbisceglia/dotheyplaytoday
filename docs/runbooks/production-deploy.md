@@ -1,5 +1,11 @@
 # Production deployment
 
+Registration confirmation must not deploy independently. Before merging it to
+`main` (which automatically deploys), include notification eligibility filtering
+and the grandfathering migration for existing recipients. Current notification
+reads still include unverified users; saving them as unverified alone does not
+prevent game-day delivery.
+
 Production deploys run automatically after a push lands on `main`. The workflow
 has no manual dispatch trigger, so a branch or tag cannot use it to deploy
 unreviewed code with production credentials. GitHub serializes production

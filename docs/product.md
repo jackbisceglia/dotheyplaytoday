@@ -6,7 +6,7 @@
 
 **Subject** and **Event** are intentionally reusable domain terms. Sports teams and games are the current production implementation, but the model can support other event-driven subjects without redefining the core behavior.
 
-Registration uses `POST /api/user`. Users can subscribe to up to four teams. Submitting signup again replaces the user's existing team selections and schedule.
+Registration uses `POST /api/user`. Users can subscribe to up to four teams. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
 
 ## Notifications
 
@@ -22,10 +22,13 @@ Registration uses `POST /api/user`. Users can subscribe to up to four teams. Sub
 
 ## Signup confirmations
 
-- Every successfully committed signup sends a best-effort confirmation email. The signup is already active and does not require email verification.
-- A first signup receives welcome copy; later submissions for the same normalized email confirm that the user's teams and schedule were replaced.
-- Confirmations list the selected teams and local send time and include the user's unsubscribe link.
-- Confirmation delivery runs after the signup transaction in the API Worker's background execution lifetime. Rendering or provider failures are logged and do not change the successful signup response.
+- New users start unverified and receive a “Confirm your updates” magic link. The success message is “Check your email to start your updates.”
+- Repeat signup sends confirmation copy for an unverified user or sign-in copy for a verified user. Neither path changes saved preferences, including when concurrent requests submit the same normalized email.
+- Duplicate signup shows: “You already have an account. We’ve emailed you a link to sign in. Your existing teams and schedule haven’t changed.”
+- Magic links expire after 15 minutes and can be redeemed once. Redemption verifies email ownership and creates a session.
+- Link issuance follows the signup transaction; email delivery runs in the API Worker's background execution lifetime. Issuance or delivery failures leave saved preferences intact, and the user can request a replacement link.
+
+Confirmation is intended to gate game-day updates. The current notification reader does not yet exclude unverified users. Registration must ship together with notification eligibility filtering and grandfathering of existing recipients; this slice must not roll out to production independently.
 
 ## Authentication
 
