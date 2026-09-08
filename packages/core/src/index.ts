@@ -135,8 +135,12 @@ export {
   UserInsert,
   usersTable,
 } from "./modules/users/schema.js";
-export { UserNotFound, Users, UsersLayer } from "./modules/users/service.js";
-export type { SignupContext } from "./modules/users/service.js";
+export {
+  UserAlreadyExists,
+  UserNotFound,
+  Users,
+  UsersLayer,
+} from "./modules/users/service.js";
 
 export {
   UserApi,

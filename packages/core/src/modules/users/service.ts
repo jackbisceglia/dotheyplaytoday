@@ -1,21 +1,21 @@
 import { eq } from "drizzle-orm";
 import { Array, Context, Effect, Layer, Option, Schema } from "effect";
+import { isSqlError } from "effect/unstable/sql/SqlError";
 
 import {
   DatabaseDeleteError,
   DatabaseReadError,
   DatabaseWriteError,
   mapToReadError,
-  mapToWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
 
-export type SignupContext = {
-  readonly user: User;
-  readonly isFirstSignup: boolean;
-};
+export class UserAlreadyExists extends Schema.TaggedErrorClass<UserAlreadyExists>()(
+  "UserAlreadyExists",
+  {},
+) {}
 
 export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
   "UserNotFound",
@@ -49,12 +49,12 @@ export class Users extends Context.Service<
     readonly listByIds: (
       userIds: readonly User["id"][],
     ) => Effect.Effect<readonly User[], DatabaseReadError | Schema.SchemaError>;
-    readonly getOrCreateForSignup: (
+    readonly create: (
       email: User["email"],
       timezone: User["timezone"],
     ) => Effect.Effect<
-      SignupContext,
-      UserNotFound | DatabaseReadError | DatabaseWriteError | Schema.SchemaError
+      User,
+      UserAlreadyExists | DatabaseWriteError | Schema.SchemaError
     >;
     readonly remove: (
       userId: User["id"],
@@ -153,20 +153,8 @@ export const UsersLayer = Layer.effect(
       return users;
     });
 
-    const getOrCreateForSignup: Users["Service"]["getOrCreateForSignup"] =
-      Effect.fn("Users.getOrCreateForSignup")(function* (
-        email: User["email"],
-        timezone: User["timezone"],
-      ) {
-        const existing = yield* getByEmail(email).pipe(
-          Effect.map(Option.some),
-          Effect.catchTag("UserNotFound", () => Effect.succeed(Option.none())),
-        );
-
-        if (Option.isSome(existing)) {
-          return { user: existing.value, isFirstSignup: false };
-        }
-
+    const create: Users["Service"]["create"] = Effect.fn("Users.create")(
+      function* (email: User["email"], timezone: User["timezone"]) {
         const candidateId = yield* id.makeFromBrandedSchema(User.fields.id);
         const insertable = yield* encodeUser({
           id: candidateId,
@@ -182,29 +170,34 @@ export const UsersLayer = Layer.effect(
         const rows = yield* database
           .insert(usersTable)
           .values(insertable)
-          .onConflictDoNothing({ target: usersTable.email })
           .returning()
           .pipe(
-            mapToWriteError("Users.getOrCreateForSignup", {
-              timezone: insertable.timezone,
+            Effect.mapError((error) => {
+              const cause = error.cause;
+              if (
+                isSqlError(cause) &&
+                cause.reason._tag === "UniqueViolation" &&
+                cause.reason.constraint === "users_email_idx"
+              ) {
+                return new UserAlreadyExists({});
+              }
+
+              return new DatabaseWriteError({
+                operation: "Users.create",
+                cause: error,
+              });
             }),
           );
 
         const row = Array.head(rows);
 
         if (Option.isNone(row)) {
-          // A concurrent signup committed first. Read it in a new statement so
-          // PostgreSQL's READ COMMITTED snapshot sees the winner; never update it.
-          return { user: yield* getByEmail(email), isFirstSignup: false };
+          return yield* new DatabaseWriteError({ operation: "Users.create" });
         }
 
-        const user = yield* decodeUser(row.value);
-
-        return {
-          user,
-          isFirstSignup: true,
-        };
-      });
+        return yield* decodeUser(row.value);
+      },
+    );
 
     const remove: Users["Service"]["remove"] = Effect.fn("Users.remove")(
       function* (userId: User["id"]) {
@@ -229,7 +222,7 @@ export const UsersLayer = Layer.effect(
       getByEmail,
       getByUnsubscribeToken,
       listByIds,
-      getOrCreateForSignup,
+      create,
       remove,
     });
   }),

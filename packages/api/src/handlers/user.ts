@@ -31,7 +31,6 @@ const UnsubscribeErrorTags = [
 ] as const;
 
 const CreateErrorTags = [
-  "UserNotFound",
   "DatabaseReadError",
   "DatabaseTransactionError",
   "DatabaseWriteError",
@@ -56,36 +55,15 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            const signup = yield* database
-              .transaction(
-                Effect.fn("User.createTransaction")(function* () {
-                  const result = yield* users.getOrCreateForSignup(
-                    ctx.payload.email,
-                    ctx.payload.timezone,
-                  );
-
-                  if (result.isFirstSignup) {
-                    yield* subscriptions.replaceForUser({
-                      user: result.user,
-                      subjectIds: ctx.payload.subjectIds,
-                      schedule: ctx.payload.schedule,
-                    });
-                  }
-
-                  return result;
-                }),
-              )
-              .pipe(mapToTransactionError("User.create"));
-
             // Server API calls bypass Better Auth's HTTP limiter; the write
             // limiter above covers issuance for both new and duplicate signups.
             // Await issuance while the auth pool is open; delivery uses waitUntil.
-            yield* auth
+            const requestLink = auth
               .use((client) =>
                 client.api.signInMagicLink({
                   headers: ctx.request.headers,
                   body: {
-                    email: signup.user.email,
+                    email: ctx.payload.email,
                     callbackURL: webUrl,
                     errorCallbackURL: webUrl,
                   },
@@ -98,9 +76,30 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
                 Effect.ignore,
               );
 
-            if (!signup.isFirstSignup) {
-              return yield* new DuplicateSignup({});
-            }
+            yield* database
+              .transaction(
+                Effect.fn("User.createTransaction")(function* () {
+                  const user = yield* users.create(
+                    ctx.payload.email,
+                    ctx.payload.timezone,
+                  );
+
+                  yield* subscriptions.replaceForUser({
+                    user,
+                    subjectIds: ctx.payload.subjectIds,
+                    schedule: ctx.payload.schedule,
+                  });
+                }),
+              )
+              .pipe(
+                mapToTransactionError("User.create"),
+                // Handle duplicates only after the failed transaction rolls back.
+                Effect.catchTag("UserAlreadyExists", () =>
+                  requestLink.pipe(Effect.andThen(new DuplicateSignup({}))),
+                ),
+              );
+
+            yield* requestLink;
 
             return { ok: true as const };
           },
@@ -110,8 +109,6 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
             }),
           ),
           Effect.catchTags({
-            UserNotFound: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
             InvalidSubjectSelection: () =>
               Effect.fail(new HttpApiError.BadRequest({})),
             SubjectCapacityReached: () =>
