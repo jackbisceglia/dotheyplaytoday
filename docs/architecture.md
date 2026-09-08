@@ -149,8 +149,11 @@ The notification Worker provisions the email notifier, which renders a
 `Email`. Separate transactional confirmation and sign-in views bypass
 `Notifier` and provide the same concrete Resend email layer internally. Better
 Auth's magic-link callback looks up the user and selects the view by
-`emailVerified`. It forwards the generated URL unchanged; registration supplies
-the Web URL through Better Auth's `callbackURL` and `errorCallbackURL` inputs.
+`emailVerified`. It forwards the generated URL unchanged. A shared Better Auth
+before hook selects the Web root through `callbackURL`, adding `confirmed=1`
+only for users unverified at issuance. It sets `errorCallbackURL` to the Web
+root without the marker. The hook covers both registration's server API calls
+and standalone HTTP sign-in, retaining validation of caller-supplied URLs.
 Tokens are hashed, expire after 15 minutes, and are single-use. Issuance is
 awaited while the auth pool is open; `WorkerExecutionContext.waitUntil` owns
 email delivery, which needs no further database access. Delivery failures are
@@ -268,10 +271,9 @@ Separate follow-ups are:
 1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
 3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
-4. Add the Web auth client, account/manage routes, session-driven redirects,
-   and authenticated team-management APIs. Cookie sharing across subdomains is
-   intentionally still disabled; browser calls target the API origin with
-   credentials.
+4. Add account/manage routes and authenticated team-management APIs. Cookie
+   sharing across subdomains remains disabled; browser calls target the API
+   origin with credentials.
 
 ## Public API
 
@@ -295,6 +297,12 @@ client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
 there is no Account model. Identity comes exclusively from the session.
 
 Browser API requests include credentials. API cookies remain host-only, so Web
-SSR cannot assume it has the session cookie. Account and sign-in pages remain
-separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose
+SSR cannot assume it has the session cookie. Web uses Better Auth's framework-neutral
+client with credentials for browser session reads and `/sign-in` link requests.
+Signed-in visitors to `/` redirect to `/home`, carrying `confirmed=1`. `/home`
+checks the session before displaying user content and redirects signed-out
+visitors to `/sign-in`. A verified session and the confirmation marker show the
+welcome banner; history replacement consumes the marker without removing other
+query parameters or history state. Failed links display a replacement-link action
+and never a welcome banner. Account editing remains separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose
 typed caller uses the new endpoint; no legacy API alias is needed.

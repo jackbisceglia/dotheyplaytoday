@@ -340,10 +340,16 @@ describe("assembled HTTP API", () => {
     expect(issue).toHaveBeenCalledOnce();
     expect(issue.mock.calls[0]?.[0]?.body).toEqual({
       email: user.email,
-      callbackURL: "https://www.example.com",
-      errorCallbackURL: "https://www.example.com",
     });
     expect(f.sendConfirmationLink).toHaveBeenCalledOnce();
+    const link = f.sendConfirmationLink.mock.calls[0]?.[1];
+    if (!link) throw new Error("Missing confirmation link");
+    expect(new URL(link).searchParams.get("callbackURL")).toBe(
+      "https://www.example.com/?confirmed=1",
+    );
+    expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
+      "https://www.example.com/",
+    );
     expect(f.sendSignInLink).not.toHaveBeenCalled();
     expect(f.pending).toHaveLength(1);
     await Promise.all(f.pending);
@@ -375,6 +381,17 @@ describe("assembled HTTP API", () => {
       expect(f.replace).not.toHaveBeenCalled();
       expect(f.sendConfirmationLink).toHaveBeenCalledTimes(verified ? 0 : 1);
       expect(f.sendSignInLink).toHaveBeenCalledTimes(verified ? 1 : 0);
+      const sender = verified ? f.sendSignInLink : f.sendConfirmationLink;
+      const link = sender.mock.calls[0]?.[1];
+      if (!link) throw new Error("Missing duplicate signup link");
+      expect(new URL(link).searchParams.get("callbackURL")).toBe(
+        verified
+          ? "https://www.example.com/"
+          : "https://www.example.com/?confirmed=1",
+      );
+      expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
+        "https://www.example.com/",
+      );
       expect((await f.rows("users"))[0]).toMatchObject({
         timezone: "America/New_York",
         email_verified: verified,

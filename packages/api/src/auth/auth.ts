@@ -14,10 +14,19 @@ import {
   authVerificationsTable,
 } from "@dtpt/core/modules/auth/schema";
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { magicLink } from "better-auth/plugins";
-import { Boolean, Context, Effect, Layer, Redacted, Schema } from "effect";
+import {
+  Boolean,
+  Context,
+  Effect,
+  Layer,
+  Option,
+  Redacted,
+  Schema,
+} from "effect";
 import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
@@ -77,6 +86,39 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
         disableOriginCheck: false,
         useSecureCookies: apiUrl.protocol === "https:",
         ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
+      },
+      hooks: {
+        before: createAuthMiddleware(async (ctx) => {
+          if (ctx.path !== "/sign-in/magic-link") return;
+
+          const body = Schema.decodeUnknownOption(
+            Schema.Record(Schema.String, Schema.Unknown),
+          )(ctx.body);
+          if (Option.isNone(body)) return;
+          const email = Schema.decodeUnknownOption(EmailAddressFromString)(
+            body.value.email,
+          );
+          if (Option.isNone(email)) return;
+          const user = await ctx.context.internalAdapter.findUserByEmail(
+            email.value,
+          );
+          const callbackURL = new URL("/", webUrl);
+          if (user !== null && !user.user.emailVerified) {
+            callbackURL.searchParams.set("confirmed", "1");
+          }
+
+          // HTTP origin middleware validates caller URLs before this hook runs.
+          // This also covers registration's direct server API call.
+          return {
+            context: {
+              body: {
+                ...body.value,
+                callbackURL: callbackURL.href,
+                errorCallbackURL: new URL("/", webUrl).href,
+              },
+            },
+          };
+        }),
       },
       plugins: [
         magicLink({

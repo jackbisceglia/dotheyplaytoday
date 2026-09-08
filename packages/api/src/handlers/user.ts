@@ -1,4 +1,3 @@
-import { WebUrl } from "@dtpt/core/lib/config/web";
 import { Api } from "@dtpt/core/contracts/api";
 import {
   DuplicateSignup,
@@ -43,8 +42,6 @@ const CreateErrorTags = [
 
 export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
   Effect.gen(function* () {
-    const webUrl = yield* WebUrl;
-
     const auth = yield* Auth;
     const rateLimiter = yield* RateLimiter;
 
@@ -57,7 +54,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
         yield* auth.use((client) =>
           client.api.signInMagicLink({
             headers,
-            body: { email, callbackURL: webUrl, errorCallbackURL: webUrl },
+            body: { email },
           }),
         );
       },

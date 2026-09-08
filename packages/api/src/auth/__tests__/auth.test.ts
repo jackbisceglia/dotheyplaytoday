@@ -20,7 +20,11 @@ describe("authentication boundaries", () => {
       await database.query("UPDATE users SET email_verified = $1", [verified]);
       for (const email of ["User@Example.COM", "unknown@example.com"]) {
         const response = await auth.client.handler(
-          request("/sign-in/magic-link", { email }),
+          request("/sign-in/magic-link", {
+            email,
+            callbackURL: "https://www.example.com/ignored?confirmed=1",
+            errorCallbackURL: "https://www.example.com/ignored?confirmed=1",
+          }),
         );
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toEqual({ status: true });
@@ -33,6 +37,23 @@ describe("authentication boundaries", () => {
       expect(sender.mock.calls[0]?.[1]).toContain(
         "https://api.example.com/api/auth/magic-link/verify?token=",
       );
+      const link = sender.mock.calls[0]?.[1];
+      if (!link) throw new Error("Missing magic link");
+      expect(new URL(link).searchParams.get("callbackURL")).toBe(
+        verified
+          ? "https://www.example.com/"
+          : "https://www.example.com/?confirmed=1",
+      );
+      expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
+        "https://www.example.com/",
+      );
+      const redeemed = await auth.client.handler(new Request(link));
+      expect(redeemed.headers.get("location")).toBe(
+        new URL(link).searchParams.get("callbackURL"),
+      );
+      expect(redeemed.headers.get("set-cookie")).toContain("session_token");
+      expect(await rows("auth_sessions")).toHaveLength(1);
+      expect((await rows("users"))[0]?.email_verified).toBe(true);
       expect(await rows("users")).toHaveLength(1);
     },
   );

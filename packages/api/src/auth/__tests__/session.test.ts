@@ -9,8 +9,8 @@ describe("server session lookup", () => {
     const response = await auth.client.handler(
       request("/sign-in/magic-link", {
         email: "User@Example.COM",
-        callbackURL: "https://www.example.com/confirmed",
-        errorCallbackURL: "https://www.example.com/retry",
+        callbackURL: "https://www.example.com/?confirmed=1",
+        errorCallbackURL: "https://www.example.com/",
       }),
     );
     expect(response.status).toBe(200);
@@ -19,10 +19,10 @@ describe("server session lookup", () => {
     const token = new URL(url).searchParams.get("token");
     expect(token).toBeTruthy();
     expect(new URL(url).searchParams.get("callbackURL")).toBe(
-      "https://www.example.com/confirmed",
+      "https://www.example.com/?confirmed=1",
     );
     expect(new URL(url).searchParams.get("errorCallbackURL")).toBe(
-      "https://www.example.com/retry",
+      "https://www.example.com/",
     );
     const expiry = (await rows("auth_verifications"))[0]?.expires_at;
     if (!(expiry instanceof Date))
@@ -37,7 +37,7 @@ describe("server session lookup", () => {
     const verified = await auth.client.handler(new Request(url));
     expect(verified.status).toBe(302);
     expect(verified.headers.get("location")).toBe(
-      "https://www.example.com/confirmed",
+      "https://www.example.com/?confirmed=1",
     );
     const setCookie = verified.headers.get("set-cookie");
     expect(setCookie).toContain("Secure");
@@ -65,7 +65,7 @@ describe("server session lookup", () => {
 
     const replay = await auth.client.handler(new Request(url));
     expect(replay.headers.get("location")).toBe(
-      "https://www.example.com/retry?error=INVALID_TOKEN",
+      "https://www.example.com/?error=INVALID_TOKEN",
     );
     expect(await rows("auth_sessions")).toHaveLength(1);
 
@@ -108,6 +108,11 @@ describe("server session lookup", () => {
 
     const response = await auth.client.handler(new Request(url));
     expect(response.headers.get("location")).toContain("error=INVALID_TOKEN");
+    expect(
+      new URL(response.headers.get("location") ?? "").searchParams.has(
+        "confirmed",
+      ),
+    ).toBe(false);
     expect(await rows("auth_sessions")).toHaveLength(0);
   });
 

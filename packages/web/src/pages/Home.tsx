@@ -1,3 +1,6 @@
+import { useNavigate } from "@solidjs/router";
+import { createEffect, createSignal, Show } from "solid-js";
+import { authenticatedDestination, getAuthClient } from "../lib/auth.js";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 
 import { Layout } from "../layouts/Layout.jsx";
@@ -14,11 +17,42 @@ export function Home(props: {
 }) {
   usePageMetadata("dotheyplaytoday", description);
 
+  const navigate = useNavigate();
+  const [linkFailed, setLinkFailed] = createSignal(false);
+  createEffect(
+    () => undefined,
+    () => {
+      let active = true;
+      setLinkFailed(new URLSearchParams(window.location.search).has("error"));
+      void getAuthClient()
+        .then((client) => client.getSession())
+        .then((result) => {
+          if (active && result.data) {
+            navigate(authenticatedDestination(window.location.search), {
+              replace: true,
+            });
+          }
+        })
+        .catch((error: unknown) => {
+          console.error("Failed to check the session", error);
+        });
+      return () => {
+        active = false;
+      };
+    },
+  );
+
   return (
     <Layout
       homeHref={props.homeHref}
       headerAction={{ href: "#signup", label: "Sign up" }}
     >
+      <Show when={linkFailed()}>
+        <p class="form-error form-error-banner" role="alert">
+          This link is invalid or has expired.{" "}
+          <a href="/sign-in">Request a new link</a>.
+        </p>
+      </Show>
       <section class="hero">
         <h1 class="hero-headline">
           Your team plays
@@ -33,6 +67,9 @@ export function Home(props: {
         <div class="hero-actions">
           <a class="btn btn-primary" href="#signup">
             Get game-day updates
+          </a>
+          <a class="btn btn-secondary" href="/sign-in">
+            Sign in
           </a>
         </div>
       </section>

@@ -9,6 +9,8 @@ import {
 import { createMemo, Show } from "solid-js";
 
 import { withApiClient } from "./lib/api.js";
+import { AuthenticatedHome } from "./pages/AuthenticatedHome.jsx";
+import { SignIn } from "./pages/SignIn.jsx";
 import { Feedback } from "./pages/Feedback.jsx";
 import { Home } from "./pages/Home.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
@@ -33,6 +35,8 @@ const routes = defineRoutes([
       return <Home homeHref={paths()} subjects={subjects()} />;
     },
   }),
+  defineRoute({ path: "/home", component: AuthenticatedHome }),
+  defineRoute({ path: "/sign-in", component: SignIn }),
   defineRoute({
     path: "/feedback",
     component: () => <Feedback homeHref={paths()} />,

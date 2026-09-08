@@ -1051,3 +1051,12 @@ select.form-input {
     animation: none;
   }
 }
+
+.confirmation-banner {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--kelly);
+  border-radius: 0.5rem;
+  color: var(--kelly-deep);
+  background: var(--paper);
+}
