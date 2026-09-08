@@ -5,6 +5,7 @@ import type { Id } from "@dtpt/core/lib/id/service";
 import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
 import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
 import {
+  EmailAddress,
   EmailAddressFromString,
   usersTable,
 } from "@dtpt/core/modules/users/schema";
@@ -31,7 +32,13 @@ import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
 
-const decodeEmail = Schema.decodeUnknownSync(EmailAddressFromString);
+// Unknown addresses have no recipient in Better Auth's merged request context.
+const MagicLinkContext = Schema.Struct({
+  magicLinkRecipient: Schema.optionalKey(
+    Schema.Struct({ email: EmailAddress, emailVerified: Schema.Boolean }),
+  ),
+});
+const decodeMagicLinkContext = Schema.decodeUnknownSync(MagicLinkContext);
 
 const createAuthPool = (connectionString: string) =>
   Effect.acquireRelease(
@@ -116,6 +123,15 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
                 callbackURL: callbackURL.href,
                 errorCallbackURL: new URL("/", webUrl).href,
               },
+              context: {
+                magicLinkRecipient:
+                  user === null
+                    ? undefined
+                    : {
+                        email: email.value,
+                        emailVerified: user.user.emailVerified,
+                      },
+              },
             },
           };
         }),
@@ -125,20 +141,17 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           disableSignUp: true,
           expiresIn: 15 * 60,
           storeToken: "hashed",
-          sendMagicLink: async (options, endpoint) => {
+          sendMagicLink: (options, endpoint) => {
             if (endpoint === undefined) return;
 
-            const normalized = decodeEmail(options.email);
-            const user =
-              await endpoint.context.internalAdapter.findUserByEmail(
-                normalized,
-              );
+            const { magicLinkRecipient: recipient } = decodeMagicLinkContext(
+              endpoint.context,
+            );
+            if (recipient === undefined) return;
 
-            if (user === null) return;
-
-            const send = Boolean.match(user.user.emailVerified, {
-              onTrue: () => sendSignInLink(normalized, options.url),
-              onFalse: () => sendConfirmationLink(normalized, options.url),
+            const send = Boolean.match(recipient.emailVerified, {
+              onTrue: () => sendSignInLink(recipient.email, options.url),
+              onFalse: () => sendConfirmationLink(recipient.email, options.url),
             });
 
             cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
