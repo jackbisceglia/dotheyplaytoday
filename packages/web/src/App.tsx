@@ -33,7 +33,7 @@ const getUser = query(async (pathname: string, search: string) => {
   if (error) throw new Error(error.message, { cause: error });
 
   if (pathname === "/" && data) return redirect(`/home${search}`);
-  if (pathname === "/home" && !data) return redirect("/sign-in");
+  if (pathname === "/home" && !data) return redirect("/");
 
   return data?.user;
 }, "user");

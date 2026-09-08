@@ -62,7 +62,7 @@ it("does not grant access from the confirmation marker", async () => {
   vi.stubEnv("SSR", false);
   getSession.mockResolvedValue({ data: null, error: null });
   await expect(preload("/home", "?confirmed=1")).resolves.toSatisfy(
-    (response: Response) => response.headers.get("Location") === "/sign-in",
+    (response: Response) => response.headers.get("Location") === "/",
   );
   await expect(preload("/")).resolves.toBeUndefined();
 });

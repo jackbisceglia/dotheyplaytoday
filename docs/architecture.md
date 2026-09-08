@@ -308,7 +308,7 @@ client as a single shared instance with credentials for browser session reads an
 `/sign-in` link requests. Route preloads check authentication in the browser.
 Signed-in visitors to `/` redirect to `/home`, carrying `confirmed=1`. `/home`
 checks the session before displaying user content and redirects signed-out
-visitors to `/sign-in`. A verified session and the confirmation marker show the
+visitors to `/`. A verified session and the confirmation marker show the
 welcome banner; history replacement consumes the marker without removing other
 query parameters or history state. Failed links display a replacement-link action
 and never a welcome banner. Account editing remains separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose
