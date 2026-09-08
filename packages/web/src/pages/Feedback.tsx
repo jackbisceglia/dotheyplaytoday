@@ -8,6 +8,7 @@ import { createSignal, Show } from "solid-js";
 import { Layout } from "../layouts/Layout.jsx";
 import { withApiClient } from "../lib/api.js";
 import { usePageMetadata } from "../lib/metadata.js";
+import { Router } from "../router.js";
 
 const getSubmitErrorMessage = (error: unknown) =>
   Match.value(error).pipe(
@@ -21,7 +22,7 @@ const getSubmitErrorMessage = (error: unknown) =>
     ),
   );
 
-export function Feedback(props: { readonly homeHref: string }) {
+export default function Feedback() {
   usePageMetadata(
     "Feedback | dotheyplaytoday",
     "Request a league, team, or sport, or send general feedback.",
@@ -75,10 +76,7 @@ export function Feedback(props: { readonly homeHref: string }) {
   };
 
   return (
-    <Layout
-      homeHref={props.homeHref}
-      headerAction={{ href: props.homeHref, label: "Home" }}
-    >
+    <Layout headerAction={{ href: Router.paths(), label: "Home" }}>
       <section class="feedback-page">
         <div class="feedback-heading">
           <h1 class="feedback-title">
@@ -89,8 +87,8 @@ export function Feedback(props: { readonly homeHref: string }) {
             </span>
           </h1>
           <p class="feedback-copy">
-            Request a league, team, or sport, or let us know if something is
-            not working.
+            Request a league, team, or sport, or let us know if something is not
+            working.
           </p>
         </div>
 

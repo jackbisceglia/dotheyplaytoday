@@ -1,6 +1,8 @@
-import { Show } from "solid-js";
 import type { ParentProps } from "solid-js";
+import { Show } from "solid-js";
+
 import { BrandMark } from "../modules/ui/BrandMark.jsx";
+import { Router } from "../router.js";
 
 type HeaderAction = {
   readonly href: string;
@@ -8,7 +10,7 @@ type HeaderAction = {
 };
 
 type LayoutProps = ParentProps<{
-  readonly homeHref: string;
+  readonly homeHref?: string;
   readonly headerAction?: HeaderAction;
 }>;
 
@@ -28,7 +30,7 @@ export function Layout(props: LayoutProps) {
       </a>
 
       <header class="site-header">
-        <a class="wordmark" href={props.homeHref}>
+        <a class="wordmark" href={props.homeHref ?? Router.paths()}>
           <BrandMark class="wordmark-mark" />
           <span class="visually-hidden">Do they play today</span>
           <span aria-hidden="true">
@@ -52,7 +54,7 @@ export function Layout(props: LayoutProps) {
 
       <footer class="site-footer">
         <span>dotheyplaytoday</span>
-        <a class="footer-link" href="/feedback">
+        <a class="footer-link" href={Router.paths.feedback()}>
           Feedback
         </a>
       </footer>

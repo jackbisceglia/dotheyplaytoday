@@ -305,13 +305,18 @@ there is no Account model. Identity comes exclusively from the session.
 Browser API requests include credentials. API cookies remain host-only, so Web
 SSR cannot assume it has the session cookie. Web uses Better Auth's framework-neutral
 client as a single shared instance with credentials for browser session reads and
-`/sign-in` link requests. The app shell shares one browser session query through
-context. The query returns a user or null and does not perform navigation.
-The landing route redirects signed-in visitors to `/home`, carrying `confirmed=1`.
-A shared authenticated layout protects `/home` and future authenticated routes,
-handles loading and errors, and redirects signed-out visitors to `/`. Protected
-pages read the resolved user from that layout's context. Public routes remain
-accessible without a session. A verified session and the confirmation marker show the
+`/sign-in` link requests. `App` composes the router and app shell; the route tree
+uses lazy page imports so pages can use the router's typed paths without eager
+module cycles. The landing feature owns catalog loading and its signed-in redirect.
+Session consumers read one cached user query through their own memos. The
+browser-only read boundary leaves the SSR placeholder outside the query cache.
+`RequireAuth` protects `/home` and future authenticated routes, handles pending,
+error, and signed-out states, and supplies the resolved user through context.
+Public routes remain accessible without a session. The landing route redirects
+signed-in visitors to `/home`, carrying `confirmed=1`; the auth boundary redirects
+signed-out visitors to `/`. Authenticated SSR and the landing-page flash remain
+separate work. Confirmation and invalid-link UI are shared auth components.
+A verified session and the confirmation marker show the
 welcome banner; history replacement consumes the marker without removing other
 query parameters or history state. Failed links display a replacement-link action
 and never a welcome banner. Account editing remains separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose

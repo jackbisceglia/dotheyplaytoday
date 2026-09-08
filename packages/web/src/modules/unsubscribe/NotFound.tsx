@@ -1,4 +1,6 @@
-export function NotFound(props: { readonly homeHref: string }) {
+import { Router } from "../../router.js";
+
+export function NotFound() {
   return (
     <section class="unsubscribe">
       <div class="unsubscribe-confirm">
@@ -11,7 +13,7 @@ export function NotFound(props: { readonly homeHref: string }) {
           This unsubscribe link is invalid or expired. Grab a fresh one from a
           dotheyplaytoday email to stop future messages.
         </p>
-        <a class="btn btn-secondary" href={props.homeHref}>
+        <a class="btn btn-secondary" href={Router.paths()}>
           Back home
         </a>
       </div>

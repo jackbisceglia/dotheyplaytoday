@@ -2,6 +2,7 @@ import { Match } from "effect";
 import { createSignal } from "solid-js";
 
 import { withApiClient } from "../../lib/api.js";
+import { Router } from "../../router.js";
 import type { UnsubscribeTokenSuccess } from "./token.js";
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -16,7 +17,6 @@ const getSubmitErrorMessage = (error: unknown) =>
   );
 
 export function Confirmation(props: {
-  readonly homeHref: string;
   readonly token: UnsubscribeTokenSuccess;
 }) {
   const [formError, setFormError] = createSignal<string>();
@@ -94,7 +94,7 @@ export function Confirmation(props: {
           We processed this unsubscribe. If you've already used the link,
           nothing changes.
         </p>
-        <a class="btn btn-secondary" href={props.homeHref}>
+        <a class="btn btn-secondary" href={Router.paths()}>
           Back home
         </a>
       </div>

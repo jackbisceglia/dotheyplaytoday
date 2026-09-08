@@ -3,20 +3,24 @@ import { createSignal, Show } from "solid-js";
 import { Layout } from "../layouts/Layout.jsx";
 import { auth } from "../lib/auth.js";
 import { usePageMetadata } from "../lib/metadata.js";
+import { Router } from "../router.js";
 
-export function SignIn() {
+export default function SignIn() {
   usePageMetadata(
     "Sign in | dotheyplaytoday",
     "Get a link to sign in to your account.",
   );
+
   const [email, setEmail] = createSignal("");
   const [sending, setSending] = createSignal(false);
   const [sent, setSent] = createSignal(false);
   const [error, setError] = createSignal<string>();
+
   const submit = (event: SubmitEvent) => {
     event.preventDefault();
     setSending(true);
     setError(undefined);
+
     void auth.signIn
       .magicLink({ email: email() })
       .then((result) => {
@@ -29,8 +33,9 @@ export function SignIn() {
       )
       .finally(() => setSending(false));
   };
+
   return (
-    <Layout homeHref="/" headerAction={{ href: "/", label: "Sign up" }}>
+    <Layout headerAction={{ href: Router.paths(), label: "Sign up" }}>
       <section class="signup">
         <h1 class="signup-title">Sign in</h1>
         <Show
