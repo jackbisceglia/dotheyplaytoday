@@ -107,13 +107,10 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
             ? { ...found.user, email: input.value.email }
             : null;
 
-          const callbackUrl = Boolean.match(
-            user === null || user.emailVerified,
-            {
-              onTrue: () => webUrl.href,
-              onFalse: () => new URL("/?confirmed=1", webUrl).href,
-            },
-          );
+          const callbackUrl = Boolean.match(user?.emailVerified === true, {
+            onTrue: () => webUrl.href,
+            onFalse: () => new URL("/?confirmed=1", webUrl).href,
+          });
 
           // HTTP origin middleware validates caller URLs before this hook runs.
           // This also covers registration's direct server API call.
