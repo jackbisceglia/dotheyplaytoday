@@ -138,6 +138,7 @@ export const SubscriptionsLayer = Layer.effect(
       Effect.fn("Subscriptions.listNotificationRecipients")(function* () {
         const rows = yield* database.query.subscriptionsTable
           .findMany({
+            where: { user: { emailVerified: true } },
             with: {
               user: true,
               subject: true,
