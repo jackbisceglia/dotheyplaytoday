@@ -10,21 +10,18 @@ import { Effect } from "effect";
 import { beforeEach } from "vitest";
 
 import { EmailResponseError } from "../../errors.js";
-import {
-  renderConfirmationLink,
-  sendConfirmationLink,
-} from "../confirmation.js";
+import { renderSignInLink, sendSignInLink } from "../sign-in.js";
 
-describe("confirmation email", () => {
+describe("sign-in email", () => {
   beforeEach(resetEmailMock);
 
   it.effect(
     "renders the action and unchanged URL in text and escaped HTML",
     () =>
       Effect.gen(function* () {
-        const rendered = yield* renderConfirmationLink(url);
-        expect(rendered.subject).toBe("Confirm your updates");
-        expect(rendered.body.text).toContain("Confirm your updates:");
+        const rendered = yield* renderSignInLink(url);
+        expect(rendered.subject).toBe("Sign in to dotheyplaytoday");
+        expect(rendered.body.text).toContain("Sign in:");
         expect(rendered.body.text).toContain(url);
         expect(rendered.body.text).toContain("15 minutes");
         expect(rendered.body.text).toContain("only be used once");
@@ -37,12 +34,12 @@ describe("confirmation email", () => {
     "sends one email with the correct recipient, content, and idempotency key",
     () =>
       Effect.gen(function* () {
-        yield* sendConfirmationLink(recipient, url);
+        yield* sendSignInLink(recipient, url);
         expect(resendMock.send).toHaveBeenCalledOnce();
         expect(resendMock.send.mock.calls[0]?.[0]).toMatchObject({
           from: "dotheyplaytoday <sender@example.com>",
           to: recipient,
-          subject: "Confirm your updates",
+          subject: "Sign in to dotheyplaytoday",
         });
         expect(resendMock.send.mock.calls[0]?.[0].text).toContain(url);
         expect(resendMock.send.mock.calls[0]?.[1]).toEqual({
@@ -58,9 +55,7 @@ describe("confirmation email", () => {
       headers: null,
     });
     return Effect.gen(function* () {
-      const error = yield* sendConfirmationLink(recipient, url).pipe(
-        Effect.flip,
-      );
+      const error = yield* sendSignInLink(recipient, url).pipe(Effect.flip);
       expect(error).toEqual(
         new EmailResponseError({
           code: "validation_error",

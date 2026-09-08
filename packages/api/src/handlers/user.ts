@@ -53,7 +53,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
     const subscriptions = yield* Subscriptions;
 
     const requestMagicLink = Effect.fn("User.requestMagicLink")(
-      function* (email: EmailAddress, headers: Headers.Input) {
+      function* (email: EmailAddress, headers: Headers.Headers) {
         yield* auth.use((client) =>
           client.api.signInMagicLink({
             headers,
