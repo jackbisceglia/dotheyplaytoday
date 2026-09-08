@@ -1,5 +1,11 @@
 # Production deployment
 
+Registration confirmation must not deploy independently. Before merging it to
+`main` (which automatically deploys), include notification eligibility filtering
+and the grandfathering migration for existing recipients. This feature branch
+includes both; preserve them as one deployment unit and follow the cutover
+requirements below.
+
 Production deploys run automatically after a push lands on `main`. The workflow
 has no manual dispatch trigger, so a branch or tag cannot use it to deploy
 unreviewed code with production credentials. GitHub serializes production
@@ -110,9 +116,9 @@ Pending registration, the verified-only recipient query, and migration
 `0005_grandfather_subscribers.sql` are one deployment unit. Do not release this
 slice or pending registration independently: the filter without grandfathering
 stops trusted subscribers' delivery, and pending registration without the filter
-allows unconfirmed users into notification processing. The current checkout's
-registration behavior must be replaced by the companion registration slice
-before release. API route restructuring is independent of the recipient query.
+allows unconfirmed users into notification processing. Registration is integrated
+in this feature branch. API route restructuring is independent of the recipient
+query.
 
 Migration 0005 names exactly ten subscriber IDs, preserving the fixed cohort
 audited on 2026-09-06 in the earlier combined worktree. A fresh read-only audit
@@ -187,3 +193,12 @@ persisted outcome only; these checks do not validate Better Auth redemption,
 session creation, or deployed Worker/Hyperdrive execution. `pnpm lint`,
 `pnpm typecheck` (after building the imported package outputs), and 26 existing
 focused tests passed. No test files or test plans are changed in this slice.
+
+## API route restructure
+
+Registration and token deletion now use `POST /api/user` and
+`POST /api/user/unsubscribe`. Release the Web callers with the API changes.
+Existing emailed links still land on Web `/unsubscribe/:token`, so no old API
+alias is retained. Authenticated reads use `GET /api/user` and
+`GET /api/user/subscription`. This restructure adds no migration or change to
+signup, confirmation-email, or notification behavior.

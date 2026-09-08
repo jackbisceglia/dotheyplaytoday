@@ -6,8 +6,7 @@
 
 **Subject** and **Event** are intentionally reusable domain terms. Sports teams and games are the current production implementation, but the model can support other event-driven subjects without redefining the core behavior.
 
-Users can subscribe to up to four teams. The passwordless registration rollout
-preserves saved preferences when an existing normalized email is submitted again.
+Registration uses `POST /api/user`. Users can subscribe to up to four teams. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
 
 ## Notifications
 
@@ -24,10 +23,13 @@ preserves saved preferences when an existing normalized email is submitted again
 
 ## Registration and confirmation rollout
 
-- New registrations save subscriptions while the user remains pending (`emailVerified: false`). The companion registration slice supplies the background confirmation/sign-in magic link.
-- Redeeming a magic link verifies email ownership and creates a session. Saved subscriptions become eligible under ordinary scheduling rules; confirmation does not send an immediate notification or reset last-sent state.
+- New users start unverified and receive a “Confirm your updates” magic link. The success message is “Check your email to start your updates.”
+- Repeat signup sends confirmation copy for an unverified user or sign-in copy for a verified user. Neither path changes saved preferences, including when concurrent requests submit the same normalized email.
+- Duplicate signup shows: “You already have an account. We’ve emailed you a link to sign in. Your existing teams and schedule haven’t changed.”
+- Magic links expire after 15 minutes and can be redeemed once. Redemption verifies email ownership and creates a session. Saved subscriptions become eligible under ordinary scheduling rules; confirmation does not send an immediate notification or reset last-sent state.
+- Link issuance follows the signup transaction; email delivery runs in the API Worker's background execution lifetime. Issuance or delivery failures leave saved preferences intact, and the user can request a replacement link.
 - Migration 0005 grants notification eligibility to exactly ten owner-trusted existing subscribers identified in the [production rollout audit](./runbooks/production-deploy.md#notification-eligibility-and-grandfathering-rollout). This deliberate delivery decision is not evidence of mailbox ownership and creates no sessions; these users still redeem a magic link to sign in.
-- Pending registration, the recipient filter, and the fixed-cohort migration must reach production together. The registration implementation is a companion slice of this rollout.
+- Pending registration, the recipient filter, and the fixed-cohort migration must reach production together.
 
 ## Authentication
 

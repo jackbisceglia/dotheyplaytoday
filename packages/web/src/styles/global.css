@@ -384,13 +384,6 @@ button {
   border-radius: 3px;
 }
 
-.league-row .coming-soon-tooltip {
-  top: 50%;
-  right: 0;
-  left: auto;
-  transform: translateY(-50%);
-}
-
 .league-row > * {
   flex: 0 0 auto;
 }
@@ -421,19 +414,20 @@ button {
 }
 
 .coming-soon {
-  position: relative;
   display: inline-flex;
 }
 
+/* Fixed, with top/left set by the component: the league row scrolls, and any
+   scroll container clips on both axes, so an absolute tooltip cannot sit
+   beneath its pill. */
 .coming-soon-tooltip {
-  position: absolute;
+  position: fixed;
   z-index: 10;
-  top: calc(100% + 8px);
-  left: 50%;
   width: max-content;
   max-width: min(220px, 80vw);
   padding: 6px 9px;
   transform: translateX(-50%);
+  pointer-events: none;
   border: 2px solid var(--ink);
   background: var(--ink);
   color: var(--paper);
@@ -449,8 +443,7 @@ button {
     visibility 0.12s;
 }
 
-.coming-soon:hover .coming-soon-tooltip,
-.coming-soon:focus-within .coming-soon-tooltip {
+.coming-soon-tooltip[data-visible="true"] {
   opacity: 1;
   visibility: visible;
 }

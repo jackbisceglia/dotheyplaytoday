@@ -2,10 +2,8 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 import type { Id } from "@dtpt/core/lib/id/service";
-import {
-  MagicLink,
-  sendMagicLink,
-} from "@dtpt/core/modules/email/transactional/magic-link";
+import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
+import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
 import {
   EmailAddressFromString,
   usersTable,
@@ -19,7 +17,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { magicLink } from "better-auth/plugins";
-import { Context, Effect, Layer, Redacted, Schema } from "effect";
+import { Boolean, Context, Effect, Layer, Redacted, Schema } from "effect";
 import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
@@ -32,6 +30,11 @@ const createAuthPool = (connectionString: string) =>
     (pool) => Effect.promise(() => pool.end()),
   );
 
+export class AuthRequestError extends Schema.TaggedErrorClass<AuthRequestError>()(
+  "AuthRequestError",
+  { cause: Schema.Defect() },
+) {}
+
 export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
   make: Effect.fn("Auth.make")(function* (connectionString: string) {
     const config = yield* AuthConfig;
@@ -42,7 +45,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
     // Preserve runtime config and Id when Better Auth calls back into Effect.
     const runPromise = Effect.runPromiseWith(yield* Effect.context<Id>());
 
-    return betterAuth({
+    const client = betterAuth({
       appName: "dotheyplaytoday",
       basePath: "/api/auth",
       baseURL: apiUrl.origin,
@@ -91,17 +94,24 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
 
             if (user === null) return;
 
-            cloudflare.raw.waitUntil(
-              runPromise(
-                sendMagicLink(
-                  MagicLink.make({ recipient: normalized, url: options.url }),
-                ).pipe(Effect.ignore),
-              ),
-            );
+            const send = Boolean.match(user.user.emailVerified, {
+              onTrue: () => sendSignInLink(normalized, options.url),
+              onFalse: () => sendConfirmationLink(normalized, options.url),
+            });
+
+            cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
           },
         }),
       ],
     });
+
+    const use = <A>(f: (auth: typeof client) => PromiseLike<A>) =>
+      Effect.tryPromise({
+        try: () => f(client),
+        catch: (cause) => new AuthRequestError({ cause }),
+      });
+
+    return { use, client };
   }),
 }) {}
 

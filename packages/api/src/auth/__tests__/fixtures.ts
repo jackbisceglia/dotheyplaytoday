@@ -1,6 +1,7 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Id } from "@dtpt/core/lib/id/service";
-import { sendMagicLink } from "@dtpt/core/modules/email/transactional/magic-link";
+import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
+import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
@@ -17,15 +18,12 @@ vi.mock("drizzle-orm/node-postgres", () => ({
     return drizzle({ client: storage.current });
   },
 }));
-vi.mock(
-  "@dtpt/core/modules/email/transactional/magic-link",
-  async (importOriginal) => ({
-    ...(await importOriginal<
-      typeof import("@dtpt/core/modules/email/transactional/magic-link")
-    >()),
-    sendMagicLink: vi.fn(() => Effect.void),
-  }),
-);
+vi.mock("@dtpt/core/modules/email/transactional/confirmation", () => ({
+  sendConfirmationLink: vi.fn(() => Effect.void),
+}));
+vi.mock("@dtpt/core/modules/email/transactional/sign-in", () => ({
+  sendSignInLink: vi.fn(() => Effect.void),
+}));
 
 let client = 0;
 
@@ -58,7 +56,10 @@ export const makeAuthFixture = async () => {
   ) =>
     (await database.query<Record<string, unknown>>(`SELECT * FROM ${table}`))
       .rows;
-  const sender = vi.mocked(sendMagicLink).mockClear();
+  const confirmation = vi.mocked(sendConfirmationLink).mockReset();
+  confirmation.mockImplementation(() => Effect.void);
+  const signIn = vi.mocked(sendSignInLink).mockReset();
+  signIn.mockImplementation(() => Effect.void);
   const pending: Promise<unknown>[] = [];
   const layer = Layer.mergeAll(
     ConfigProvider.layer(
@@ -111,11 +112,13 @@ export const makeAuthFixture = async () => {
     });
 
   return {
+    layer,
     auth,
     makeAuth,
     database,
     rows,
-    sendMagicLink: sender,
+    sendConfirmationLink: confirmation,
+    sendSignInLink: signIn,
     pending,
     request,
   };

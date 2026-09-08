@@ -51,10 +51,13 @@ export const seedUsers = Effect.fn("Seed.Users")(function* (
 
   return yield* Effect.forEach(decodedUsers, (seedUser) =>
     Effect.gen(function* () {
-      const { user } = yield* users.upsertForSignup(
-        seedUser.email,
-        seedUser.timezone,
-      );
+      const user = yield* users
+        .create(seedUser.email, seedUser.timezone)
+        .pipe(
+          Effect.catchTag("UserAlreadyExists", () =>
+            users.getByEmail(seedUser.email),
+          ),
+        );
 
       yield* subscriptions.replaceForUser({
         user,

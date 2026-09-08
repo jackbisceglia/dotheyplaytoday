@@ -4,20 +4,8 @@ export {
   createDatabaseLayerFromHyperdriveResource,
 } from "./lib/database/service.js";
 export { Api } from "./contracts/api.js";
-export { PingGroup, PingResponse } from "./contracts/ping.js";
-export {
-  SignupGroup,
-  SignupRateLimited,
-  SignupRequest,
-  SignupResponse,
-} from "./contracts/signup.js";
-export { SubjectsGroup, SubjectsResponse } from "./contracts/subjects.js";
-export {
-  UnsubscribeRequest,
-  UnsubscribeResponse,
-  UnsubscribeGroup,
-  UnsubscribeRateLimited,
-} from "./contracts/unsubscribe.js";
+export { PingApi, PingResponse } from "./contracts/ping.js";
+export { SubjectsApi, SubjectsResponse } from "./contracts/subjects.js";
 export { ApiConfig, ApiUrl, ServerBoundPort } from "./lib/config/api.js";
 export type { ApiConfig as ApiConfigShape } from "./lib/config/api.js";
 export { WebConfig, WebUrl } from "./lib/config/web.js";
@@ -97,15 +85,13 @@ export {
 } from "./modules/email/resend.js";
 export { Notification } from "./modules/notifier/notification.js";
 export {
-  renderSignupConfirmation,
-  sendSignupConfirmation,
-  SignupConfirmation,
+  renderConfirmationLink,
+  sendConfirmationLink,
 } from "./modules/email/transactional/confirmation.js";
 export {
-  MagicLink,
-  renderMagicLink,
-  sendMagicLink,
-} from "./modules/email/transactional/magic-link.js";
+  renderSignInLink,
+  sendSignInLink,
+} from "./modules/email/transactional/sign-in.js";
 export {
   SubjectEvent,
   SubjectEventInsert,
@@ -151,5 +137,25 @@ export {
   UserInsert,
   usersTable,
 } from "./modules/users/schema.js";
-export { UserNotFound, Users, UsersLayer } from "./modules/users/service.js";
-export type { UpsertContext } from "./modules/users/service.js";
+export {
+  UserAlreadyExists,
+  UserNotFound,
+  Users,
+  UsersLayer,
+} from "./modules/users/service.js";
+
+export {
+  UserApi,
+  UserResponse,
+  DuplicateSignup,
+  SignupRateLimited,
+  SignupRequest,
+  SignupResponse,
+  UnsubscribeRateLimited,
+  UnsubscribeRequest,
+  UnsubscribeResponse,
+} from "./contracts/user.js";
+export {
+  SubscriptionGroup,
+  SubscriptionsResponse,
+} from "./contracts/subscription.js";

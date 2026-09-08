@@ -34,6 +34,11 @@ const getSubmitErrorMessage = (error: unknown) =>
       () => "Check your email, timezone, send time, and teams, then try again.",
     ),
     Match.when(
+      { _tag: "DuplicateSignup" },
+      () =>
+        "You already have an account. We’ve emailed you a link to sign in. Your existing teams and schedule haven’t changed.",
+    ),
+    Match.when(
       { _tag: "SignupRateLimited" },
       () => "Too many signup attempts. Wait a minute and try again.",
     ),
@@ -202,7 +207,7 @@ export function Form(props: FormProps) {
 
     setSubmitting(true);
     void withApiClient((client) =>
-      client.signup.submit({
+      client.user.create({
         payload: {
           email: emailAddress,
           timezone: timezoneValue,
@@ -226,16 +231,10 @@ export function Form(props: FormProps) {
       });
   };
 
-  const edit = () => {
-    setSucceeded(false);
-    queueMicrotask(() => emailInput?.focus());
-  };
-
   return (
     <div class="signup-root" ref={root}>
       <Success
         hidden={!isSucceeded()}
-        onEdit={edit}
         titleRef={(element) => (successTitle = element)}
       />
 

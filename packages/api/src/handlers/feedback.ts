@@ -7,7 +7,7 @@ import { Feedback, feedbackTable } from "@dtpt/core/modules/feedback/schema";
 import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
-import { getRateLimitKey, RateLimiter } from "./rate-limit/service.js";
+import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
 
 export const FeedbackGroupLayer = HttpApiBuilder.group(
   Api,

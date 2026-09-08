@@ -1,6 +1,12 @@
-import { HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi";
+import {
+  HttpApi,
+  HttpApiEndpoint,
+  HttpApiGroup,
+} from "effect/unstable/httpapi";
 
-export const AuthGroup = HttpApiGroup.make("auth")
-  .add(HttpApiEndpoint.get("get", "/*"))
-  .add(HttpApiEndpoint.post("post", "/*"))
-  .prefix("/auth");
+export const AuthApi = HttpApi.make("auth").add(
+  HttpApiGroup.make("auth")
+    .add(HttpApiEndpoint.get("get", "/*"))
+    .add(HttpApiEndpoint.post("post", "/*"))
+    .prefix("/auth"),
+);

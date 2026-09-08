@@ -1,33 +1,45 @@
 import { makeAuthFixture } from "./fixtures.js";
 import { describe, expect, it } from "vitest";
-import { Effect, FileSystem, Layer, Path } from "effect";
-import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import { Effect } from "effect";
+import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { WebUrl } from "@dtpt/core/lib/config/web";
-import { HttpRouter } from "effect/unstable/http";
 
 describe("authentication boundaries", () => {
-  it("returns identical success for existing and unknown emails, sending only to the existing user", async () => {
-    const { auth, rows, sendMagicLink, request, pending } =
-      await makeAuthFixture();
-    for (const email of ["User@Example.COM", "unknown@example.com"]) {
-      const response = await auth.handler(
-        request("/sign-in/magic-link", { email }),
+  it.each([false, true])(
+    "returns identical known/unknown responses and selects the stored verification state (verified: %s)",
+    async (verified) => {
+      const {
+        auth,
+        database,
+        rows,
+        sendConfirmationLink,
+        sendSignInLink,
+        request,
+        pending,
+      } = await makeAuthFixture();
+      await database.query("UPDATE users SET email_verified = $1", [verified]);
+      for (const email of ["User@Example.COM", "unknown@example.com"]) {
+        const response = await auth.client.handler(
+          request("/sign-in/magic-link", { email }),
+        );
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toEqual({ status: true });
+      }
+      await Promise.all(pending);
+      expect(sendConfirmationLink).toHaveBeenCalledTimes(verified ? 0 : 1);
+      expect(sendSignInLink).toHaveBeenCalledTimes(verified ? 1 : 0);
+      const sender = verified ? sendSignInLink : sendConfirmationLink;
+      expect(sender.mock.calls[0]?.[0]).toBe("user@example.com");
+      expect(sender.mock.calls[0]?.[1]).toContain(
+        "https://api.example.com/api/auth/magic-link/verify?token=",
       );
-      expect(response.status).toBe(200);
-      await expect(response.json()).resolves.toEqual({ status: true });
-    }
-    await Promise.all(pending);
-    expect(sendMagicLink).toHaveBeenCalledOnce();
-    expect(sendMagicLink.mock.calls[0]?.[0].recipient).toBe("user@example.com");
-    expect(sendMagicLink.mock.calls[0]?.[0].url).toContain(
-      "https://api.example.com/api/auth/magic-link/verify?token=",
-    );
-    expect(await rows("users")).toHaveLength(1);
-  });
+      expect(await rows("users")).toHaveLength(1);
+    },
+  );
 
   it("rejects untrusted request origins and callback URLs", async () => {
-    const { auth, sendMagicLink, request } = await makeAuthFixture();
-    const response = await auth.handler(
+    const { auth, sendConfirmationLink, request } = await makeAuthFixture();
+    const response = await auth.client.handler(
       request(
         "/sign-in/magic-link",
         {
@@ -37,14 +49,14 @@ describe("authentication boundaries", () => {
       ),
     );
     expect(response.status).toBe(403);
-    const callback = await auth.handler(
+    const callback = await auth.client.handler(
       request("/sign-in/magic-link", {
         email: "user@example.com",
         callbackURL: "https://untrusted.example/account",
       }),
     );
     expect(callback.status).toBe(403);
-    expect(sendMagicLink).not.toHaveBeenCalled();
+    expect(sendConfirmationLink).not.toHaveBeenCalled();
   });
 
   it("enforces magic-link rate limits across request-scoped auth instances", async () => {
@@ -52,7 +64,7 @@ describe("authentication boundaries", () => {
     for (let attempt = 0; attempt < 6; attempt++) {
       const response = await (
         await makeAuth()
-      ).handler(
+      ).client.handler(
         request("/sign-in/magic-link", {
           email: "unknown@example.com",
         }),
@@ -61,51 +73,19 @@ describe("authentication boundaries", () => {
     }
   });
 
-  it("mounts Better Auth on the API auth group", async () => {
-    const { Auth } = await import("../auth.js");
-    const { AuthGroupLayer } = await import("../../routes.auth.js");
-    const { AuthGroup } = await import("@dtpt/core/contracts/auth");
-    const { HttpApi, HttpApiBuilder } = await import("effect/unstable/httpapi");
-    const { auth, request } = await makeAuthFixture();
-    const { handler, dispose } = HttpRouter.toWebHandler(
-      HttpApiBuilder.layer(
-        HttpApi.make("ApiV2").add(AuthGroup).prefix("/api"),
-      ).pipe(
-        Layer.provide(AuthGroupLayer),
-        Layer.provide([
-          Layer.succeed(Auth, auth),
-          CloudflareHttpApiPlatformLayer,
-          FileSystem.layerNoop({}),
-          Path.layer,
-        ]),
-      ),
-    );
-    try {
-      const response = await handler(
-        request("/sign-in/magic-link", { email: "unknown@example.com" }),
-      );
-      expect(response.status).toBe(200);
-      await expect(response.json()).resolves.toEqual({ status: true });
-      const session = await handler(request("/get-session"));
-      expect(session.status).toBe(200);
-      await expect(session.json()).resolves.toBeNull();
-    } finally {
-      await dispose();
-    }
-  });
-
   it("registers email delivery without delaying the response", async () => {
-    const { auth, request, sendMagicLink, pending } = await makeAuthFixture();
+    const { auth, request, sendConfirmationLink, pending } =
+      await makeAuthFixture();
     const delivery = Promise.withResolvers<undefined>();
     let webUrl: string | undefined;
-    sendMagicLink.mockImplementationOnce(() =>
+    sendConfirmationLink.mockImplementationOnce(() =>
       Effect.gen(function* () {
         webUrl = yield* WebUrl;
         yield* Effect.promise(() => delivery.promise);
       }),
     );
     try {
-      const response = await auth.handler(
+      const response = await auth.client.handler(
         request("/sign-in/magic-link", { email: "user@example.com" }),
       );
       expect(response.status).toBe(200);
@@ -117,9 +97,39 @@ describe("authentication boundaries", () => {
     }
   });
 
+  it("allows replacement after background delivery failure without changing the user", async () => {
+    const f = await makeAuthFixture();
+    const before = await f.rows("users");
+    f.sendConfirmationLink.mockReturnValueOnce(
+      Effect.fail(
+        new EmailResponseError({
+          message: "Rejected",
+          code: "validation_error",
+          statusCode: 422,
+        }),
+      ),
+    );
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await f.auth.client.handler(
+        f.request("/sign-in/magic-link", { email: "user@example.com" }),
+      );
+      expect(response.status).toBe(200);
+      await Promise.all(f.pending);
+    }
+    expect(await f.rows("users")).toEqual(before);
+    expect(f.sendConfirmationLink).toHaveBeenCalledTimes(2);
+    const firstUrl = f.sendConfirmationLink.mock.calls[0]?.[1];
+    const replacementUrl = f.sendConfirmationLink.mock.calls[1]?.[1];
+    expect(replacementUrl).not.toBe(firstUrl);
+    if (!replacementUrl) throw new Error("Missing replacement link");
+    const redemption = await f.auth.client.handler(new Request(replacementUrl));
+    expect(redemption.status).toBe(302);
+    expect(await f.rows("auth_sessions")).toHaveLength(1);
+  });
+
   it("keeps profile updates outside this foundation", async () => {
     const { auth, request } = await makeAuthFixture();
-    const response = await auth.handler(
+    const response = await auth.client.handler(
       request("/update-user", { image: "https://example.com/photo.png" }),
     );
     expect(response.status).toBe(404);

@@ -1,6 +1,7 @@
 import { Schema } from "effect";
 import * as SchemaTransformation from "effect/SchemaTransformation";
 import {
+  HttpApi,
   HttpApiEndpoint,
   HttpApiError,
   HttpApiGroup,
@@ -28,10 +29,12 @@ export class FeedbackRateLimited extends Schema.TaggedErrorClass<FeedbackRateLim
   { httpApiStatus: 429 },
 ) {}
 
-export const FeedbackGroup = HttpApiGroup.make("feedback").add(
-  HttpApiEndpoint.post("submit", "/feedback", {
-    payload: FeedbackRequest,
-    success: HttpApiSchema.NoContent,
-    error: [HttpApiError.InternalServerError, FeedbackRateLimited],
-  }),
+export const FeedbackApi = HttpApi.make("feedback").add(
+  HttpApiGroup.make("feedback").add(
+    HttpApiEndpoint.post("submit", "/feedback", {
+      payload: FeedbackRequest,
+      success: HttpApiSchema.NoContent,
+      error: [HttpApiError.InternalServerError, FeedbackRateLimited],
+    }),
+  ),
 );
