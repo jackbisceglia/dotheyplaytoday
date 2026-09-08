@@ -84,12 +84,15 @@ export {
   makeEmailLayerResendConfig,
 } from "./modules/email/resend.js";
 export { Notification } from "./modules/notifier/notification.js";
-export { renderSignupConfirmation } from "./modules/email/transactional/confirmation.js";
 export {
-  MagicLink,
-  renderMagicLink,
-  sendMagicLink,
-} from "./modules/email/transactional/magic-link.js";
+  renderConfirmationLink,
+  sendConfirmationLink,
+} from "./modules/email/transactional/confirmation.js";
+export {
+  renderSignInLink,
+  sendSignInLink,
+} from "./modules/email/transactional/sign-in.js";
+export { MagicLink } from "./modules/email/transactional/magic-link.js";
 export {
   SubjectEvent,
   SubjectEventInsert,

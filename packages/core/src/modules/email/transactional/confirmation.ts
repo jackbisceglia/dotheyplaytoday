@@ -2,9 +2,10 @@ import { Effect } from "effect";
 
 import { WebUrl } from "../../../lib/config/web.js";
 import { EmailView, Link, Note, Text } from "../render.js";
-import type { MagicLink } from "./magic-link.js";
+import { EmailLayerResend } from "../resend.js";
+import { deliverMagicLink, type MagicLink } from "./magic-link.js";
 
-export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
+export const renderConfirmationLink = Effect.fn("ConfirmationLink.render")(
   function* (confirmation: MagicLink) {
     const home = yield* WebUrl;
 
@@ -27,4 +28,12 @@ export const renderSignupConfirmation = Effect.fn("SignupConfirmation.render")(
       ],
     });
   },
+);
+
+export const sendConfirmationLink = Effect.fn("ConfirmationLink.send")(
+  function* (link: MagicLink) {
+    const rendered = yield* renderConfirmationLink(link).pipe(Effect.orDie);
+    yield* deliverMagicLink(link.recipient, rendered);
+  },
+  Effect.provide(EmailLayerResend),
 );

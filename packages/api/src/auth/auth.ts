@@ -2,10 +2,9 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 import type { Id } from "@dtpt/core/lib/id/service";
-import {
-  MagicLink,
-  sendMagicLink,
-} from "@dtpt/core/modules/email/transactional/magic-link";
+import { MagicLink } from "@dtpt/core/modules/email/transactional/magic-link";
+import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
+import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
 import {
   EmailAddressFromString,
   usersTable,
@@ -96,14 +95,19 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
 
             if (user === null) return;
 
-            cloudflare.raw.waitUntil(
-              runPromise(
-                sendMagicLink(
-                  MagicLink.make({ recipient: normalized, url: options.url }),
-                  user.user.emailVerified ? "signIn" : "confirmation",
-                ).pipe(Effect.ignore),
-              ),
-            );
+            const link = MagicLink.make({
+              recipient: normalized,
+              url: options.url,
+            });
+            const delivery = Effect.gen(function* () {
+              if (user.user.emailVerified) {
+                return yield* sendSignInLink(link);
+              }
+
+              yield* sendConfirmationLink(link);
+            });
+
+            cloudflare.raw.waitUntil(runPromise(delivery.pipe(Effect.ignore)));
           },
         }),
       ],
