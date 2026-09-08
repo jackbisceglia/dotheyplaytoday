@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { Array, Context, Effect, Layer, Option, Schema } from "effect";
+import { Array, Cause, Context, Effect, Layer, Option, Schema } from "effect";
 import { isSqlError } from "effect/unstable/sql/SqlError";
 
 import {
@@ -173,13 +173,17 @@ export const UsersLayer = Layer.effect(
           .returning()
           .pipe(
             Effect.mapError((error) => {
-              const cause = error.cause;
-              if (
-                isSqlError(cause) &&
-                cause.reason._tag === "UniqueViolation" &&
-                cause.reason.constraint === "users_email_idx"
-              ) {
-                return new UserAlreadyExists({});
+              if (Cause.isCause(error.cause)) {
+                const failure = Option.getOrUndefined(
+                  Cause.findErrorOption(error.cause),
+                );
+                if (
+                  isSqlError(failure) &&
+                  failure.reason._tag === "UniqueViolation" &&
+                  failure.reason.constraint === "users_email_idx"
+                ) {
+                  return new UserAlreadyExists({});
+                }
               }
 
               return new DatabaseWriteError({
