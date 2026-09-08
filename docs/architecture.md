@@ -103,9 +103,12 @@ The pool has one connection and closes with the Worker execution scope.
 Magic-link email uses the existing transactional Email/Resend workflow. After
 eligibility is checked, delivery is registered directly with the Worker's
 `waitUntil`; it needs no further database access and does not delay the response.
-There is no separate auth task queue. Future protected handlers can use
-`auth.api.getSession({ headers })` from the `Auth` service; no session-specific
-or generic API wrapper is introduced before it has a consumer.
+There is no separate auth task queue. Protected reads use
+`auth.use(client => client.api.getSession({ headers }))`; the adapter maps SDK
+rejections to `AuthRequestError` and also exposes the underlying `auth.client`.
+Both reads validate the session user ID through `UserId.makeEffect` and delegate
+persistence and decoding to `Users.get` and `Subscriptions.listForUser`.
+Responses, including errors, set `Cache-Control: no-store`.
 
 Auth rate limiting uses Better Auth's in-memory store, shared across auth
 instances within a Worker isolate. It allows five magic-link requests and ten
@@ -200,6 +203,13 @@ data; the current production owner account must be recreated manually.
 
 ## Testing and validation
 
+API contract tests live in `packages/core/src/contracts/__tests__`, named for
+their owning contract modules. The assembled HTTP API and its transaction
+fixture live in `packages/api/src/__tests__`; auth and rate-limiter tests stay
+beside those services. Browser typed-client tests live in
+`packages/web/src/lib/__tests__`. HTTP write tests mock persistence and verify
+orchestration, not database rollback.
+
 - Schema-only and domain-only tests continue to run locally.
 - The removed SQLite suites are represented by the behavior-focused [PostgreSQL persistence test plan](./test-plan/postgres.md). Reintroduce and prune those cases against disposable Alchemy-managed branches.
 - The opt-in PostgreSQL infrastructure test deploys a disposable database and Worker stack, queries PlanetScale through Worker → Hyperdrive, and destroys the stack. It requires both provider credentials.
@@ -231,3 +241,29 @@ Separate follow-ups are:
    and authenticated team-management APIs. Cookie sharing across subdomains is
    intentionally still disabled; browser calls target the API origin with
    credentials.
+
+## Public API
+
+- `GET /api/user`: authenticated user's email and timezone.
+- `POST /api/user`: existing signup operation, including replacement of preferences on repeat signup.
+- `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
+- `POST /api/user/unsubscribe`: delete a user and subscriptions using an emailed token.
+- Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
+
+Contracts follow OpenCode's instance HttpApi structure: each domain exports a
+`*Api`, and `contracts/api.ts` composes them with chained `addHttpApi` calls.
+The shared contracts remain in `core`; matching implementation files live in
+`api/src/handlers` and export `*GroupLayer` layers built with `HttpApiBuilder.group`.
+The API root provides each group layer directly, including `UserGroupLayer`
+and `SubscriptionGroupLayer`.
+Registration and unsubscribe contracts live with the user group in
+`contracts/user.ts`. `UserApi` composes both groups and applies `/user` once;
+the subscription group declares only `/subscription`. The generated
+client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
+`subscription.list()`. Read responses compose existing domain schemas;
+there is no Account model. Identity comes exclusively from the session.
+
+Browser API requests include credentials. API cookies remain host-only, so Web
+SSR cannot assume it has the session cookie. Account and sign-in pages remain
+separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose
+typed caller uses the new endpoint; no legacy API alias is needed.

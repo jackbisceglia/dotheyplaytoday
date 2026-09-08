@@ -4,7 +4,7 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
 
-import { Auth } from "./auth/auth.js";
+import { Auth } from "../auth/auth.js";
 
 export const AuthGroupLayer = HttpApiBuilder.group(Api, "auth", (handlers) =>
   Effect.gen(function* () {
@@ -16,7 +16,9 @@ export const AuthGroupLayer = HttpApiBuilder.group(Api, "auth", (handlers) =>
       const request = yield* HttpServerRequest.toWeb(input.request).pipe(
         Effect.orDie,
       );
-      const response = yield* Effect.promise(() => auth.handler(request));
+      const response = yield* auth
+        .use((client) => client.handler(request))
+        .pipe(Effect.orDie);
 
       return HttpServerResponse.fromWeb(response);
     });

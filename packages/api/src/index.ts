@@ -4,12 +4,12 @@ import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
 
-import { AuthGroupLayer } from "./routes.auth.js";
-import { FeedbackGroupLayer } from "./routes.feedback.js";
-import { PingGroupLayer } from "./routes.ping.js";
-import { SignupGroupLayer } from "./routes.signup.js";
-import { SubjectsGroupLayer } from "./routes.subjects.js";
-import { UnsubscribeGroupLayer } from "./routes.unsubscribe.js";
+import { AuthGroupLayer } from "./handlers/auth.js";
+import { FeedbackGroupLayer } from "./handlers/feedback.js";
+import { PingGroupLayer } from "./handlers/ping.js";
+import { SubjectsGroupLayer } from "./handlers/subjects.js";
+import { UserGroupLayer } from "./handlers/user.js";
+import { SubscriptionGroupLayer } from "./handlers/subscription.js";
 
 const CorsLayer = Layer.unwrap(
   Effect.gen(function* () {
@@ -26,12 +26,12 @@ const CorsLayer = Layer.unwrap(
 export const HttpApiLayer = Layer.mergeAll(
   HttpApiBuilder.layer(Api).pipe(
     Layer.provide([
+      UserGroupLayer,
+      SubscriptionGroupLayer,
       AuthGroupLayer,
       PingGroupLayer,
       FeedbackGroupLayer,
-      SignupGroupLayer,
       SubjectsGroupLayer,
-      UnsubscribeGroupLayer,
     ]),
   ),
   CorsLayer,

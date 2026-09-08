@@ -159,6 +159,8 @@ const makeHarness = (opts: HarnessOptions) => {
     Subscriptions,
     Subscriptions.of({
       list: () => Effect.succeed([]),
+      listForUser: () =>
+        Effect.die("Notification jobs must not use account reads"),
       listNotificationRecipients: () => Effect.succeed(opts.recipients),
       replaceForUser: () => Effect.succeed([]),
       markSent: (input) =>

@@ -30,7 +30,7 @@ export function Confirmation(props: {
     setSubmitting(true);
 
     void withApiClient((client) =>
-      client.unsubscribe.submit({ payload: { token: props.token } }),
+      client.user.unsubscribe({ payload: { token: props.token } }),
     )
       .then(() => {
         setSucceeded(true);

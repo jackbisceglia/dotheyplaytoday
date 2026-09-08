@@ -1,19 +1,15 @@
 import { HttpApi } from "effect/unstable/httpapi";
 
-import { AuthGroup } from "./auth.js";
-import { FeedbackGroup } from "./feedback.js";
-import { PingGroup } from "./ping.js";
-import { SignupGroup } from "./signup.js";
-import { SubjectsGroup } from "./subjects.js";
-import { UnsubscribeGroup } from "./unsubscribe.js";
+import { AuthApi } from "./auth.js";
+import { FeedbackApi } from "./feedback.js";
+import { PingApi } from "./ping.js";
+import { SubjectsApi } from "./subjects.js";
+import { UserApi } from "./user.js";
 
 export const Api = HttpApi.make("ApiV2")
-  .add(
-    AuthGroup,
-    FeedbackGroup,
-    PingGroup,
-    SignupGroup,
-    SubjectsGroup,
-    UnsubscribeGroup,
-  )
+  .addHttpApi(AuthApi)
+  .addHttpApi(FeedbackApi)
+  .addHttpApi(PingApi)
+  .addHttpApi(SubjectsApi)
+  .addHttpApi(UserApi)
   .prefix("/api");

@@ -5,7 +5,7 @@ describe("server session lookup", () => {
   it("claims the existing notification user, persists a session, and consumes the token once", async () => {
     const { auth, makeAuth, rows, sendMagicLink, request } =
       await makeAuthFixture();
-    const response = await auth.handler(
+    const response = await auth.client.handler(
       request("/sign-in/magic-link", { email: "User@Example.COM" }),
     );
     expect(response.status).toBe(200);
@@ -16,7 +16,7 @@ describe("server session lookup", () => {
     expect(await rows("auth_verifications")).toHaveLength(1);
     expect((await rows("auth_verifications"))[0]?.identifier).not.toBe(token);
 
-    const verified = await auth.handler(new Request(message.url));
+    const verified = await auth.client.handler(new Request(message.url));
     expect(verified.status).toBe(302);
     const setCookie = verified.headers.get("set-cookie");
     expect(setCookie).toContain("Secure");
@@ -26,7 +26,7 @@ describe("server session lookup", () => {
     const cookie = setCookie?.split(";", 1)[0];
     if (!cookie) throw new Error("Missing session cookie");
     const headers = new Headers({ cookie });
-    const session = await (await makeAuth()).api.getSession({ headers });
+    const session = await (await makeAuth()).client.api.getSession({ headers });
     expect(session?.user).toMatchObject({
       id: "existing-notification-user",
       email: "user@example.com",
@@ -42,26 +42,28 @@ describe("server session lookup", () => {
     expect(await rows("auth_sessions")).toHaveLength(1);
     expect(await rows("auth_verifications")).toHaveLength(0);
 
-    const replay = await auth.handler(new Request(message.url));
+    const replay = await auth.client.handler(new Request(message.url));
     expect(replay.headers.get("location")).toContain("error=INVALID_TOKEN");
     expect(await rows("auth_sessions")).toHaveLength(1);
 
-    await auth.api.signOut({ headers });
-    expect(await (await makeAuth()).api.getSession({ headers })).toBeNull();
+    await auth.client.api.signOut({ headers });
+    expect(
+      await (await makeAuth()).client.api.getSession({ headers }),
+    ).toBeNull();
     expect(await rows("auth_sessions")).toHaveLength(0);
   });
 
   it("does not recreate a notification user removed after requesting a link", async () => {
     const { auth, database, rows, sendMagicLink, request } =
       await makeAuthFixture();
-    await auth.handler(
+    await auth.client.handler(
       request("/sign-in/magic-link", { email: "user@example.com" }),
     );
     const message = sendMagicLink.mock.calls[0]?.[0];
     if (!message) throw new Error("Missing magic link");
     await database.exec("DELETE FROM users");
 
-    const response = await auth.handler(new Request(message.url));
+    const response = await auth.client.handler(new Request(message.url));
     expect(response.headers.get("location")).toContain(
       "error=new_user_signup_disabled",
     );
@@ -72,7 +74,7 @@ describe("server session lookup", () => {
   it("rejects expired magic links", async () => {
     const { auth, database, rows, sendMagicLink, request } =
       await makeAuthFixture();
-    await auth.handler(
+    await auth.client.handler(
       request("/sign-in/magic-link", { email: "user@example.com" }),
     );
     const message = sendMagicLink.mock.calls[0]?.[0];
@@ -81,16 +83,18 @@ describe("server session lookup", () => {
       "UPDATE auth_verifications SET expires_at = '2000-01-01'",
     );
 
-    const response = await auth.handler(new Request(message.url));
+    const response = await auth.client.handler(new Request(message.url));
     expect(response.headers.get("location")).toContain("error=INVALID_TOKEN");
     expect(await rows("auth_sessions")).toHaveLength(0);
   });
 
   it("returns no session for absent or invalid cookies", async () => {
     const { auth } = await makeAuthFixture();
-    expect(await auth.api.getSession({ headers: new Headers() })).toBeNull();
     expect(
-      await auth.api.getSession({
+      await auth.client.api.getSession({ headers: new Headers() }),
+    ).toBeNull();
+    expect(
+      await auth.client.api.getSession({
         headers: new Headers({
           cookie: "__Secure-better-auth.session_token=invalid",
         }),
