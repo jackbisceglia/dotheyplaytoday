@@ -8,10 +8,14 @@ import {
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
-import { UserId } from "@dtpt/core/modules/users/schema";
+import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
 import { Effect } from "effect";
-import { HttpEffect, HttpServerResponse } from "effect/unstable/http";
+import {
+  type Headers,
+  HttpEffect,
+  HttpServerResponse,
+} from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -48,33 +52,26 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
     const users = yield* Users;
     const subscriptions = yield* Subscriptions;
 
+    const requestMagicLink = Effect.fn("User.requestMagicLink")(
+      function* (email: EmailAddress, headers: Headers.Input) {
+        yield* auth.use((client) =>
+          client.api.signInMagicLink({
+            headers,
+            body: { email, callbackURL: webUrl, errorCallbackURL: webUrl },
+          }),
+        );
+      },
+      Effect.catchTag("AuthRequestError", () =>
+        Effect.logError("signup: magic-link issuance failed"),
+      ),
+    );
+
     return handlers
       .handle(
         "create",
         Effect.fn("UserHttpApi.create")(
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
-
-            // Server API calls bypass Better Auth's HTTP limiter; the write
-            // limiter above covers issuance for both new and duplicate signups.
-            // Await issuance while the auth pool is open; delivery uses waitUntil.
-            const requestLink = auth
-              .use((client) =>
-                client.api.signInMagicLink({
-                  headers: ctx.request.headers,
-                  body: {
-                    email: ctx.payload.email,
-                    callbackURL: webUrl,
-                    errorCallbackURL: webUrl,
-                  },
-                }),
-              )
-              .pipe(
-                Effect.tapError(() =>
-                  Effect.logError("signup: magic-link issuance failed"),
-                ),
-                Effect.ignore,
-              );
 
             yield* database
               .transaction(
@@ -95,11 +92,17 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
                 mapToTransactionError("User.create"),
                 // Handle duplicates only after the failed transaction rolls back.
                 Effect.catchTag("UserAlreadyExists", () =>
-                  requestLink.pipe(Effect.andThen(new DuplicateSignup({}))),
+                  Effect.gen(function* () {
+                    yield* requestMagicLink(
+                      ctx.payload.email,
+                      ctx.request.headers,
+                    );
+                    return yield* new DuplicateSignup({});
+                  }),
                 ),
               );
 
-            yield* requestLink;
+            yield* requestMagicLink(ctx.payload.email, ctx.request.headers);
 
             return { ok: true as const };
           },

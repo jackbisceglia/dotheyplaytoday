@@ -1,9 +1,11 @@
 import { Effect } from "effect";
 
+import { Id } from "../../../lib/id/service.js";
+import { Email } from "../service.js";
 import { WebUrl } from "../../../lib/config/web.js";
 import { EmailView, Link, Note, Text } from "../render.js";
 import { EmailLayerResend } from "../resend.js";
-import { deliverMagicLink, type MagicLink } from "./magic-link.js";
+import type { MagicLink } from "./magic-link.js";
 
 export const renderSignInLink = Effect.fn("SignInLink.render")(function* (
   magicLink: MagicLink,
@@ -27,9 +29,20 @@ export const renderSignInLink = Effect.fn("SignInLink.render")(function* (
   });
 });
 
-export const sendSignInLink = Effect.fn("SignInLink.send")(function* (
-  link: MagicLink,
-) {
-  const rendered = yield* renderSignInLink(link).pipe(Effect.orDie);
-  yield* deliverMagicLink(link.recipient, rendered);
-}, Effect.provide(EmailLayerResend));
+export const sendSignInLink = Effect.fn("SignInLink.send")(
+  function* (link: MagicLink) {
+    const rendered = yield* renderSignInLink(link).pipe(Effect.orDie);
+    const email = yield* Email;
+    const id = yield* Id;
+
+    yield* email.send(
+      { recipient: link.recipient, idempotencyKey: yield* id.generate() },
+      rendered,
+    );
+  },
+  Effect.tap(() => Effect.logInfo("sign-in link: delivered")),
+  Effect.tapCause((cause) =>
+    Effect.logError("sign-in link: delivery failed", { cause }),
+  ),
+  Effect.provide(EmailLayerResend),
+);

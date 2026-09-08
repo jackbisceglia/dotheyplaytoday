@@ -18,7 +18,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { magicLink } from "better-auth/plugins";
-import { Context, Effect, Layer, Redacted, Schema } from "effect";
+import { Boolean, Context, Effect, Layer, Redacted, Schema } from "effect";
 import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
@@ -95,19 +95,19 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
 
             if (user === null) return;
 
-            const link = MagicLink.make({
-              recipient: normalized,
-              url: options.url,
-            });
-            const delivery = Effect.gen(function* () {
-              if (user.user.emailVerified) {
-                return yield* sendSignInLink(link);
-              }
+            const send = Effect.gen(function* () {
+              const link = MagicLink.make({
+                recipient: normalized,
+                url: options.url,
+              });
 
-              yield* sendConfirmationLink(link);
+              return yield* Boolean.match(user.user.emailVerified, {
+                onTrue: () => sendSignInLink(link),
+                onFalse: () => sendConfirmationLink(link),
+              });
             });
 
-            cloudflare.raw.waitUntil(runPromise(delivery.pipe(Effect.ignore)));
+            cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
           },
         }),
       ],
