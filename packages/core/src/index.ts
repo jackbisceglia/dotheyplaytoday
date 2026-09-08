@@ -92,7 +92,6 @@ export {
   renderSignInLink,
   sendSignInLink,
 } from "./modules/email/transactional/sign-in.js";
-export { MagicLink } from "./modules/email/transactional/magic-link.js";
 export {
   SubjectEvent,
   SubjectEventInsert,

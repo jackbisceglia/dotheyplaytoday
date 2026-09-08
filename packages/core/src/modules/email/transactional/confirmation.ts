@@ -5,10 +5,10 @@ import { Email } from "../service.js";
 import { WebUrl } from "../../../lib/config/web.js";
 import { EmailView, Link, Note, Text } from "../render.js";
 import { EmailLayerResend } from "../resend.js";
-import type { MagicLink } from "./magic-link.js";
+import type { EmailAddress } from "../../users/schema.js";
 
 export const renderConfirmationLink = Effect.fn("ConfirmationLink.render")(
-  function* (confirmation: MagicLink) {
+  function* (url: string) {
     const home = yield* WebUrl;
 
     return EmailView({
@@ -22,7 +22,7 @@ export const renderConfirmationLink = Effect.fn("ConfirmationLink.render")(
           value:
             "Your teams and schedule are saved. Confirm your email to start your updates:",
         }),
-        Link.make({ href: confirmation.url, text: "Confirm your updates" }),
+        Link.make({ href: url, text: "Confirm your updates" }),
         Note.make({
           value:
             "This link expires in 15 minutes and can only be used once. If you did not request it, you can ignore this email.",
@@ -33,13 +33,13 @@ export const renderConfirmationLink = Effect.fn("ConfirmationLink.render")(
 );
 
 export const sendConfirmationLink = Effect.fn("ConfirmationLink.send")(
-  function* (link: MagicLink) {
-    const rendered = yield* renderConfirmationLink(link).pipe(Effect.orDie);
+  function* (recipient: EmailAddress, url: string) {
+    const rendered = yield* renderConfirmationLink(url).pipe(Effect.orDie);
     const email = yield* Email;
     const id = yield* Id;
 
     yield* email.send(
-      { recipient: link.recipient, idempotencyKey: yield* id.generate() },
+      { recipient, idempotencyKey: yield* id.generate() },
       rendered,
     );
   },

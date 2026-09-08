@@ -91,14 +91,11 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
               .pipe(
                 mapToTransactionError("User.create"),
                 // Handle duplicates only after the failed transaction rolls back.
+                Effect.tapErrorTag("UserAlreadyExists", () =>
+                  requestMagicLink(ctx.payload.email, ctx.request.headers),
+                ),
                 Effect.catchTag("UserAlreadyExists", () =>
-                  Effect.gen(function* () {
-                    yield* requestMagicLink(
-                      ctx.payload.email,
-                      ctx.request.headers,
-                    );
-                    return yield* new DuplicateSignup({});
-                  }),
+                  Effect.fail(new DuplicateSignup({})),
                 ),
               );
 

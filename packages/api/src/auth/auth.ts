@@ -2,7 +2,6 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 import type { Id } from "@dtpt/core/lib/id/service";
-import { MagicLink } from "@dtpt/core/modules/email/transactional/magic-link";
 import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
 import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
 import {
@@ -95,16 +94,9 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
 
             if (user === null) return;
 
-            const send = Effect.gen(function* () {
-              const link = MagicLink.make({
-                recipient: normalized,
-                url: options.url,
-              });
-
-              return yield* Boolean.match(user.user.emailVerified, {
-                onTrue: () => sendSignInLink(link),
-                onFalse: () => sendConfirmationLink(link),
-              });
+            const send = Boolean.match(user.user.emailVerified, {
+              onTrue: () => sendSignInLink(normalized, options.url),
+              onFalse: () => sendConfirmationLink(normalized, options.url),
             });
 
             cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));

@@ -5,10 +5,10 @@ import { Email } from "../service.js";
 import { WebUrl } from "../../../lib/config/web.js";
 import { EmailView, Link, Note, Text } from "../render.js";
 import { EmailLayerResend } from "../resend.js";
-import type { MagicLink } from "./magic-link.js";
+import type { EmailAddress } from "../../users/schema.js";
 
 export const renderSignInLink = Effect.fn("SignInLink.render")(function* (
-  magicLink: MagicLink,
+  url: string,
 ) {
   const home = yield* WebUrl;
 
@@ -20,7 +20,7 @@ export const renderSignInLink = Effect.fn("SignInLink.render")(function* (
     preheader: "Use this secure link to sign in.",
     blocks: [
       Text.make({ value: "Use this secure link to sign in:" }),
-      Link.make({ href: magicLink.url, text: "Sign in" }),
+      Link.make({ href: url, text: "Sign in" }),
       Note.make({
         value:
           "This link expires in 15 minutes and can only be used once. If you did not request it, you can ignore this email.",
@@ -30,13 +30,13 @@ export const renderSignInLink = Effect.fn("SignInLink.render")(function* (
 });
 
 export const sendSignInLink = Effect.fn("SignInLink.send")(
-  function* (link: MagicLink) {
-    const rendered = yield* renderSignInLink(link).pipe(Effect.orDie);
+  function* (recipient: EmailAddress, url: string) {
+    const rendered = yield* renderSignInLink(url).pipe(Effect.orDie);
     const email = yield* Email;
     const id = yield* Id;
 
     yield* email.send(
-      { recipient: link.recipient, idempotencyKey: yield* id.generate() },
+      { recipient, idempotencyKey: yield* id.generate() },
       rendered,
     );
   },
