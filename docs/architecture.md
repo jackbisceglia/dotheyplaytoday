@@ -89,8 +89,8 @@ Migration 0005 grants notification eligibility only to a fixed, owner-trusted
 cohort; this is not proof of mailbox ownership and creates no sessions. New
 rows retain the false default. Existing users still redeem a magic link to sign
 in. The magic-link before hook normalizes the address and looks up the user
-once through Better Auth's internal adapter. It carries the recipient's
-normalized email and verification state in request context; the sender silently
+once through Better Auth's internal adapter. It carries the user with a
+normalized email in request context; the sender silently
 skips unknown recipients. Better Auth also has signup disabled, so an unknown
 address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
@@ -158,7 +158,8 @@ root without the marker. The hook covers both registration's server API calls
 and standalone HTTP sign-in, retaining validation of caller-supplied URLs.
 The recipient context is server-owned and scoped to each issuance, so concurrent
 requests remain isolated and callback selection and email copy use the same
-verification snapshot. The sender validates the custom context at the SDK boundary.
+verification snapshot. The sender reads the server-owned user through a typed context accessor; it
+does not decode the internal value again.
 Tokens are hashed, expire after 15 minutes, and are single-use. Issuance is
 awaited while the auth pool is open; `WorkerExecutionContext.waitUntil` owns
 email delivery, which needs no further database access. Delivery failures are

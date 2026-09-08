@@ -5,7 +5,7 @@ import type { Id } from "@dtpt/core/lib/id/service";
 import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
 import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
 import {
-  EmailAddress,
+  type EmailAddress,
   EmailAddressFromString,
   usersTable,
 } from "@dtpt/core/modules/users/schema";
@@ -14,7 +14,11 @@ import {
   authSessionsTable,
   authVerificationsTable,
 } from "@dtpt/core/modules/auth/schema";
-import { betterAuth } from "better-auth";
+import {
+  betterAuth,
+  type GenericEndpointContext,
+  type User,
+} from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -32,13 +36,19 @@ import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
 
-// Unknown addresses have no recipient in Better Auth's merged request context.
-const MagicLinkContext = Schema.Struct({
-  magicLinkRecipient: Schema.optionalKey(
-    Schema.Struct({ email: EmailAddress, emailVerified: Schema.Boolean }),
-  ),
-});
-const decodeMagicLinkContext = Schema.decodeUnknownSync(MagicLinkContext);
+type MagicLinkUser = User & { readonly email: EmailAddress };
+type MagicLinkContext = { readonly user: MagicLinkUser | null };
+
+const decodeMagicLinkInput = Schema.decodeUnknownOption(
+  Schema.Struct({ email: EmailAddressFromString }),
+);
+
+// Better Auth does not infer custom hook fields in the sender's generic context.
+// Its context merge omits null fields, so normalize an absent user back to null.
+const getMagicLinkUser = (
+  endpoint: GenericEndpointContext,
+): MagicLinkUser | null =>
+  (endpoint.context as Partial<MagicLinkContext>).user ?? null;
 
 const createAuthPool = (connectionString: string) =>
   Effect.acquireRelease(
@@ -55,7 +65,8 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
   make: Effect.fn("Auth.make")(function* (connectionString: string) {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
-    const webUrl = new URL(yield* WebUrl);
+    const webUrl = new URL("/", yield* WebUrl);
+    const confirmationUrl = new URL("/?confirmed=1", webUrl).href;
     const pool = yield* createAuthPool(connectionString);
     const cloudflare = yield* Cloudflare.WorkerExecutionContext;
     // Preserve runtime config and Id when Better Auth calls back into Effect.
@@ -98,40 +109,24 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
         before: createAuthMiddleware(async (ctx) => {
           if (ctx.path !== "/sign-in/magic-link") return;
 
-          const body = Schema.decodeUnknownOption(
-            Schema.Record(Schema.String, Schema.Unknown),
-          )(ctx.body);
-          if (Option.isNone(body)) return;
-          const email = Schema.decodeUnknownOption(EmailAddressFromString)(
-            body.value.email,
-          );
-          if (Option.isNone(email)) return;
-          const user = await ctx.context.internalAdapter.findUserByEmail(
-            email.value,
-          );
-          const callbackURL = new URL("/", webUrl);
-          if (user !== null && !user.user.emailVerified) {
-            callbackURL.searchParams.set("confirmed", "1");
-          }
+          const input = decodeMagicLinkInput(ctx.body);
+          if (Option.isNone(input)) return;
+
+          const { email } = input.value;
+          const found =
+            await ctx.context.internalAdapter.findUserByEmail(email);
+          const user = found ? { ...found.user, email } : null;
 
           // HTTP origin middleware validates caller URLs before this hook runs.
           // This also covers registration's direct server API call.
           return {
             context: {
               body: {
-                ...body.value,
-                callbackURL: callbackURL.href,
-                errorCallbackURL: new URL("/", webUrl).href,
+                callbackURL:
+                  user && !user.emailVerified ? confirmationUrl : webUrl.href,
+                errorCallbackURL: webUrl.href,
               },
-              context: {
-                magicLinkRecipient:
-                  user === null
-                    ? undefined
-                    : {
-                        email: email.value,
-                        emailVerified: user.user.emailVerified,
-                      },
-              },
+              context: { user } satisfies MagicLinkContext,
             },
           };
         }),
@@ -144,14 +139,12 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           sendMagicLink: (options, endpoint) => {
             if (endpoint === undefined) return;
 
-            const { magicLinkRecipient: recipient } = decodeMagicLinkContext(
-              endpoint.context,
-            );
-            if (recipient === undefined) return;
+            const user = getMagicLinkUser(endpoint);
+            if (user === null) return;
 
-            const send = Boolean.match(recipient.emailVerified, {
-              onTrue: () => sendSignInLink(recipient.email, options.url),
-              onFalse: () => sendConfirmationLink(recipient.email, options.url),
+            const send = Boolean.match(user.emailVerified, {
+              onTrue: () => sendSignInLink(user.email, options.url),
+              onFalse: () => sendConfirmationLink(user.email, options.url),
             });
 
             cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));

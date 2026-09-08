@@ -73,8 +73,8 @@ describe("authentication boundaries", () => {
       f.auth.client.handler(
         f.request("/sign-in/magic-link", {
           email: "User@Example.COM",
-          magicLinkRecipient: forgedRecipient,
-          metadata: { magicLinkRecipient: forgedRecipient },
+          user: forgedRecipient,
+          metadata: { user: forgedRecipient },
         }),
       ),
       f.auth.client.api.signInMagicLink({
@@ -84,7 +84,7 @@ describe("authentication boundaries", () => {
       f.auth.client.handler(
         f.request("/sign-in/magic-link", {
           email: "unknown@example.com",
-          metadata: { magicLinkRecipient: forgedRecipient },
+          metadata: { user: forgedRecipient },
         }),
       ),
     ]);
