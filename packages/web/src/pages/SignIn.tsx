@@ -1,7 +1,7 @@
 import { createSignal, Show } from "solid-js";
 
 import { Layout } from "../layouts/Layout.jsx";
-import { getAuthClient } from "../lib/auth.js";
+import { auth } from "../lib/auth.js";
 import { usePageMetadata } from "../lib/metadata.js";
 
 export function SignIn() {
@@ -17,8 +17,8 @@ export function SignIn() {
     event.preventDefault();
     setSending(true);
     setError(undefined);
-    void getAuthClient()
-      .then((client) => client.signIn.magicLink({ email: email() }))
+    void auth.signIn
+      .magicLink({ email: email() })
       .then((result) => {
         if (result.error)
           throw new Error(result.error.message, { cause: result.error });

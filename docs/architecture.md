@@ -304,7 +304,8 @@ there is no Account model. Identity comes exclusively from the session.
 
 Browser API requests include credentials. API cookies remain host-only, so Web
 SSR cannot assume it has the session cookie. Web uses Better Auth's framework-neutral
-client with credentials for browser session reads and `/sign-in` link requests.
+client as a single shared instance with credentials for browser session reads and
+`/sign-in` link requests. Route preloads check authentication in the browser.
 Signed-in visitors to `/` redirect to `/home`, carrying `confirmed=1`. `/home`
 checks the session before displaying user content and redirects signed-out
 visitors to `/sign-in`. A verified session and the confirmation marker show the

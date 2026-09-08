@@ -6,8 +6,10 @@ import {
   defineRoutes,
   query,
 } from "@solidjs/router";
-import { createMemo, Show } from "solid-js";
+import { redirect } from "@solidjs/web";
+import { createMemo, Errored, Loading, Show } from "solid-js";
 
+import { auth } from "./lib/auth.js";
 import { withApiClient } from "./lib/api.js";
 import { AuthenticatedHome } from "./pages/AuthenticatedHome.jsx";
 import { SignIn } from "./pages/SignIn.jsx";
@@ -25,17 +27,59 @@ const getSubjects = query(
   "subjects",
 );
 
+// The API's host-only cookie is available to browser requests, not Web SSR.
+const getUser = query(async (pathname: string, search: string) => {
+  const { data, error } = await auth.getSession();
+  if (error) throw new Error(error.message, { cause: error });
+
+  if (pathname === "/" && data) return redirect(`/home${search}`);
+  if (pathname === "/home" && !data) return redirect("/sign-in");
+
+  return data?.user;
+}, "user");
+
 const routes = defineRoutes([
   defineRoute({
     path: "/",
-    preload: () => getSubjects(),
+    preload: ({ location }) => {
+      void getSubjects();
+      return import.meta.env.SSR
+        ? undefined
+        : getUser(location.pathname, location.search);
+    },
     component: () => {
       const subjects = createMemo(() => getSubjects());
 
       return <Home homeHref={paths()} subjects={subjects()} />;
     },
   }),
-  defineRoute({ path: "/home", component: AuthenticatedHome }),
+  defineRoute({
+    path: "/home",
+    preload: ({ location }) => {
+      return import.meta.env.SSR
+        ? undefined
+        : getUser(location.pathname, location.search);
+    },
+    component: (props) => {
+      const user = createMemo(() => props.data);
+
+      return (
+        <Errored
+          fallback={
+            <p class="form-error" role="alert">
+              We couldn’t check your session. Refresh to try again.
+            </p>
+          }
+        >
+          <Loading fallback={<p>Checking your session...</p>}>
+            <Show when={user()} fallback={<p>Checking your session...</p>}>
+              {(user) => <AuthenticatedHome user={user()} />}
+            </Show>
+          </Loading>
+        </Errored>
+      );
+    },
+  }),
   defineRoute({ path: "/sign-in", component: SignIn }),
   defineRoute({
     path: "/feedback",

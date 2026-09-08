@@ -1,53 +1,29 @@
-import { useNavigate } from "@solidjs/router";
-import { createEffect, createSignal, Show } from "solid-js";
+import { useLocation, useSearchParams } from "@solidjs/router";
+import { createEffect, Show, untrack } from "solid-js";
 
 import { Layout } from "../layouts/Layout.jsx";
-import { consumeConfirmation, getAuthClient } from "../lib/auth.js";
+import type { auth } from "../lib/auth.js";
 import { usePageMetadata } from "../lib/metadata.js";
 
-export function AuthenticatedHome() {
+export function AuthenticatedHome(props: {
+  readonly user: typeof auth.$Infer.Session.user;
+}) {
   usePageMetadata("Home | dotheyplaytoday", "Your game-day updates.");
-  const navigate = useNavigate();
-  const [user, setUser] = createSignal<{
-    email: string;
-    emailVerified: boolean;
-  }>();
-  const [confirmed, setConfirmed] = createSignal(false);
-  const [linkFailed, setLinkFailed] = createSignal(false);
-  const [error, setError] = createSignal(false);
+  const location = useLocation();
+  const [search, setSearch] = useSearchParams();
+  const confirmed = untrack(
+    () =>
+      search.confirmed === "1" &&
+      props.user.emailVerified &&
+      search.error === undefined,
+  );
 
   createEffect(
-    () => undefined,
-    () => {
-      let active = true;
-      void getAuthClient()
-        .then((client) => client.getSession())
-        .then((result) => {
-          if (!active) return;
-          if (result.error)
-            throw new Error(result.error.message, { cause: result.error });
-          if (!result.data) {
-            navigate("/sign-in", { replace: true });
-            return;
-          }
-          setUser(result.data.user);
-          setLinkFailed(
-            new URLSearchParams(window.location.search).has("error"),
-          );
-          setConfirmed(
-            consumeConfirmation(
-              new URL(window.location.href),
-              result.data.user,
-              window.history,
-            ),
-          );
-        })
-        .catch(() => {
-          if (active) setError(true);
-        });
-      return () => {
-        active = false;
-      };
+    () => ({ confirmed: search.confirmed, state: location.state }),
+    ({ confirmed, state }) => {
+      if (confirmed !== undefined) {
+        setSearch({ confirmed: undefined }, { replace: true, state });
+      }
     },
   );
 
@@ -57,38 +33,24 @@ export function AuthenticatedHome() {
       headerAction={{ href: "/feedback", label: "Feedback" }}
     >
       <section class="signup">
-        <Show when={error()}>
+        <Show when={search.error !== undefined}>
           <p class="form-error" role="alert">
-            We couldn’t check your session. Refresh to try again.
+            This link is invalid or has expired.{" "}
+            <a href="/sign-in">Request a new link</a>.
           </p>
         </Show>
-        <Show
-          when={user()}
-          fallback={
-            <Show when={!error()}>
-              <p>Checking your session...</p>
-            </Show>
-          }
-        >
-          <Show when={linkFailed()}>
-            <p class="form-error" role="alert">
-              This link is invalid or has expired.{" "}
-              <a href="/sign-in">Request a new link</a>.
-            </p>
-          </Show>
-          <Show when={confirmed()}>
-            <p class="confirmation-banner" role="status">
-              Welcome to dotheyplaytoday! Your email is confirmed.
-            </p>
-          </Show>
-          <h1 class="signup-title">Your game-day updates</h1>
-          <p>Signed in as {user()?.email}.</p>
-          <p>
-            {user()?.emailVerified
-              ? "Your saved teams and schedule are ready for game day."
-              : "Confirm your email to start your updates."}
+        <Show when={confirmed}>
+          <p class="confirmation-banner" role="status">
+            Welcome to dotheyplaytoday! Your email is confirmed.
           </p>
         </Show>
+        <h1 class="signup-title">Your game-day updates</h1>
+        <p>Signed in as {props.user.email}.</p>
+        <p>
+          {props.user.emailVerified
+            ? "Your saved teams and schedule are ready for game day."
+            : "Confirm your email to start your updates."}
+        </p>
       </section>
     </Layout>
   );
