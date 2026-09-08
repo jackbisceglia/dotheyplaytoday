@@ -6,6 +6,7 @@ import { EmailAddress } from "../../users/schema.js";
 import { EmailView, Link, Note, Text } from "../render.js";
 import { EmailLayerResend } from "../resend.js";
 import { Email, type EmailDelivery } from "../service.js";
+import { renderSignupConfirmation } from "./confirmation.js";
 
 export type MagicLink = typeof MagicLink.Type;
 export const MagicLink = Schema.Struct({
@@ -29,7 +30,7 @@ export const renderMagicLink = Effect.fn("MagicLink.render")(function* (
       Link.make({ href: magicLink.url, text: "Sign in" }),
       Note.make({
         value:
-          "This link expires soon and can only be used once. If you did not request it, you can ignore this email.",
+          "This link expires in 15 minutes and can only be used once. If you did not request it, you can ignore this email.",
       }),
     ],
   });
@@ -37,10 +38,13 @@ export const renderMagicLink = Effect.fn("MagicLink.render")(function* (
 
 export const sendMagicLink = Effect.fn("MagicLink.send")(function* (
   magicLink: MagicLink,
+  view: "confirmation" | "signIn",
 ) {
   const email = yield* Email;
   const id = yield* Id;
-  const rendered = yield* renderMagicLink(magicLink).pipe(Effect.orDie);
+  const render =
+    view === "confirmation" ? renderSignupConfirmation : renderMagicLink;
+  const rendered = yield* render(magicLink).pipe(Effect.orDie);
   const delivery: EmailDelivery = {
     recipient: magicLink.recipient,
     idempotencyKey: yield* id.generate(),

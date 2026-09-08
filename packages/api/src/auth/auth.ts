@@ -100,6 +100,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
               runPromise(
                 sendMagicLink(
                   MagicLink.make({ recipient: normalized, url: options.url }),
+                  user.user.emailVerified ? "signIn" : "confirmation",
                 ).pipe(Effect.ignore),
               ),
             );

@@ -29,6 +29,12 @@ export const SignupResponse = Schema.Struct({
   ok: Schema.Literal(true),
 });
 
+export class DuplicateSignup extends Schema.TaggedErrorClass<DuplicateSignup>()(
+  "DuplicateSignup",
+  {},
+  { httpApiStatus: 409 },
+) {}
+
 export class SignupRateLimited extends Schema.TaggedErrorClass<SignupRateLimited>()(
   "SignupRateLimited",
   {},
@@ -59,6 +65,7 @@ export const UserApi = HttpApi.make("user")
           HttpApiError.BadRequest,
           HttpApiError.InternalServerError,
           SignupRateLimited,
+          DuplicateSignup,
         ],
       }),
       HttpApiEndpoint.post("unsubscribe", "/unsubscribe", {

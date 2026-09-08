@@ -84,11 +84,7 @@ export {
   makeEmailLayerResendConfig,
 } from "./modules/email/resend.js";
 export { Notification } from "./modules/notifier/notification.js";
-export {
-  renderSignupConfirmation,
-  sendSignupConfirmation,
-  SignupConfirmation,
-} from "./modules/email/transactional/confirmation.js";
+export { renderSignupConfirmation } from "./modules/email/transactional/confirmation.js";
 export {
   MagicLink,
   renderMagicLink,
@@ -140,11 +136,12 @@ export {
   usersTable,
 } from "./modules/users/schema.js";
 export { UserNotFound, Users, UsersLayer } from "./modules/users/service.js";
-export type { UpsertContext } from "./modules/users/service.js";
+export type { SignupContext } from "./modules/users/service.js";
 
 export {
   UserApi,
   UserResponse,
+  DuplicateSignup,
   SignupRateLimited,
   SignupRequest,
   SignupResponse,

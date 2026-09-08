@@ -12,7 +12,7 @@ import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
 
-export type UpsertContext = {
+export type SignupContext = {
   readonly user: User;
   readonly isFirstSignup: boolean;
 };
@@ -49,10 +49,13 @@ export class Users extends Context.Service<
     readonly listByIds: (
       userIds: readonly User["id"][],
     ) => Effect.Effect<readonly User[], DatabaseReadError | Schema.SchemaError>;
-    readonly upsertForSignup: (
+    readonly getOrCreateForSignup: (
       email: User["email"],
       timezone: User["timezone"],
-    ) => Effect.Effect<UpsertContext, DatabaseWriteError | Schema.SchemaError>;
+    ) => Effect.Effect<
+      SignupContext,
+      UserNotFound | DatabaseReadError | DatabaseWriteError | Schema.SchemaError
+    >;
     readonly remove: (
       userId: User["id"],
     ) => Effect.Effect<void, DatabaseDeleteError>;
@@ -150,51 +153,58 @@ export const UsersLayer = Layer.effect(
       return users;
     });
 
-    const upsertForSignup: Users["Service"]["upsertForSignup"] = Effect.fn(
-      "Users.upsertForSignup",
-    )(function* (email: User["email"], timezone: User["timezone"]) {
-      const candidateId = yield* id.makeFromBrandedSchema(User.fields.id);
-      const insertable = yield* encodeUser({
-        id: candidateId,
-        unsubscribeToken: yield* id.makeFromBrandedSchema(
-          User.fields.unsubscribeToken,
-        ),
-        email,
-        timezone,
-      });
-
-      const rows = yield* database
-        .insert(usersTable)
-        .values(insertable)
-        .onConflictDoUpdate({
-          target: usersTable.email,
-          set: { timezone: insertable.timezone },
-        })
-        .returning()
-        .pipe(
-          mapToWriteError("Users.upsertForSignup", {
-            timezone: insertable.timezone,
-          }),
+    const getOrCreateForSignup: Users["Service"]["getOrCreateForSignup"] =
+      Effect.fn("Users.getOrCreateForSignup")(function* (
+        email: User["email"],
+        timezone: User["timezone"],
+      ) {
+        const existing = yield* getByEmail(email).pipe(
+          Effect.map(Option.some),
+          Effect.catchTag("UserNotFound", () => Effect.succeed(Option.none())),
         );
 
-      const row = Array.head(rows);
+        if (Option.isSome(existing)) {
+          return { user: existing.value, isFirstSignup: false };
+        }
 
-      if (Option.isNone(row)) {
-        return yield* new DatabaseWriteError({
-          operation: "Users.upsertForSignup",
-          metadata: {
-            timezone: insertable.timezone,
-          },
+        const candidateId = yield* id.makeFromBrandedSchema(User.fields.id);
+        const insertable = yield* encodeUser({
+          id: candidateId,
+          unsubscribeToken: yield* id.makeFromBrandedSchema(
+            User.fields.unsubscribeToken,
+          ),
+          email,
+          timezone,
+          emailVerified: false,
+          name: null,
         });
-      }
 
-      const user = yield* decodeUser(row.value);
+        const rows = yield* database
+          .insert(usersTable)
+          .values(insertable)
+          .onConflictDoNothing({ target: usersTable.email })
+          .returning()
+          .pipe(
+            mapToWriteError("Users.getOrCreateForSignup", {
+              timezone: insertable.timezone,
+            }),
+          );
 
-      return {
-        user,
-        isFirstSignup: user.id === candidateId,
-      };
-    });
+        const row = Array.head(rows);
+
+        if (Option.isNone(row)) {
+          // A concurrent signup committed first. Read it in a new statement so
+          // PostgreSQL's READ COMMITTED snapshot sees the winner; never update it.
+          return { user: yield* getByEmail(email), isFirstSignup: false };
+        }
+
+        const user = yield* decodeUser(row.value);
+
+        return {
+          user,
+          isFirstSignup: true,
+        };
+      });
 
     const remove: Users["Service"]["remove"] = Effect.fn("Users.remove")(
       function* (userId: User["id"]) {
@@ -219,7 +229,7 @@ export const UsersLayer = Layer.effect(
       getByEmail,
       getByUnsubscribeToken,
       listByIds,
-      upsertForSignup,
+      getOrCreateForSignup,
       remove,
     });
   }),
