@@ -14,11 +14,7 @@ import {
   authSessionsTable,
   authVerificationsTable,
 } from "@dtpt/core/modules/auth/schema";
-import {
-  betterAuth,
-  type GenericEndpointContext,
-  type User,
-} from "better-auth";
+import { betterAuth, type User } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -43,13 +39,6 @@ const decodeMagicLinkInput = Schema.decodeUnknownOption(
   Schema.Struct({ email: EmailAddressFromString }),
 );
 
-// Better Auth does not infer custom hook fields in the sender's generic context.
-// Its context merge omits null fields, so normalize an absent user back to null.
-const getMagicLinkUser = (
-  endpoint: GenericEndpointContext,
-): MagicLinkUser | null =>
-  (endpoint.context as Partial<MagicLinkContext>).user ?? null;
-
 const createAuthPool = (connectionString: string) =>
   Effect.acquireRelease(
     Effect.sync(() => new Pool({ connectionString, max: 1 })),
@@ -66,7 +55,6 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL("/", yield* WebUrl);
-    const confirmationUrl = new URL("/?confirmed=1", webUrl).href;
     const pool = yield* createAuthPool(connectionString);
     const cloudflare = yield* Cloudflare.WorkerExecutionContext;
     // Preserve runtime config and Id when Better Auth calls back into Effect.
@@ -112,10 +100,12 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           const input = decodeMagicLinkInput(ctx.body);
           if (Option.isNone(input)) return;
 
-          const { email } = input.value;
-          const found =
-            await ctx.context.internalAdapter.findUserByEmail(email);
-          const user = found ? { ...found.user, email } : null;
+          const found = await ctx.context.internalAdapter.findUserByEmail(
+            input.value.email,
+          );
+          const user = found
+            ? { ...found.user, email: input.value.email }
+            : null;
 
           // HTTP origin middleware validates caller URLs before this hook runs.
           // This also covers registration's direct server API call.
@@ -123,7 +113,9 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
             context: {
               body: {
                 callbackURL:
-                  user && !user.emailVerified ? confirmationUrl : webUrl.href,
+                  user && !user.emailVerified
+                    ? new URL("/?confirmed=1", webUrl).href
+                    : webUrl.href,
                 errorCallbackURL: webUrl.href,
               },
               context: { user } satisfies MagicLinkContext,
@@ -139,7 +131,10 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           sendMagicLink: (options, endpoint) => {
             if (endpoint === undefined) return;
 
-            const user = getMagicLinkUser(endpoint);
+            // Better Auth's generic context does not infer our hook's user field.
+            // Its merge omits null fields for unknown users.
+            const user =
+              (endpoint.context as Partial<MagicLinkContext>).user ?? null;
             if (user === null) return;
 
             const send = Boolean.match(user.emailVerified, {

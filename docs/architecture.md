@@ -158,8 +158,8 @@ root without the marker. The hook covers both registration's server API calls
 and standalone HTTP sign-in, retaining validation of caller-supplied URLs.
 The recipient context is server-owned and scoped to each issuance, so concurrent
 requests remain isolated and callback selection and email copy use the same
-verification snapshot. The sender reads the server-owned user through a typed context accessor; it
-does not decode the internal value again.
+verification snapshot. The sender reads the typed, server-owned user directly
+from the endpoint context without decoding the internal value again.
 Tokens are hashed, expire after 15 minutes, and are single-use. Issuance is
 awaited while the auth pool is open; `WorkerExecutionContext.waitUntil` owns
 email delivery, which needs no further database access. Delivery failures are
