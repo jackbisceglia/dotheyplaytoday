@@ -305,10 +305,13 @@ there is no Account model. Identity comes exclusively from the session.
 Browser API requests include credentials. API cookies remain host-only, so Web
 SSR cannot assume it has the session cookie. Web uses Better Auth's framework-neutral
 client as a single shared instance with credentials for browser session reads and
-`/sign-in` link requests. Route preloads check authentication in the browser.
-Signed-in visitors to `/` redirect to `/home`, carrying `confirmed=1`. `/home`
-checks the session before displaying user content and redirects signed-out
-visitors to `/`. A verified session and the confirmation marker show the
+`/sign-in` link requests. The app shell shares one browser session query through
+context. The query returns a user or null and does not perform navigation.
+The landing route redirects signed-in visitors to `/home`, carrying `confirmed=1`.
+A shared authenticated layout protects `/home` and future authenticated routes,
+handles loading and errors, and redirects signed-out visitors to `/`. Protected
+pages read the resolved user from that layout's context. Public routes remain
+accessible without a session. A verified session and the confirmation marker show the
 welcome banner; history replacement consumes the marker without removing other
 query parameters or history state. Failed links display a replacement-link action
 and never a welcome banner. Account editing remains separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose

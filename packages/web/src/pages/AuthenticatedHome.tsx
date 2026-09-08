@@ -1,20 +1,19 @@
 import { useLocation, useSearchParams } from "@solidjs/router";
-import { createEffect, Show, untrack } from "solid-js";
+import { createEffect, Show, untrack, useContext } from "solid-js";
 
 import { Layout } from "../layouts/Layout.jsx";
-import type { auth } from "../lib/auth.js";
+import { UserContext } from "../layouts/AuthenticatedLayout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
 
-export function AuthenticatedHome(props: {
-  readonly user: typeof auth.$Infer.Session.user;
-}) {
+export function AuthenticatedHome() {
+  const user = useContext(UserContext);
   usePageMetadata("Home | dotheyplaytoday", "Your game-day updates.");
   const location = useLocation();
   const [search, setSearch] = useSearchParams();
   const confirmed = untrack(
     () =>
       search.confirmed === "1" &&
-      props.user.emailVerified &&
+      user().emailVerified &&
       search.error === undefined,
   );
 
@@ -45,9 +44,9 @@ export function AuthenticatedHome(props: {
           </p>
         </Show>
         <h1 class="signup-title">Your game-day updates</h1>
-        <p>Signed in as {props.user.email}.</p>
+        <p>Signed in as {user().email}.</p>
         <p>
-          {props.user.emailVerified
+          {user().emailVerified
             ? "Your saved teams and schedule are ready for game day."
             : "Confirm your email to start your updates."}
         </p>

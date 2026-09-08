@@ -5,11 +5,13 @@ import {
   defineRoute,
   defineRoutes,
   query,
+  useLocation,
 } from "@solidjs/router";
-import { redirect } from "@solidjs/web";
-import { createMemo, Errored, Loading, Show } from "solid-js";
+import { createMemo, Errored, Loading, Show, useContext } from "solid-js";
 
-import { auth } from "./lib/auth.js";
+import { getUser, SessionContext } from "./lib/session.js";
+import { AuthenticatedLayout } from "./layouts/AuthenticatedLayout.jsx";
+import { Redirect } from "./modules/ui/Redirect.jsx";
 import { withApiClient } from "./lib/api.js";
 import { AuthenticatedHome } from "./pages/AuthenticatedHome.jsx";
 import { SignIn } from "./pages/SignIn.jsx";
@@ -27,59 +29,33 @@ const getSubjects = query(
   "subjects",
 );
 
-// The API's host-only cookie is available to browser requests, not Web SSR.
-const getUser = query(async (pathname: string, search: string) => {
-  const { data, error } = await auth.getSession();
-  if (error) throw new Error(error.message, { cause: error });
-
-  if (pathname === "/" && data) return redirect(`/home${search}`);
-  if (pathname === "/home" && !data) return redirect("/");
-
-  return data?.user;
-}, "user");
-
 const routes = defineRoutes([
   defineRoute({
     path: "/",
-    preload: ({ location }) => {
-      void getSubjects();
-      return import.meta.env.SSR
-        ? undefined
-        : getUser(location.pathname, location.search);
-    },
+    preload: () => getSubjects(),
     component: () => {
       const subjects = createMemo(() => getSubjects());
-
-      return <Home homeHref={paths()} subjects={subjects()} />;
-    },
-  }),
-  defineRoute({
-    path: "/home",
-    preload: ({ location }) => {
-      return import.meta.env.SSR
-        ? undefined
-        : getUser(location.pathname, location.search);
-    },
-    component: (props) => {
-      const user = createMemo(() => props.data);
+      const user = useContext(SessionContext);
+      const location = useLocation();
 
       return (
-        <Errored
-          fallback={
-            <p class="form-error" role="alert">
-              We couldn’t check your session. Refresh to try again.
-            </p>
-          }
-        >
-          <Loading fallback={<p>Checking your session...</p>}>
-            <Show when={user()} fallback={<p>Checking your session...</p>}>
-              {(user) => <AuthenticatedHome user={user()} />}
-            </Show>
-          </Loading>
-        </Errored>
+        <>
+          <Errored fallback={null}>
+            <Loading fallback={null}>
+              <Show when={user()}>
+                <Redirect href={`/home${location.search}${location.hash}`} />
+              </Show>
+            </Loading>
+          </Errored>
+          <Home homeHref={paths()} subjects={subjects()} />
+        </>
       );
     },
   }),
+  {
+    component: AuthenticatedLayout,
+    children: [defineRoute({ path: "/home", component: AuthenticatedHome })],
+  },
   defineRoute({ path: "/sign-in", component: SignIn }),
   defineRoute({
     path: "/feedback",
@@ -107,9 +83,20 @@ const DevOnlyAlerts = () => (
 
 export default function App() {
   return (
-    <>
-      <DevOnlyAlerts />
-      <Router />
-    </>
+    <Router>
+      {(props) => {
+        // The API's host-only cookie is available to browser requests, not Web SSR.
+        const user = createMemo(() =>
+          import.meta.env.SSR ? undefined : getUser(),
+        );
+
+        return (
+          <SessionContext value={user}>
+            <DevOnlyAlerts />
+            {props.children}
+          </SessionContext>
+        );
+      }}
+    </Router>
   );
 }
