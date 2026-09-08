@@ -1,24 +1,21 @@
-import * as Cloudflare from "alchemy/Cloudflare";
-import { Id } from "@dtpt/core/lib/id/service";
-import {
-  sendSignupConfirmation,
-  SignupConfirmation,
-} from "@dtpt/core/modules/email/transactional/confirmation";
-import { Subject } from "@dtpt/core/modules/subjects/schema";
+import { WebUrl } from "@dtpt/core/lib/config/web";
 import { Api } from "@dtpt/core/contracts/api";
 import {
+  DuplicateSignup,
   SignupRateLimited,
   UnsubscribeRateLimited,
 } from "@dtpt/core/contracts/user";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
-import { SubjectCapacityReached } from "@dtpt/core/modules/subscriptions/errors";
-import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
-import { UserId } from "@dtpt/core/modules/users/schema";
+import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Schema } from "effect";
-import { HttpEffect, HttpServerResponse } from "effect/unstable/http";
+import { Effect } from "effect";
+import {
+  type Headers,
+  HttpEffect,
+  HttpServerResponse,
+} from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -44,14 +41,9 @@ const CreateErrorTags = [
   "SchemaError",
 ] as const;
 
-const decodeSelectedSubjects = Schema.decodeUnknownEffect(
-  Schema.NonEmptyArray(Subject),
-);
-
 export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
   Effect.gen(function* () {
-    const executionContext = yield* Cloudflare.WorkerExecutionContext;
-    const id = yield* Id;
+    const webUrl = yield* WebUrl;
 
     const auth = yield* Auth;
     const rateLimiter = yield* RateLimiter;
@@ -60,6 +52,20 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
     const users = yield* Users;
     const subscriptions = yield* Subscriptions;
 
+    const requestMagicLink = Effect.fn("User.requestMagicLink")(
+      function* (email: EmailAddress, headers: Headers.Headers) {
+        yield* auth.use((client) =>
+          client.api.signInMagicLink({
+            headers,
+            body: { email, callbackURL: webUrl, errorCallbackURL: webUrl },
+          }),
+        );
+      },
+      Effect.catchTag("AuthRequestError", () =>
+        Effect.logError("signup: magic-link issuance failed"),
+      ),
+    );
+
     return handlers
       .handle(
         "create",
@@ -67,51 +73,33 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            // This static guard keeps known-invalid work outside the transaction;
-            // user-dependent policy and subject checks still run inside it.
-            const received = new Set(ctx.payload.subjectIds).size;
-            const limit = SubscriptionPolicy.subject.constraints.max;
-
-            // TODO: Move this guard into a structured SubscriptionPolicy check.
-            if (received > limit) {
-              return yield* new SubjectCapacityReached({
-                limit,
-                received,
-              });
-            }
-
-            const signup = yield* database
+            yield* database
               .transaction(
                 Effect.fn("User.createTransaction")(function* () {
-                  const result = yield* users.upsertForSignup(
+                  const user = yield* users.create(
                     ctx.payload.email,
                     ctx.payload.timezone,
                   );
 
-                  const subjects = yield* subscriptions.replaceForUser({
-                    user: result.user,
+                  yield* subscriptions.replaceForUser({
+                    user,
                     subjectIds: ctx.payload.subjectIds,
                     schedule: ctx.payload.schedule,
                   });
-
-                  return { ...result, subjects };
                 }),
               )
-              .pipe(mapToTransactionError("User.create"));
+              .pipe(
+                mapToTransactionError("User.create"),
+                // Handle duplicates only after the failed transaction rolls back.
+                Effect.tapErrorTag("UserAlreadyExists", () =>
+                  requestMagicLink(ctx.payload.email, ctx.request.headers),
+                ),
+                Effect.catchTag("UserAlreadyExists", () =>
+                  Effect.fail(new DuplicateSignup({})),
+                ),
+              );
 
-            const confirmation = SignupConfirmation.make({
-              _tag: signup.isFirstSignup ? "firstSignup" : "repeatSignup",
-              user: signup.user,
-              subjects: yield* decodeSelectedSubjects(signup.subjects),
-              schedule: ctx.payload.schedule,
-            });
-
-            yield* executionContext.waitUntil(
-              sendSignupConfirmation(confirmation).pipe(
-                Effect.provideService(Id, id),
-                Effect.ignore,
-              ),
-            );
+            yield* requestMagicLink(ctx.payload.email, ctx.request.headers);
 
             return { ok: true as const };
           },

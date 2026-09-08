@@ -2,10 +2,8 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 import type { Id } from "@dtpt/core/lib/id/service";
-import {
-  MagicLink,
-  sendMagicLink,
-} from "@dtpt/core/modules/email/transactional/magic-link";
+import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
+import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
 import {
   EmailAddressFromString,
   usersTable,
@@ -19,7 +17,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { magicLink } from "better-auth/plugins";
-import { Context, Effect, Layer, Redacted, Schema } from "effect";
+import { Boolean, Context, Effect, Layer, Redacted, Schema } from "effect";
 import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
@@ -96,13 +94,12 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
 
             if (user === null) return;
 
-            cloudflare.raw.waitUntil(
-              runPromise(
-                sendMagicLink(
-                  MagicLink.make({ recipient: normalized, url: options.url }),
-                ).pipe(Effect.ignore),
-              ),
-            );
+            const send = Boolean.match(user.user.emailVerified, {
+              onTrue: () => sendSignInLink(normalized, options.url),
+              onFalse: () => sendConfirmationLink(normalized, options.url),
+            });
+
+            cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
           },
         }),
       ],

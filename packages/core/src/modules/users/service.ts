@@ -1,21 +1,21 @@
 import { eq } from "drizzle-orm";
-import { Array, Context, Effect, Layer, Option, Schema } from "effect";
+import { Array, Cause, Context, Effect, Layer, Option, Schema } from "effect";
+import { isSqlError } from "effect/unstable/sql/SqlError";
 
 import {
   DatabaseDeleteError,
   DatabaseReadError,
   DatabaseWriteError,
   mapToReadError,
-  mapToWriteError,
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
 
-export type UpsertContext = {
-  readonly user: User;
-  readonly isFirstSignup: boolean;
-};
+export class UserAlreadyExists extends Schema.TaggedErrorClass<UserAlreadyExists>()(
+  "UserAlreadyExists",
+  {},
+) {}
 
 export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
   "UserNotFound",
@@ -49,10 +49,13 @@ export class Users extends Context.Service<
     readonly listByIds: (
       userIds: readonly User["id"][],
     ) => Effect.Effect<readonly User[], DatabaseReadError | Schema.SchemaError>;
-    readonly upsertForSignup: (
+    readonly create: (
       email: User["email"],
       timezone: User["timezone"],
-    ) => Effect.Effect<UpsertContext, DatabaseWriteError | Schema.SchemaError>;
+    ) => Effect.Effect<
+      User,
+      UserAlreadyExists | DatabaseWriteError | Schema.SchemaError
+    >;
     readonly remove: (
       userId: User["id"],
     ) => Effect.Effect<void, DatabaseDeleteError>;
@@ -150,51 +153,55 @@ export const UsersLayer = Layer.effect(
       return users;
     });
 
-    const upsertForSignup: Users["Service"]["upsertForSignup"] = Effect.fn(
-      "Users.upsertForSignup",
-    )(function* (email: User["email"], timezone: User["timezone"]) {
-      const candidateId = yield* id.makeFromBrandedSchema(User.fields.id);
-      const insertable = yield* encodeUser({
-        id: candidateId,
-        unsubscribeToken: yield* id.makeFromBrandedSchema(
-          User.fields.unsubscribeToken,
-        ),
-        email,
-        timezone,
-      });
-
-      const rows = yield* database
-        .insert(usersTable)
-        .values(insertable)
-        .onConflictDoUpdate({
-          target: usersTable.email,
-          set: { timezone: insertable.timezone },
-        })
-        .returning()
-        .pipe(
-          mapToWriteError("Users.upsertForSignup", {
-            timezone: insertable.timezone,
-          }),
-        );
-
-      const row = Array.head(rows);
-
-      if (Option.isNone(row)) {
-        return yield* new DatabaseWriteError({
-          operation: "Users.upsertForSignup",
-          metadata: {
-            timezone: insertable.timezone,
-          },
+    const create: Users["Service"]["create"] = Effect.fn("Users.create")(
+      function* (email: User["email"], timezone: User["timezone"]) {
+        const candidateId = yield* id.makeFromBrandedSchema(User.fields.id);
+        const insertable = yield* encodeUser({
+          id: candidateId,
+          unsubscribeToken: yield* id.makeFromBrandedSchema(
+            User.fields.unsubscribeToken,
+          ),
+          email,
+          timezone,
+          emailVerified: false,
+          name: null,
         });
-      }
 
-      const user = yield* decodeUser(row.value);
+        const rows = yield* database
+          .insert(usersTable)
+          .values(insertable)
+          .returning()
+          .pipe(
+            Effect.mapError((error) => {
+              if (Cause.isCause(error.cause)) {
+                const failure = Option.getOrUndefined(
+                  Cause.findErrorOption(error.cause),
+                );
+                if (
+                  isSqlError(failure) &&
+                  failure.reason._tag === "UniqueViolation" &&
+                  failure.reason.constraint === "users_email_idx"
+                ) {
+                  return new UserAlreadyExists({});
+                }
+              }
 
-      return {
-        user,
-        isFirstSignup: user.id === candidateId,
-      };
-    });
+              return new DatabaseWriteError({
+                operation: "Users.create",
+                cause: error,
+              });
+            }),
+          );
+
+        const row = Array.head(rows);
+
+        if (Option.isNone(row)) {
+          return yield* new DatabaseWriteError({ operation: "Users.create" });
+        }
+
+        return yield* decodeUser(row.value);
+      },
+    );
 
     const remove: Users["Service"]["remove"] = Effect.fn("Users.remove")(
       function* (userId: User["id"]) {
@@ -219,7 +226,7 @@ export const UsersLayer = Layer.effect(
       getByEmail,
       getByUnsubscribeToken,
       listByIds,
-      upsertForSignup,
+      create,
       remove,
     });
   }),

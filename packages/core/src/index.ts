@@ -85,15 +85,13 @@ export {
 } from "./modules/email/resend.js";
 export { Notification } from "./modules/notifier/notification.js";
 export {
-  renderSignupConfirmation,
-  sendSignupConfirmation,
-  SignupConfirmation,
+  renderConfirmationLink,
+  sendConfirmationLink,
 } from "./modules/email/transactional/confirmation.js";
 export {
-  MagicLink,
-  renderMagicLink,
-  sendMagicLink,
-} from "./modules/email/transactional/magic-link.js";
+  renderSignInLink,
+  sendSignInLink,
+} from "./modules/email/transactional/sign-in.js";
 export {
   SubjectEvent,
   SubjectEventInsert,
@@ -139,12 +137,17 @@ export {
   UserInsert,
   usersTable,
 } from "./modules/users/schema.js";
-export { UserNotFound, Users, UsersLayer } from "./modules/users/service.js";
-export type { UpsertContext } from "./modules/users/service.js";
+export {
+  UserAlreadyExists,
+  UserNotFound,
+  Users,
+  UsersLayer,
+} from "./modules/users/service.js";
 
 export {
   UserApi,
   UserResponse,
+  DuplicateSignup,
   SignupRateLimited,
   SignupRequest,
   SignupResponse,

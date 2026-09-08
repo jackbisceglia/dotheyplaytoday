@@ -70,7 +70,7 @@ CORS middleware and Worker entry point. Better Auth owns endpoint validation and
 only declares the wildcard transport routes.
 The stack supplies the resolved API and Web URLs through `bindApiUrl` and
 `bindWebUrl` helpers, keeping URL bindings outside resource construction.
-Only magic-link authentication is enabled, signup is disabled, tokens are
+Only magic-link authentication is enabled, Better Auth's own signup is disabled, tokens are
 hashed at rest, and sessions are persisted in `auth_sessions`. Cookies remain
 host-only to the API origin and secure on HTTPS. API and Web origins are trusted.
 
@@ -82,8 +82,13 @@ The built-in `/update-user` endpoint is disabled until account editing is
 implemented, so it cannot write unsupported profile fields.
 `User` remains the single table-backed domain schema, and its insert schema
 keeps database-managed defaults optional. The unused name is nullable and
-optional on insert. Existing rows begin unverified and are claimed when a magic link
-proves email ownership. The magic-link sender normalizes the address and asks
+optional on insert. Migration 0004 initially marks existing rows unverified.
+Its `created_at` default assigns preexisting rows the migration timestamp, not
+their original signup dates; grandfathering must not infer signup dates from it.
+Migration 0005 grants notification eligibility only to a fixed, owner-trusted
+cohort; this is not proof of mailbox ownership and creates no sessions. New
+rows retain the false default. Existing users still redeem a magic link to sign
+in. The magic-link sender normalizes the address and asks
 Better Auth's internal adapter to silently skip unknown addresses. Better Auth
 also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
@@ -117,15 +122,41 @@ verification attempts per client IP per minute, using Cloudflare's
 multiple isolates and isolate restarts do not share counters. A distributed
 limit would require shared storage or an edge rate-limiting rule.
 
+`Subscriptions.listNotificationRecipients()` restricts its relational database
+query to `user.emailVerified: true`. Both normal and forced notification runs
+load recipients through that query, so pending users never enter event lookup,
+scheduling, delivery, or last-sent processing. Force only bypasses due-time and
+already-sent guards after recipient selection. Persisted confirmation makes
+saved subscriptions eligible for subsequent runs under ordinary scheduling
+rules; no notification hook, immediate send, or last-sent reset is involved.
+Grandfathering and the companion pending-registration implementation form one
+deployment unit with this filter; see the [rollout audit](./runbooks/production-deploy.md#notification-eligibility-and-grandfathering-rollout).
+
+Registration uses the API write limiter before persistence or link issuance;
+direct Better Auth server API calls bypass its HTTP rate-limit middleware.
+The user handler owns the transaction that calls `Users.create` and saves the
+selected subscriptions and schedule. New users have `emailVerified: false` and
+`name: null`. The unique normalized-email constraint arbitrates concurrent
+inserts. `Users.create` unwraps Drizzle's Effect Cause and maps only the email
+constraint violation to `UserAlreadyExists`. After rollback, the handler
+requests a magic link and returns `DuplicateSignup` (409), preserving the
+existing user's settings. Successful creation requests a link after commit.
+Issuance failures are logged without undoing preferences or changing either
+response, so a later request can issue a replacement.
+
 The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to
-`Email`. The transactional signup-confirmation workflow bypasses `Notifier` and
-provides the same concrete Resend email layer internally, while the API Worker
-validates its configuration at startup. After a signup
-transaction commits, the API constructs a complete confirmation without further
-database reads and uses Alchemy's `WorkerExecutionContext.waitUntil` to attach
-best-effort delivery to the Cloudflare request lifetime. Delivery failures are
-logged in that background effect and do not alter the `{ ok: true }` response.
+`Email`. Separate transactional confirmation and sign-in views bypass
+`Notifier` and provide the same concrete Resend email layer internally. Better
+Auth's magic-link callback looks up the user and selects the view by
+`emailVerified`. It forwards the generated URL unchanged; registration supplies
+the Web URL through Better Auth's `callbackURL` and `errorCallbackURL` inputs.
+Tokens are hashed, expire after 15 minutes, and are single-use. Issuance is
+awaited while the auth pool is open; `WorkerExecutionContext.waitUntil` owns
+email delivery, which needs no further database access. Delivery failures are
+logged without changing the registration response. The old team-picks signup
+email is no longer sent.
+
 The operations Worker owns feedback's administrator config, digest rendering,
 and a static Resend email layer with its operations-specific sender; `core`
 retains the generic email rendering and provider boundaries used by that
@@ -245,7 +276,7 @@ Separate follow-ups are:
 ## Public API
 
 - `GET /api/user`: authenticated user's email and timezone.
-- `POST /api/user`: existing signup operation, including replacement of preferences on repeat signup.
+- `POST /api/user`: save a new unverified user and subscriptions, then request a confirmation link; duplicate signup requests another link and returns 409 without changing preferences.
 - `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
 - `POST /api/user/unsubscribe`: delete a user and subscriptions using an emailed token.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.

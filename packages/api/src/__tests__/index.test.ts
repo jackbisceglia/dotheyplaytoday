@@ -1,15 +1,24 @@
 import { makeAuthFixture } from "../auth/__tests__/fixtures.js";
-import * as Cloudflare from "alchemy/Cloudflare";
 import { RuntimeContext } from "alchemy/RuntimeContext";
-import { DatabaseReadError } from "@dtpt/core/lib/database/errors";
+import {
+  DatabaseReadError,
+  DatabaseWriteError,
+} from "@dtpt/core/lib/database/errors";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
-import { sendSignupConfirmation } from "@dtpt/core/modules/email/transactional/confirmation";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { Subjects } from "@dtpt/core/modules/subjects/service";
+import {
+  InvalidSubjectSelection,
+  SubjectCapacityReached,
+} from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionWithSubject } from "@dtpt/core/modules/subscriptions/schema";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { User } from "@dtpt/core/modules/users/schema";
-import { UserNotFound, Users } from "@dtpt/core/modules/users/service";
+import {
+  UserAlreadyExists,
+  UserNotFound,
+  Users,
+} from "@dtpt/core/modules/users/service";
 import { Context, Effect, FileSystem, Layer, Path, Schema } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { Pool } from "pg";
@@ -20,16 +29,6 @@ import { Auth } from "../auth/auth.js";
 import { HttpApiLayer } from "../index.js";
 import { RateLimitExceeded } from "../rate-limit/errors.js";
 import { RateLimiter } from "../rate-limit/service.js";
-
-vi.mock(
-  "@dtpt/core/modules/email/transactional/confirmation",
-  async (importOriginal) => ({
-    ...(await importOriginal<
-      typeof import("@dtpt/core/modules/email/transactional/confirmation")
-    >()),
-    sendSignupConfirmation: vi.fn(() => Effect.void),
-  }),
-);
 
 const user = Schema.decodeUnknownSync(User)({
   id: "00000000-0000-4000-8000-000000000001",
@@ -73,9 +72,7 @@ const makeFixture = async () => {
   await fixture.database.query("UPDATE users SET id = $1", [user.id]);
 
   const get = vi.fn<Users["Service"]["get"]>(() => Effect.succeed(user));
-  const upsert = vi.fn<Users["Service"]["upsertForSignup"]>(() =>
-    Effect.succeed({ user, isFirstSignup: true }),
-  );
+  const create = vi.fn<Users["Service"]["create"]>(() => Effect.succeed(user));
   const getByToken = vi.fn<Users["Service"]["getByUnsubscribeToken"]>(() =>
     Effect.succeed(user),
   );
@@ -90,8 +87,7 @@ const makeFixture = async () => {
     Effect.succeed([subject]),
   );
   const check = vi.fn<RateLimiter["Service"]["check"]>(() => Effect.void);
-  const confirmation = vi.mocked(sendSignupConfirmation).mockClear();
-  const pending: Promise<unknown>[] = [];
+  const transactions: ("begin" | "commit" | "rollback")[] = [];
   const pool = new Pool();
   vi.spyOn(pool, "connect").mockImplementation(() => {
     throw new Error("Unexpected SQL in handler test");
@@ -104,7 +100,7 @@ const makeFixture = async () => {
         Layer.succeed(Auth, fixture.auth),
         Layer.mock(Users, {
           get,
-          upsertForSignup: upsert,
+          create,
           getByUnsubscribeToken: getByToken,
           remove,
         }),
@@ -114,20 +110,9 @@ const makeFixture = async () => {
         }),
         Layer.mock(Subjects, { list: subjects }),
         Layer.succeed(RateLimiter, { check }),
-        Layer.succeed(
-          Cloudflare.WorkerExecutionContext,
-          Cloudflare.fromExecutionContext({
-            passThroughOnException: () => undefined,
-            props: {},
-            get tracing(): never {
-              throw new Error("Tracing is not used by tests");
-            },
-            waitUntil: (promise) => {
-              pending.push(promise);
-            },
-          }),
+        mockTransactions(Effect.succeed(pool), (event) =>
+          transactions.push(event),
         ),
-        mockTransactions(Effect.succeed(pool)),
         CloudflareHttpApiPlatformLayer,
         FileSystem.layerNoop({}),
         Path.layer,
@@ -160,11 +145,9 @@ const makeFixture = async () => {
     await fixture.auth.client.handler(
       fixture.request("/sign-in/magic-link", { email: user.email }),
     );
-    const message = fixture.sendMagicLink.mock.calls[0]?.[0];
-    if (!message) throw new Error("Missing magic link");
-    const response = await fixture.auth.client.handler(
-      new Request(message.url),
-    );
+    const url = fixture.sendConfirmationLink.mock.calls[0]?.[1];
+    if (!url) throw new Error("Missing magic link");
+    const response = await fixture.auth.client.handler(new Request(url));
     const cookie = response.headers.get("set-cookie")?.split(";", 1)[0];
     if (!cookie) throw new Error("Missing session cookie");
     return cookie;
@@ -173,17 +156,16 @@ const makeFixture = async () => {
   return {
     ...fixture,
     request,
+    transactions,
     signIn,
     subjects,
     get,
-    upsert,
+    create,
     getByToken,
     remove,
     list,
     replace,
     check,
-    confirmation,
-    pending,
   };
 };
 
@@ -331,28 +313,95 @@ describe("assembled HTTP API", () => {
     expect(f.get).not.toHaveBeenCalled();
   });
 
-  it.each([true, false])(
-    "preserves signup orchestration (first signup: %s)",
-    async (isFirstSignup) => {
-      const f = await makeFixture();
-      f.upsert.mockReturnValue(Effect.succeed({ user, isFirstSignup }));
-      const response = await f.request("/user", signup);
-      expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ ok: true });
-      expect(f.upsert).toHaveBeenCalledExactlyOnceWith(
-        user.email,
-        user.timezone,
-      );
-      expect(f.replace).toHaveBeenCalledExactlyOnceWith({
-        user,
-        subjectIds: [subject.id],
-        schedule: subscription.schedule,
+  it("creates preferences before issuing one confirmation link with Web callbacks", async () => {
+    const f = await makeFixture();
+    const original = f.auth.client.api.signInMagicLink;
+    const issue = vi
+      .spyOn(f.auth.client.api, "signInMagicLink")
+      .mockImplementation((input) => {
+        expect(f.transactions).toEqual(["begin", "commit"]);
+        return original(input);
       });
-      expect(f.confirmation).toHaveBeenCalledOnce();
-      expect(f.confirmation.mock.calls[0]?.[0]._tag).toBe(
-        isFirstSignup ? "firstSignup" : "repeatSignup",
+    f.replace.mockImplementation(() =>
+      Effect.sync(() => {
+        expect(issue).not.toHaveBeenCalled();
+        return [subject];
+      }),
+    );
+    const response = await f.request("/user", signup);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(f.create).toHaveBeenCalledExactlyOnceWith(user.email, user.timezone);
+    expect(f.replace).toHaveBeenCalledExactlyOnceWith({
+      user,
+      subjectIds: [subject.id],
+      schedule: subscription.schedule,
+    });
+    expect(issue).toHaveBeenCalledOnce();
+    expect(issue.mock.calls[0]?.[0]?.body).toEqual({
+      email: user.email,
+      callbackURL: "https://www.example.com",
+      errorCallbackURL: "https://www.example.com",
+    });
+    expect(f.sendConfirmationLink).toHaveBeenCalledOnce();
+    expect(f.sendSignInLink).not.toHaveBeenCalled();
+    expect(f.pending).toHaveLength(1);
+    await Promise.all(f.pending);
+  });
+
+  it.each([false, true])(
+    "returns duplicate 409 without writing preferences (verified: %s)",
+    async (verified) => {
+      const f = await makeFixture();
+      await f.database.query("UPDATE users SET email_verified = $1", [
+        verified,
+      ]);
+      f.create.mockReturnValue(Effect.fail(new UserAlreadyExists({})));
+      const original = f.auth.client.api.signInMagicLink;
+      const issue = vi
+        .spyOn(f.auth.client.api, "signInMagicLink")
+        .mockImplementation((input) => {
+          expect(f.transactions).toEqual(["begin", "rollback"]);
+          return original(input);
+        });
+      const response = await f.request("/user", {
+        ...signup,
+        timezone: "Europe/London",
+        schedule: { ...signup.schedule, sendAtSecondsLocal: 36000 },
+      });
+      expect(response.status).toBe(409);
+      expect(issue).toHaveBeenCalledOnce();
+      expect(await response.json()).toEqual({ _tag: "DuplicateSignup" });
+      expect(f.replace).not.toHaveBeenCalled();
+      expect(f.sendConfirmationLink).toHaveBeenCalledTimes(verified ? 0 : 1);
+      expect(f.sendSignInLink).toHaveBeenCalledTimes(verified ? 1 : 0);
+      expect((await f.rows("users"))[0]).toMatchObject({
+        timezone: "America/New_York",
+        email_verified: verified,
+      });
+      await Promise.all(f.pending);
+    },
+  );
+
+  it.each([false, true])(
+    "keeps the response and permits a replacement after issuance failure (duplicate: %s)",
+    async (duplicate) => {
+      const f = await makeFixture();
+      if (duplicate)
+        f.create.mockReturnValue(Effect.fail(new UserAlreadyExists({})));
+      const issue = vi
+        .spyOn(f.auth.client.api, "signInMagicLink")
+        .mockRejectedValueOnce(new Error("Auth unavailable"));
+      expect((await f.request("/user", signup)).status).toBe(
+        duplicate ? 409 : 200,
       );
-      expect(f.pending).toHaveLength(1);
+      expect(f.replace).toHaveBeenCalledTimes(duplicate ? 0 : 1);
+      expect(f.sendConfirmationLink).not.toHaveBeenCalled();
+      f.create.mockReturnValue(Effect.fail(new UserAlreadyExists({})));
+      expect((await f.request("/user", signup)).status).toBe(409);
+      expect(issue).toHaveBeenCalledTimes(2);
+      expect(f.sendConfirmationLink).toHaveBeenCalledOnce();
+      expect(f.replace).toHaveBeenCalledTimes(duplicate ? 0 : 1);
       await Promise.all(f.pending);
     },
   );
@@ -385,7 +434,7 @@ describe("assembled HTTP API", () => {
   it("registers confirmation delivery in the background after successful persistence", async () => {
     const f = await makeFixture();
     const delivery = Promise.withResolvers<undefined>();
-    f.confirmation.mockImplementationOnce(() =>
+    f.sendConfirmationLink.mockImplementationOnce(() =>
       Effect.promise(() => delivery.promise),
     );
 
@@ -398,15 +447,43 @@ describe("assembled HTTP API", () => {
       await Promise.all(f.pending);
     }
 
-    f.confirmation.mockClear();
+    f.sendConfirmationLink.mockClear();
     f.replace.mockReturnValue(
       Effect.fail(
         new DatabaseReadError({ operation: "Subscriptions.replaceForUser" }),
       ),
     );
     expect((await f.request("/user", signup)).status).toBe(500);
-    expect(f.confirmation).not.toHaveBeenCalled();
+    expect(f.sendConfirmationLink).not.toHaveBeenCalled();
     expect(f.pending).toHaveLength(1);
+  });
+
+  it("does not issue links when creation or subscription validation fails", async () => {
+    const f = await makeFixture();
+    const issue = vi.spyOn(f.auth.client.api, "signInMagicLink");
+    f.create.mockReturnValueOnce(
+      Effect.fail(new DatabaseWriteError({ operation: "Users.create" })),
+    );
+    expect((await f.request("/user", signup)).status).toBe(500);
+    expect(f.replace).not.toHaveBeenCalled();
+
+    for (const error of [
+      new InvalidSubjectSelection({ invalidIds: [subject.id] }),
+      new SubjectCapacityReached({ limit: 4, received: 5 }),
+    ]) {
+      f.replace.mockReturnValueOnce(Effect.fail(error));
+      expect((await f.request("/user", signup)).status).toBe(400);
+    }
+    expect(issue).not.toHaveBeenCalled();
+    expect(f.transactions).toEqual([
+      "begin",
+      "rollback",
+      "begin",
+      "rollback",
+      "begin",
+      "rollback",
+    ]);
+    expect(f.pending).toHaveLength(0);
   });
 
   it("rejects malformed registration and unsubscribe payloads before persistence", async () => {
@@ -425,7 +502,7 @@ describe("assembled HTTP API", () => {
     expect(
       (await f.request("/user/unsubscribe", { token: "invalid" })).status,
     ).toBe(400);
-    expect(f.upsert).not.toHaveBeenCalled();
+    expect(f.create).not.toHaveBeenCalled();
     expect(f.getByToken).not.toHaveBeenCalled();
   });
 
@@ -439,9 +516,11 @@ describe("assembled HTTP API", () => {
       (await f.request("/user/unsubscribe", { token: user.unsubscribeToken }))
         .status,
     ).toBe(429);
-    expect(f.upsert).not.toHaveBeenCalled();
+    expect(f.create).not.toHaveBeenCalled();
     expect(f.getByToken).not.toHaveBeenCalled();
-    expect(f.confirmation).not.toHaveBeenCalled();
+    expect(f.sendConfirmationLink).not.toHaveBeenCalled();
+    expect(f.sendSignInLink).not.toHaveBeenCalled();
+    expect(await f.rows("auth_verifications")).toHaveLength(0);
   });
 
   it("removes legacy routes while retaining ping and subjects", async () => {
