@@ -1,4 +1,7 @@
-import { createMemo } from "solid-js";import { Layout } from "../layouts/Layout.jsx";
+import { Result } from "effect";
+import { createMemo } from "solid-js";
+
+import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
 import { getSubjects } from "../lib/subjects.js";
 import { Form as SignupForm } from "../modules/signup/Form.jsx";
@@ -13,7 +16,7 @@ export function preload() {
 
 export function Home() {
   usePageMetadata("dotheyplaytoday", description);
-  const subjects = createMemo(() => getSubjects());
+  const result = createMemo(() => getSubjects());
 
   return (
     <Layout headerAction={{ href: "#signup", label: "Sign up" }}>
@@ -41,7 +44,14 @@ export function Home() {
         <div class="signup-header">
           <h2 class="signup-title">Get on the roster</h2>
         </div>
-        <SignupForm subjects={subjects()} />
+        {Result.match(result(), {
+          onSuccess: (subjects) => <SignupForm subjects={subjects} />,
+          onFailure: () => (
+            <p class="form-error" role="alert">
+              We couldn't load the team list. Try reloading the page.
+            </p>
+          ),
+        })}
       </section>
     </Layout>
   );

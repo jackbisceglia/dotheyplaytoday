@@ -4,7 +4,6 @@ import { Effect } from "effect";
 import type { Duration } from "effect";
 import { FetchHttpClient, HttpClient } from "effect/unstable/http";
 import { HttpApiClient } from "effect/unstable/httpapi";
-
 import { RuntimeClient } from "./platform.js";
 
 const RuntimeHttpClient = Effect.gen(function* () {
@@ -40,6 +39,27 @@ export function withApiClient<A, E>(
     Effect.provideService(FetchHttpClient.RequestInit, {
       credentials: "include",
     }),
+  );
+
+  return RuntimeClient.runPromise(procedure);
+}
+
+// Same procedure as withApiClient, but the failure stays in the typed
+// channel as a Result so the caller decides the recovery policy.
+export function withApiResult<A, E>(
+  useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
+  duration: Duration.Input = "10 seconds",
+) {
+  const procedure = Effect.gen(function* () {
+    const client = yield* Client;
+
+    return yield* useClient(client);
+  }).pipe(
+    Effect.timeout(duration),
+    Effect.provideService(FetchHttpClient.RequestInit, {
+      credentials: "include",
+    }),
+    Effect.result,
   );
 
   return RuntimeClient.runPromise(procedure);
