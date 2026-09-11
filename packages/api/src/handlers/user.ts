@@ -136,7 +136,11 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
             const user = yield* users.get(userId);
 
-            return { email: user.email, timezone: user.timezone };
+            return {
+              email: user.email,
+              timezone: user.timezone,
+              unsubscribeToken: user.unsubscribeToken,
+            };
           },
           Effect.tapErrorTag(ReadErrorTags, (error) =>
             Effect.logError("user: unexpected failure", { error }),

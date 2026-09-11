@@ -237,6 +237,7 @@ describe("assembled HTTP API", () => {
     expect(await response.json()).toEqual({
       email: user.email,
       timezone: "America/New_York",
+      unsubscribeToken: user.unsubscribeToken,
     });
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(response.headers.get("access-control-allow-origin")).toBe(
@@ -344,7 +345,7 @@ describe("assembled HTTP API", () => {
     const link = f.sendConfirmationLink.mock.calls[0]?.[1];
     if (!link) throw new Error("Missing confirmation link");
     expect(new URL(link).searchParams.get("callbackURL")).toBe(
-      "https://www.example.com/?confirmed=1",
+      "https://www.example.com/home?confirmation=1",
     );
     expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
       "https://www.example.com/",
@@ -384,8 +385,8 @@ describe("assembled HTTP API", () => {
       if (!link) throw new Error("Missing duplicate signup link");
       expect(new URL(link).searchParams.get("callbackURL")).toBe(
         verified
-          ? "https://www.example.com/"
-          : "https://www.example.com/?confirmed=1",
+          ? "https://www.example.com/home"
+          : "https://www.example.com/home?confirmation=1",
       );
       expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
         "https://www.example.com/",

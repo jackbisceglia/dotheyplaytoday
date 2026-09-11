@@ -1,6 +1,6 @@
-import { useNavigate } from "@solidjs/router";
+import { useNavigate, useSearchParams } from "@solidjs/router";
 import { Result } from "effect";
-import { createEffect, createMemo } from "solid-js";
+import { createEffect, createMemo, Show } from "solid-js";
 
 import { getSessionStatus, useSession } from "../lib/auth.js";
 import { Layout } from "../layouts/Layout.jsx";
@@ -8,6 +8,7 @@ import { usePageMetadata } from "../lib/metadata.js";
 import { useApplicationPath } from "../lib/paths.js";
 import { getSubjects } from "../lib/subjects.js";
 import { Form as SignupForm } from "../modules/signup/Form.jsx";
+import { Login } from "../modules/auth/Login.jsx";
 import { Ticker as ScoreTicker } from "../modules/ui/Ticker.jsx";
 
 const description =
@@ -23,6 +24,8 @@ export function Landing() {
   const session = useSession();
   const navigate = useNavigate();
   const homeHref = useApplicationPath("home");
+  const loginHref = useApplicationPath("login");
+  const [search] = useSearchParams();
 
   // Signed-in visitors upgrade to /home after the session settles.
   createEffect(
@@ -35,7 +38,15 @@ export function Landing() {
   );
 
   return (
-    <Layout headerAction={{ href: "#signup", label: "Sign up" }}>
+    <Layout
+      headerActions={[
+        { href: loginHref(), label: "Log in" },
+        { href: "#signup", label: "Sign up" },
+      ]}
+    >
+      <Show when={search.modal === "login"}>
+        <Login />
+      </Show>
       <section class="hero">
         <h1 class="hero-headline">
           Your team plays

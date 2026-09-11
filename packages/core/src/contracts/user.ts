@@ -16,7 +16,9 @@ import {
 
 import { SubscriptionGroup } from "./subscription.js";
 
-export const UserResponse = User.mapFields(Struct.pick(["email", "timezone"]));
+export const UserResponse = User.mapFields(
+  Struct.pick(["email", "timezone", "unsubscribeToken"]),
+);
 
 export const SignupRequest = Schema.Struct({
   email: EmailAddressFromString,
