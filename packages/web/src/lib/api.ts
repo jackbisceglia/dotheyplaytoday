@@ -45,8 +45,6 @@ export function withApiClient<A, E>(
   return RuntimeClient.runPromise(procedure);
 }
 
-// Same procedure as withApiClient, but the failure stays in the typed
-// channel as a Result so the caller decides the recovery policy.
 export function withApiResult<A, E>(
   useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
   duration: Duration.Input = "10 seconds",
