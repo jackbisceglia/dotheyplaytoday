@@ -1,7 +1,6 @@
 import { useHref } from "@solidjs/router";
 
-// Single source of truth for client route paths. App.tsx uses the static
-// patterns for defineRoute; components use pathHooks for base-aware hrefs.
+// Path registry for the application.
 export const paths = {
   home: "/",
   feedback: "/feedback",
