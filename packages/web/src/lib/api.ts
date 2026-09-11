@@ -4,6 +4,7 @@ import { Effect } from "effect";
 import type { Duration } from "effect";
 import { FetchHttpClient, HttpClient } from "effect/unstable/http";
 import { HttpApiClient } from "effect/unstable/httpapi";
+
 import { RuntimeClient } from "./platform.js";
 
 const RuntimeHttpClient = Effect.gen(function* () {
