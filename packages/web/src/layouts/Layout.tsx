@@ -17,7 +17,7 @@ type LayoutProps = ParentProps<{
 
 export function Layout(props: LayoutProps) {
   let main: HTMLElement | undefined;
-  const homeHref = useApplicationPath("home");
+  const homeHref = useApplicationPath("landing");
   const feedbackHref = useApplicationPath("feedback");
 
   return (

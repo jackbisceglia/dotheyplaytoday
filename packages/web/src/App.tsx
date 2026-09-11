@@ -16,7 +16,7 @@ const routes = defineRoutes([
     component: RootShell,
     children: [
       defineRoute({
-        path: paths.home,
+        path: paths.landing,
         preload: homePreload,
         component: Home,
       }),

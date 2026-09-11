@@ -5,7 +5,7 @@ import { usePageMetadata } from "../lib/metadata.js";
 import { useApplicationPath } from "../lib/paths.js";
 
 export function NotFound() {
-  const homeHref = useApplicationPath("home");
+  const homeHref = useApplicationPath("landing");
   httpStatus(404, "Not Found");
   usePageMetadata(
     "Not found | dotheyplaytoday",

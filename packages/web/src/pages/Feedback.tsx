@@ -23,7 +23,7 @@ const getSubmitErrorMessage = (error: unknown) =>
   );
 
 export function Feedback() {
-  const homeHref = useApplicationPath("home");
+  const homeHref = useApplicationPath("landing");
   usePageMetadata(
     "Feedback | dotheyplaytoday",
     "Request a league, team, or sport, or send general feedback.",

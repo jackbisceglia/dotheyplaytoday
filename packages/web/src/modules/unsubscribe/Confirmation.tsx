@@ -19,7 +19,7 @@ const getSubmitErrorMessage = (error: unknown) =>
 export function Confirmation(props: {
   readonly token: UnsubscribeTokenSuccess;
 }) {
-  const homeHref = useApplicationPath("home");
+  const homeHref = useApplicationPath("landing");
   const [formError, setFormError] = createSignal<string>();
   const [isSubmitting, setSubmitting] = createSignal(false);
   const [isSucceeded, setSucceeded] = createSignal(false);

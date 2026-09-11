@@ -32,7 +32,7 @@ function SessionError(props: { readonly onRetry: () => void }) {
 function SessionGate(props: ParentProps) {
   const session = useSession();
   const navigate = useNavigate();
-  const homeHref = useApplicationPath("home");
+  const homeHref = useApplicationPath("landing");
 
   createEffect(
     () =>

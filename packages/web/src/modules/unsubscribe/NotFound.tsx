@@ -1,7 +1,7 @@
 import { useApplicationPath } from "../../lib/paths.js";
 
 export function NotFound() {
-  const homeHref = useApplicationPath("home");
+  const homeHref = useApplicationPath("landing");
   return (
     <section class="unsubscribe">
       <div class="unsubscribe-confirm">
