@@ -1,5 +1,4 @@
 import { useNavigate } from "@solidjs/router";
-import { httpStatus } from "@solidjs/web";
 import { createEffect, Errored, Match, Switch } from "solid-js";
 import type { ParentProps } from "solid-js";
 
@@ -29,25 +28,29 @@ function SessionError(props: { readonly onRetry: () => void }) {
   );
 }
 
-function SessionGate(props: ParentProps) {
+function Authenticated(props: ParentProps) {
   const session = useSession();
   const navigate = useNavigate();
   const landingHref = useApplicationPath("landing");
 
   createEffect(
-    () =>
-      !session().isPending && !session().error && !session().data
-        ? landingHref()
-        : undefined,
-    (href) => {
-      if (href !== undefined) navigate(href, { replace: true });
+    () => {
+      const current = session();
+
+      if (current.isPending) return "pending";
+      if (current.error) return "unavailable";
+      return current.data ? "authenticated" : "unauthenticated";
+    },
+    (state) => {
+      if (state === "unavailable") {
+        throw new Error("Failed to check the session");
+      }
+
+      if (state === "unauthenticated") {
+        navigate(landingHref(), { replace: true });
+      }
     },
   );
-
-  if (!session().isPending && session().error) {
-    httpStatus(500, "Failed to check the session");
-    throw new Error("Failed to check the session");
-  }
 
   return (
     <Switch fallback={<Splash />}>
@@ -60,7 +63,7 @@ function SessionGate(props: ParentProps) {
 export function AuthenticatedShell(props: ParentProps) {
   return (
     <Errored fallback={(_error, reset) => <SessionError onRetry={reset} />}>
-      <SessionGate>{props.children}</SessionGate>
+      <Authenticated>{props.children}</Authenticated>
     </Errored>
   );
 }

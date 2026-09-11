@@ -4,7 +4,7 @@ import { auth, useSession } from "../../lib/auth.js";
 import { Layout } from "../../layouts/Layout.jsx";
 import { usePageMetadata } from "../../lib/metadata.js";
 
-export function Dashboard() {
+export function Home() {
   const session = useSession();
   const navigate = useNavigate();
   usePageMetadata("Home | dotheyplaytoday", "Your game-day subscriptions.");

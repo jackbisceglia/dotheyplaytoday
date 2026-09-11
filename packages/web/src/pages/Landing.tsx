@@ -17,16 +17,16 @@ export function preload() {
   return getSubjects();
 }
 
-export function Home() {
+export function Landing() {
   usePageMetadata("dotheyplaytoday", description);
   const result = createMemo(() => getSubjects());
   const session = useSession();
   const navigate = useNavigate();
-  const dashboardHref = useApplicationPath("dashboard");
+  const homeHref = useApplicationPath("home");
 
   // Signed-in visitors upgrade to /home after the session settles.
   createEffect(
-    () => (!session().isPending && session().data ? dashboardHref() : undefined),
+    () => (!session().isPending && session().data ? homeHref() : undefined),
     (href) => {
       if (href !== undefined) navigate(href, { replace: true });
     },
