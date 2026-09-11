@@ -2,6 +2,7 @@ import { Match } from "effect";
 import { createSignal } from "solid-js";
 
 import { withApiClient } from "../../lib/api.js";
+import { auth } from "../../lib/auth.js";
 import { useApplicationPath } from "../../lib/paths.js";
 import type { UnsubscribeTokenSuccess } from "./token.js";
 
@@ -33,7 +34,8 @@ export function Confirmation(props: {
     void withApiClient((client) =>
       client.user.unsubscribe({ payload: { token: props.token } }),
     )
-      .then(() => {
+      .then(async () => {
+        await auth.signOut().catch(() => undefined);
         setSucceeded(true);
         queueMicrotask(() => successTitle?.focus());
       })
