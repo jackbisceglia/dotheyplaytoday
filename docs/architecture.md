@@ -152,7 +152,7 @@ The notification Worker provisions the email notifier, which renders a
 Auth's magic-link callback reuses the recipient from request context to select
 the view by `emailVerified`, without another lookup or email normalization. It
 forwards the generated URL unchanged. A shared Better Auth before hook selects
-the Web root through `callbackURL`, adding `confirmed=1` only for users
+the Web `/home` route through `callbackURL`, adding `confirmed=1` only for users
 unverified at issuance. It sets `errorCallbackURL` to the Web root without the
 marker. The hook covers both registration's server API calls and standalone HTTP
 sign-in, retaining validation of caller-supplied URLs. The recipient context is
