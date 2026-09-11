@@ -1,17 +1,19 @@
-export const AuthHintKey = "dtpt.authenticated";
+const key = "dtpt.authenticated";
 
-export function setAuthHint() {
-  try {
-    localStorage.setItem(AuthHintKey, "1");
-  } catch {
-    // Storage availability must not affect authentication.
-  }
-}
-
-export function clearAuthHint() {
-  try {
-    localStorage.removeItem(AuthHintKey);
-  } catch {
-    // Storage availability must not affect authentication.
-  }
-}
+export const authHint = {
+  key,
+  set: () => {
+    try {
+      localStorage.setItem(key, "1");
+    } catch {
+      // Storage availability must not affect authentication.
+    }
+  },
+  clear: () => {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // Storage availability must not affect authentication.
+    }
+  },
+} as const;

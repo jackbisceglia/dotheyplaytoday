@@ -3,7 +3,6 @@ import { createEffect, Errored, Match, Switch } from "solid-js";
 import type { ParentProps } from "solid-js";
 
 import { useSession } from "../../lib/auth.js";
-import { clearAuthHint, setAuthHint } from "../../lib/auth/hint.js";
 import { useApplicationPath } from "../../lib/paths.js";
 import { Splash } from "../../modules/ui/Splash.jsx";
 
@@ -47,12 +46,7 @@ function Authenticated(props: ParentProps) {
         throw new Error("Failed to check the session");
       }
 
-      if (state === "authenticated") {
-        setAuthHint();
-      }
-
       if (state === "unauthenticated") {
-        clearAuthHint();
         navigate(landingHref(), { replace: true });
       }
     },
