@@ -23,7 +23,7 @@ const getSubmitErrorMessage = (error: unknown) =>
   );
 
 export function Feedback() {
-  const homeHref = useApplicationPath("landing");
+  const landingHref = useApplicationPath("landing");
   usePageMetadata(
     "Feedback | dotheyplaytoday",
     "Request a league, team, or sport, or send general feedback.",
@@ -77,7 +77,7 @@ export function Feedback() {
   };
 
   return (
-    <Layout headerAction={{ href: homeHref(), label: "Home" }}>
+    <Layout headerAction={{ href: landingHref(), label: "Home" }}>
       <section class="feedback-page">
         <div class="feedback-heading">
           <h1 class="feedback-title">

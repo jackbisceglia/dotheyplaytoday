@@ -32,12 +32,12 @@ function SessionError(props: { readonly onRetry: () => void }) {
 function SessionGate(props: ParentProps) {
   const session = useSession();
   const navigate = useNavigate();
-  const homeHref = useApplicationPath("landing");
+  const landingHref = useApplicationPath("landing");
 
   createEffect(
     () =>
       !session().isPending && !session().error && !session().data
-        ? homeHref()
+        ? landingHref()
         : undefined,
     (href) => {
       if (href !== undefined) navigate(href, { replace: true });

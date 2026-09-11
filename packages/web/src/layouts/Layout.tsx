@@ -17,7 +17,7 @@ type LayoutProps = ParentProps<{
 
 export function Layout(props: LayoutProps) {
   let main: HTMLElement | undefined;
-  const homeHref = useApplicationPath("landing");
+  const landingHref = useApplicationPath("landing");
   const feedbackHref = useApplicationPath("feedback");
 
   return (
@@ -33,7 +33,7 @@ export function Layout(props: LayoutProps) {
       </a>
 
       <header class="site-header">
-        <a class="wordmark" href={homeHref()}>
+        <a class="wordmark" href={landingHref()}>
           <BrandMark class="wordmark-mark" />
           <span class="visually-hidden">Do they play today</span>
           <span aria-hidden="true">
