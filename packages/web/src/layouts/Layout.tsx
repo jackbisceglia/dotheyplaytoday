@@ -1,7 +1,7 @@
 import { Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 import { BrandMark } from "../modules/ui/BrandMark.jsx";
-import { pathHooks } from "../lib/paths.js";
+import { useApplicationPath } from "../lib/paths.js";
 
 type HeaderAction = {
   readonly href: string;
@@ -14,8 +14,8 @@ type LayoutProps = ParentProps<{
 
 export function Layout(props: LayoutProps) {
   let main: HTMLElement | undefined;
-  const homeHref = pathHooks.useHome();
-  const feedbackHref = pathHooks.useFeedback();
+  const homeHref = useApplicationPath("home");
+  const feedbackHref = useApplicationPath("feedback");
 
   return (
     <>
@@ -30,7 +30,7 @@ export function Layout(props: LayoutProps) {
       </a>
 
       <header class="site-header">
-        <a class="wordmark" href={homeHref()}>
+        <a class="wordmark" href={homeHref}>
           <BrandMark class="wordmark-mark" />
           <span class="visually-hidden">Do they play today</span>
           <span aria-hidden="true">
@@ -54,7 +54,7 @@ export function Layout(props: LayoutProps) {
 
       <footer class="site-footer">
         <span>dotheyplaytoday</span>
-        <a class="footer-link" href={feedbackHref()}>
+        <a class="footer-link" href={feedbackHref}>
           Feedback
         </a>
       </footer>

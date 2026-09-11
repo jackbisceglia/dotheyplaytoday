@@ -7,21 +7,10 @@ export const paths = {
   unsubscribe: "/unsubscribe/:token",
 } as const;
 
-export type PathHooks = {
-  [K in keyof typeof paths as `use${Capitalize<string & K>}`]: () => () => string;
-};
-
-const toHookName = (key: string): string =>
-  `use${key.slice(0, 1).toUpperCase()}${key.slice(1)}`;
-
-const createPathHooks = (
-  spec: Record<string, string>,
-): Record<string, () => () => string> =>
-  Object.fromEntries(
-    Object.entries(spec).map(([key, value]) => [
-      toHookName(key),
-      () => useHref(() => value),
-    ]),
-  );
-
-export const pathHooks = createPathHooks(paths) as PathHooks;
+// Base-aware href for a registered path. Returns a plain string: the input
+// is static and the router base never changes mid-render, so there is
+// nothing to stay subscribed to.
+export function useApplicationPath(name: keyof typeof paths): string {
+  const href = useHref(() => paths[name]);
+  return href();
+}
