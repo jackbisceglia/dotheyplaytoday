@@ -1,7 +1,7 @@
-import { useHomeHref } from "../../lib/navigation.js";
+import { pathHooks } from "../../lib/paths.js";
 
 export function NotFound() {
-  const homeHref = useHomeHref();
+  const homeHref = pathHooks.useHome();
   return (
     <section class="unsubscribe">
       <div class="unsubscribe-confirm">

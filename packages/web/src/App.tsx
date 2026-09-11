@@ -2,6 +2,7 @@ import "./styles/global.css";
 
 import { createRouter, defineRoute, defineRoutes } from "@solidjs/router";
 
+import { paths } from "./lib/paths.js";
 import { Feedback } from "./pages/Feedback.jsx";
 import { Home, preload as homePreload } from "./pages/Home.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
@@ -13,19 +14,16 @@ const routes = defineRoutes([
     component: RootShell,
     children: [
       defineRoute({
-        path: "/",
+        path: paths.home,
         preload: homePreload,
         component: Home,
       }),
+      defineRoute({ path: paths.feedback, component: Feedback }),
       defineRoute({
-        path: "/feedback",
-        component: () => <Feedback />,
-      }),
-      defineRoute({
-        path: "/unsubscribe/:token",
+        path: paths.unsubscribe,
         component: (props) => <Unsubscribe token={props.params.token} />,
       }),
-      { path: "*404", component: () => <NotFound /> },
+      { path: "*404", component: NotFound },
     ],
   }),
 ]);

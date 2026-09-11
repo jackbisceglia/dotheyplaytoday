@@ -2,10 +2,10 @@ import { httpStatus } from "@solidjs/web";
 
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
-import { useHomeHref } from "../lib/navigation.js";
+import { pathHooks } from "../lib/paths.js";
 
 export function NotFound() {
-  const homeHref = useHomeHref();
+  const homeHref = pathHooks.useHome();
   httpStatus(404, "Not Found");
   usePageMetadata(
     "Not found | dotheyplaytoday",
