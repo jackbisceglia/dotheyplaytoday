@@ -1,7 +1,7 @@
 import { Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 
-import { AuthHintSync } from "../lib/auth/HintSync.js";
+import { ManageAuthHint } from "../lib/auth/ManageAuthHint.js";
 
 function DevCatalogNotice() {
   return (
@@ -16,9 +16,10 @@ function DevCatalogNotice() {
 
 export function RootShell(props: ParentProps) {
   return (
-    <AuthHintSync>
+    <>
+      <ManageAuthHint />
       <DevCatalogNotice />
       {props.children}
-    </AuthHintSync>
+    </>
   );
 }
