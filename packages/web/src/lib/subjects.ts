@@ -10,5 +10,7 @@ export const SubjectsLoadFailed = "SubjectsLoadFailed" as const;
 export const getSubjects = query(async () => {
   const result = await withApiResult((api) => api.subjects.list());
 
-  return Result.mapError(result, () => SubjectsLoadFailed);
+  return Result.mapError(result, (error) =>
+    error._tag === "InternalServerError" ? error : SubjectsLoadFailed,
+  );
 }, "subjects");
