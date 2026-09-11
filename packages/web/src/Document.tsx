@@ -1,10 +1,10 @@
 import { HydrationScript } from "@solidjs/web";
 import type { ParentProps } from "solid-js";
 
-import { authHint } from "./lib/auth/hint.js";
+import { hint } from "./lib/auth/hint.js";
 import { paths } from "./lib/paths.js";
 
-const authHintScript = `try{if(location.pathname==="${paths.landing}"&&localStorage.getItem("${authHint.key}")==="1")location.replace("${paths.home}")}catch{}`;
+const authHintScript = `try{if(location.pathname==="${paths.landing}"&&localStorage.getItem("${hint.key}")==="1")location.replace("${paths.home}")}catch{}`;
 
 export default function Document(props: ParentProps) {
   return (

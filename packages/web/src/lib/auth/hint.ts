@@ -1,6 +1,6 @@
 const key = "dtpt.authenticated";
 
-export const authHint = {
+export const hint = {
   key,
   set: () => {
     try {
