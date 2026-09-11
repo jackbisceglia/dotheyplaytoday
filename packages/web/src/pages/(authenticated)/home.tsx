@@ -1,6 +1,6 @@
 import { useNavigate } from "@solidjs/router";
 
-import { authClient, useSession } from "../../lib/auth.js";
+import { auth, useSession } from "../../lib/auth.js";
 import { Layout } from "../../layouts/Layout.jsx";
 import { usePageMetadata } from "../../lib/metadata.js";
 
@@ -10,7 +10,7 @@ export function Dashboard() {
   usePageMetadata("Home | dotheyplaytoday", "Your game-day subscriptions.");
 
   const signOut = () => {
-    void authClient.signOut().finally(() => {
+    void auth.signOut().finally(() => {
       navigate("/", { replace: true });
     });
   };
