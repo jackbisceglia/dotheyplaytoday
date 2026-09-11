@@ -3,6 +3,9 @@ import type { ParentProps } from "solid-js";
 import { BrandMark } from "../modules/ui/BrandMark.jsx";
 import { useApplicationPath } from "../lib/paths.js";
 
+// TODO(layout): fold this chrome into the root shell (pages/shell.tsx) and
+// delete this module. Every page wraps itself in Layout today; the shell
+// should own the header/footer once per navigation instead.
 type HeaderAction = {
   readonly href: string;
   readonly label: string;
