@@ -6,13 +6,14 @@ import {
   defineRoutes,
   query,
 } from "@solidjs/router";
-import { createMemo, Show } from "solid-js";
+import { createMemo } from "solid-js";
 
 import { withApiClient } from "./lib/api.js";
 import { Feedback } from "./pages/Feedback.jsx";
 import { Home } from "./pages/Home.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
 import { Unsubscribe } from "./pages/Unsubscribe.jsx";
+import { RootShell } from "./pages/shell.jsx";
 
 const getSubjects = query(
   () =>
@@ -25,43 +26,35 @@ const getSubjects = query(
 
 const routes = defineRoutes([
   defineRoute({
-    path: "/",
-    preload: () => getSubjects(),
-    component: () => {
-      const subjects = createMemo(() => getSubjects());
+    component: RootShell,
+    children: [
+      defineRoute({
+        path: "/",
+        preload: () => getSubjects(),
+        component: () => {
+          const subjects = createMemo(() => getSubjects());
 
-      return <Home homeHref={paths()} subjects={subjects()} />;
-    },
+          return <Home homeHref={paths()} subjects={subjects()} />;
+        },
+      }),
+      defineRoute({
+        path: "/feedback",
+        component: () => <Feedback homeHref={paths()} />,
+      }),
+      defineRoute({
+        path: "/unsubscribe/:token",
+        component: (props) => (
+          <Unsubscribe homeHref={paths()} token={props.params.token} />
+        ),
+      }),
+      { path: "*404", component: () => <NotFound homeHref={paths()} /> },
+    ],
   }),
-  defineRoute({
-    path: "/feedback",
-    component: () => <Feedback homeHref={paths()} />,
-  }),
-  defineRoute({
-    path: "/unsubscribe/:token",
-    component: (props) => (
-      <Unsubscribe homeHref={paths()} token={props.params.token} />
-    ),
-  }),
-  { path: "*404", component: () => <NotFound homeHref={paths()} /> },
 ]);
 
 const Router = createRouter({ routes });
 const { paths } = Router;
 
-const DevOnlyAlerts = () => (
-  <Show when={import.meta.env.DEV}>
-    <aside class="dev-catalog-notice" role="status">
-      Development catalog: event notifications are available for the NBA only.
-    </aside>
-  </Show>
-);
-
 export default function App() {
-  return (
-    <>
-      <DevOnlyAlerts />
-      <Router />
-    </>
-  );
+  return <Router />;
 }
