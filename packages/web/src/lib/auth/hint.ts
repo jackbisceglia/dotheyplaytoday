@@ -6,14 +6,14 @@ export const authHint = {
     try {
       localStorage.setItem(key, "1");
     } catch {
-      // Storage availability must not affect authentication.
+      return;
     }
   },
   clear: () => {
     try {
       localStorage.removeItem(key);
     } catch {
-      // Storage availability must not affect authentication.
+      return;
     }
   },
 } as const;
