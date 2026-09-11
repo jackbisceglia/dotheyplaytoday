@@ -5,6 +5,7 @@ import type { Id } from "@dtpt/core/lib/id/service";
 import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
 import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
 import {
+  EmailAddress,
   EmailAddressFromString,
   usersTable,
 } from "@dtpt/core/modules/users/schema";
@@ -14,15 +15,21 @@ import {
   authVerificationsTable,
 } from "@dtpt/core/modules/auth/schema";
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { magicLink } from "better-auth/plugins";
-import { Boolean, Context, Effect, Layer, Redacted, Schema } from "effect";
+import { Context, Effect, Layer, Option, Redacted, Schema } from "effect";
+import { type User as BetterAuthUser } from "better-auth";
 import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
 
-const decodeEmail = Schema.decodeUnknownSync(EmailAddressFromString);
+type MagicLinkContext = { readonly user: BetterAuthUser | null };
+
+const decodeMagicLinkBody = Schema.decodeUnknownOption(
+  Schema.Struct({ email: EmailAddressFromString }),
+);
 
 const createAuthPool = (connectionString: string) =>
   Effect.acquireRelease(
@@ -39,7 +46,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
   make: Effect.fn("Auth.make")(function* (connectionString: string) {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
-    const webUrl = new URL(yield* WebUrl);
+    const webUrl = new URL("/", yield* WebUrl);
     const pool = yield* createAuthPool(connectionString);
     const cloudflare = yield* Cloudflare.WorkerExecutionContext;
     // Preserve runtime config and Id when Better Auth calls back into Effect.
@@ -78,26 +85,55 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
         useSecureCookies: apiUrl.protocol === "https:",
         ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
       },
+      hooks: {
+        before: createAuthMiddleware(async (ctx) => {
+          if (ctx.path !== "/sign-in/magic-link") return;
+
+          const body = decodeMagicLinkBody(ctx.body);
+
+          if (Option.isNone(body)) return;
+
+          const account = await ctx.context.internalAdapter.findUserByEmail(
+            body.value.email,
+          );
+
+          const user = account?.user ?? null;
+
+          return {
+            context: {
+              body: {
+                // Unverified recipients return with a marker so the Web app can
+                // show confirmation success once. Verified recipients just sign in.
+                callbackURL: user?.emailVerified
+                  ? webUrl.href
+                  : new URL("/?confirmed=1", webUrl).href,
+                errorCallbackURL: webUrl.href,
+              },
+              context: { user } satisfies MagicLinkContext,
+            },
+          };
+        }),
+      },
       plugins: [
         magicLink({
           disableSignUp: true,
           expiresIn: 15 * 60,
           storeToken: "hashed",
-          sendMagicLink: async (options, endpoint) => {
-            if (endpoint === undefined) return;
+          sendMagicLink: (options, endpoint) => {
+            if (!endpoint) return;
 
-            const normalized = decodeEmail(options.email);
-            const user =
-              await endpoint.context.internalAdapter.findUserByEmail(
-                normalized,
-              );
+            // The before hook looked the recipient up once and put it here, so
+            // callback selection and email copy share one verification snapshot.
+            const context = endpoint.context as Partial<MagicLinkContext>;
+            const user = context.user;
 
-            if (user === null) return;
+            if (!user) return;
 
-            const send = Boolean.match(user.user.emailVerified, {
-              onTrue: () => sendSignInLink(normalized, options.url),
-              onFalse: () => sendConfirmationLink(normalized, options.url),
-            });
+            const email = EmailAddress.make(user.email);
+
+            const send = user.emailVerified
+              ? sendSignInLink(email, options.url)
+              : sendConfirmationLink(email, options.url);
 
             cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
           },
