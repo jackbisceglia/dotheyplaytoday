@@ -19,7 +19,7 @@ import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { magicLink } from "better-auth/plugins";
-import { Context, Effect, Layer, Option, Redacted, Schema } from "effect";
+import { Boolean, Context, Effect, Layer, Option, Redacted, Schema } from "effect";
 import { type User as BetterAuthUser } from "better-auth";
 import { Pool } from "pg";
 
@@ -98,15 +98,16 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           );
 
           const user = account?.user ?? null;
+          const isUserVerified = user?.emailVerified ?? false;
 
           return {
             context: {
               body: {
-                // Unverified recipients return with a marker so the Web app can
-                // show confirmation success once. Verified recipients just sign in.
-                callbackURL: user?.emailVerified
-                  ? webUrl.href
-                  : new URL("/?confirmed=1", webUrl).href,
+                callbackURL: Boolean.match(isUserVerified, {
+                  onTrue: () => webUrl.href,
+                  onFalse: () => new URL("/?confirmed=1", webUrl).href,
+                }),
+                // TODO: surface the failed-link message as a toast, mirroring the confirmation marker.
                 errorCallbackURL: webUrl.href,
               },
               context: { user } satisfies MagicLinkContext,
@@ -122,8 +123,6 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           sendMagicLink: (options, endpoint) => {
             if (!endpoint) return;
 
-            // The before hook looked the recipient up once and put it here, so
-            // callback selection and email copy share one verification snapshot.
             const context = endpoint.context as Partial<MagicLinkContext>;
             const user = context.user;
 
