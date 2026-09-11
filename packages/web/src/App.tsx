@@ -4,7 +4,7 @@ import { createRouter, defineRoute, defineRoutes } from "@solidjs/router";
 
 import { paths } from "./lib/paths.js";
 import { AuthenticatedShell } from "./pages/(authenticated)/shell.jsx";
-import { Dashboard } from "./pages/(authenticated)/home.jsx";
+import { Dashboard } from "./pages/(authenticated)/dashboard.jsx";
 import { Feedback } from "./pages/Feedback.jsx";
 import { Home, preload as homePreload } from "./pages/Home.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
