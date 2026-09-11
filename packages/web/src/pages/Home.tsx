@@ -1,17 +1,19 @@
-import type { Subject } from "@dtpt/core/modules/subjects/schema";
-
-import { Layout } from "../layouts/Layout.jsx";
+import { createMemo } from "solid-js";import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
+import { getSubjects } from "../lib/subjects.js";
 import { Form as SignupForm } from "../modules/signup/Form.jsx";
 import { Ticker as ScoreTicker } from "../modules/ui/Ticker.jsx";
 
 const description =
   "Game-day emails for your teams. Pick your team, pick a time, and get an update on game day.";
 
-export function Home(props: {
-  readonly subjects: readonly Subject[];
-}) {
+export function preload() {
+  return getSubjects();
+}
+
+export function Home() {
   usePageMetadata("dotheyplaytoday", description);
+  const subjects = createMemo(() => getSubjects());
 
   return (
     <Layout headerAction={{ href: "#signup", label: "Sign up" }}>
@@ -39,7 +41,7 @@ export function Home(props: {
         <div class="signup-header">
           <h2 class="signup-title">Get on the roster</h2>
         </div>
-        <SignupForm subjects={props.subjects} />
+        <SignupForm subjects={subjects()} />
       </section>
     </Layout>
   );

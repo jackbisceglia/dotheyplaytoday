@@ -1,28 +1,12 @@
 import "./styles/global.css";
 
-import {
-  createRouter,
-  defineRoute,
-  defineRoutes,
-  query,
-} from "@solidjs/router";
-import { createMemo } from "solid-js";
+import { createRouter, defineRoute, defineRoutes } from "@solidjs/router";
 
-import { withApiClient } from "./lib/api.js";
 import { Feedback } from "./pages/Feedback.jsx";
-import { Home } from "./pages/Home.jsx";
+import { Home, preload as homePreload } from "./pages/Home.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
 import { Unsubscribe } from "./pages/Unsubscribe.jsx";
 import { RootShell } from "./pages/shell.jsx";
-
-const getSubjects = query(
-  () =>
-    withApiClient((api) => api.subjects.list()).catch((error: unknown) => {
-      console.error("Failed to load the subject catalog", error);
-      return [];
-    }),
-  "subjects",
-);
 
 const routes = defineRoutes([
   defineRoute({
@@ -30,12 +14,8 @@ const routes = defineRoutes([
     children: [
       defineRoute({
         path: "/",
-        preload: () => getSubjects(),
-        component: () => {
-          const subjects = createMemo(() => getSubjects());
-
-          return <Home subjects={subjects()} />;
-        },
+        preload: homePreload,
+        component: Home,
       }),
       defineRoute({
         path: "/feedback",
