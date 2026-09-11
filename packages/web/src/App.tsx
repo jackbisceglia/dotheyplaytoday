@@ -3,6 +3,8 @@ import "./styles/global.css";
 import { createRouter, defineRoute, defineRoutes } from "@solidjs/router";
 
 import { paths } from "./lib/paths.js";
+import { AuthenticatedShell } from "./pages/(authenticated)/shell.jsx";
+import { Dashboard } from "./pages/(authenticated)/home.jsx";
 import { Feedback } from "./pages/Feedback.jsx";
 import { Home, preload as homePreload } from "./pages/Home.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
@@ -22,6 +24,12 @@ const routes = defineRoutes([
       defineRoute({
         path: paths.unsubscribe,
         component: (props) => <Unsubscribe token={props.params.token} />,
+      }),
+      defineRoute({
+        component: AuthenticatedShell,
+        children: [
+          defineRoute({ path: paths.dashboard, component: Dashboard }),
+        ],
       }),
       { path: "*404", component: NotFound },
     ],

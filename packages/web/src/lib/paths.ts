@@ -3,6 +3,7 @@ import { useHref } from "@solidjs/router";
 // Path registry for the application.
 export const paths = {
   home: "/",
+  dashboard: "/home",
   feedback: "/feedback",
   unsubscribe: "/unsubscribe/:token",
 } as const;

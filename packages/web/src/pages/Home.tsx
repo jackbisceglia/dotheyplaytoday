@@ -1,8 +1,11 @@
+import { useNavigate } from "@solidjs/router";
 import { Result } from "effect";
-import { createMemo } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
 
+import { useSession } from "../lib/auth.js";
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
+import { useApplicationPath } from "../lib/paths.js";
 import { getSubjects } from "../lib/subjects.js";
 import { Form as SignupForm } from "../modules/signup/Form.jsx";
 import { Ticker as ScoreTicker } from "../modules/ui/Ticker.jsx";
@@ -17,6 +20,18 @@ export function preload() {
 export function Home() {
   usePageMetadata("dotheyplaytoday", description);
   const result = createMemo(() => getSubjects());
+  const session = useSession();
+  const navigate = useNavigate();
+  const dashboardHref = useApplicationPath("dashboard");
+
+  // Signed-in visitors belong on /home. This only fires after the client
+  // session settles, so the landing always renders instantly.
+  createEffect(
+    () => (!session().isPending && session().data ? dashboardHref() : undefined),
+    (href) => {
+      if (href !== undefined) navigate(href, { replace: true });
+    },
+  );
 
   return (
     <Layout headerAction={{ href: "#signup", label: "Sign up" }}>
