@@ -14,6 +14,7 @@ function DevCatalogNotice() {
           only.
         </span>
         <button
+          class="modal-close"
           type="button"
           aria-label="Dismiss development catalog notice"
           onClick={() => {
