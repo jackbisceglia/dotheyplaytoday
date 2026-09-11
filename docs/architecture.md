@@ -304,6 +304,10 @@ client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
 there is no Account model. Identity comes exclusively from the session.
 
 Browser API requests include credentials. API cookies remain host-only, so Web
-SSR cannot assume it has the session cookie. Account and sign-in pages remain
-separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose
-typed caller uses the new endpoint; no legacy API alias is needed.
+SSR cannot assume it has the session cookie. After a browser verifies a session,
+Web stores a non-authoritative local auth hint. A synchronous document script
+uses that hint to replace-navigate root visits to `/home` before the SSR landing
+page paints; the authenticated route still verifies the real session and clears
+stale hints. Account and sign-in pages remain separate work. Existing emailed
+links land on Web `/unsubscribe/:token`, whose typed caller uses the new
+endpoint; no legacy API alias is needed.

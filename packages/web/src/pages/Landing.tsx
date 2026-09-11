@@ -3,6 +3,7 @@ import { Result } from "effect";
 import { createEffect, createMemo } from "solid-js";
 
 import { useSession } from "../lib/auth.js";
+import { clearAuthHint, setAuthHint } from "../lib/auth/hint.js";
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
 import { useApplicationPath } from "../lib/paths.js";
@@ -26,9 +27,19 @@ export function Landing() {
 
   // Signed-in visitors upgrade to /home after the session settles.
   createEffect(
-    () => (!session().isPending && session().data ? homeHref() : undefined),
-    (href) => {
-      if (href !== undefined) navigate(href, { replace: true });
+    () => {
+      const current = session();
+
+      if (current.isPending || current.error) return "pending";
+      return current.data ? "authenticated" : "unauthenticated";
+    },
+    (state) => {
+      if (state === "authenticated") {
+        setAuthHint();
+        navigate(homeHref(), { replace: true });
+      } else if (state === "unauthenticated") {
+        clearAuthHint();
+      }
     },
   );
 

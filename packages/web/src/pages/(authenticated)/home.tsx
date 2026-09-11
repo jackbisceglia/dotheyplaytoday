@@ -1,6 +1,7 @@
 import { useNavigate } from "@solidjs/router";
 
 import { auth, useSession } from "../../lib/auth.js";
+import { clearAuthHint } from "../../lib/auth/hint.js";
 import { Layout } from "../../layouts/Layout.jsx";
 import { usePageMetadata } from "../../lib/metadata.js";
 
@@ -11,6 +12,7 @@ export function Home() {
 
   const signOut = () => {
     void auth.signOut().finally(() => {
+      clearAuthHint();
       navigate("/", { replace: true });
     });
   };
