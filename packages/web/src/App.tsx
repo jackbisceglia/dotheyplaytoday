@@ -34,26 +34,23 @@ const routes = defineRoutes([
         component: () => {
           const subjects = createMemo(() => getSubjects());
 
-          return <Home homeHref={paths()} subjects={subjects()} />;
+          return <Home subjects={subjects()} />;
         },
       }),
       defineRoute({
         path: "/feedback",
-        component: () => <Feedback homeHref={paths()} />,
+        component: () => <Feedback />,
       }),
       defineRoute({
         path: "/unsubscribe/:token",
-        component: (props) => (
-          <Unsubscribe homeHref={paths()} token={props.params.token} />
-        ),
+        component: (props) => <Unsubscribe token={props.params.token} />,
       }),
-      { path: "*404", component: () => <NotFound homeHref={paths()} /> },
+      { path: "*404", component: () => <NotFound /> },
     ],
   }),
 ]);
 
 const Router = createRouter({ routes });
-const { paths } = Router;
 
 export default function App() {
   return <Router />;

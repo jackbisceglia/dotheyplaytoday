@@ -9,16 +9,12 @@ const description =
   "Game-day emails for your teams. Pick your team, pick a time, and get an update on game day.";
 
 export function Home(props: {
-  readonly homeHref: string;
   readonly subjects: readonly Subject[];
 }) {
   usePageMetadata("dotheyplaytoday", description);
 
   return (
-    <Layout
-      homeHref={props.homeHref}
-      headerAction={{ href: "#signup", label: "Sign up" }}
-    >
+    <Layout headerAction={{ href: "#signup", label: "Sign up" }}>
       <section class="hero">
         <h1 class="hero-headline">
           Your team plays
