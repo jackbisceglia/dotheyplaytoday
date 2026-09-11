@@ -8,7 +8,5 @@ export const auth = createAuthClient({
   baseURL: RuntimeClient.runSync(ApiUrl),
 });
 
-// Public session hook. Components import this from lib/auth and never touch
-// the bridge directly, so the eventual better-auth/solid swap only edits
-// this file.
+// Public session hook; the better-auth/solid swap only edits this file.
 export const useSession = () => useStore(auth.useSession);

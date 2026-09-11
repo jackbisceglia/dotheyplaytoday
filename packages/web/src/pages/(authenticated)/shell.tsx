@@ -56,10 +56,7 @@ function SessionGate(props: ParentProps) {
   );
 }
 
-// Session gate for the authenticated section. While the session is unknown
-// the section shows the splash — never public content, never a redirect
-// guess. Redirects only fire after the client session settles, so SSR (which
-// cannot see the API-host-only cookie) always renders the splash.
+// Unknown session shows the splash; redirects wait for the client session.
 export function AuthenticatedShell(props: ParentProps) {
   return (
     <Errored fallback={(_error, reset) => <SessionError onRetry={reset} />}>

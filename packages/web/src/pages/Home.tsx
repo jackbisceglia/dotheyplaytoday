@@ -24,8 +24,7 @@ export function Home() {
   const navigate = useNavigate();
   const dashboardHref = useApplicationPath("dashboard");
 
-  // Signed-in visitors belong on /home. This only fires after the client
-  // session settles, so the landing always renders instantly.
+  // Signed-in visitors upgrade to /home after the session settles.
   createEffect(
     () => (!session().isPending && session().data ? dashboardHref() : undefined),
     (href) => {
