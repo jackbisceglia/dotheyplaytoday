@@ -287,7 +287,7 @@ Separate follow-ups are:
 - `GET /api/user`: authenticated user's email and timezone.
 - `POST /api/user`: save a new unverified user and subscriptions, then request a confirmation link; duplicate signup requests another link and returns 409 without changing preferences.
 - `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
-- `POST /api/user/unsubscribe`: delete a user and subscriptions using an emailed token.
+- `POST /api/user/unsubscribe`: delete the authenticated user when no token is supplied, or the token owner for an unauthenticated email link.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
 
 Contracts follow OpenCode's instance HttpApi structure: each domain exports a

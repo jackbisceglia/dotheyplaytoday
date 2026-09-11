@@ -27,6 +27,7 @@ const ReadErrorTags = [
 ] as const;
 
 const UnsubscribeErrorTags = [
+  "AuthRequestError",
   "DatabaseDeleteError",
   "DatabaseReadError",
   "DatabaseTransactionError",
@@ -136,11 +137,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
             const user = yield* users.get(userId);
 
-            return {
-              email: user.email,
-              timezone: user.timezone,
-              unsubscribeToken: user.unsubscribeToken,
-            };
+            return { email: user.email, timezone: user.timezone };
           },
           Effect.tapErrorTag(ReadErrorTags, (error) =>
             Effect.logError("user: unexpected failure", { error }),
@@ -171,12 +168,29 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
+            const session = ctx.payload.token
+              ? undefined
+              : yield* auth.use((client) =>
+                  client.api.getSession({ headers: ctx.request.headers }),
+                );
+
+            if (!ctx.payload.token && !session) {
+              return yield* new HttpApiError.Unauthorized({});
+            }
+
+            const authenticatedUserId = session
+              ? yield* UserId.makeEffect(session.user.id)
+              : undefined;
+            const getUser = ctx.payload.token
+              ? users.getByUnsubscribeToken(ctx.payload.token)
+              : authenticatedUserId
+                ? users.get(authenticatedUserId)
+                : Effect.fail(new HttpApiError.Unauthorized({}));
+
             const user = yield* database
               .transaction(
                 Effect.fn("User.unsubscribeTransaction")(function* () {
-                  const user = yield* users.getByUnsubscribeToken(
-                    ctx.payload.token,
-                  );
+                  const user = yield* getUser;
 
                   yield* users.remove(user.id);
 
@@ -213,6 +227,8 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
             DatabaseTransactionError: () =>
               Effect.fail(new HttpApiError.InternalServerError({})),
             SchemaError: () =>
+              Effect.fail(new HttpApiError.InternalServerError({})),
+            AuthRequestError: () =>
               Effect.fail(new HttpApiError.InternalServerError({})),
           }),
         ),

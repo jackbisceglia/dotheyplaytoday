@@ -18,7 +18,7 @@ const getSubmitErrorMessage = (error: unknown) =>
   );
 
 export function Confirmation(props: {
-  readonly token: UnsubscribeTokenSuccess;
+  readonly token: UnsubscribeTokenSuccess | undefined;
 }) {
   const landingHref = useApplicationPath("landing");
   const [formError, setFormError] = createSignal<string>();
@@ -32,7 +32,9 @@ export function Confirmation(props: {
     setSubmitting(true);
 
     void withApiClient((client) =>
-      client.user.unsubscribe({ payload: { token: props.token } }),
+      client.user.unsubscribe({
+        payload: props.token === undefined ? {} : { token: props.token },
+      }),
     )
       .then(async () => {
         await auth.signOut().catch(() => undefined);

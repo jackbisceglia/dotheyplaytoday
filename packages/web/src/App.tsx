@@ -23,6 +23,10 @@ const routes = defineRoutes([
       defineRoute({ path: paths.feedback, component: Feedback }),
       defineRoute({
         path: paths.unsubscribe,
+        component: () => <Unsubscribe />,
+      }),
+      defineRoute({
+        path: paths.unsubscribeToken,
         component: (props) => <Unsubscribe token={props.params.token} />,
       }),
       defineRoute({

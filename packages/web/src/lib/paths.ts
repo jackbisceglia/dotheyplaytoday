@@ -6,7 +6,8 @@ export const paths = {
   login: "/?modal=login",
   home: "/home",
   feedback: "/feedback",
-  unsubscribe: "/unsubscribe/:token",
+  unsubscribe: "/unsubscribe",
+  unsubscribeToken: "/unsubscribe/:token",
 } as const;
 
 export function useApplicationPath(name: keyof typeof paths) {

@@ -237,7 +237,6 @@ describe("assembled HTTP API", () => {
     expect(await response.json()).toEqual({
       email: user.email,
       timezone: "America/New_York",
-      unsubscribeToken: user.unsubscribeToken,
     });
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(response.headers.get("access-control-allow-origin")).toBe(
@@ -445,6 +444,21 @@ describe("assembled HTTP API", () => {
     expect(repeated.status).toBe(200);
     expect(await repeated.json()).toEqual({ ok: true });
     expect(f.remove).toHaveBeenCalledOnce();
+  });
+
+  it("unsubscribes the authenticated user without exposing their token", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    const response = await f.request("/user/unsubscribe", {}, cookie);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(f.getByToken).not.toHaveBeenCalled();
+    expect(f.get).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(f.remove).toHaveBeenCalledExactlyOnceWith(user.id);
+
+    const unauthorized = await f.request("/user/unsubscribe", {});
+    expect(unauthorized.status).toBe(401);
   });
 
   it("registers confirmation delivery in the background after successful persistence", async () => {
