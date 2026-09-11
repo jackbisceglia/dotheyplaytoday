@@ -13,7 +13,7 @@ export function NotFound() {
   );
 
   return (
-    <Layout headerAction={{ href: homeHref, label: "Home" }}>
+    <Layout headerAction={{ href: homeHref(), label: "Home" }}>
       <section class="unsubscribe">
         <div class="unsubscribe-confirm">
           <h1 class="unsubscribe-title">
@@ -24,7 +24,7 @@ export function NotFound() {
           <p class="unsubscribe-copy">
             The page you requested doesn't exist. Head home to pick your teams.
           </p>
-          <a class="btn btn-secondary" href={homeHref}>
+          <a class="btn btn-secondary" href={homeHref()}>
             Back home
           </a>
         </div>

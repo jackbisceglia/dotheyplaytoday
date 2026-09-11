@@ -33,7 +33,7 @@ export function Layout(props: LayoutProps) {
       </a>
 
       <header class="site-header">
-        <a class="wordmark" href={homeHref}>
+        <a class="wordmark" href={homeHref()}>
           <BrandMark class="wordmark-mark" />
           <span class="visually-hidden">Do they play today</span>
           <span aria-hidden="true">
@@ -57,7 +57,7 @@ export function Layout(props: LayoutProps) {
 
       <footer class="site-footer">
         <span>dotheyplaytoday</span>
-        <a class="footer-link" href={feedbackHref}>
+        <a class="footer-link" href={feedbackHref()}>
           Feedback
         </a>
       </footer>

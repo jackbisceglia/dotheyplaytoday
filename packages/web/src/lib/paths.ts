@@ -7,7 +7,6 @@ export const paths = {
   unsubscribe: "/unsubscribe/:token",
 } as const;
 
-export function useApplicationPath(name: keyof typeof paths): string {
-  const href = useHref(() => paths[name]);
-  return href();
+export function useApplicationPath(name: keyof typeof paths) {
+  return useHref(() => paths[name]);
 }

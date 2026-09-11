@@ -14,7 +14,7 @@ export function NotFound() {
           This unsubscribe link is invalid or expired. Grab a fresh one from a
           dotheyplaytoday email to stop future messages.
         </p>
-        <a class="btn btn-secondary" href={homeHref}>
+        <a class="btn btn-secondary" href={homeHref()}>
           Back home
         </a>
       </div>

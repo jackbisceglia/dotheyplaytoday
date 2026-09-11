@@ -77,7 +77,7 @@ export function Feedback() {
   };
 
   return (
-    <Layout headerAction={{ href: homeHref, label: "Home" }}>
+    <Layout headerAction={{ href: homeHref(), label: "Home" }}>
       <section class="feedback-page">
         <div class="feedback-heading">
           <h1 class="feedback-title">

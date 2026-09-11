@@ -17,7 +17,7 @@ export function Unsubscribe(props: { readonly token: string }) {
   if (Result.isFailure(token)) httpStatus(404, "Not Found");
 
   return (
-    <Layout headerAction={{ href: homeHref, label: "Home" }}>
+    <Layout headerAction={{ href: homeHref(), label: "Home" }}>
       {Result.match(token, {
         onSuccess: (value) => <Confirmation token={value} />,
         onFailure: () => <UnsubscribeNotFound />,

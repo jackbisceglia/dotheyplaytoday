@@ -95,7 +95,7 @@ export function Confirmation(props: {
           We processed this unsubscribe. If you've already used the link,
           nothing changes.
         </p>
-        <a class="btn btn-secondary" href={homeHref}>
+        <a class="btn btn-secondary" href={homeHref()}>
           Back home
         </a>
       </div>
