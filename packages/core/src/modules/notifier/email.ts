@@ -9,7 +9,6 @@ import {
   EmailView,
   Link,
   Matchups,
-  type EmailHero,
   type EmailMatchup,
   type EmailRendered,
   type EmailViewProps,
@@ -49,12 +48,6 @@ type SportsGameParticipant = SportsGameEvent["participants"][number];
 
 type SportsTeamSubject = Subject & {
   readonly details: ExtractFromTag<Subject["details"], "sports_team">;
-};
-
-/** What the `sportsTeamFeed` match proves about a notification. */
-type SportsTeamNotification = Notification & {
-  readonly subject: SportsTeamSubject;
-  readonly events: SportsGameEvents;
 };
 
 function createFeedCases() {
@@ -184,28 +177,16 @@ const orderBySubject = (
 
 const NFL_KICKOFF_DATE = "2026-09-13";
 
-/**
- * NFL sends on kickoff Sunday get the season-opener header. The day is read
- * from `sendAt` in the recipient's timezone, not UTC.
- */
-const buildKickoffHero = (
-  notification: SportsTeamNotification,
-): EmailHero | undefined => {
-  const hasNflGame = notification.events.some(
-    (event) => event.details.leagueId === "nfl",
-  );
+/** Local to the recipient: a Pacific Sunday evening is already Monday in UTC. */
+const isNflKickoffDay = (
+  sendAt: Notification["sendAt"],
+  timezone: User["timezone"],
+) =>
+  DateTime.formatIsoDate(DateTime.setZone(sendAt, timezone)) ===
+  NFL_KICKOFF_DATE;
 
-  if (!hasNflGame) return undefined;
-
-  const localSend = DateTime.setZone(
-    notification.sendAt,
-    notification.user.timezone,
-  );
-
-  if (DateTime.formatIsoDate(localSend) !== NFL_KICKOFF_DATE) return undefined;
-
-  return { headline: "Football is", accent: "back." };
-};
+const hasNflGame = (events: SportsGameEvents) =>
+  events.some((event) => event.details.leagueId === "nfl");
 
 const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
   const userLocaleDateTime = DateTime.setZone(event.startsAt, tz);
@@ -231,10 +212,10 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
     return yield* Match.value(notification).pipe(
       Match.when(cases.sportsTeamFeed, (notification) =>
         Effect.gen(function* () {
-          const hero = buildKickoffHero(notification);
+          const kickoff =
+            hasNflGame(notification.events) &&
+            isNflKickoffDay(notification.sendAt, timezone);
           const playsToday = `${notification.subject.details.name} play today`;
-          const subject =
-            hero === undefined ? playsToday : `Football's back. ${playsToday}.`;
 
           const sharedParticipantTitle = findSharedParticipantTitle(
             notification.events,
@@ -262,9 +243,11 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
           );
 
           return {
-            subject,
+            subject: kickoff ? `Football's back. ${playsToday}.` : playsToday,
             home,
-            hero,
+            ...(kickoff && {
+              hero: { headline: "Football is", accent: "back." },
+            }),
             headline: `${notification.subject.details.name} play`,
             accent: "today.",
             blocks: [

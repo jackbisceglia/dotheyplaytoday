@@ -58,17 +58,17 @@ export type EmailHero = {
 export type EmailViewProps = {
   readonly subject: string;
   /** Display headline. Defaults to the email subject. */
-  readonly headline?: string | undefined;
+  readonly headline?: string;
   /** Trailing word set in kelly, as the site hero sets its emphasis. */
-  readonly accent?: string | undefined;
+  readonly accent?: string;
   /** Inbox preview text; defaults to a summary of the first block. */
-  readonly preheader?: string | undefined;
+  readonly preheader?: string;
   /** Destination for the wordmark link. */
-  readonly home?: string | undefined;
-  /** Replaces the wordmark header for the run. Absent on ordinary sends. */
-  readonly hero?: EmailHero | undefined;
+  readonly home?: string;
+  /** Replaces the wordmark header. Absent on ordinary sends. */
+  readonly hero?: EmailHero;
   readonly blocks: readonly Block[];
-  readonly metadata?: EmailMetadata | undefined;
+  readonly metadata?: EmailMetadata;
 };
 
 const color = {
@@ -138,11 +138,8 @@ const blockText = (block: Block): readonly string[] => {
 
 const text = (input: EmailViewProps) =>
   StringParts()
-    .addParts(
-      ...(input.hero === undefined
-        ? []
-        : [`${input.hero.headline} ${input.hero.accent}`, ""]),
-    )
+    .addNullable(input.hero && `${input.hero.headline} ${input.hero.accent}`)
+    .addIf(input.hero !== undefined, "")
     .add(
       StringParts(input.headline ?? input.subject)
         .addNullable(input.accent)
