@@ -454,7 +454,7 @@ describe("assembled HTTP API", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
     expect(f.getByToken).not.toHaveBeenCalled();
-    expect(f.get).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(f.get).not.toHaveBeenCalled();
     expect(f.remove).toHaveBeenCalledExactlyOnceWith(user.id);
 
     const unauthorized = await f.request("/user/unsubscribe", {});

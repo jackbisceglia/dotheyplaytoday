@@ -28,6 +28,7 @@ import {
   Redacted,
   Schema,
 } from "effect";
+import type { Headers } from "effect/unstable/http/Headers";
 import { type User as BetterAuthUser } from "better-auth";
 import { Pool } from "pg";
 
@@ -155,7 +156,11 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
         catch: (cause) => new AuthRequestError({ cause }),
       });
 
-    return { use, client };
+    const getSession = Effect.fn("Auth.getSession")((headers: Headers) =>
+      use((client) => client.api.getSession({ headers })),
+    );
+
+    return { use, client, getSession };
   }),
 }) {}
 

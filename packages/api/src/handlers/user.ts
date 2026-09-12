@@ -9,7 +9,7 @@ import { Database } from "@dtpt/core/lib/database/service";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect } from "effect";
+import { Effect, Match, Option } from "effect";
 import {
   type Headers,
   HttpEffect,
@@ -168,40 +168,42 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
-            const session = ctx.payload.token
-              ? undefined
-              : yield* auth.use((client) =>
-                  client.api.getSession({ headers: ctx.request.headers }),
-                );
+            const token = Option.fromNullishOr(ctx.payload.token);
+            const session = Option.fromNullOr(
+              yield* auth.getSession(ctx.request.headers),
+            );
 
-            if (!ctx.payload.token && !session) {
-              return yield* new HttpApiError.Unauthorized({});
-            }
+            const removed = yield* Match.value({ token, session }).pipe(
+              Match.when({ token: Option.isSome }, (options) =>
+                database
+                  .transaction(
+                    Effect.fn("User.unsubscribeTransaction")(function* () {
+                      const user = yield* users.getByUnsubscribeToken(
+                        options.token.value,
+                      );
 
-            const authenticatedUserId = session
-              ? yield* UserId.makeEffect(session.user.id)
-              : undefined;
-            const getUser = ctx.payload.token
-              ? users.getByUnsubscribeToken(ctx.payload.token)
-              : authenticatedUserId
-                ? users.get(authenticatedUserId)
-                : Effect.fail(new HttpApiError.Unauthorized({}));
+                      yield* users.remove(user.id);
 
-            const user = yield* database
-              .transaction(
-                Effect.fn("User.unsubscribeTransaction")(function* () {
-                  const user = yield* getUser;
+                      return user.id;
+                    }),
+                  )
+                  .pipe(mapToTransactionError("User.unsubscribe")),
+              ),
+              Match.when({ session: Option.isSome }, (options) =>
+                Effect.gen(function* () {
+                  const id = UserId.make(options.session.value.user.id);
 
-                  yield* users.remove(user.id);
+                  yield* users.remove(id);
 
-                  return user;
+                  return id;
                 }),
-              )
-              .pipe(mapToTransactionError("User.unsubscribe"));
+              ),
+              Match.orElse(() =>
+                Effect.fail(new HttpApiError.Unauthorized({})),
+              ),
+            );
 
-            yield* Effect.logInfo("unsubscribe: user removed", {
-              userId: user.id,
-            });
+            yield* Effect.logInfo("unsubscribe: user removed", { removed });
 
             return { ok: true as const };
           },
