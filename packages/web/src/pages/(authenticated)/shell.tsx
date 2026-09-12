@@ -4,7 +4,7 @@ import type { ParentProps } from "solid-js";
 
 import { getSessionStatus, useSession } from "../../lib/auth.js";
 import { useApplicationPath } from "../../lib/paths.js";
-import { Splash } from "../../modules/ui/Splash.jsx";
+import { Splash } from "../../lib/ui/Splash.jsx";
 
 function SessionError(props: { readonly onRetry: () => void }) {
   const session = useSession();

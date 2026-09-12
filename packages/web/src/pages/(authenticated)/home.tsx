@@ -1,13 +1,12 @@
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import { Show } from "solid-js";
 
-import { auth, useSession } from "../../lib/auth.js";
+import { auth } from "../../lib/auth.js";
 import { Layout } from "../../layouts/Layout.jsx";
 import { usePageMetadata } from "../../lib/metadata.js";
 import { useApplicationPath } from "../../lib/paths.js";
 
 export function Home() {
-  const session = useSession();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
   const unsubscribePath = useApplicationPath("unsubscribe");
@@ -39,12 +38,13 @@ export function Home() {
         </aside>
       </Show>
       <section class="dashboard">
-        <p class="dashboard-eyebrow">
-          Signed in as {session().data?.user.email ?? "you"}
-        </p>
-        <h1 class="dashboard-title">Dashboard coming soon.</h1>
+        <h1 class="dashboard-title">
+          Your dashboard
+          <br />
+          <em>is on the way.</em>
+        </h1>
         <p class="dashboard-copy">
-          You'll be able to manage your teams and notification schedule here.
+          Soon you'll manage your teams and game-day emails right here.
         </p>
       </section>
     </Layout>

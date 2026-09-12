@@ -4,9 +4,9 @@ import { Result } from "effect";
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
 import { useApplicationPath } from "../lib/paths.js";
-import { Confirmation } from "../modules/unsubscribe/Confirmation.jsx";
-import { NotFound as UnsubscribeNotFound } from "../modules/unsubscribe/NotFound.jsx";
-import { decodeUnsubscribeToken } from "../modules/unsubscribe/token.js";
+import { Confirmation } from "../lib/unsubscribe/Confirmation.jsx";
+import { NotFound as UnsubscribeNotFound } from "../lib/unsubscribe/NotFound.jsx";
+import { decodeUnsubscribeToken } from "../lib/unsubscribe/token.js";
 
 const description = "Confirm that you want to stop dotheyplaytoday emails.";
 

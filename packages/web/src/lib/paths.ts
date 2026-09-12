@@ -7,7 +7,7 @@ export const paths = {
   home: "/home",
   feedback: "/feedback",
   unsubscribe: "/unsubscribe",
-  unsubscribeToken: "/unsubscribe/:token",
+  unsubscribeViaToken: "/unsubscribe/:token",
 } as const;
 
 export function useApplicationPath(name: keyof typeof paths) {

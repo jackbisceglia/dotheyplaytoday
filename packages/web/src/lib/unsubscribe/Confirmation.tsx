@@ -1,9 +1,10 @@
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { Match } from "effect";
 import { createSignal } from "solid-js";
 
-import { withApiClient } from "../../lib/api.js";
-import { auth } from "../../lib/auth.js";
-import { useApplicationPath } from "../../lib/paths.js";
+import { withApiClient } from "../api.js";
+import { auth } from "../auth.js";
+import { useApplicationPath } from "../paths.js";
 import type { UnsubscribeTokenSuccess } from "./token.js";
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -33,7 +34,7 @@ export function Confirmation(props: {
 
     void withApiClient((client) =>
       client.user.unsubscribe({
-        payload: props.token === undefined ? {} : { token: props.token },
+        payload: exactOptional(props.token, (token) => ({ token })),
       }),
     )
       .then(async () => {

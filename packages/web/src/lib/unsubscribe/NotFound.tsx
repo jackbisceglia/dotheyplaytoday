@@ -1,4 +1,4 @@
-import { useApplicationPath } from "../../lib/paths.js";
+import { useApplicationPath } from "../paths.js";
 
 export function NotFound() {
   const landingHref = useApplicationPath("landing");

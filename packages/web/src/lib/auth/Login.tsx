@@ -3,8 +3,8 @@ import { useNavigate } from "@solidjs/router";
 import { Result, Schema } from "effect";
 import { createSignal, Show } from "solid-js";
 
-import { auth } from "../../lib/auth.js";
-import { useApplicationPath } from "../../lib/paths.js";
+import { auth } from "../auth.js";
+import { useApplicationPath } from "../paths.js";
 
 const decodeEmail = Schema.decodeUnknownResult(EmailAddressFromString);
 
@@ -35,7 +35,7 @@ export function Login() {
     setIsPending(false);
 
     if (result.error) {
-      setError("We couldn't send your sign-in link. Try again.");
+      setError("We couldn't send your link. Try again.");
       return;
     }
 
@@ -66,25 +66,32 @@ export function Login() {
           fallback={
             <>
               <h2 class="login-title" id="login-title">
-                Check your email
+                Check your <em>inbox.</em>
               </h2>
-              <p class="login-copy">We sent you a link to sign in.</p>
+              <p class="login-copy">
+                We sent a sign-in link to <strong>{email()}</strong>.
+              </p>
+              <button
+                class="login-reset"
+                type="button"
+                onClick={() => setIsSent(false)}
+              >
+                Use a different email
+              </button>
             </>
           }
         >
           <h2 class="login-title" id="login-title">
-            Welcome back
+            Welcome <em>back.</em>
           </h2>
-          <p class="login-copy">
-            Enter your email and we'll send you a sign-in link.
-          </p>
+          <p class="login-copy">We'll email you a link to sign in.</p>
           <form
             class="login-form"
             onSubmit={(event) => {
               void submit(event);
             }}
           >
-            <label class="form-label" for="login-email">
+            <label class="visually-hidden" for="login-email">
               Email
             </label>
             <input
@@ -92,10 +99,18 @@ export function Login() {
               id="login-email"
               type="email"
               autocomplete="email"
+              placeholder="you@example.com"
               value={email()}
               onInput={(event) => setEmail(event.currentTarget.value)}
               autofocus
             />
+            <button
+              class="btn btn-primary"
+              type="submit"
+              disabled={isPending()}
+            >
+              {isPending() ? "Sending…" : "Send link"}
+            </button>
             <Show when={error()}>
               {(message) => (
                 <p class="form-error" role="alert">
@@ -103,13 +118,6 @@ export function Login() {
                 </p>
               )}
             </Show>
-            <button
-              class="btn btn-primary"
-              type="submit"
-              disabled={isPending()}
-            >
-              {isPending() ? "Sending…" : "Email me a sign-in link"}
-            </button>
           </form>
         </Show>
       </section>
