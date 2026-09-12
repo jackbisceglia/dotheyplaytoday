@@ -58,10 +58,14 @@ export function Confirmation(props: {
           <br />
           <em>off the roster.</em>
         </h1>
-        <p class="unsubscribe-copy">
-          This stops every dotheyplaytoday email for this address. Sign up again
-          any time with a fresh set of teams.
-        </p>
+        <div class="unsubscribe-copy-group">
+          <p class="unsubscribe-copy">
+            This stops every dotheyplaytoday email for this address.
+          </p>
+          <p class="unsubscribe-copy">
+            Sign up again any time with a fresh set of teams.
+          </p>
+        </div>
 
         <form class="unsubscribe-actions" onSubmit={submit}>
           <button

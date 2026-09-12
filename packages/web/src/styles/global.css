@@ -1043,10 +1043,19 @@ select.form-input {
 
 .unsubscribe-copy,
 .dashboard-copy {
-  max-width: 52ch;
   color: var(--muted);
   font-size: 1.15rem;
   line-height: 1.55;
+}
+
+.unsubscribe-copy-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dashboard-copy {
+  max-width: 52ch;
 }
 
 .unsubscribe-actions {
