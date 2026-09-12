@@ -2,7 +2,7 @@ import { useNavigate } from "@solidjs/router";
 import { createEffect, Errored, Match, Switch } from "solid-js";
 import type { ParentProps } from "solid-js";
 
-import { useSession } from "../../lib/auth.js";
+import { getSessionStatus, useSession } from "../../lib/auth.js";
 import { useApplicationPath } from "../../lib/paths.js";
 import { Splash } from "../../modules/ui/Splash.jsx";
 
@@ -34,13 +34,7 @@ function Authenticated(props: ParentProps) {
   const landingHref = useApplicationPath("landing");
 
   createEffect(
-    () => {
-      const current = session();
-
-      if (current.isPending) return "pending";
-      if (current.error) return "unavailable";
-      return current.data ? "authenticated" : "unauthenticated";
-    },
+    () => getSessionStatus(session()),
     (state) => {
       if (state === "unavailable") {
         throw new Error("Failed to check the session");

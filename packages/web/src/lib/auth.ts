@@ -8,5 +8,19 @@ export const auth = createAuthClient({
   baseURL: RuntimeClient.runSync(ApiUrl),
 });
 
+export type SessionStatus =
+  | "pending"
+  | "unavailable"
+  | "authenticated"
+  | "unauthenticated";
+
+export function getSessionStatus(
+  session: ReturnType<typeof auth.useSession.get>,
+): SessionStatus {
+  if (session.isPending) return "pending";
+  if (session.error) return "unavailable";
+  return session.data ? "authenticated" : "unauthenticated";
+}
+
 // Public session hook; the better-auth/solid swap only edits this file.
 export const useSession = () => useStore(auth.useSession);

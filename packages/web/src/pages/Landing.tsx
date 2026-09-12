@@ -2,7 +2,7 @@ import { useNavigate } from "@solidjs/router";
 import { Result } from "effect";
 import { createEffect, createMemo } from "solid-js";
 
-import { useSession } from "../lib/auth.js";
+import { getSessionStatus, useSession } from "../lib/auth.js";
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
 import { useApplicationPath } from "../lib/paths.js";
@@ -26,9 +26,11 @@ export function Landing() {
 
   // Signed-in visitors upgrade to /home after the session settles.
   createEffect(
-    () => (!session().isPending && session().data ? homeHref() : undefined),
-    (href) => {
-      if (href !== undefined) navigate(href, { replace: true });
+    () => getSessionStatus(session()),
+    (state) => {
+      if (state === "authenticated") {
+        navigate(homeHref(), { replace: true });
+      }
     },
   );
 

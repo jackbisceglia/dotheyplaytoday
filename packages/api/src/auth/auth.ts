@@ -47,6 +47,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL("/", yield* WebUrl);
+    const homeUrl = new URL("/home", webUrl);
     const pool = yield* createAuthPool(connectionString);
     const cloudflare = yield* Cloudflare.WorkerExecutionContext;
     // Preserve runtime config and Id when Better Auth calls back into Effect.
@@ -104,8 +105,8 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
             context: {
               body: {
                 callbackURL: Boolean.match(isUserVerified, {
-                  onTrue: () => webUrl.href,
-                  onFalse: () => new URL("/?confirmed=1", webUrl).href,
+                  onTrue: () => homeUrl.href,
+                  onFalse: () => new URL("?confirmed=1", homeUrl).href,
                 }),
                 // TODO: surface the failed-link message as a toast, mirroring the confirmation marker.
                 errorCallbackURL: webUrl.href,

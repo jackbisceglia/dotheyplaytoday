@@ -17,7 +17,7 @@ describe("server session lookup", () => {
     const token = new URL(url).searchParams.get("token");
     expect(token).toBeTruthy();
     expect(new URL(url).searchParams.get("callbackURL")).toBe(
-      "https://www.example.com/?confirmed=1",
+      "https://www.example.com/home?confirmed=1",
     );
     expect(new URL(url).searchParams.get("errorCallbackURL")).toBe(
       "https://www.example.com/",
@@ -35,7 +35,7 @@ describe("server session lookup", () => {
     const verified = await auth.client.handler(new Request(url));
     expect(verified.status).toBe(302);
     expect(verified.headers.get("location")).toBe(
-      "https://www.example.com/?confirmed=1",
+      "https://www.example.com/home?confirmed=1",
     );
     const setCookie = verified.headers.get("set-cookie");
     expect(setCookie).toContain("Secure");
