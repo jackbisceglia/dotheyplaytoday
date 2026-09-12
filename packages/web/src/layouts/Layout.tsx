@@ -45,7 +45,6 @@ export function Layout(props: LayoutProps) {
         </a>
         <Show when={props.headerActions?.length}>
           <div class="site-header-actions">
-            {" "}
             <For each={props.headerActions}>
               {(action) => (
                 <Show
