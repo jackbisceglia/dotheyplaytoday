@@ -88,9 +88,10 @@ their original signup dates; grandfathering must not infer signup dates from it.
 Migration 0005 grants notification eligibility only to a fixed, owner-trusted
 cohort; this is not proof of mailbox ownership and creates no sessions. New
 rows retain the false default. Existing users still redeem a magic link to sign
-in. The magic-link sender normalizes the address and asks
-Better Auth's internal adapter to silently skip unknown addresses. Better Auth
-also has signup disabled, so an unknown address cannot create a row missing
+in. The magic-link before hook normalizes the address and looks up the user once
+through Better Auth's internal adapter. It carries the user with a normalized
+email in request context; the sender silently skips unknown recipients. Better
+Auth also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
@@ -148,10 +149,18 @@ The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to
 `Email`. Separate transactional confirmation and sign-in views bypass
 `Notifier` and provide the same concrete Resend email layer internally. Better
-Auth's magic-link callback looks up the user and selects the view by
-`emailVerified`. It forwards the generated URL unchanged; registration supplies
-the Web URL through Better Auth's `callbackURL` and `errorCallbackURL` inputs.
-Tokens are hashed, expire after 15 minutes, and are single-use. Issuance is
+Auth's magic-link callback reuses the recipient from request context to select
+the view by `emailVerified`, without another lookup or email normalization. It
+forwards the generated URL unchanged. A shared Better Auth before hook selects
+the Web root through `callbackURL`, adding `confirmed=1` only for users
+unverified at issuance. It sets `errorCallbackURL` to the Web root without the
+marker. The hook covers both registration's server API calls and standalone HTTP
+sign-in, retaining validation of caller-supplied URLs. The recipient context is
+server-owned and scoped to each issuance, so concurrent requests remain isolated
+and callback selection and email copy use the same verification snapshot. The
+sender reads the typed, server-owned user directly from the endpoint context
+without decoding the internal value again. Tokens are hashed, expire after 15
+minutes, and are single-use. Issuance is
 awaited while the auth pool is open; `WorkerExecutionContext.waitUntil` owns
 email delivery, which needs no further database access. Delivery failures are
 logged without changing the registration response. The old team-picks signup

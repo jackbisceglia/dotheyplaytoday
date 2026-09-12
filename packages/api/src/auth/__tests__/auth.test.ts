@@ -1,5 +1,5 @@
 import { makeAuthFixture } from "./fixtures.js";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Effect } from "effect";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { WebUrl } from "@dtpt/core/lib/config/web";
@@ -20,7 +20,12 @@ describe("authentication boundaries", () => {
       await database.query("UPDATE users SET email_verified = $1", [verified]);
       for (const email of ["User@Example.COM", "unknown@example.com"]) {
         const response = await auth.client.handler(
-          request("/sign-in/magic-link", { email }),
+          request("/sign-in/magic-link", {
+            email,
+            // The shared before hook owns these; caller values must not leak in.
+            callbackURL: "https://www.example.com/ignored?confirmed=1",
+            errorCallbackURL: "https://www.example.com/ignored?confirmed=1",
+          }),
         );
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toEqual({ status: true });
@@ -33,9 +38,115 @@ describe("authentication boundaries", () => {
       expect(sender.mock.calls[0]?.[1]).toContain(
         "https://api.example.com/api/auth/magic-link/verify?token=",
       );
+      const link = sender.mock.calls[0]?.[1];
+      if (!link) throw new Error("Missing magic link");
+      expect(new URL(link).searchParams.get("callbackURL")).toBe(
+        verified
+          ? "https://www.example.com/"
+          : "https://www.example.com/?confirmed=1",
+      );
+      expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
+        "https://www.example.com/",
+      );
+      const redeemed = await auth.client.handler(new Request(link));
+      expect(redeemed.headers.get("location")).toBe(
+        new URL(link).searchParams.get("callbackURL"),
+      );
+      expect(redeemed.headers.get("set-cookie")).toContain("session_token");
+      expect(await rows("auth_sessions")).toHaveLength(1);
+      expect((await rows("users"))[0]?.email_verified).toBe(true);
       expect(await rows("users")).toHaveLength(1);
     },
   );
+
+  it("looks up each recipient once and isolates concurrent HTTP and server API issuances", async () => {
+    const f = await makeAuthFixture();
+    await f.database
+      .exec(`INSERT INTO users (id, email, timezone, unsubscribe_token, email_verified)
+      VALUES ('verified-user', 'verified@example.com', 'America/New_York', 'verified-token', true)`);
+    const { internalAdapter } = await f.auth.client.$context;
+    const lookup = vi.spyOn(internalAdapter, "findUserByEmail");
+    const forgedRecipient = {
+      email: "verified@example.com",
+      emailVerified: true,
+    };
+    const [confirmation, signIn, unknown] = await Promise.all([
+      f.auth.client.handler(
+        f.request("/sign-in/magic-link", {
+          email: "User@Example.COM",
+          user: forgedRecipient,
+          metadata: { user: forgedRecipient },
+        }),
+      ),
+      f.auth.client.api.signInMagicLink({
+        headers: f.request("/sign-in/magic-link").headers,
+        body: { email: "verified@example.com" },
+      }),
+      f.auth.client.handler(
+        f.request("/sign-in/magic-link", {
+          email: "unknown@example.com",
+          metadata: { user: forgedRecipient },
+        }),
+      ),
+    ]);
+    expect(confirmation.status).toBe(200);
+    expect(signIn).toEqual({ status: true });
+    expect(unknown.status).toBe(200);
+    expect(lookup.mock.calls).toEqual(
+      expect.arrayContaining([
+        ["user@example.com"],
+        ["verified@example.com"],
+        ["unknown@example.com"],
+      ]),
+    );
+    expect(lookup).toHaveBeenCalledTimes(3);
+    await Promise.all(f.pending);
+    expect(f.sendConfirmationLink).toHaveBeenCalledExactlyOnceWith(
+      "user@example.com",
+      expect.any(String),
+    );
+    expect(f.sendSignInLink).toHaveBeenCalledExactlyOnceWith(
+      "verified@example.com",
+      expect.any(String),
+    );
+    for (const [sender, callback] of [
+      [f.sendConfirmationLink, "https://www.example.com/?confirmed=1"],
+      [f.sendSignInLink, "https://www.example.com/"],
+    ] as const) {
+      const link = sender.mock.calls[0]?.[1];
+      if (!link) throw new Error("Missing magic link");
+      expect(new URL(link).searchParams.get("callbackURL")).toBe(callback);
+      expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
+        "https://www.example.com/",
+      );
+    }
+  });
+
+  it("uses the same verification snapshot for the callback and email copy", async () => {
+    const f = await makeAuthFixture();
+    const { internalAdapter } = await f.auth.client.$context;
+    const findUser = internalAdapter.findUserByEmail.bind(internalAdapter);
+    const lookup = vi
+      .spyOn(internalAdapter, "findUserByEmail")
+      .mockImplementationOnce(async (...args) => {
+        const user = await findUser(...args);
+        await f.database.exec("UPDATE users SET email_verified = true");
+        return user;
+      });
+    const response = await f.auth.client.handler(
+      f.request("/sign-in/magic-link", { email: "user@example.com" }),
+    );
+    expect(response.status).toBe(200);
+    expect(lookup).toHaveBeenCalledTimes(1);
+    await Promise.all(f.pending);
+    expect(f.sendConfirmationLink).toHaveBeenCalledOnce();
+    expect(f.sendSignInLink).not.toHaveBeenCalled();
+    const link = f.sendConfirmationLink.mock.calls[0]?.[1];
+    if (!link) throw new Error("Missing confirmation link");
+    expect(new URL(link).searchParams.get("callbackURL")).toBe(
+      "https://www.example.com/?confirmed=1",
+    );
+  });
 
   it("rejects untrusted request origins and callback URLs", async () => {
     const { auth, sendConfirmationLink, request } = await makeAuthFixture();
