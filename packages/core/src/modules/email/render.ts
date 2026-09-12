@@ -48,6 +48,13 @@ export const Link = Schema.TaggedStruct("link", {
 export type Block = typeof Blocks.Type;
 export const Blocks = TaggedUnion([Text, List, Matchups, Note, Entry, Link]);
 
+/** A reversed-out header that replaces the wordmark rule on special dates. */
+export type EmailHero = {
+  readonly headline: string;
+  /** Trailing word of the headline, set in kelly against the ink panel. */
+  readonly accent: string;
+};
+
 export type EmailViewProps = {
   readonly subject: string;
   /** Display headline. Defaults to the email subject. */
@@ -58,6 +65,8 @@ export type EmailViewProps = {
   readonly preheader?: string | undefined;
   /** Destination for the wordmark link. */
   readonly home?: string | undefined;
+  /** Replaces the wordmark header for the run. Absent on ordinary sends. */
+  readonly hero?: EmailHero | undefined;
   readonly blocks: readonly Block[];
   readonly metadata?: EmailMetadata | undefined;
 };
@@ -69,6 +78,12 @@ const color = {
   kellyDeep: "#0c6b34",
   kellyWash: "#dbeee2",
   muted: "#5d6455",
+};
+
+/** Reversed-out values, only legible against `color.ink`. */
+const onInk = {
+  canvas: "#f4f2ec",
+  kelly: "#5fd489",
 };
 
 const font = {
@@ -123,6 +138,11 @@ const blockText = (block: Block): readonly string[] => {
 
 const text = (input: EmailViewProps) =>
   StringParts()
+    .addParts(
+      ...(input.hero === undefined
+        ? []
+        : [`${input.hero.headline} ${input.hero.accent}`, ""]),
+    )
     .add(
       StringParts(input.headline ?? input.subject)
         .addNullable(input.accent)
@@ -188,6 +208,17 @@ ${element.paragraph(value)}
 
   link: (href: string, label: string) =>
     `<a href="${escapeHtml(href)}" class="email-muted" style="display: inline-block; padding: 8px 4px; font-family: ${font.body}; font-weight: 700; font-size: 12px; color: ${color.muted}; text-decoration: underline;">${escapeHtml(label)}</a>`,
+
+  hero: (hero: EmailHero, wordmark: string) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="email-hero" style="width: 100%; background-color: ${color.ink};">
+<tr>
+<td style="padding: 22px 20px 26px;">
+${wordmark}
+${element.spacer(20)}
+<p class="email-hero-headline" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 62%; font-size: 42px; line-height: 0.94; letter-spacing: -0.02em; text-transform: uppercase; color: ${onInk.canvas}; word-break: break-word;">${escapeHtml(hero.headline)} <span style="color: ${onInk.kelly};">${escapeHtml(hero.accent)}</span></p>
+</td>
+</tr>
+</table>`,
 };
 
 const stack = (parts: readonly string[], gap: number) =>
@@ -233,6 +264,32 @@ const blockHtml = (block: Block): string => {
   }
 };
 
+/** `reversed` drops the dark-mode color classes: the hero is ink in both schemes. */
+const wordmarkHtml = (home: string | undefined, reversed: boolean) => {
+  const ink = reversed ? onInk.canvas : color.ink;
+  const accent = reversed
+    ? `<span style="color: ${onInk.kelly};">play</span>`
+    : `<span class="email-accent" style="color: ${color.kelly};">play</span>`;
+  const markClass = reversed ? "email-wordmark" : "email-ink email-wordmark";
+
+  const mark = `<span class="${markClass}" style="font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 15px; line-height: 1.2; letter-spacing: 0.02em; text-transform: uppercase; color: ${ink};">dothey${accent}today</span>`;
+
+  if (home === undefined) return mark;
+
+  const linkClass = reversed ? "" : ` class="email-ink"`;
+
+  return `<a href="${escapeHtml(home)}"${linkClass} style="text-decoration: none; color: ${ink};">${mark}</a>`;
+};
+
+const headerHtml = (input: EmailViewProps) =>
+  input.hero === undefined
+    ? `<td class="email-rule" style="padding: 0 0 12px; border-bottom: 3px solid ${color.ink};">
+                ${wordmarkHtml(input.home, false)}
+              </td>`
+    : `<td style="padding: 0;">
+                ${element.hero(input.hero, wordmarkHtml(input.home, true))}
+              </td>`;
+
 const previewText = (blocks: readonly Block[]) => {
   const [first] = blocks;
 
@@ -253,13 +310,6 @@ const html = (input: EmailViewProps) => {
   const Headline = `<h1 class="email-ink email-headline" style="margin: 0 0 16px; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 20px; line-height: 1.05; letter-spacing: -0.01em; text-transform: uppercase; color: ${color.ink}; word-break: break-word;">${escapeHtml(headline)}${Accent}</h1>`;
 
   const Main = stack(input.blocks.map(blockHtml), 18);
-
-  const wordmark = `<span class="email-ink email-wordmark" style="font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 15px; line-height: 1.2; letter-spacing: 0.02em; text-transform: uppercase; color: ${color.ink};">dothey<span class="email-accent" style="color: ${color.kelly};">play</span>today</span>`;
-
-  const Wordmark =
-    input.home === undefined
-      ? wordmark
-      : `<a href="${escapeHtml(input.home)}" class="email-ink" style="text-decoration: none; color: ${color.ink};">${wordmark}</a>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -316,6 +366,10 @@ const html = (input: EmailViewProps) => {
         .email-title {
           font-size: 17px !important;
         }
+
+        .email-hero-headline {
+          font-size: 56px !important;
+        }
       }
 
       @media (prefers-color-scheme: dark) {
@@ -342,6 +396,11 @@ const html = (input: EmailViewProps) => {
         .email-accent {
           color: #5fd489 !important;
         }
+
+        /* Lift the hero off the darkened canvas. */
+        .email-hero {
+          background-color: #1b2119 !important;
+        }
       }
     </style>
   </head>
@@ -353,9 +412,7 @@ const html = (input: EmailViewProps) => {
           <!--[if mso]><table role="presentation" width="480" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 480px; margin: 0 auto;">
             <tr>
-              <td class="email-rule" style="padding: 0 0 12px; border-bottom: 3px solid ${color.ink};">
-                ${Wordmark}
-              </td>
+              ${headerHtml(input)}
             </tr>
             <tr>
               <td style="padding: 22px 0 0;">

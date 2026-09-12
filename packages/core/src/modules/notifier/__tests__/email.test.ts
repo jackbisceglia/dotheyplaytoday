@@ -1,12 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
+import { Cause, ConfigProvider, DateTime, Effect, Exit, Layer } from "effect";
 import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 import { beforeEach, vi } from "vitest";
 
 import { EmailResponseError } from "../../email/errors.js";
 import { NotifierLayerEmail, EmailRenderError } from "../email.js";
 import { NotifierError } from "../errors.js";
-import { notification } from "./fixtures.js";
+import { nflNotification, notification } from "./fixtures.js";
 import type { Notification } from "../notification.js";
 import { Notifier } from "../service.js";
 
@@ -54,6 +54,12 @@ const send = (input: Notification) =>
 
     yield* notifier.send(input);
   }).pipe(Effect.provide(NotifierLayerEmailTest));
+
+const lastPayload = () => {
+  const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
+
+  return payload;
+};
 
 describe("email rendering", () => {
   beforeEach(() => {
@@ -222,4 +228,80 @@ describe("email rendering", () => {
       expect(error.cause).toBeInstanceOf(EmailResponseError);
     });
   });
+});
+
+describe("nfl season opener header", () => {
+  beforeEach(() => {
+    resendMock.constructor.mockReset();
+    resendMock.send.mockReset();
+    resendMock.send.mockResolvedValue(successResponse);
+  });
+
+  it.effect("replaces the wordmark rule on kickoff day", () =>
+    Effect.gen(function* () {
+      yield* send(nflNotification);
+
+      const payload = lastPayload();
+
+      expect(payload.html).toContain("Football is");
+      expect(payload.html).toContain("back.");
+      expect(payload.html).toContain('class="email-hero"');
+      // The hero carries the wordmark, so the rule header must not also render.
+      expect(payload.html).not.toContain("border-bottom: 3px solid");
+      // Everything below the header is the ordinary game-day email.
+      expect(payload.subject).toBe("Eagles play today");
+      expect(payload.html).toContain("Philadelphia Eagles");
+      expect(payload.html).toContain("Dallas Cowboys");
+      // The text part carries the same news as the html part.
+      expect(payload.text).toContain("Football is back.");
+    }),
+  );
+
+  it.effect("leaves non-kickoff sends on the ordinary header", () =>
+    Effect.gen(function* () {
+      yield* send({
+        ...nflNotification,
+        sendAt: DateTime.makeUnsafe("2026-09-20T13:00:00.000Z"),
+      });
+
+      const payload = lastPayload();
+
+      expect(payload.html).not.toContain('class="email-hero"');
+      expect(payload.html).toContain("border-bottom: 3px solid");
+      expect(payload.text).not.toContain("Football is back.");
+    }),
+  );
+
+  it.effect("leaves other leagues alone on kickoff day", () =>
+    Effect.gen(function* () {
+      yield* send({
+        ...notification,
+        sendAt: DateTime.makeUnsafe("2026-09-13T13:00:00.000Z"),
+      });
+
+      const payload = lastPayload();
+
+      expect(payload.html).not.toContain('class="email-hero"');
+      expect(payload.text).not.toContain("Football is back.");
+    }),
+  );
+
+  it.effect("resolves kickoff day in the recipient's timezone, not utc", () =>
+    Effect.gen(function* () {
+      // 9:00 PM Sunday in Los Angeles is already Monday in UTC. The reader is
+      // still on kickoff Sunday, so the header belongs on this send.
+      yield* send({
+        ...nflNotification,
+        sendAt: DateTime.makeUnsafe("2026-09-14T04:00:00.000Z"),
+        user: {
+          ...nflNotification.user,
+          timezone: DateTime.zoneMakeNamedUnsafe("America/Los_Angeles"),
+        },
+      });
+
+      const payload = lastPayload();
+
+      expect(payload.html).toContain('class="email-hero"');
+    }),
+  );
 });

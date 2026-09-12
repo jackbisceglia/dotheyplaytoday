@@ -9,6 +9,7 @@ import {
   EmailView,
   Link,
   Matchups,
+  type EmailHero,
   type EmailMatchup,
   type EmailRendered,
   type EmailViewProps,
@@ -48,6 +49,12 @@ type SportsGameParticipant = SportsGameEvent["participants"][number];
 
 type SportsTeamSubject = Subject & {
   readonly details: ExtractFromTag<Subject["details"], "sports_team">;
+};
+
+/** What the `sportsTeamFeed` match proves about a notification. */
+type SportsTeamNotification = Notification & {
+  readonly subject: SportsTeamSubject;
+  readonly events: SportsGameEvents;
 };
 
 function createFeedCases() {
@@ -175,6 +182,31 @@ const orderBySubject = (
   );
 };
 
+const NFL_KICKOFF_DATE = "2026-09-13";
+
+/**
+ * NFL sends on kickoff Sunday get the season-opener header. The day is read
+ * from `sendAt` in the recipient's timezone, not UTC.
+ */
+const buildKickoffHero = (
+  notification: SportsTeamNotification,
+): EmailHero | undefined => {
+  const hasNflGame = notification.events.some(
+    (event) => event.details.leagueId === "nfl",
+  );
+
+  if (!hasNflGame) return undefined;
+
+  const localSend = DateTime.setZone(
+    notification.sendAt,
+    notification.user.timezone,
+  );
+
+  if (DateTime.formatIsoDate(localSend) !== NFL_KICKOFF_DATE) return undefined;
+
+  return { headline: "Football is", accent: "back." };
+};
+
 const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
   const userLocaleDateTime = DateTime.setZone(event.startsAt, tz);
 
@@ -229,6 +261,7 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
           return {
             subject,
             home,
+            hero: buildKickoffHero(notification),
             headline: `${notification.subject.details.name} play`,
             accent: "today.",
             blocks: [
