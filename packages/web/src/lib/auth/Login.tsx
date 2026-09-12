@@ -1,7 +1,7 @@
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { useNavigate } from "@solidjs/router";
 import { Result, Schema } from "effect";
-import { createSignal, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, Show } from "solid-js";
 
 import { auth } from "../auth.js";
 import { useApplicationPath } from "../paths.js";
@@ -15,10 +15,21 @@ export function Login() {
   const [error, setError] = createSignal<string>();
   const [isPending, setIsPending] = createSignal(false);
   const [isSent, setIsSent] = createSignal(false);
+  const [dialog, setDialog] = createSignal<HTMLDialogElement>();
 
   const close = () => {
+    dialog()?.close();
     navigate(landingHref(), { replace: true });
   };
+
+  createEffect(dialog, (element) => {
+    element?.showModal();
+  });
+
+  onCleanup(() => {
+    const element = dialog();
+    if (element?.open) element.close();
+  });
 
   const submit = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -43,16 +54,19 @@ export function Login() {
   };
 
   return (
-    <div class="modal-backdrop" role="presentation" onClick={close}>
-      <section
-        aria-labelledby="login-title"
-        aria-modal="true"
-        class="login-modal"
-        role="dialog"
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
-      >
+    <dialog
+      aria-labelledby="login-title"
+      class="modal-backdrop"
+      ref={setDialog}
+      onCancel={(event) => {
+        event.preventDefault();
+        close();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) close();
+      }}
+    >
+      <section class="login-modal">
         <button
           class="modal-close"
           type="button"
@@ -121,6 +135,6 @@ export function Login() {
           </form>
         </Show>
       </section>
-    </div>
+    </dialog>
   );
 }

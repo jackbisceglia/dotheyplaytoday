@@ -164,10 +164,24 @@ button {
   position: fixed;
   inset: 0;
   z-index: 200;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(19, 23, 17, 0.72);
+  border: 0;
+  background: transparent;
+}
+
+.modal-backdrop:not([open]) {
+  display: none;
+}
+
+.modal-backdrop::backdrop {
+  background: rgba(10, 13, 9, 0.84);
 }
 
 .login-modal {
