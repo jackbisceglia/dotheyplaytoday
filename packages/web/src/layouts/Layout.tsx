@@ -1,6 +1,6 @@
 import { For, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
-import { BrandMark } from "../modules/ui/BrandMark.jsx";
+import { BrandMark } from "../lib/ui/BrandMark.jsx";
 import { useApplicationPath } from "../lib/paths.js";
 
 // TODO(layout): fold this chrome into the root shell (pages/shell.tsx) and
@@ -44,7 +44,13 @@ export function Layout(props: LayoutProps) {
           </span>
         </a>
         <Show when={props.headerActions?.length}>
-          <div class="site-header-actions">
+          <div
+            class={`site-header-actions${
+              (props.headerActions?.length ?? 0) > 1
+                ? " site-header-actions-multiple"
+                : ""
+            }`}
+          >
             <For each={props.headerActions}>
               {(action) => (
                 <Show

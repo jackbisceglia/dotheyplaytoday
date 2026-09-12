@@ -7,9 +7,9 @@ import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
 import { useApplicationPath } from "../lib/paths.js";
 import { getSubjects } from "../lib/subjects.js";
-import { Form as SignupForm } from "../modules/signup/Form.jsx";
-import { Login } from "../modules/auth/Login.jsx";
-import { Ticker as ScoreTicker } from "../modules/ui/Ticker.jsx";
+import { Login } from "../lib/auth/Login.jsx";
+import { Form as SignupForm } from "../lib/signup/Form.jsx";
+import { Ticker as ScoreTicker } from "../lib/ui/Ticker.jsx";
 
 const description =
   "Game-day emails for your teams. Pick your team, pick a time, and get an update on game day.";

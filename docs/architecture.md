@@ -277,10 +277,10 @@ Separate follow-ups are:
 1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
 3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
-4. Add the Web auth client, account/manage routes, session-driven redirects,
-   and authenticated team-management APIs. Cookie sharing across subdomains is
-   intentionally still disabled; browser calls target the API origin with
-   credentials.
+4. Add account and subscription-management interfaces plus the authenticated
+   team-management APIs needed to update existing preferences. Cookie sharing
+   across subdomains is intentionally still disabled; browser calls target the
+   API origin with credentials.
 
 ## Public API
 
@@ -308,6 +308,8 @@ SSR cannot assume it has the session cookie. After a browser verifies a session,
 Web stores a non-authoritative local auth hint. A synchronous document script
 uses that hint to replace-navigate root visits to `/home` before the SSR landing
 page paints; the authenticated route still verifies the real session and clears
-stale hints. Account and sign-in pages remain separate work. Existing emailed
-links land on Web `/unsubscribe/:token`, whose typed caller uses the new
-endpoint; no legacy API alias is needed.
+stale hints. The root route exposes sign-in through a query-driven modal, and
+`/home` provides confirmation, sign-out, and unsubscribe entry points. Full
+account and subscription-management interfaces remain separate work. Existing
+emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
+new endpoint; no legacy API alias is needed.

@@ -5,9 +5,7 @@ import type { Result } from "effect";
 export const decodeUnsubscribeToken =
   Schema.decodeUnknownResult(UnsubscribeToken);
 
-export type UnsubscribeTokenResult = ReturnType<
-  typeof decodeUnsubscribeToken
->;
+export type UnsubscribeTokenResult = ReturnType<typeof decodeUnsubscribeToken>;
 
 export type UnsubscribeTokenFailure =
   Result.Result.Failure<UnsubscribeTokenResult>;

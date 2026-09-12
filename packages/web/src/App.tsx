@@ -26,7 +26,7 @@ const routes = defineRoutes([
         component: () => <Unsubscribe />,
       }),
       defineRoute({
-        path: paths.unsubscribeToken,
+        path: paths.unsubscribeViaToken,
         component: (props) => <Unsubscribe token={props.params.token} />,
       }),
       defineRoute({

@@ -1,10 +1,10 @@
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { useNavigate } from "@solidjs/router";
 import { Result, Schema } from "effect";
-import { createSignal, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, Show } from "solid-js";
 
-import { auth } from "../../lib/auth.js";
-import { useApplicationPath } from "../../lib/paths.js";
+import { auth } from "../auth.js";
+import { useApplicationPath } from "../paths.js";
 
 const decodeEmail = Schema.decodeUnknownResult(EmailAddressFromString);
 
@@ -15,10 +15,21 @@ export function Login() {
   const [error, setError] = createSignal<string>();
   const [isPending, setIsPending] = createSignal(false);
   const [isSent, setIsSent] = createSignal(false);
+  const [dialog, setDialog] = createSignal<HTMLDialogElement>();
 
   const close = () => {
+    dialog()?.close();
     navigate(landingHref(), { replace: true });
   };
+
+  createEffect(dialog, (element) => {
+    element?.showModal();
+  });
+
+  onCleanup(() => {
+    const element = dialog();
+    if (element?.open) element.close();
+  });
 
   const submit = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -35,7 +46,7 @@ export function Login() {
     setIsPending(false);
 
     if (result.error) {
-      setError("We couldn't send your sign-in link. Try again.");
+      setError("We couldn't send your link. Try again.");
       return;
     }
 
@@ -43,16 +54,19 @@ export function Login() {
   };
 
   return (
-    <div class="modal-backdrop" role="presentation" onClick={close}>
-      <section
-        aria-labelledby="login-title"
-        aria-modal="true"
-        class="login-modal"
-        role="dialog"
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
-      >
+    <dialog
+      aria-labelledby="login-title"
+      class="modal-backdrop"
+      ref={setDialog}
+      onCancel={(event) => {
+        event.preventDefault();
+        close();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) close();
+      }}
+    >
+      <section class="login-modal">
         <button
           class="modal-close"
           type="button"
@@ -66,25 +80,37 @@ export function Login() {
           fallback={
             <>
               <h2 class="login-title" id="login-title">
-                Check your email
+                Check your <em>inbox.</em>
               </h2>
-              <p class="login-copy">We sent you a link to sign in.</p>
+              <p
+                class="login-copy"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                We sent a link to <strong>{email()}</strong>.
+              </p>
+              <button
+                class="login-reset"
+                type="button"
+                onClick={() => setIsSent(false)}
+              >
+                Sign in with a different email
+              </button>
             </>
           }
         >
           <h2 class="login-title" id="login-title">
-            Welcome back
+            Welcome <em>back.</em>
           </h2>
-          <p class="login-copy">
-            Enter your email and we'll send you a sign-in link.
-          </p>
+          <p class="login-copy">We'll email you a link to sign in.</p>
           <form
             class="login-form"
             onSubmit={(event) => {
               void submit(event);
             }}
           >
-            <label class="form-label" for="login-email">
+            <label class="visually-hidden" for="login-email">
               Email
             </label>
             <input
@@ -92,10 +118,18 @@ export function Login() {
               id="login-email"
               type="email"
               autocomplete="email"
+              placeholder="you@example.com"
               value={email()}
               onInput={(event) => setEmail(event.currentTarget.value)}
               autofocus
             />
+            <button
+              class="btn btn-primary"
+              type="submit"
+              disabled={isPending()}
+            >
+              {isPending() ? "Sending…" : "Send link"}
+            </button>
             <Show when={error()}>
               {(message) => (
                 <p class="form-error" role="alert">
@@ -103,16 +137,9 @@ export function Login() {
                 </p>
               )}
             </Show>
-            <button
-              class="btn btn-primary"
-              type="submit"
-              disabled={isPending()}
-            >
-              {isPending() ? "Sending…" : "Email me a sign-in link"}
-            </button>
           </form>
         </Show>
       </section>
-    </div>
+    </dialog>
   );
 }

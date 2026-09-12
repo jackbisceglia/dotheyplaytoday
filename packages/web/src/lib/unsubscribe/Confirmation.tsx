@@ -1,9 +1,10 @@
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { Match } from "effect";
 import { createSignal } from "solid-js";
 
-import { withApiClient } from "../../lib/api.js";
-import { auth } from "../../lib/auth.js";
-import { useApplicationPath } from "../../lib/paths.js";
+import { withApiClient } from "../api.js";
+import { auth } from "../auth.js";
+import { useApplicationPath } from "../paths.js";
 import type { UnsubscribeTokenSuccess } from "./token.js";
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -33,7 +34,7 @@ export function Confirmation(props: {
 
     void withApiClient((client) =>
       client.user.unsubscribe({
-        payload: props.token === undefined ? {} : { token: props.token },
+        payload: exactOptional(props.token, (token) => ({ token })),
       }),
     )
       .then(async () => {
@@ -57,10 +58,14 @@ export function Confirmation(props: {
           <br />
           <em>off the roster.</em>
         </h1>
-        <p class="unsubscribe-copy">
-          This stops every dotheyplaytoday email for this address. Sign up again
-          any time with a fresh set of teams.
-        </p>
+        <div class="unsubscribe-copy-group">
+          <p class="unsubscribe-copy">
+            This stops every dotheyplaytoday email for this address.
+          </p>
+          <p class="unsubscribe-copy">
+            Sign up again any time with a fresh set of teams.
+          </p>
+        </div>
 
         <form class="unsubscribe-actions" onSubmit={submit}>
           <button

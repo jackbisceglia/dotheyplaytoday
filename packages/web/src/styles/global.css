@@ -164,48 +164,117 @@ button {
   position: fixed;
   inset: 0;
   z-index: 200;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(19, 23, 17, 0.72);
+  border: 0;
+  background: transparent;
+}
+
+.modal-backdrop:not([open]) {
+  display: none;
+}
+
+.modal-backdrop::backdrop {
+  background: rgba(10, 13, 9, 0.84);
 }
 
 .login-modal {
   position: relative;
-  width: min(100%, 480px);
-  padding: 40px;
+  width: min(100%, 600px);
+  padding: 56px 56px 52px;
   border: 3px solid var(--ink);
   background: var(--paper);
-  box-shadow: 8px 8px 0 var(--kelly);
+  box-shadow: 10px 10px 0 var(--kelly);
+  animation: modal-rise 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 
 .modal-close {
   position: absolute;
-  top: 12px;
+  top: 16px;
   right: 16px;
-  border: 0;
-  background: transparent;
-  font-size: 1.75rem;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  font-size: 1.4rem;
+  font-weight: 700;
   line-height: 1;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.modal-close:hover {
+  background: var(--ink);
+  color: var(--paper);
 }
 
 .login-title {
-  font-size: 2rem;
+  font-size: clamp(2.25rem, 5.5vw, 3.1rem);
   font-weight: 900;
-  font-stretch: 70%;
+  font-stretch: 65%;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
 }
 
+.login-title em {
+  font-style: italic;
+  color: var(--kelly);
+}
+
 .login-copy {
-  margin-top: 12px;
+  margin-top: 16px;
   color: var(--muted);
+  font-size: 1.15rem;
   line-height: 1.5;
+}
+
+.login-copy strong {
+  color: var(--ink);
+  font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .login-form {
   display: grid;
   gap: 14px;
+  margin-top: 32px;
+}
+
+.login-form .form-input {
+  font-size: 1.05rem;
+  padding: 14px 16px;
+}
+
+.login-reset {
   margin-top: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.login-reset:hover {
+  color: var(--ink);
 }
 
 /* Dashboard */
@@ -229,37 +298,15 @@ button {
   line-height: 1;
 }
 
+/* Shares the unsubscribe page's rhythm; see .unsubscribe below. */
 .dashboard {
   min-height: 62vh;
+  padding: 96px 0;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
-  gap: 18px;
-  padding: 72px 0;
-}
-
-.dashboard-eyebrow {
-  color: var(--kelly-deep);
-  font-size: 0.8rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.dashboard-title {
-  max-width: 760px;
-  font-size: clamp(3rem, 8vw, 6rem);
-  font-stretch: 65%;
-  font-weight: 900;
-  line-height: 0.95;
-  text-transform: uppercase;
-}
-
-.dashboard-copy {
-  max-width: 52ch;
-  color: var(--muted);
-  font-size: 1.1rem;
-  line-height: 1.55;
+  gap: 28px;
 }
 
 .header-cta:hover {
@@ -269,6 +316,8 @@ button {
 
 .wordmark:focus-visible,
 .header-cta:focus-visible,
+.modal-close:focus-visible,
+.login-reset:focus-visible,
 .footer-link:focus-visible,
 .skip-link:focus-visible,
 .form-input:focus-visible,
@@ -766,7 +815,7 @@ select.form-input {
   background: rgba(206, 58, 38, 0.06);
 }
 
-.capacity-toast {
+.app-toast {
   position: fixed;
   left: 16px;
   bottom: 16px;
@@ -780,10 +829,10 @@ select.form-input {
   font-size: 0.84rem;
   font-weight: 800;
   line-height: 1.35;
-  animation: capacity-toast-in 160ms ease-out;
+  animation: app-toast-in 160ms ease-out;
 }
 
-@keyframes capacity-toast-in {
+@keyframes app-toast-in {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -824,7 +873,6 @@ select.form-input {
 }
 
 .signup-success-copy {
-  max-width: 56ch;
   color: var(--muted);
   line-height: 1.55;
 }
@@ -977,7 +1025,8 @@ select.form-input {
   gap: 22px;
 }
 
-.unsubscribe-title {
+.unsubscribe-title,
+.dashboard-title {
   font-weight: 900;
   font-stretch: 65%;
   font-size: clamp(2.6rem, 6.5vw, 5rem);
@@ -986,16 +1035,27 @@ select.form-input {
   letter-spacing: -0.01em;
 }
 
-.unsubscribe-title em {
+.unsubscribe-title em,
+.dashboard-title em {
   font-style: italic;
   color: var(--kelly);
 }
 
-.unsubscribe-copy {
-  max-width: 52ch;
+.unsubscribe-copy,
+.dashboard-copy {
   color: var(--muted);
   font-size: 1.15rem;
   line-height: 1.55;
+}
+
+.unsubscribe-copy-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dashboard-copy {
+  max-width: 52ch;
 }
 
 .unsubscribe-actions {
@@ -1073,14 +1133,34 @@ select.form-input {
     padding-right: 20px;
   }
 
+  .site-header {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .site-header-actions-multiple {
+    flex-basis: 100%;
+  }
+
+  .site-header-actions-multiple .header-cta {
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+  }
+
   .hero {
     padding: 64px 0 48px;
   }
 
-  .unsubscribe {
+  .unsubscribe,
+  .dashboard {
     min-height: 0;
     justify-content: flex-start;
     padding: 56px 0 48px;
+  }
+
+  .login-modal {
+    padding: 48px 24px 32px;
   }
 
   .feedback-page {
@@ -1123,7 +1203,7 @@ select.form-input {
     padding-left: 6px;
   }
 
-  .capacity-toast {
+  .app-toast {
     right: 16px;
     bottom: 88px;
     max-width: none;
@@ -1172,7 +1252,8 @@ select.form-input {
   }
 
   .team-card[data-rejected="true"],
-  .capacity-toast {
+  .app-toast,
+  .login-modal {
     animation: none;
   }
 }
