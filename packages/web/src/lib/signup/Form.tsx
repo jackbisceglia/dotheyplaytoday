@@ -462,7 +462,7 @@ export function Form(props: FormProps) {
 
           <Show when={rejectionMessage()}>
             {(message) => (
-              <div class="capacity-toast" role="status" aria-live="polite">
+              <div class="app-toast" role="status" aria-live="polite">
                 {message()}
               </div>
             )}

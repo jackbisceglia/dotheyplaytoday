@@ -815,7 +815,7 @@ select.form-input {
   background: rgba(206, 58, 38, 0.06);
 }
 
-.capacity-toast {
+.app-toast {
   position: fixed;
   left: 16px;
   bottom: 16px;
@@ -829,10 +829,10 @@ select.form-input {
   font-size: 0.84rem;
   font-weight: 800;
   line-height: 1.35;
-  animation: capacity-toast-in 160ms ease-out;
+  animation: app-toast-in 160ms ease-out;
 }
 
-@keyframes capacity-toast-in {
+@keyframes app-toast-in {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -1188,7 +1188,7 @@ select.form-input {
     padding-left: 6px;
   }
 
-  .capacity-toast {
+  .app-toast {
     right: 16px;
     bottom: 88px;
     max-width: none;
@@ -1237,7 +1237,7 @@ select.form-input {
   }
 
   .team-card[data-rejected="true"],
-  .capacity-toast,
+  .app-toast,
   .login-modal {
     animation: none;
   }
