@@ -69,7 +69,7 @@ export function Login() {
                 Check your <em>inbox.</em>
               </h2>
               <p class="login-copy">
-                We sent a sign-in link to <strong>{email()}</strong>.
+                We sent a link to <strong>{email()}</strong>.
               </p>
               <button
                 class="login-reset"
