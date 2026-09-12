@@ -231,7 +231,10 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
     return yield* Match.value(notification).pipe(
       Match.when(cases.sportsTeamFeed, (notification) =>
         Effect.gen(function* () {
-          const subject = `${notification.subject.details.name} play today`;
+          const hero = buildKickoffHero(notification);
+          const playsToday = `${notification.subject.details.name} play today`;
+          const subject =
+            hero === undefined ? playsToday : `Football's back. ${playsToday}.`;
 
           const sharedParticipantTitle = findSharedParticipantTitle(
             notification.events,
@@ -261,7 +264,7 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
           return {
             subject,
             home,
-            hero: buildKickoffHero(notification),
+            hero,
             headline: `${notification.subject.details.name} play`,
             accent: "today.",
             blocks: [

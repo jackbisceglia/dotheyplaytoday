@@ -249,7 +249,7 @@ describe("nfl season opener header", () => {
       // The hero carries the wordmark, so the rule header must not also render.
       expect(payload.html).not.toContain("border-bottom: 3px solid");
       // Everything below the header is the ordinary game-day email.
-      expect(payload.subject).toBe("Eagles play today");
+      expect(payload.subject).toBe("Football's back. Eagles play today.");
       expect(payload.html).toContain("Philadelphia Eagles");
       expect(payload.html).toContain("Dallas Cowboys");
       // The text part carries the same news as the html part.
@@ -266,6 +266,7 @@ describe("nfl season opener header", () => {
 
       const payload = lastPayload();
 
+      expect(payload.subject).toBe("Eagles play today");
       expect(payload.html).not.toContain('class="email-hero"');
       expect(payload.html).toContain("border-bottom: 3px solid");
       expect(payload.text).not.toContain("Football is back.");
