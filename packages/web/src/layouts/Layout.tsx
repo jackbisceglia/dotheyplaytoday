@@ -44,7 +44,13 @@ export function Layout(props: LayoutProps) {
           </span>
         </a>
         <Show when={props.headerActions?.length}>
-          <div class="site-header-actions">
+          <div
+            class={`site-header-actions${
+              (props.headerActions?.length ?? 0) > 1
+                ? " site-header-actions-multiple"
+                : ""
+            }`}
+          >
             <For each={props.headerActions}>
               {(action) => (
                 <Show

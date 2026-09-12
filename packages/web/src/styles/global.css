@@ -1133,6 +1133,21 @@ select.form-input {
     padding-right: 20px;
   }
 
+  .site-header {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .site-header-actions-multiple {
+    flex-basis: 100%;
+  }
+
+  .site-header-actions-multiple .header-cta {
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+  }
+
   .hero {
     padding: 64px 0 48px;
   }

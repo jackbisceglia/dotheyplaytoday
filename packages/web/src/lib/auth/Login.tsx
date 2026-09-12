@@ -82,7 +82,12 @@ export function Login() {
               <h2 class="login-title" id="login-title">
                 Check your <em>inbox.</em>
               </h2>
-              <p class="login-copy">
+              <p
+                class="login-copy"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
                 We sent a link to <strong>{email()}</strong>.
               </p>
               <button
