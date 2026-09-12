@@ -19,7 +19,16 @@ import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { magicLink } from "better-auth/plugins";
-import { Boolean, Context, Effect, Layer, Option, Redacted, Schema } from "effect";
+import {
+  Boolean,
+  Context,
+  Effect,
+  Layer,
+  Option,
+  Redacted,
+  Schema,
+} from "effect";
+import type { Headers } from "effect/unstable/http/Headers";
 import { type User as BetterAuthUser } from "better-auth";
 import { Pool } from "pg";
 
@@ -106,7 +115,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
               body: {
                 callbackURL: Boolean.match(isUserVerified, {
                   onTrue: () => homeUrl.href,
-                  onFalse: () => new URL("?confirmed=1", homeUrl).href,
+                  onFalse: () => new URL("?confirmation=1", homeUrl).href,
                 }),
                 // TODO: surface the failed-link message as a toast, mirroring the confirmation marker.
                 errorCallbackURL: webUrl.href,
@@ -147,7 +156,11 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
         catch: (cause) => new AuthRequestError({ cause }),
       });
 
-    return { use, client };
+    const getSession = Effect.fn("Auth.getSession")((headers: Headers) =>
+      use((client) => client.api.getSession({ headers })),
+    );
+
+    return { use, client, getSession };
   }),
 }) {}
 

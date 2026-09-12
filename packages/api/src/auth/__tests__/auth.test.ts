@@ -43,7 +43,7 @@ describe("authentication boundaries", () => {
       expect(new URL(link).searchParams.get("callbackURL")).toBe(
         verified
           ? "https://www.example.com/home"
-          : "https://www.example.com/home?confirmed=1",
+          : "https://www.example.com/home?confirmation=1",
       );
       expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
         "https://www.example.com/",
@@ -110,7 +110,7 @@ describe("authentication boundaries", () => {
       expect.any(String),
     );
     for (const [sender, callback] of [
-      [f.sendConfirmationLink, "https://www.example.com/home?confirmed=1"],
+      [f.sendConfirmationLink, "https://www.example.com/home?confirmation=1"],
       [f.sendSignInLink, "https://www.example.com/home"],
     ] as const) {
       const link = sender.mock.calls[0]?.[1];
@@ -144,7 +144,7 @@ describe("authentication boundaries", () => {
     const link = f.sendConfirmationLink.mock.calls[0]?.[1];
     if (!link) throw new Error("Missing confirmation link");
     expect(new URL(link).searchParams.get("callbackURL")).toBe(
-      "https://www.example.com/home?confirmed=1",
+      "https://www.example.com/home?confirmation=1",
     );
   });
 

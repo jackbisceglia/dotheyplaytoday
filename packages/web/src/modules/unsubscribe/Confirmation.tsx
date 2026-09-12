@@ -2,6 +2,7 @@ import { Match } from "effect";
 import { createSignal } from "solid-js";
 
 import { withApiClient } from "../../lib/api.js";
+import { auth } from "../../lib/auth.js";
 import { useApplicationPath } from "../../lib/paths.js";
 import type { UnsubscribeTokenSuccess } from "./token.js";
 
@@ -17,7 +18,7 @@ const getSubmitErrorMessage = (error: unknown) =>
   );
 
 export function Confirmation(props: {
-  readonly token: UnsubscribeTokenSuccess;
+  readonly token: UnsubscribeTokenSuccess | undefined;
 }) {
   const landingHref = useApplicationPath("landing");
   const [formError, setFormError] = createSignal<string>();
@@ -31,9 +32,12 @@ export function Confirmation(props: {
     setSubmitting(true);
 
     void withApiClient((client) =>
-      client.user.unsubscribe({ payload: { token: props.token } }),
+      client.user.unsubscribe({
+        payload: props.token === undefined ? {} : { token: props.token },
+      }),
     )
-      .then(() => {
+      .then(async () => {
+        await auth.signOut().catch(() => undefined);
         setSucceeded(true);
         queueMicrotask(() => successTitle?.focus());
       })

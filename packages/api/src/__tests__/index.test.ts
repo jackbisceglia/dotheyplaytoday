@@ -344,7 +344,7 @@ describe("assembled HTTP API", () => {
     const link = f.sendConfirmationLink.mock.calls[0]?.[1];
     if (!link) throw new Error("Missing confirmation link");
     expect(new URL(link).searchParams.get("callbackURL")).toBe(
-      "https://www.example.com/?confirmed=1",
+      "https://www.example.com/home?confirmation=1",
     );
     expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
       "https://www.example.com/",
@@ -384,8 +384,8 @@ describe("assembled HTTP API", () => {
       if (!link) throw new Error("Missing duplicate signup link");
       expect(new URL(link).searchParams.get("callbackURL")).toBe(
         verified
-          ? "https://www.example.com/"
-          : "https://www.example.com/?confirmed=1",
+          ? "https://www.example.com/home"
+          : "https://www.example.com/home?confirmation=1",
       );
       expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
         "https://www.example.com/",
@@ -444,6 +444,21 @@ describe("assembled HTTP API", () => {
     expect(repeated.status).toBe(200);
     expect(await repeated.json()).toEqual({ ok: true });
     expect(f.remove).toHaveBeenCalledOnce();
+  });
+
+  it("unsubscribes the authenticated user without exposing their token", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    const response = await f.request("/user/unsubscribe", {}, cookie);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(f.getByToken).not.toHaveBeenCalled();
+    expect(f.get).not.toHaveBeenCalled();
+    expect(f.remove).toHaveBeenCalledExactlyOnceWith(user.id);
+
+    const unauthorized = await f.request("/user/unsubscribe", {});
+    expect(unauthorized.status).toBe(401);
   });
 
   it("registers confirmation delivery in the background after successful persistence", async () => {

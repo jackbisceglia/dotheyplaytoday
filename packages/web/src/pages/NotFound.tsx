@@ -13,7 +13,7 @@ export function NotFound() {
   );
 
   return (
-    <Layout headerAction={{ href: landingHref(), label: "Home" }}>
+    <Layout headerActions={[{ href: landingHref(), label: "Home" }]}>
       <section class="unsubscribe">
         <div class="unsubscribe-confirm">
           <h1 class="unsubscribe-title">

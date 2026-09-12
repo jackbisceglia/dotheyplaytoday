@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { For, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 import { BrandMark } from "../modules/ui/BrandMark.jsx";
 import { useApplicationPath } from "../lib/paths.js";
@@ -7,12 +7,15 @@ import { useApplicationPath } from "../lib/paths.js";
 // delete this module. Every page wraps itself in Layout today; the shell
 // should own the header/footer once per navigation instead.
 type HeaderAction = {
-  readonly href: string;
   readonly label: string;
-};
+} & (
+  | { readonly href: string; readonly onClick?: never }
+  | { readonly href?: never; readonly onClick: () => void }
+);
 
 type LayoutProps = ParentProps<{
-  readonly headerAction?: HeaderAction;
+  readonly headerActions?: readonly HeaderAction[];
+  readonly unsubscribeHref?: string;
 }>;
 
 export function Layout(props: LayoutProps) {
@@ -40,14 +43,31 @@ export function Layout(props: LayoutProps) {
             dothey<em>play</em>today
           </span>
         </a>
-        <Show when={props.headerAction}>
-          {(action) => (
-            <div class="site-header-actions">
-              <a class="header-cta" href={action().href}>
-                {action().label}
-              </a>
-            </div>
-          )}
+        <Show when={props.headerActions?.length}>
+          <div class="site-header-actions">
+            <For each={props.headerActions}>
+              {(action) => (
+                <Show
+                  when={action.href}
+                  fallback={
+                    <button
+                      class="header-cta"
+                      type="button"
+                      onClick={action.onClick}
+                    >
+                      {action.label}
+                    </button>
+                  }
+                >
+                  {(href) => (
+                    <a class="header-cta" href={href()}>
+                      {action.label}
+                    </a>
+                  )}
+                </Show>
+              )}
+            </For>
+          </div>
         </Show>
       </header>
 
@@ -57,9 +77,18 @@ export function Layout(props: LayoutProps) {
 
       <footer class="site-footer">
         <span>dotheyplaytoday</span>
-        <a class="footer-link" href={feedbackHref()}>
-          Feedback
-        </a>
+        <div class="site-footer-links">
+          <Show when={props.unsubscribeHref}>
+            {(href) => (
+              <a class="footer-link" href={href()}>
+                Unsubscribe
+              </a>
+            )}
+          </Show>
+          <a class="footer-link" href={feedbackHref()}>
+            Feedback
+          </a>
+        </div>
       </footer>
     </>
   );

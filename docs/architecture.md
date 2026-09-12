@@ -152,7 +152,7 @@ The notification Worker provisions the email notifier, which renders a
 Auth's magic-link callback reuses the recipient from request context to select
 the view by `emailVerified`, without another lookup or email normalization. It
 forwards the generated URL unchanged. A shared Better Auth before hook selects
-the Web `/home` route through `callbackURL`, adding `confirmed=1` only for users
+the Web `/home` route through `callbackURL`, adding `confirmation=1` only for users
 unverified at issuance. It sets `errorCallbackURL` to the Web root without the
 marker. The hook covers both registration's server API calls and standalone HTTP
 sign-in, retaining validation of caller-supplied URLs. The recipient context is
@@ -287,7 +287,7 @@ Separate follow-ups are:
 - `GET /api/user`: authenticated user's email and timezone.
 - `POST /api/user`: save a new unverified user and subscriptions, then request a confirmation link; duplicate signup requests another link and returns 409 without changing preferences.
 - `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
-- `POST /api/user/unsubscribe`: delete a user and subscriptions using an emailed token.
+- `POST /api/user/unsubscribe`: delete the authenticated user when no token is supplied, or the token owner for an unauthenticated email link.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
 
 Contracts follow OpenCode's instance HttpApi structure: each domain exports a

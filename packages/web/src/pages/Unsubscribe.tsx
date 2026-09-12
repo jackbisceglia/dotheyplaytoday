@@ -10,14 +10,16 @@ import { decodeUnsubscribeToken } from "../modules/unsubscribe/token.js";
 
 const description = "Confirm that you want to stop dotheyplaytoday emails.";
 
-export function Unsubscribe(props: { readonly token: string }) {
+export function Unsubscribe(props: { readonly token?: string }) {
   const landingHref = useApplicationPath("landing");
   usePageMetadata("Unsubscribe | dotheyplaytoday", description);
-  const token = decodeUnsubscribeToken(props.token);
+  const token = props.token
+    ? decodeUnsubscribeToken(props.token)
+    : Result.succeed(undefined);
   if (Result.isFailure(token)) httpStatus(404, "Not Found");
 
   return (
-    <Layout headerAction={{ href: landingHref(), label: "Home" }}>
+    <Layout headerActions={[{ href: landingHref(), label: "Home" }]}>
       {Result.match(token, {
         onSuccess: (value) => <Confirmation token={value} />,
         onFailure: () => <UnsubscribeNotFound />,
