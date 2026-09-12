@@ -44,3 +44,22 @@ export function withApiClient<A, E>(
 
   return RuntimeClient.runPromise(procedure);
 }
+
+export function withApiResult<A, E>(
+  useClient: (client: Effect.Success<Client>) => Effect.Effect<A, E>,
+  duration: Duration.Input = "10 seconds",
+) {
+  const procedure = Effect.gen(function* () {
+    const client = yield* Client;
+
+    return yield* useClient(client);
+  }).pipe(
+    Effect.timeout(duration),
+    Effect.provideService(FetchHttpClient.RequestInit, {
+      credentials: "include",
+    }),
+    Effect.result,
+  );
+
+  return RuntimeClient.runPromise(procedure);
+}

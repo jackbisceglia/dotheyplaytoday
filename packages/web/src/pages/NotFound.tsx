@@ -2,8 +2,10 @@ import { httpStatus } from "@solidjs/web";
 
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
+import { useApplicationPath } from "../lib/paths.js";
 
-export function NotFound(props: { readonly homeHref: string }) {
+export function NotFound() {
+  const homeHref = useApplicationPath("home");
   httpStatus(404, "Not Found");
   usePageMetadata(
     "Not found | dotheyplaytoday",
@@ -11,10 +13,7 @@ export function NotFound(props: { readonly homeHref: string }) {
   );
 
   return (
-    <Layout
-      homeHref={props.homeHref}
-      headerAction={{ href: props.homeHref, label: "Home" }}
-    >
+    <Layout headerAction={{ href: homeHref(), label: "Home" }}>
       <section class="unsubscribe">
         <div class="unsubscribe-confirm">
           <h1 class="unsubscribe-title">
@@ -25,7 +24,7 @@ export function NotFound(props: { readonly homeHref: string }) {
           <p class="unsubscribe-copy">
             The page you requested doesn't exist. Head home to pick your teams.
           </p>
-          <a class="btn btn-secondary" href={props.homeHref}>
+          <a class="btn btn-secondary" href={homeHref()}>
             Back home
           </a>
         </div>
