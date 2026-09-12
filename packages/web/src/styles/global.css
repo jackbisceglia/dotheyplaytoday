@@ -1051,3 +1051,35 @@ select.form-input {
     animation: none;
   }
 }
+
+.splash {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+}
+
+.splash-mark {
+  width: 72px;
+  height: 72px;
+  animation: splash-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes splash-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-mark {
+    animation: none;
+  }
+}

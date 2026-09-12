@@ -1,8 +1,11 @@
+import { useNavigate } from "@solidjs/router";
 import { Result } from "effect";
-import { createMemo } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
 
+import { useSession } from "../lib/auth.js";
 import { Layout } from "../layouts/Layout.jsx";
 import { usePageMetadata } from "../lib/metadata.js";
+import { useApplicationPath } from "../lib/paths.js";
 import { getSubjects } from "../lib/subjects.js";
 import { Form as SignupForm } from "../modules/signup/Form.jsx";
 import { Ticker as ScoreTicker } from "../modules/ui/Ticker.jsx";
@@ -14,9 +17,20 @@ export function preload() {
   return getSubjects();
 }
 
-export function Home() {
+export function Landing() {
   usePageMetadata("dotheyplaytoday", description);
   const result = createMemo(() => getSubjects());
+  const session = useSession();
+  const navigate = useNavigate();
+  const homeHref = useApplicationPath("home");
+
+  // Signed-in visitors upgrade to /home after the session settles.
+  createEffect(
+    () => (!session().isPending && session().data ? homeHref() : undefined),
+    (href) => {
+      if (href !== undefined) navigate(href, { replace: true });
+    },
+  );
 
   return (
     <Layout headerAction={{ href: "#signup", label: "Sign up" }}>

@@ -1,7 +1,69 @@
+import { useNavigate } from "@solidjs/router";
+import { createEffect, Errored, Match, Switch } from "solid-js";
 import type { ParentProps } from "solid-js";
 
-// Guard + user context + app chrome land here in a later step.
-// Pass-through for now so introducing the file is behavior-neutral.
+import { useSession } from "../../lib/auth.js";
+import { useApplicationPath } from "../../lib/paths.js";
+import { Splash } from "../../modules/ui/Splash.jsx";
+
+function SessionError(props: { readonly onRetry: () => void }) {
+  const session = useSession();
+
+  return (
+    <main class="splash" role="alert">
+      <p class="form-error">
+        We couldn't check your session.{" "}
+        <button
+          class="btn btn-secondary"
+          type="button"
+          onClick={() => {
+            void session().refetch();
+            props.onRetry();
+          }}
+        >
+          Try again
+        </button>
+      </p>
+    </main>
+  );
+}
+
+function Authenticated(props: ParentProps) {
+  const session = useSession();
+  const navigate = useNavigate();
+  const landingHref = useApplicationPath("landing");
+
+  createEffect(
+    () => {
+      const current = session();
+
+      if (current.isPending) return "pending";
+      if (current.error) return "unavailable";
+      return current.data ? "authenticated" : "unauthenticated";
+    },
+    (state) => {
+      if (state === "unavailable") {
+        throw new Error("Failed to check the session");
+      }
+
+      if (state === "unauthenticated") {
+        navigate(landingHref(), { replace: true });
+      }
+    },
+  );
+
+  return (
+    <Switch fallback={<Splash />}>
+      <Match when={session().data}>{props.children}</Match>
+    </Switch>
+  );
+}
+
+// Unknown session shows the splash; redirects wait for the client session.
 export function AuthenticatedShell(props: ParentProps) {
-  return <>{props.children}</>;
+  return (
+    <Errored fallback={(_error, reset) => <SessionError onRetry={reset} />}>
+      <Authenticated>{props.children}</Authenticated>
+    </Errored>
+  );
 }
