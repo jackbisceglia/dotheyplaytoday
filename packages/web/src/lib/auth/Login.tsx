@@ -76,7 +76,7 @@ export function Login() {
                 type="button"
                 onClick={() => setIsSent(false)}
               >
-                Use a different email
+                Sign in with a different email
               </button>
             </>
           }
