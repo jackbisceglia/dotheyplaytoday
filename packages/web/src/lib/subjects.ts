@@ -10,5 +10,9 @@ export const SubjectsLoadFailed = "SubjectsLoadFailed" as const;
 export const getSubjects = query(async () => {
   const result = await withApiResult((api) => api.subjects.list());
 
+  if (import.meta.env.SSR && Result.isFailure(result)) {
+    console.error("Failed to load the subject catalog", result.failure);
+  }
+
   return Result.mapError(result, () => SubjectsLoadFailed);
 }, "subjects");
