@@ -1,67 +1,45 @@
 import "./styles/global.css";
 
-import {
-  createRouter,
-  defineRoute,
-  defineRoutes,
-  query,
-} from "@solidjs/router";
-import { createMemo, Show } from "solid-js";
+import { createRouter, defineRoute, defineRoutes } from "@solidjs/router";
 
-import { withApiClient } from "./lib/api.js";
+import { paths } from "./lib/paths.js";
+import { AuthenticatedShell } from "./pages/(authenticated)/shell.jsx";
+import { Home } from "./pages/(authenticated)/home.jsx";
 import { Feedback } from "./pages/Feedback.jsx";
-import { Home } from "./pages/Home.jsx";
+import { Landing, preload as landingPreload } from "./pages/Landing.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
 import { Unsubscribe } from "./pages/Unsubscribe.jsx";
-
-const getSubjects = query(
-  () =>
-    withApiClient((api) => api.subjects.list()).catch((error: unknown) => {
-      console.error("Failed to load the subject catalog", error);
-      return [];
-    }),
-  "subjects",
-);
+import { RootShell } from "./pages/shell.jsx";
 
 const routes = defineRoutes([
   defineRoute({
-    path: "/",
-    preload: () => getSubjects(),
-    component: () => {
-      const subjects = createMemo(() => getSubjects());
-
-      return <Home homeHref={paths()} subjects={subjects()} />;
-    },
+    component: RootShell,
+    children: [
+      defineRoute({
+        path: paths.landing,
+        preload: landingPreload,
+        component: Landing,
+      }),
+      defineRoute({ path: paths.feedback, component: Feedback }),
+      defineRoute({
+        path: paths.unsubscribe,
+        component: () => <Unsubscribe />,
+      }),
+      defineRoute({
+        path: paths.unsubscribeViaToken,
+        component: (props) => <Unsubscribe token={props.params.token} />,
+      }),
+      defineRoute({
+        component: AuthenticatedShell,
+        children: [defineRoute({ path: paths.home, component: Home })],
+      }),
+      { path: "*404", component: NotFound },
+    ],
   }),
-  defineRoute({
-    path: "/feedback",
-    component: () => <Feedback homeHref={paths()} />,
-  }),
-  defineRoute({
-    path: "/unsubscribe/:token",
-    component: (props) => (
-      <Unsubscribe homeHref={paths()} token={props.params.token} />
-    ),
-  }),
-  { path: "*404", component: () => <NotFound homeHref={paths()} /> },
 ]);
 
 const Router = createRouter({ routes });
-const { paths } = Router;
-
-const DevOnlyAlerts = () => (
-  <Show when={import.meta.env.DEV}>
-    <aside class="dev-catalog-notice" role="status">
-      Development catalog: event notifications are available for the NBA only.
-    </aside>
-  </Show>
-);
 
 export default function App() {
-  return (
-    <>
-      <DevOnlyAlerts />
-      <Router />
-    </>
-  );
+  return <Router />;
 }

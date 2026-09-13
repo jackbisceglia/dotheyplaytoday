@@ -41,7 +41,9 @@ export class SignupRateLimited extends Schema.TaggedErrorClass<SignupRateLimited
   { httpApiStatus: 429 },
 ) {}
 
-export const UnsubscribeRequest = Schema.Struct({ token: UnsubscribeToken });
+export const UnsubscribeRequest = Schema.Struct({
+  token: Schema.optional(UnsubscribeToken),
+});
 
 export const UnsubscribeResponse = Schema.Struct({ ok: Schema.Literal(true) });
 
@@ -71,7 +73,11 @@ export const UserApi = HttpApi.make("user")
       HttpApiEndpoint.post("unsubscribe", "/unsubscribe", {
         payload: UnsubscribeRequest,
         success: UnsubscribeResponse,
-        error: [HttpApiError.InternalServerError, UnsubscribeRateLimited],
+        error: [
+          HttpApiError.Unauthorized,
+          HttpApiError.InternalServerError,
+          UnsubscribeRateLimited,
+        ],
       }),
     ),
   )

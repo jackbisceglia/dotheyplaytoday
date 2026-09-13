@@ -36,6 +36,7 @@ Registration uses `POST /api/user`. Users can subscribe to up to four teams. New
 - Authentication is passwordless and available only to notification users who already exist under their normalized email address.
 - Requesting a magic link returns the same success response for known and unknown addresses; unknown addresses do not receive email and cannot create users.
 - A valid magic link verifies the existing user and creates a persistent server-side session. Authentication cookies remain host-only to the API origin.
+- Successful registration and sign-in links return to Web `/home`. Links requested while unverified include `confirmation=1`; already-verified users return without it. Failed or expired links return to `/` without the confirmation marker.
 
 ## Feedback
 

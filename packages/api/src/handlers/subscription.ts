@@ -27,9 +27,7 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
       "list",
       Effect.fn("SubscriptionHttpApi.list")(
         function* (ctx) {
-          const session = yield* auth.use((client) =>
-            client.api.getSession({ headers: ctx.request.headers }),
-          );
+          const session = yield* auth.getSession(ctx.request.headers);
 
           if (!session) {
             return yield* new HttpApiError.Unauthorized({});

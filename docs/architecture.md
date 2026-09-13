@@ -88,9 +88,10 @@ their original signup dates; grandfathering must not infer signup dates from it.
 Migration 0005 grants notification eligibility only to a fixed, owner-trusted
 cohort; this is not proof of mailbox ownership and creates no sessions. New
 rows retain the false default. Existing users still redeem a magic link to sign
-in. The magic-link sender normalizes the address and asks
-Better Auth's internal adapter to silently skip unknown addresses. Better Auth
-also has signup disabled, so an unknown address cannot create a row missing
+in. The magic-link before hook normalizes the address and looks up the user once
+through Better Auth's internal adapter. It carries the user with a normalized
+email in request context; the sender silently skips unknown recipients. Better
+Auth also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
@@ -148,10 +149,18 @@ The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to
 `Email`. Separate transactional confirmation and sign-in views bypass
 `Notifier` and provide the same concrete Resend email layer internally. Better
-Auth's magic-link callback looks up the user and selects the view by
-`emailVerified`. It forwards the generated URL unchanged; registration supplies
-the Web URL through Better Auth's `callbackURL` and `errorCallbackURL` inputs.
-Tokens are hashed, expire after 15 minutes, and are single-use. Issuance is
+Auth's magic-link callback reuses the recipient from request context to select
+the view by `emailVerified`, without another lookup or email normalization. It
+forwards the generated URL unchanged. A shared Better Auth before hook selects
+the Web `/home` route through `callbackURL`, adding `confirmation=1` only for users
+unverified at issuance. It sets `errorCallbackURL` to the Web root without the
+marker. The hook covers both registration's server API calls and standalone HTTP
+sign-in, retaining validation of caller-supplied URLs. The recipient context is
+server-owned and scoped to each issuance, so concurrent requests remain isolated
+and callback selection and email copy use the same verification snapshot. The
+sender reads the typed, server-owned user directly from the endpoint context
+without decoding the internal value again. Tokens are hashed, expire after 15
+minutes, and are single-use. Issuance is
 awaited while the auth pool is open; `WorkerExecutionContext.waitUntil` owns
 email delivery, which needs no further database access. Delivery failures are
 logged without changing the registration response. The old team-picks signup
@@ -268,17 +277,17 @@ Separate follow-ups are:
 1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
 3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
-4. Add the Web auth client, account/manage routes, session-driven redirects,
-   and authenticated team-management APIs. Cookie sharing across subdomains is
-   intentionally still disabled; browser calls target the API origin with
-   credentials.
+4. Add account and subscription-management interfaces plus the authenticated
+   team-management APIs needed to update existing preferences. Cookie sharing
+   across subdomains is intentionally still disabled; browser calls target the
+   API origin with credentials.
 
 ## Public API
 
 - `GET /api/user`: authenticated user's email and timezone.
 - `POST /api/user`: save a new unverified user and subscriptions, then request a confirmation link; duplicate signup requests another link and returns 409 without changing preferences.
 - `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
-- `POST /api/user/unsubscribe`: delete a user and subscriptions using an emailed token.
+- `POST /api/user/unsubscribe`: delete the authenticated user when no token is supplied, or the token owner for an unauthenticated email link.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
 
 Contracts follow OpenCode's instance HttpApi structure: each domain exports a
@@ -295,6 +304,12 @@ client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
 there is no Account model. Identity comes exclusively from the session.
 
 Browser API requests include credentials. API cookies remain host-only, so Web
-SSR cannot assume it has the session cookie. Account and sign-in pages remain
-separate work. Existing emailed links land on Web `/unsubscribe/:token`, whose
-typed caller uses the new endpoint; no legacy API alias is needed.
+SSR cannot assume it has the session cookie. After a browser verifies a session,
+Web stores a non-authoritative local auth hint. A synchronous document script
+uses that hint to replace-navigate root visits to `/home` before the SSR landing
+page paints; the authenticated route still verifies the real session and clears
+stale hints. The root route exposes sign-in through a query-driven modal, and
+`/home` provides confirmation, sign-out, and unsubscribe entry points. Full
+account and subscription-management interfaces remain separate work. Existing
+emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
+new endpoint; no legacy API alias is needed.

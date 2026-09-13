@@ -4,19 +4,19 @@ import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
-import { withApiClient } from "../../lib/api.js";
+import { withApiClient } from "../api.js";
 import {
   getSportsLogo,
   getTeams,
   leagues as sportsLeagues,
-} from "../../lib/catalog/sports/index.js";
+} from "../catalog/sports/index.js";
 import {
   defaultTimezone,
   detectTimezone,
   isValidSendTime,
   sendTime,
   sendTimeIntervals,
-} from "../../lib/time.js";
+} from "../time.js";
 import { ComingSoon } from "../ui/ComingSoon.jsx";
 import { Success } from "./Success.jsx";
 import { useSelectionRejection } from "./useSelectionRejection.js";
@@ -462,7 +462,7 @@ export function Form(props: FormProps) {
 
           <Show when={rejectionMessage()}>
             {(message) => (
-              <div class="capacity-toast" role="status" aria-live="polite">
+              <div class="app-toast" role="status" aria-live="polite">
                 {message()}
               </div>
             )}

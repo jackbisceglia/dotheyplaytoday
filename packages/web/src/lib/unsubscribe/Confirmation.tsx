@@ -1,7 +1,10 @@
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { Match } from "effect";
 import { createSignal } from "solid-js";
 
-import { withApiClient } from "../../lib/api.js";
+import { withApiClient } from "../api.js";
+import { auth } from "../auth.js";
+import { useApplicationPath } from "../paths.js";
 import type { UnsubscribeTokenSuccess } from "./token.js";
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -16,9 +19,9 @@ const getSubmitErrorMessage = (error: unknown) =>
   );
 
 export function Confirmation(props: {
-  readonly homeHref: string;
-  readonly token: UnsubscribeTokenSuccess;
+  readonly token: UnsubscribeTokenSuccess | undefined;
 }) {
+  const landingHref = useApplicationPath("landing");
   const [formError, setFormError] = createSignal<string>();
   const [isSubmitting, setSubmitting] = createSignal(false);
   const [isSucceeded, setSucceeded] = createSignal(false);
@@ -30,9 +33,12 @@ export function Confirmation(props: {
     setSubmitting(true);
 
     void withApiClient((client) =>
-      client.user.unsubscribe({ payload: { token: props.token } }),
+      client.user.unsubscribe({
+        payload: exactOptional(props.token, (token) => ({ token })),
+      }),
     )
-      .then(() => {
+      .then(async () => {
+        await auth.signOut().catch(() => undefined);
         setSucceeded(true);
         queueMicrotask(() => successTitle?.focus());
       })
@@ -52,10 +58,14 @@ export function Confirmation(props: {
           <br />
           <em>off the roster.</em>
         </h1>
-        <p class="unsubscribe-copy">
-          This stops every dotheyplaytoday email for this address. Sign up again
-          any time with a fresh set of teams.
-        </p>
+        <div class="unsubscribe-copy-group">
+          <p class="unsubscribe-copy">
+            This stops every dotheyplaytoday email for this address.
+          </p>
+          <p class="unsubscribe-copy">
+            Sign up again any time with a fresh set of teams.
+          </p>
+        </div>
 
         <form class="unsubscribe-actions" onSubmit={submit}>
           <button
@@ -94,7 +104,7 @@ export function Confirmation(props: {
           We processed this unsubscribe. If you've already used the link,
           nothing changes.
         </p>
-        <a class="btn btn-secondary" href={props.homeHref}>
+        <a class="btn btn-secondary" href={landingHref()}>
           Back home
         </a>
       </div>
