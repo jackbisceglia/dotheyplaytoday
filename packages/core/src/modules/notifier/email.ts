@@ -175,18 +175,28 @@ const orderBySubject = (
   );
 };
 
-const NFL_KICKOFF_DATE = "2026-09-13";
-
-/** Local to the recipient: a Pacific Sunday evening is already Monday in UTC. */
-const isNflKickoffDay = (
+// TODO: Generalize this into configurable special events. It is dead after NFL
+// kickoff (2026-09-13), and the NBA opener in October will want a variant with
+// slightly different rules. Instead of deleting it, open a PR that moves the
+// date, league, and header/subject copy into data (likely a database table),
+// so each season opener is a row rather than a code change.
+const shouldIncludeNflKickoffEvent = (
+  events: SportsGameEvents,
   sendAt: Notification["sendAt"],
   timezone: User["timezone"],
-) =>
-  DateTime.formatIsoDate(DateTime.setZone(sendAt, timezone)) ===
-  NFL_KICKOFF_DATE;
+) => {
+  const NFL_KICKOFF_DATE = "2026-09-13";
 
-const hasNflGame = (events: SportsGameEvents) =>
-  events.some((event) => event.details.leagueId === "nfl");
+  const hasNflGame = () =>
+    events.some((event) => event.details.leagueId === "nfl");
+
+  /** Local to the recipient: a Pacific Sunday evening is already Monday in UTC. */
+  const isNflKickoffDay = () =>
+    DateTime.formatIsoDate(DateTime.setZone(sendAt, timezone)) ===
+    NFL_KICKOFF_DATE;
+
+  return hasNflGame() && isNflKickoffDay();
+};
 
 const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
   const userLocaleDateTime = DateTime.setZone(event.startsAt, tz);
@@ -212,9 +222,11 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
     return yield* Match.value(notification).pipe(
       Match.when(cases.sportsTeamFeed, (notification) =>
         Effect.gen(function* () {
-          const kickoff =
-            hasNflGame(notification.events) &&
-            isNflKickoffDay(notification.sendAt, timezone);
+          const kickoff = shouldIncludeNflKickoffEvent(
+            notification.events,
+            notification.sendAt,
+            timezone,
+          );
           const playsToday = `${notification.subject.details.name} play today`;
 
           const sharedParticipantTitle = findSharedParticipantTitle(
