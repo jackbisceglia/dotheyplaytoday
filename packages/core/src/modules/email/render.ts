@@ -83,7 +83,6 @@ const color = {
 /** Reversed-out values, only legible against `color.ink`. */
 const onInk = {
   canvas: "#f4f2ec",
-  kelly: "#5fd489",
 };
 
 const font = {
@@ -98,6 +97,14 @@ const escapeHtml = (value: string) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+
+/**
+ * Keeps light text light in the Gmail app's dark mode, which inverts text
+ * colors but leaves background images alone. Neutral text only: the blend
+ * re-inverts by RGB, so a colored run would come back in the opposite hue.
+ */
+const gmailKeepLight = (text: string) =>
+  `<span class="email-gmail-screen"><span class="email-gmail-difference">${text}</span></span>`;
 
 const matchupText = (matchup: EmailMatchup) =>
   `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
@@ -207,12 +214,12 @@ ${element.paragraph(value)}
     `<a href="${escapeHtml(href)}" class="email-muted" style="display: inline-block; padding: 8px 4px; font-family: ${font.body}; font-weight: 700; font-size: 12px; color: ${color.muted}; text-decoration: underline;">${escapeHtml(label)}</a>`,
 
   hero: (hero: EmailHero, wordmark: string) =>
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="email-hero" style="width: 100%; background-color: ${color.ink};">
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="email-hero" style="width: 100%; background-color: ${color.ink}; background-image: linear-gradient(${color.ink}, ${color.ink});">
 <tr>
 <td style="padding: 22px 20px 26px;">
 ${wordmark}
 ${element.spacer(20)}
-<p class="email-hero-headline" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 62%; font-size: 26px; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; color: ${onInk.canvas}; word-break: break-word;">${escapeHtml(hero.headline)} <span style="color: ${onInk.kelly};">${escapeHtml(hero.accent)}</span></p>
+<p class="email-hero-headline" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 62%; font-size: 26px; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; color: ${onInk.canvas}; word-break: break-word;">${gmailKeepLight(escapeHtml(hero.headline))} <span style="color: ${color.kelly};">${escapeHtml(hero.accent)}</span></p>
 </td>
 </tr>
 </table>`,
@@ -261,15 +268,18 @@ const blockHtml = (block: Block): string => {
   }
 };
 
-/** `reversed` drops the dark-mode color classes: the hero is ink in both schemes. */
+/**
+ * `reversed` drops the dark-mode color classes, since the hero is ink in both
+ * schemes, and guards its light text against Gmail's dark-mode inversion.
+ */
 const wordmarkHtml = (home: string | undefined, reversed: boolean) => {
   const ink = reversed ? onInk.canvas : color.ink;
-  const accent = reversed
-    ? `<span style="color: ${onInk.kelly};">play</span>`
-    : `<span class="email-accent" style="color: ${color.kelly};">play</span>`;
+  const light = (text: string) => (reversed ? gmailKeepLight(text) : text);
+  const accentClass = reversed ? "" : ` class="email-accent"`;
+  const accent = `<span${accentClass} style="color: ${color.kelly};">play</span>`;
   const markClass = reversed ? "email-wordmark" : "email-ink email-wordmark";
 
-  const mark = `<span class="${markClass}" style="font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 15px; line-height: 1.2; letter-spacing: 0.02em; text-transform: uppercase; color: ${ink};">dothey${accent}today</span>`;
+  const mark = `<span class="${markClass}" style="font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 15px; line-height: 1.2; letter-spacing: 0.02em; text-transform: uppercase; color: ${ink};">${light("dothey")}${accent}${light("today")}</span>`;
 
   if (home === undefined) return mark;
 
@@ -397,11 +407,23 @@ const html = (input: EmailViewProps) => {
         /* Lift the hero off the darkened canvas. */
         .email-hero {
           background-color: #1b2119 !important;
+          background-image: linear-gradient(#1b2119, #1b2119) !important;
         }
+      }
+
+      /* Paired with gmailKeepLight. Gmail wraps the body in a sibling of <u>. */
+      u + .body .email-gmail-screen {
+        background: #000;
+        mix-blend-mode: screen;
+      }
+
+      u + .body .email-gmail-difference {
+        background: #000;
+        mix-blend-mode: difference;
       }
     </style>
   </head>
-  <body class="email-bg" style="margin: 0; padding: 0; background-color: ${color.canvas}; font-family: ${font.body}; color: ${color.ink};">
+  <body class="body email-bg" style="margin: 0; padding: 0; background-color: ${color.canvas}; font-family: ${font.body}; color: ${color.ink};">
     <div style="display: none; max-height: 0; max-width: 0; overflow: hidden; opacity: 0; font-size: 1px; line-height: 1px; color: transparent; mso-hide: all;">${escapeHtml(preheader)}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
     <table role="presentation" class="email-bg" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; background-color: ${color.canvas};">
       <tr>

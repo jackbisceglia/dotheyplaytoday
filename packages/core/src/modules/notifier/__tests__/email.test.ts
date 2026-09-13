@@ -246,6 +246,8 @@ describe("nfl season opener header", () => {
       expect(payload.html).toContain("Football is");
       expect(payload.html).toContain("back.");
       expect(payload.html).toContain('class="email-hero"');
+      // Light hero text is guarded against Gmail's dark-mode inversion.
+      expect(payload.html).toContain('class="email-gmail-screen"');
       // The hero carries the wordmark, so the rule header must not also render.
       expect(payload.html).not.toContain("border-bottom: 3px solid");
       // Everything below the header is the ordinary game-day email.
@@ -268,6 +270,7 @@ describe("nfl season opener header", () => {
 
       expect(payload.subject).toBe("Eagles play today");
       expect(payload.html).not.toContain('class="email-hero"');
+      expect(payload.html).not.toContain('class="email-gmail-screen"');
       expect(payload.html).toContain("border-bottom: 3px solid");
       expect(payload.text).not.toContain("Football is back.");
     }),
