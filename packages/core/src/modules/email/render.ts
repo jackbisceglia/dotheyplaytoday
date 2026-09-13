@@ -219,7 +219,7 @@ ${element.paragraph(value)}
 <td style="padding: 22px 20px 26px;">
 ${wordmark}
 ${element.spacer(20)}
-<p class="email-hero-headline" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 62%; font-size: 26px; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; color: ${onInk.canvas}; word-break: break-word;">${gmailKeepLight(escapeHtml(hero.headline))} <span style="color: ${color.kelly};">${escapeHtml(hero.accent)}</span></p>
+<p class="email-hero-headline" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 62%; font-size: 22px; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; color: ${onInk.canvas}; word-break: break-word;">${gmailKeepLight(escapeHtml(hero.headline))} <span style="color: ${color.kelly};">${escapeHtml(hero.accent)}</span></p>
 </td>
 </tr>
 </table>`,
@@ -375,7 +375,7 @@ const html = (input: EmailViewProps) => {
         }
 
         .email-hero-headline {
-          font-size: 34px !important;
+          font-size: 27px !important;
         }
       }
 
