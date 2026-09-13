@@ -237,7 +237,7 @@ describe("nfl season opener header", () => {
     resendMock.send.mockResolvedValue(successResponse);
   });
 
-  it.effect("replaces the wordmark rule on kickoff day", () =>
+  it.effect("replaces the wordmark rule and headline on kickoff day", () =>
     Effect.gen(function* () {
       yield* send(nflNotification);
 
@@ -250,12 +250,14 @@ describe("nfl season opener header", () => {
       expect(payload.html).toContain('class="email-gmail-screen"');
       // The hero carries the wordmark, so the rule header must not also render.
       expect(payload.html).not.toContain("border-bottom: 3px solid");
-      // Everything below the header is the ordinary game-day email.
+      // The hero's headline stands in for the regular one; the matchups remain.
+      expect(payload.html).not.toContain('class="email-ink email-headline"');
       expect(payload.subject).toBe("Football's back. Eagles play today.");
       expect(payload.html).toContain("Philadelphia Eagles");
       expect(payload.html).toContain("Dallas Cowboys");
       // The text part carries the same news as the html part.
       expect(payload.text).toContain("Football is back.");
+      expect(payload.text).not.toContain("Eagles play today.");
     }),
   );
 
@@ -272,6 +274,7 @@ describe("nfl season opener header", () => {
       expect(payload.html).not.toContain('class="email-hero"');
       expect(payload.html).not.toContain('class="email-gmail-screen"');
       expect(payload.html).toContain("border-bottom: 3px solid");
+      expect(payload.html).toContain('class="email-ink email-headline"');
       expect(payload.text).not.toContain("Football is back.");
     }),
   );

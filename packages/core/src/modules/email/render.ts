@@ -48,7 +48,10 @@ export const Link = Schema.TaggedStruct("link", {
 export type Block = typeof Blocks.Type;
 export const Blocks = TaggedUnion([Text, List, Matchups, Note, Entry, Link]);
 
-/** A reversed-out header that replaces the wordmark rule on special dates. */
+/**
+ * A reversed-out header for special dates. It replaces both the wordmark rule
+ * and the headline, so the email carries one headline rather than two.
+ */
 export type EmailHero = {
   readonly headline: string;
   /** Trailing word of the headline, set in kelly against the ink panel. */
@@ -65,7 +68,7 @@ export type EmailViewProps = {
   readonly preheader?: string;
   /** Destination for the wordmark link. */
   readonly home?: string;
-  /** Replaces the wordmark header. Absent on ordinary sends. */
+  /** Replaces the wordmark header and headline. Absent on ordinary sends. */
   readonly hero?: EmailHero;
   readonly blocks: readonly Block[];
   readonly metadata?: EmailMetadata;
@@ -143,15 +146,16 @@ const blockText = (block: Block): readonly string[] => {
   }
 };
 
+const headlineText = (input: EmailViewProps) =>
+  input.hero === undefined
+    ? StringParts(input.headline ?? input.subject)
+        .addNullable(input.accent)
+        .make(" ")
+    : `${input.hero.headline} ${input.hero.accent}`;
+
 const text = (input: EmailViewProps) =>
   StringParts()
-    .addNullable(input.hero && `${input.hero.headline} ${input.hero.accent}`)
-    .addIf(input.hero !== undefined, "")
-    .add(
-      StringParts(input.headline ?? input.subject)
-        .addNullable(input.accent)
-        .make(" "),
-    )
+    .add(headlineText(input))
     .add("")
     .addParts(
       ...input.blocks.flatMap((block, index) =>
@@ -314,7 +318,11 @@ const html = (input: EmailViewProps) => {
       ? ""
       : ` <span class="email-accent" style="color: ${color.kelly};">${escapeHtml(input.accent)}</span>`;
 
-  const Headline = `<h1 class="email-ink email-headline" style="margin: 0 0 16px; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 20px; line-height: 1.05; letter-spacing: -0.01em; text-transform: uppercase; color: ${color.ink}; word-break: break-word;">${escapeHtml(headline)}${Accent}</h1>`;
+  // A hero carries its own headline, so the regular one steps aside.
+  const Headline =
+    input.hero !== undefined
+      ? ""
+      : `<h1 class="email-ink email-headline" style="margin: 0 0 16px; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 20px; line-height: 1.05; letter-spacing: -0.01em; text-transform: uppercase; color: ${color.ink}; word-break: break-word;">${escapeHtml(headline)}${Accent}</h1>`;
 
   const Main = stack(input.blocks.map(blockHtml), 18);
 
