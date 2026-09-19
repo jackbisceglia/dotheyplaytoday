@@ -8,6 +8,8 @@ import { useApplicationPath } from "../lib/paths.js";
 // should own the header/footer once per navigation instead.
 type HeaderAction = {
   readonly label: string;
+  /** Omit for the default outlined button; pages with two actions rank them. */
+  readonly variant?: "quiet" | "solid";
 } & (
   | { readonly href: string; readonly onClick?: never }
   | { readonly href?: never; readonly onClick: () => void }
@@ -17,6 +19,12 @@ type LayoutProps = ParentProps<{
   readonly headerActions?: readonly HeaderAction[];
   readonly unsubscribeHref?: string;
 }>;
+
+function headerActionClass(action: HeaderAction) {
+  return action.variant
+    ? `header-cta header-cta-${action.variant}`
+    : "header-cta";
+}
 
 export function Layout(props: LayoutProps) {
   let main: HTMLElement | undefined;
@@ -39,25 +47,19 @@ export function Layout(props: LayoutProps) {
         <a class="wordmark" href={landingHref()}>
           <BrandMark class="wordmark-mark" />
           <span class="visually-hidden">Do they play today</span>
-          <span aria-hidden="true">
+          <span class="wordmark-text" aria-hidden="true">
             dothey<em>play</em>today
           </span>
         </a>
         <Show when={props.headerActions?.length}>
-          <div
-            class={`site-header-actions${
-              (props.headerActions?.length ?? 0) > 1
-                ? " site-header-actions-multiple"
-                : ""
-            }`}
-          >
+          <div class="site-header-actions">
             <For each={props.headerActions}>
               {(action) => (
                 <Show
                   when={action.href}
                   fallback={
                     <button
-                      class="header-cta"
+                      class={headerActionClass(action)}
                       type="button"
                       onClick={action.onClick}
                     >
@@ -66,7 +68,7 @@ export function Layout(props: LayoutProps) {
                   }
                 >
                   {(href) => (
-                    <a class="header-cta" href={href()}>
+                    <a class={headerActionClass(action)} href={href()}>
                       {action.label}
                     </a>
                   )}

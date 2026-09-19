@@ -40,8 +40,8 @@ export function Landing() {
   return (
     <Layout
       headerActions={[
-        { href: loginHref(), label: "Log in" },
-        { href: "#signup", label: "Sign up" },
+        { href: loginHref(), label: "Log in", variant: "quiet" },
+        { href: "#signup", label: "Sign up", variant: "solid" },
       ]}
     >
       <Show when={search.modal === "login"}>
