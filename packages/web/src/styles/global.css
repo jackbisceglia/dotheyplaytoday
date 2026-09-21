@@ -314,6 +314,29 @@ button {
   color: var(--paper);
 }
 
+/* Ranked pair: the quiet action reads as a link so the solid one carries the
+   header. Declared after .header-cta:hover so the hover states win on order. */
+.header-cta-quiet {
+  border-color: transparent;
+  padding-left: 4px;
+  padding-right: 12px;
+}
+
+.header-cta-quiet:hover {
+  background: transparent;
+  color: var(--kelly-deep);
+}
+
+.header-cta-solid {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.header-cta-solid:hover {
+  background: var(--kelly-deep);
+  border-color: var(--kelly-deep);
+}
+
 .wordmark:focus-visible,
 .header-cta:focus-visible,
 .modal-close:focus-visible,
@@ -1133,19 +1156,32 @@ select.form-input {
     padding-right: 20px;
   }
 
+  /* The mascot carries the brand here: spelling out the wordmark next to two
+     actions overflows a 320px viewport and clips the trailing button. */
   .site-header {
-    flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
+    padding-top: 16px;
+    padding-bottom: 16px;
   }
 
-  .site-header-actions-multiple {
-    flex-basis: 100%;
+  .wordmark-text {
+    display: none;
   }
 
-  .site-header-actions-multiple .header-cta {
-    flex: 1;
-    text-align: center;
+  .site-header-actions {
+    gap: 4px;
+  }
+
+  .header-cta {
+    padding: 10px 16px;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
     white-space: nowrap;
+  }
+
+  .header-cta-quiet {
+    padding-left: 2px;
+    padding-right: 12px;
   }
 
   .hero {
