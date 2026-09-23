@@ -5,6 +5,7 @@ import type { ParentProps } from "solid-js";
 import { getSessionStatus, useSession } from "../../lib/auth.js";
 import { useApplicationPath } from "../../lib/paths.js";
 import { Splash } from "../../lib/ui/Splash.jsx";
+import { usePendingIndicator } from "../../lib/ui/usePendingIndicator.js";
 
 function SessionError(props: { readonly onRetry: () => void }) {
   const session = useSession();
@@ -32,6 +33,9 @@ function Authenticated(props: ParentProps) {
   const session = useSession();
   const navigate = useNavigate();
   const landingHref = useApplicationPath("landing");
+  const showSplash = usePendingIndicator(
+    () => getSessionStatus(session()) === "pending",
+  );
 
   createEffect(
     () => getSessionStatus(session()),
@@ -47,13 +51,17 @@ function Authenticated(props: ParentProps) {
   );
 
   return (
-    <Switch fallback={<Splash />}>
+    <Switch>
+      <Match when={showSplash()}>
+        <Splash />
+      </Match>
       <Match when={session().data}>{props.children}</Match>
     </Switch>
   );
 }
 
-// Unknown session shows the splash; redirects wait for the client session.
+// A brief unknown session renders nothing rather than a splash; redirects
+// wait for the client session.
 export function AuthenticatedShell(props: ParentProps) {
   return (
     <Errored fallback={(_error, reset) => <SessionError onRetry={reset} />}>

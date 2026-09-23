@@ -342,6 +342,7 @@ button {
 .modal-close:focus-visible,
 .login-reset:focus-visible,
 .footer-link:focus-visible,
+.dashboard-note-link:focus-visible,
 .skip-link:focus-visible,
 .form-input:focus-visible,
 .team-card:focus-visible,
@@ -1079,6 +1080,27 @@ select.form-input {
 
 .dashboard-copy {
   max-width: 52ch;
+}
+
+/* Stopgap note until the dashboard ships; reads as an aside, not a warning. */
+.dashboard-note {
+  max-width: 52ch;
+  padding-left: 18px;
+  border-left: 3px solid var(--kelly);
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Deliberately quiet: this is a workaround, not a call to action. */
+.dashboard-note-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.dashboard-note-link:hover {
+  color: var(--ink);
 }
 
 .unsubscribe-actions {
