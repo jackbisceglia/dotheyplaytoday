@@ -8,11 +8,19 @@ const pendingMinMs = 400;
 export function usePendingIndicator(pending: () => boolean): () => boolean {
   const [visible, setVisible] = createSignal(false);
 
-  // Mirrors `visible` so the effect never has to read the signal back.
+  // When the indicator appeared, or undefined while it is hidden. Survives
+  // pending work restarting mid-hold, so an overlapping cycle cannot strand it.
   let shownAt: number | undefined;
+
+  const hide = () => {
+    shownAt = undefined;
+    setVisible(false);
+  };
 
   createEffect(pending, (isPending) => {
     if (isPending) {
+      if (shownAt !== undefined) return;
+
       const timer = window.setTimeout(() => {
         shownAt = Date.now();
         setVisible(true);
@@ -26,16 +34,13 @@ export function usePendingIndicator(pending: () => boolean): () => boolean {
     if (shownAt === undefined) return;
 
     const remaining = pendingMinMs - (Date.now() - shownAt);
-    shownAt = undefined;
 
     if (remaining <= 0) {
-      setVisible(false);
+      hide();
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      setVisible(false);
-    }, remaining);
+    const timer = window.setTimeout(hide, remaining);
 
     return () => {
       window.clearTimeout(timer);
