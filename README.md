@@ -71,8 +71,10 @@ pnpm dev:destroy    # interactively destroy this checkout's stage
 pnpm dev:seed       # destroy --yes, recreate, seed, and start this checkout's stage
 ```
 
-`pnpm dev:seed` affects only the calling worktree's stage. Ordinary `pnpm dev`
-restarts reuse that stage's seed data. Before removing a worktree, record its
+`pnpm dev:seed` affects only the calling worktree's stage. It seeds every
+subject, real events starting within the current UTC day and the next one, and
+the development user; the event window is frozen at stage creation. Ordinary
+`pnpm dev` restarts reuse that stage's seed data. Before removing a worktree, record its
 stage with `pnpm -s alchemy:stage` and run `pnpm dev:destroy`. If the worktree has
 already been removed, reconstruct the documented name from its former
 directory and user components, then clean it up from another checkout with
