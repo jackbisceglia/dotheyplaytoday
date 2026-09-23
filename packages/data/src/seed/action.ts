@@ -12,7 +12,7 @@ import { Action } from "alchemy";
 import { Effect, Layer, pipe } from "effect";
 
 import { seedCatalog, summarizeCatalog } from "./catalog.js";
-import { DevSeedCollections } from "./index.js";
+import { RollingDevSeedCollections } from "./dev.js";
 import { reset } from "./reset.js";
 import { seedUsers, summarizeUsers } from "./users.js";
 
@@ -50,7 +50,7 @@ export const SeedDev = Action(
       yield* Effect.gen(function* () {
         yield* reset();
 
-        const collections = yield* seedCatalog(DevSeedCollections);
+        const collections = yield* seedCatalog(RollingDevSeedCollections);
         yield* Effect.log(summarizeCatalog(collections));
 
         const users = yield* seedUsers();
