@@ -1,4 +1,4 @@
-import { createEffect, createSignal, createUniqueId } from "solid-js";
+import { createSignal, createUniqueId, onSettled } from "solid-js";
 
 const EYE_LOOK_RADIUS = 1.3;
 
@@ -15,27 +15,24 @@ export function BrandMark(props: BrandMarkProps) {
   const frameId = `mascot-frame-${uid}`;
   const headId = `mascot-head-${uid}`;
 
-  createEffect(
-    () => undefined,
-    () => {
-      const handleMove = (event: PointerEvent) => {
-        if (!svg) return;
-        const rect = svg.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const angle = Math.atan2(event.clientY - cy, event.clientX - cx);
-        setPupil({
-          x: Math.cos(angle) * EYE_LOOK_RADIUS,
-          y: Math.sin(angle) * EYE_LOOK_RADIUS,
-        });
-      };
+  onSettled(() => {
+    const handleMove = (event: PointerEvent) => {
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const angle = Math.atan2(event.clientY - cy, event.clientX - cx);
+      setPupil({
+        x: Math.cos(angle) * EYE_LOOK_RADIUS,
+        y: Math.sin(angle) * EYE_LOOK_RADIUS,
+      });
+    };
 
-      window.addEventListener("pointermove", handleMove, { passive: true });
-      return () => {
-        window.removeEventListener("pointermove", handleMove);
-      };
-    },
-  );
+    window.addEventListener("pointermove", handleMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", handleMove);
+    };
+  });
 
   return (
     <svg

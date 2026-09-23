@@ -1,7 +1,7 @@
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { useNavigate } from "@solidjs/router";
 import { Result, Schema } from "effect";
-import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { createEffect, createSignal, Show } from "solid-js";
 
 import { auth } from "../auth.js";
 import { useApplicationPath } from "../paths.js";
@@ -24,11 +24,9 @@ export function Login() {
 
   createEffect(dialog, (element) => {
     element?.showModal();
-  });
-
-  onCleanup(() => {
-    const element = dialog();
-    if (element?.open) element.close();
+    return () => {
+      if (element?.open) element.close();
+    };
   });
 
   const submit = async (event: SubmitEvent) => {
