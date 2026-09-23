@@ -46,5 +46,3 @@ export const buildDevSeed = (now: Date = new Date()): SportsSeedInput[] =>
   SeedCollections.map((collection) =>
     subsetEvents(collection, devSeedWindow(now)),
   );
-
-export const RollingDevSeedCollections = buildDevSeed();
