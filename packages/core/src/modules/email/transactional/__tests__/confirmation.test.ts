@@ -29,6 +29,10 @@ describe("confirmation email", () => {
         expect(rendered.body.text).toContain("15 minutes");
         expect(rendered.body.text).toContain("only be used once");
         expect(rendered.body.html).toContain(url.replaceAll("&", "&amp;"));
+        expect(rendered.body.html).toContain(
+          "/email/headlines/v1/confirmation.png",
+        );
+        expect(rendered.body.html).toContain('alt="Confirm your updates."');
         expect(rendered.metadata).toBeUndefined();
       }).pipe(Effect.provide(EmailTestLayer)),
   );

@@ -3,6 +3,7 @@ import { Schema } from "effect";
 import { TaggedUnion } from "../../lib/effect/index.js";
 import { StringParts } from "../../lib/string.js";
 import { exactOptional } from "../../lib/utils.js";
+import { EmailHeadlineSize } from "./headlines.js";
 
 export type EmailMetadata = {
   readonly unsubscribe: string;
@@ -48,28 +49,21 @@ export const Link = Schema.TaggedStruct("link", {
 export type Block = typeof Blocks.Type;
 export const Blocks = TaggedUnion([Text, List, Matchups, Note, Entry, Link]);
 
-/**
- * A reversed-out header for special dates. It replaces both the wordmark rule
- * and the headline, so the email carries one headline rather than two.
- */
-export type EmailHero = {
-  readonly headline: string;
-  /** Trailing word of the headline, set in kelly against the ink panel. */
-  readonly accent: string;
-};
-
 export type EmailViewProps = {
   readonly subject: string;
   /** Display headline. Defaults to the email subject. */
   readonly headline?: string;
   /** Trailing word set in kelly, as the site hero sets its emphasis. */
   readonly accent?: string;
+  /**
+   * Absolute URL of a pre-rendered headline tile (see `headlines.ts`). It
+   * replaces the text headline, which becomes its alt text.
+   */
+  readonly headlineImage?: string;
   /** Inbox preview text; defaults to a summary of the first block. */
   readonly preheader?: string;
-  /** Destination for the wordmark link. */
+  /** Destination for the headline link. */
   readonly home?: string;
-  /** Replaces the wordmark header and headline. Absent on ordinary sends. */
-  readonly hero?: EmailHero;
   readonly blocks: readonly Block[];
   readonly metadata?: EmailMetadata;
 };
@@ -78,19 +72,22 @@ const color = {
   canvas: "#f8f6f0",
   ink: "#131711",
   kelly: "#169b4d",
-  kellyDeep: "#0c6b34",
-  kellyWash: "#dbeee2",
   muted: "#5d6455",
+  rule: "#dcd8cc",
 };
 
-/** Reversed-out values, only legible against `color.ink`. */
-const onInk = {
-  canvas: "#f4f2ec",
-};
+/** Alt text on the headline tile, legible against its ink backing. */
+const onInk = "#f4f2ec";
 
+/**
+ * Body copy uses each platform's own UI face; brand type lives in the headline
+ * tile. The display stack only serves the text headline, and swaps Arial Black
+ * (wide, and deaf to `font-stretch`) for condensed faces each OS ships.
+ */
 const font = {
-  display: "'Archivo', 'Arial Black', 'Helvetica Neue', Arial, sans-serif",
-  body: "'Archivo', 'Helvetica Neue', Arial, Helvetica, sans-serif",
+  display:
+    "'Archivo', 'HelveticaNeue-CondensedBlack', 'Helvetica Neue Condensed Black', 'AvenirNextCondensed-Heavy', 'Bahnschrift', 'Roboto Condensed', 'sans-serif-condensed', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif",
+  body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
 };
 
 const escapeHtml = (value: string) =>
@@ -100,14 +97,6 @@ const escapeHtml = (value: string) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-
-/**
- * Keeps light text light in the Gmail app's dark mode, which inverts text
- * colors but leaves background images alone. Neutral text only: the blend
- * re-inverts by RGB, so a colored run would come back in the opposite hue.
- */
-const gmailKeepLight = (text: string) =>
-  `<span class="email-gmail-screen"><span class="email-gmail-difference">${text}</span></span>`;
 
 const matchupText = (matchup: EmailMatchup) =>
   `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
@@ -125,7 +114,7 @@ const blockPreview = (block: Block): string => {
     case "list":
       return block.items.join(", ");
     case "matchups":
-      return block.items.map(matchupText).join(" \u2022 ");
+      return block.items.map(matchupText).join(" • ");
   }
 };
 
@@ -147,11 +136,9 @@ const blockText = (block: Block): readonly string[] => {
 };
 
 const headlineText = (input: EmailViewProps) =>
-  input.hero === undefined
-    ? StringParts(input.headline ?? input.subject)
-        .addNullable(input.accent)
-        .make(" ")
-    : `${input.hero.headline} ${input.hero.accent}`;
+  StringParts(input.headline ?? input.subject)
+    .addNullable(input.accent)
+    .make(" ");
 
 const text = (input: EmailViewProps) =>
   StringParts()
@@ -165,38 +152,41 @@ const text = (input: EmailViewProps) =>
     .make("\n");
 
 /**
- * Every layout style is inlined at its phone size and only widened by the
- * `min-width` media query below. Clients that drop `<style>` entirely — the
- * Gmail app signed into a non-Gmail account, most notably — then still get the
- * mobile layout rather than a desktop one squeezed into a phone.
+ * Live text is always dark on light, so clients that force dark mode can flip
+ * it cleanly; anything that must keep exact colors lives in the headline tile.
  */
 const element = {
   spacer: (height: number) =>
     `<div style="height: ${height.toString()}px; line-height: ${height.toString()}px; font-size: ${height.toString()}px;">&nbsp;</div>`,
 
-  /** A soft kelly panel with a kelly accent down its leading edge. */
-  panel: (content: string) =>
+  rule: () =>
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
-<td width="5" style="width: 5px; background-color: ${color.kelly}; font-size: 0; line-height: 0;">&nbsp;</td>
-<td class="email-wash" style="padding: 14px 16px; background-color: ${color.kellyWash};">
-${content}
-</td>
+<td class="email-rule" style="border-top: 1px solid ${color.rule}; font-size: 0; line-height: 0;">&nbsp;</td>
 </tr>
 </table>`,
 
+  headlineImage: (src: string, alt: string) =>
+    `<img src="${escapeHtml(src)}" width="${EmailHeadlineSize.width.toString()}" height="${EmailHeadlineSize.height.toString()}" alt="${alt}" style="display: block; width: 100%; max-width: ${EmailHeadlineSize.width.toString()}px; height: auto; border: 0; border-radius: 18px; background-color: ${color.ink}; font-family: ${font.display}; font-weight: 900; font-size: 28px; line-height: 1.1; text-transform: uppercase; color: ${onInk};" />`,
+
+  headlineText: (headline: string, accent: string) =>
+    `<h1 class="email-ink email-display" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: condensed; font-size: 36px; line-height: 0.95; text-transform: uppercase; color: ${color.ink}; word-break: break-word;">${headline}${accent}</h1>`,
+
+  accent: (value: string) =>
+    ` <span class="email-accent" style="color: ${color.kelly};">${value}</span>`,
+
   matchup: (matchup: string, time: string) =>
-    `<p class="email-ink email-title" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 85%; font-size: 15px; line-height: 1.35; color: ${color.ink}; word-break: break-word;">${matchup}</p>
-<p class="email-accent" style="margin: 4px 0 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 12px; line-height: 1.4; color: ${color.kellyDeep};">${time}</p>`,
+    `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 16px; line-height: 1.4; color: ${color.ink}; word-break: break-word;">${matchup}</p>
+<p class="email-muted" style="margin: 4px 0 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 14px; line-height: 1.4; color: ${color.muted};">${time}</p>`,
 
   separator: (value: string) =>
-    `<span class="email-muted" style="font-family: ${font.body}; font-weight: 400; font-size: 13px; color: ${color.muted};">${value}</span>`,
+    `<span class="email-muted" style="font-weight: 400; color: ${color.muted};">${value}</span>`,
 
   item: (value: string) =>
-    `<p class="email-ink email-title" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-size: 15px; line-height: 1.3; color: ${color.ink}; word-break: break-word;">${value}</p>`,
+    `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 16px; line-height: 1.4; color: ${color.ink}; word-break: break-word;">${value}</p>`,
 
   paragraph: (value: string) =>
-    `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 15px; line-height: 1.55; color: ${color.ink};">${value}</p>`,
+    `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 16px; line-height: 1.5; color: ${color.ink};">${value}</p>`,
 
   note: (value: string) =>
     `<p class="email-muted" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 13px; line-height: 1.5; color: ${color.muted};">${value}</p>`,
@@ -204,102 +194,77 @@ ${content}
   entry: (label: string, detail: string, value: string) =>
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
-<td class="email-ink" style="font-family: ${font.body}; font-weight: 700; font-size: 13px; line-height: 1.4; color: ${color.ink};">${label}</td>
+<td class="email-ink" style="font-family: ${font.body}; font-weight: 700; font-size: 14px; line-height: 1.4; color: ${color.ink};">${label}</td>
 <td class="email-muted" align="right" style="padding-left: 12px; font-family: ${font.body}; font-size: 12px; line-height: 1.4; color: ${color.muted}; white-space: nowrap;">${detail}</td>
 </tr>
 <tr>
-<td colspan="2" style="padding-top: 8px;">
+<td colspan="2" style="padding-top: 6px;">
 ${element.paragraph(value)}
 </td>
 </tr>
 </table>`,
 
   link: (href: string, label: string) =>
-    `<a href="${escapeHtml(href)}" class="email-muted" style="display: inline-block; padding: 8px 4px; font-family: ${font.body}; font-weight: 700; font-size: 12px; color: ${color.muted}; text-decoration: underline;">${escapeHtml(label)}</a>`,
-
-  hero: (hero: EmailHero, wordmark: string) =>
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="email-hero" style="width: 100%; background-color: ${color.ink}; background-image: linear-gradient(${color.ink}, ${color.ink});">
-<tr>
-<td style="padding: 22px 20px 26px;">
-${wordmark}
-${element.spacer(20)}
-<p class="email-hero-headline" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 62%; font-size: 22px; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; color: ${onInk.canvas}; word-break: break-word;">${gmailKeepLight(escapeHtml(hero.headline))} <span style="color: ${color.kelly};">${escapeHtml(hero.accent)}</span></p>
-</td>
-</tr>
-</table>`,
+    `<a href="${escapeHtml(href)}" class="email-muted" style="display: inline-block; padding: 8px 0; font-family: ${font.body}; font-size: 12px; color: ${color.muted}; text-decoration: underline;">${escapeHtml(label)}</a>`,
 };
 
 const stack = (parts: readonly string[], gap: number) =>
   parts.join(`\n${element.spacer(gap)}\n`);
+
+/** Consecutive items, split by hairlines with room on either side. */
+const ruled = (parts: readonly string[]) =>
+  parts.join(
+    `\n${element.spacer(16)}\n${element.rule()}\n${element.spacer(16)}\n`,
+  );
 
 const blockHtml = (block: Block): string => {
   switch (block._tag) {
     case "text":
       return element.paragraph(escapeHtml(block.value));
     case "list":
-      // One panel per item: a panel holding two names reads as a matchup,
-      // which is exactly what it means in the game-day email.
-      return stack(
-        block.items.map((item) =>
-          element.panel(element.item(escapeHtml(item))),
-        ),
-        8,
-      );
+      return ruled(block.items.map((item) => element.item(escapeHtml(item))));
     case "matchups":
-      return stack(
+      return ruled(
         block.items.map((matchup) =>
-          element.panel(
-            element.matchup(
-              `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`,
-              escapeHtml(matchup.detail),
-            ),
+          element.matchup(
+            `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`,
+            escapeHtml(matchup.detail),
           ),
         ),
-        8,
       );
     case "note":
       return element.note(escapeHtml(block.value));
     case "entry":
-      return element.panel(
-        element.entry(
-          escapeHtml(block.label),
-          escapeHtml(block.detail),
-          escapeHtml(block.value),
-        ),
+      return element.entry(
+        escapeHtml(block.label),
+        escapeHtml(block.detail),
+        escapeHtml(block.value),
       );
     case "link":
       return element.link(block.href, block.text);
   }
 };
 
-/**
- * `reversed` drops the dark-mode color classes, since the hero is ink in both
- * schemes, and guards its light text against Gmail's dark-mode inversion.
- */
-const wordmarkHtml = (home: string | undefined, reversed: boolean) => {
-  const ink = reversed ? onInk.canvas : color.ink;
-  const light = (text: string) => (reversed ? gmailKeepLight(text) : text);
-  const accentClass = reversed ? "" : ` class="email-accent"`;
-  const accent = `<span${accentClass} style="color: ${color.kelly};">play</span>`;
-  const markClass = reversed ? "email-wordmark" : "email-ink email-wordmark";
+const headerHtml = (input: EmailViewProps) => {
+  const headline = escapeHtml(input.headline ?? input.subject);
 
-  const mark = `<span class="${markClass}" style="font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 15px; line-height: 1.2; letter-spacing: 0.02em; text-transform: uppercase; color: ${ink};">${light("dothey")}${accent}${light("today")}</span>`;
+  const header =
+    input.headlineImage === undefined
+      ? element.headlineText(
+          headline,
+          input.accent === undefined
+            ? ""
+            : element.accent(escapeHtml(input.accent)),
+        )
+      : element.headlineImage(
+          input.headlineImage,
+          escapeHtml(headlineText(input)),
+        );
 
-  if (home === undefined) return mark;
+  if (input.home === undefined) return header;
 
-  const linkClass = reversed ? "" : ` class="email-ink"`;
-
-  return `<a href="${escapeHtml(home)}"${linkClass} style="text-decoration: none; color: ${ink};">${mark}</a>`;
+  return `<a href="${escapeHtml(input.home)}" style="display: block; text-decoration: none;">${header}</a>`;
 };
-
-const headerHtml = (input: EmailViewProps) =>
-  input.hero === undefined
-    ? `<td class="email-rule" style="padding: 0 0 12px; border-bottom: 3px solid ${color.ink};">
-                ${wordmarkHtml(input.home, false)}
-              </td>`
-    : `<td style="padding: 0;">
-                ${element.hero(input.hero, wordmarkHtml(input.home, true))}
-              </td>`;
 
 const previewText = (blocks: readonly Block[]) => {
   const [first] = blocks;
@@ -307,24 +272,21 @@ const previewText = (blocks: readonly Block[]) => {
   return first === undefined ? undefined : blockPreview(first);
 };
 
+/** Dark palette for clients that honor it; Outlook marks its own dark mode. */
+const darkRules = (scope: (selector: string, background: boolean) => string) =>
+  [
+    `${scope(".email-bg", true)} { background-color: #12160f !important; }`,
+    `${scope(".email-ink", false)} { color: #f1efe8 !important; }`,
+    `${scope(".email-muted", false)} { color: #a9af9d !important; }`,
+    `${scope(".email-accent", false)} { color: #4fcf7f !important; }`,
+    `${scope(".email-rule", false)} { border-color: #343b2f !important; }`,
+  ].join("\n      ");
+
 const html = (input: EmailViewProps) => {
   const preheader =
     input.preheader ?? previewText(input.blocks) ?? input.subject;
 
-  const headline = input.headline ?? input.subject;
-
-  const Accent =
-    input.accent === undefined
-      ? ""
-      : ` <span class="email-accent" style="color: ${color.kelly};">${escapeHtml(input.accent)}</span>`;
-
-  // A hero carries its own headline, so the regular one steps aside.
-  const Headline =
-    input.hero !== undefined
-      ? ""
-      : `<h1 class="email-ink email-headline" style="margin: 0 0 16px; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: 75%; font-size: 20px; line-height: 1.05; letter-spacing: -0.01em; text-transform: uppercase; color: ${color.ink}; word-break: break-word;">${escapeHtml(headline)}${Accent}</h1>`;
-
-  const Main = stack(input.blocks.map(blockHtml), 18);
+  const Main = stack(input.blocks.map(blockHtml), 24);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -336,7 +298,7 @@ const html = (input: EmailViewProps) => {
     <meta name="supported-color-schemes" content="light dark" />
     <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
     <title>${escapeHtml(input.subject)}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..900&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;display=swap" rel="stylesheet" />
     <style>
       :root {
         color-scheme: light dark;
@@ -365,85 +327,28 @@ const html = (input: EmailViewProps) => {
         line-height: inherit !important;
       }
 
-      @media screen and (min-width: 600px) {
-        .email-shell {
-          padding: 40px 24px 48px !important;
-        }
-
-        .email-wordmark {
-          font-size: 18px !important;
-        }
-
-        .email-headline {
-          font-size: 25px !important;
-        }
-
-        .email-title {
-          font-size: 17px !important;
-        }
-
-        .email-hero-headline {
-          font-size: 27px !important;
-        }
-      }
-
       @media (prefers-color-scheme: dark) {
-        .email-bg {
-          background-color: #12160f !important;
-        }
-
-        .email-ink {
-          color: #f4f2ec !important;
-        }
-
-        .email-muted {
-          color: #a9af9d !important;
-        }
-
-        .email-wash {
-          background-color: #1f2a20 !important;
-        }
-
-        .email-rule {
-          border-color: #414937 !important;
-        }
-
-        .email-accent {
-          color: #5fd489 !important;
-        }
-
-        /* Lift the hero off the darkened canvas. */
-        .email-hero {
-          background-color: #1b2119 !important;
-          background-image: linear-gradient(#1b2119, #1b2119) !important;
-        }
+      ${darkRules((selector) => selector)}
       }
 
-      /* Paired with gmailKeepLight. Gmail wraps the body in a sibling of <u>. */
-      u + .body .email-gmail-screen {
-        background: #000;
-        mix-blend-mode: screen;
-      }
-
-      u + .body .email-gmail-difference {
-        background: #000;
-        mix-blend-mode: difference;
-      }
+      ${darkRules((selector, background) => `[data-${background ? "ogsb" : "ogsc"}] ${selector}`)}
     </style>
+    <!--[if mso]><style>.email-display { font-family: Arial, sans-serif !important; }</style><![endif]-->
   </head>
   <body class="body email-bg" style="margin: 0; padding: 0; background-color: ${color.canvas}; font-family: ${font.body}; color: ${color.ink};">
     <div style="display: none; max-height: 0; max-width: 0; overflow: hidden; opacity: 0; font-size: 1px; line-height: 1px; color: transparent; mso-hide: all;">${escapeHtml(preheader)}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
     <table role="presentation" class="email-bg" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; background-color: ${color.canvas};">
       <tr>
-        <td class="email-shell" align="center" style="padding: 24px 16px 32px;">
-          <!--[if mso]><table role="presentation" width="480" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 480px; margin: 0 auto;">
+        <td align="center" style="padding: 24px 16px 40px;">
+          <!--[if mso]><table role="presentation" width="${EmailHeadlineSize.width.toString()}" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: ${EmailHeadlineSize.width.toString()}px; margin: 0 auto;">
             <tr>
-              ${headerHtml(input)}
+              <td style="padding: 0 0 28px;">
+                ${headerHtml(input)}
+              </td>
             </tr>
             <tr>
-              <td style="padding: 22px 0 0;">
-                ${Headline}
+              <td>
                 ${Main}
               </td>
             </tr>

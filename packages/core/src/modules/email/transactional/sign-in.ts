@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { Id } from "../../../lib/id/service.js";
 import { Email } from "../service.js";
 import { WebUrl } from "../../../lib/config/web.js";
+import { buildEmailHeadlineUrl, EmailHeadlines } from "../headlines.js";
 import { EmailView, Link, Note, Text } from "../render.js";
 import { EmailLayerResend } from "../resend.js";
 import type { EmailAddress } from "../../users/schema.js";
@@ -17,6 +18,7 @@ export const renderSignInLink = Effect.fn("SignInLink.render")(function* (
     headline: "Your sign-in",
     accent: "link.",
     home,
+    headlineImage: buildEmailHeadlineUrl(home, EmailHeadlines.signIn),
     preheader: "Use this secure link to sign in.",
     blocks: [
       Text.make({ value: "Use this secure link to sign in:" }),
