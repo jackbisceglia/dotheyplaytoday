@@ -166,6 +166,18 @@ email delivery, which needs no further database access. Delivery failures are
 logged without changing the registration response. The old team-picks signup
 email is no longer sent.
 
+Email headlines are pre-rendered PNG tiles rather than live text. No Gmail
+client loads web fonts, and forced dark modes recolor text but leave images
+alone, so the brand's condensed display type on an ink panel only survives as
+an image. `core`'s `email/headlines.ts` owns the tile size, paths, and copy for
+every catalog team plus the sign-in, confirmation, and NFL kickoff headlines.
+`pnpm --filter @dtpt/web email:generate` renders them into the web app's
+`public/email/headlines/v1/`, which is committed and served with the site;
+rerun it after building core and data whenever the catalog or artwork changes,
+and bump the path version for artwork changes because Gmail caches images by
+URL. Emails without a tile, such as the feedback digest, fall back to a
+live-text headline. Body copy uses each platform's system UI font.
+
 The operations Worker owns feedback's administrator config, digest rendering,
 and a static Resend email layer with its operations-specific sender; `core`
 retains the generic email rendering and provider boundaries used by that

@@ -3,8 +3,10 @@ import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
 import type { ExtractFromTag } from "../../lib/types.js";
+import { exactOptional } from "../../lib/utils.js";
 import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
+import { buildEmailHeadlineUrl, EmailHeadlines } from "../email/headlines.js";
 import {
   EmailView,
   Link,
@@ -228,6 +230,9 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
             timezone,
           );
           const playsToday = `${notification.subject.details.name} play today`;
+          const headline = kickoff
+            ? EmailHeadlines.nflKickoff
+            : EmailHeadlines.team(notification.subject.details);
 
           const sharedParticipantTitle = findSharedParticipantTitle(
             notification.events,
@@ -257,11 +262,13 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
           return {
             subject: kickoff ? `Football's back. ${playsToday}.` : playsToday,
             home,
-            ...(kickoff && {
-              hero: { headline: "Football is", accent: "back." },
-            }),
-            headline: `${notification.subject.details.name} play`,
-            accent: "today.",
+            headline: kickoff
+              ? "Football is"
+              : `${notification.subject.details.name} play`,
+            accent: kickoff ? "back." : "today.",
+            ...exactOptional(headline, (headline) => ({
+              headlineImage: buildEmailHeadlineUrl(home, headline),
+            })),
             blocks: [
               Matchups.make({ items: matchups }),
               Link.make({

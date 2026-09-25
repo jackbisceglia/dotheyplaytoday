@@ -7,6 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "og:generate": "node scripts/og.ts",
+    "email:generate": "node scripts/email-headlines.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@distilled.cloud/cloudflare-vite-plugin": "0.13.5",
     "@dtpt/api": "workspace:*",
+    "@dtpt/data": "workspace:*",
     "@resvg/resvg-js": "^2.6.2",
     "@solidjs/vite-plugin": "3.0.0-next.28",
     "satori": "^0.26.0",
