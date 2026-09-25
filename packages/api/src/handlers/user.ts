@@ -10,15 +10,12 @@ import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
 import { Effect, Match, Option } from "effect";
-import {
-  type Headers,
-  HttpEffect,
-  HttpServerResponse,
-} from "effect/unstable/http";
+import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
 import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
+import { withNoStoreResponse } from "../lib/no-store.js";
 
 const ReadErrorTags = [
   "AuthRequestError",
@@ -151,15 +148,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
             SchemaError: () =>
               Effect.fail(new HttpApiError.InternalServerError({})),
           }),
-          HttpEffect.withPreResponseHandler((_, response) =>
-            Effect.succeed(
-              HttpServerResponse.setHeader(
-                response,
-                "cache-control",
-                "no-store",
-              ),
-            ),
-          ),
+          withNoStoreResponse,
         ),
       )
       .handle(

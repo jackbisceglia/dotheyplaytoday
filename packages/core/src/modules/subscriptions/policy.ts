@@ -4,7 +4,7 @@ import type { User } from "../users/schema.js";
 import { SubjectCapacityReached } from "./errors.js";
 
 const CONSTRAINTS = {
-  subject: { min: 0, max: 4 },
+  subject: { min: 1, max: 4 },
 } as const;
 
 const SubscriptionSubjectPolicy = {
