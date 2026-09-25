@@ -5,11 +5,7 @@ import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { withApiClient } from "../api.js";
-import {
-  getSportsLogo,
-  getTeams,
-  leagues as sportsLeagues,
-} from "../catalog/sports/index.js";
+import { getSportsLogo } from "../catalog/sports/index.js";
 import {
   defaultTimezone,
   detectTimezone,
@@ -17,14 +13,13 @@ import {
   sendTime,
   sendTimeIntervals,
 } from "../time.js";
-import { ComingSoon } from "../ui/ComingSoon.jsx";
+import { TeamPicker } from "../ui/TeamPicker.jsx";
 import { Success } from "./Success.jsx";
-import { useSelectionRejection } from "./useSelectionRejection.js";
+import { useSelectionRejection } from "../ui/useSelectionRejection.js";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
 const capacityHint = `You can select up to ${subjectCapacity.toString()} teams. Remove one before selecting another.`;
-const comingSoonLeagues = ["EPL"] as const;
 type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -57,36 +52,10 @@ type FormProps = {
 };
 
 export function Form(props: FormProps) {
-  const leagues = createMemo(() => {
-    const teams = getTeams(props.subjects);
-    const teamsByLeague = Object.groupBy(
-      teams,
-      (team) => team.details.leagueId,
-    );
-
-    return sportsLeagues
-      .map((league) => ({
-        ...league,
-        teams: teamsByLeague[league.id] ?? [],
-      }))
-      .filter((league) => league.teams.length > 0);
-  });
-
-  const [selectedLeague, setSelectedLeague] = createSignal<string>();
-  const activeLeague = createMemo(() => {
-    const selected = selectedLeague();
-    const available = leagues();
-
-    return available.some((league) => league.id === selected)
-      ? selected
-      : (available[0]?.id ?? "");
-  });
   const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set());
   const selectedTeams = createMemo(() => {
     const teamsById = new Map(
-      leagues().flatMap((league) =>
-        league.teams.map((team) => [team.id as string, team] as const),
-      ),
+      props.subjects.map((team) => [team.id as string, team] as const),
     );
 
     return [...selected()].flatMap((teamId) => {
@@ -239,7 +208,7 @@ export function Form(props: FormProps) {
       />
 
       <Show
-        when={leagues().length > 0}
+        when={props.subjects.length > 0}
         fallback={
           <p class="form-error form-error-banner" role="status">
             Team signup is temporarily unavailable. Check back soon.
@@ -252,112 +221,60 @@ export function Form(props: FormProps) {
           novalidate
           onSubmit={submit}
         >
-          <fieldset class="form-section">
-            <legend class="visually-hidden">League</legend>
-            <div class="league-row">
-              <For each={leagues()}>
-                {(league) => (
-                  <button
-                    class="league-pill"
-                    type="button"
-                    aria-pressed={
-                      activeLeague() === league.id ? "true" : "false"
-                    }
-                    onClick={() => setSelectedLeague(league.id)}
-                  >
-                    {league.label}
-                  </button>
-                )}
-              </For>
-              <For each={comingSoonLeagues}>
-                {(league) => (
-                  <ComingSoon class="league-pill">{league}</ComingSoon>
-                )}
-              </For>
-            </div>
-          </fieldset>
-
-          <div class="selection-summary" role="group" aria-label="Your picks">
-            <div class="selection-summary-list">
-              <Show
-                when={selectedTeams().length > 0}
-                fallback={
-                  <span class="selection-summary-empty">No picks yet</span>
-                }
-              >
-                <For each={selectedTeams()}>
-                  {(team) => (
-                    <span
-                      class="selection-summary-pick"
-                      title={team.details.display}
-                    >
-                      <span class="selection-summary-logo" aria-hidden="true">
-                        {getSportsLogo(team.details)}
-                      </span>
-                      <strong aria-hidden="true">
-                        {team.details.abbreviation}
-                      </strong>
-                      <span class="visually-hidden">
-                        {team.details.display}
-                      </span>
-                    </span>
-                  )}
-                </For>
-              </Show>
-            </div>
-            <span
-              class="form-label selection-summary-count"
-              aria-live="polite"
-              aria-label={`${selected().size.toString()} of ${subjectCapacity.toString()} teams selected`}
-            >
-              {selected().size}/{subjectCapacity}
-            </span>
-          </div>
-
-          <fieldset class="form-section" aria-describedby="team-error">
-            <legend class="visually-hidden">Teams</legend>
-            <For each={leagues()}>
-              {(league) => (
-                <div class="team-grid" hidden={activeLeague() !== league.id}>
-                  <For each={league.teams}>
+          <TeamPicker
+            subjects={props.subjects}
+            selected={selected()}
+            rejectedSelectionId={rejectedSelectionId()}
+            errorId="team-error"
+            onToggle={(team) => {
+              toggleTeam(team.id);
+            }}
+          >
+            <div class="selection-summary" role="group" aria-label="Your picks">
+              <div class="selection-summary-list">
+                <Show
+                  when={selectedTeams().length > 0}
+                  fallback={
+                    <span class="selection-summary-empty">No picks yet</span>
+                  }
+                >
+                  <For each={selectedTeams()}>
                     {(team) => (
-                      <button
-                        type="button"
-                        class="team-card"
-                        aria-pressed={
-                          selected().has(team.id) ? "true" : "false"
-                        }
-                        data-rejected={
-                          rejectedSelectionId() === team.id ? "true" : undefined
-                        }
-                        onClick={() => {
-                          toggleTeam(team.id);
-                        }}
+                      <span
+                        class="selection-summary-pick"
+                        title={team.details.display}
                       >
-                        <span class="team-glyph" aria-hidden="true">
+                        <span class="selection-summary-logo" aria-hidden="true">
                           {getSportsLogo(team.details)}
                         </span>
-                        <span class="team-abbr">
+                        <strong aria-hidden="true">
                           {team.details.abbreviation}
+                        </strong>
+                        <span class="visually-hidden">
+                          {team.details.display}
                         </span>
-                        <span class="team-name">{team.details.display}</span>
-                      </button>
+                      </span>
                     )}
                   </For>
-                </div>
-              )}
-            </For>
-            <div class="team-message-slot">
-              <p
-                id="team-error"
-                class="form-error"
-                role="alert"
-                hidden={teamError() === undefined}
+                </Show>
+              </div>
+              <span
+                class="form-label selection-summary-count"
+                aria-live="polite"
+                aria-label={`${selected().size.toString()} of ${subjectCapacity.toString()} teams selected`}
               >
-                {teamError() ?? ""}
-              </p>
+                {selected().size}/{subjectCapacity}
+              </span>
             </div>
-          </fieldset>
+          </TeamPicker>
+          <p
+            id="team-error"
+            class="form-error"
+            role="alert"
+            hidden={teamError() === undefined}
+          >
+            {teamError() ?? ""}
+          </p>
 
           <fieldset class="form-section">
             <legend class="visually-hidden">Delivery</legend>
