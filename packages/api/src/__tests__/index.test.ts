@@ -172,6 +172,78 @@ const makeFixture = async () => {
 const reads = ["/user", "/user/subscription"];
 
 describe("assembled HTTP API", () => {
+  it("requires a session to update picks", async () => {
+    const f = await makeFixture();
+    const response = await f.request("/user/subscription", {
+      subjectIds: [subject.id],
+      schedule: subscription.schedule,
+    });
+    expect(response.status).toBe(401);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(f.replace).not.toHaveBeenCalled();
+  });
+
+  it("updates only the session user's picks and schedule", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    const schedule = { _tag: "fixed_local_time", sendAtSecondsLocal: 36000 };
+    const response = await f.request(
+      "/user/subscription?userId=other",
+      { subjectIds: [subject.id], schedule },
+      cookie,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toEqual({ ok: true });
+    expect(f.replace).toHaveBeenCalledWith({
+      user,
+      subjectIds: [subject.id],
+      schedule,
+    });
+  });
+
+  it("rejects empty, over-capacity, and invalid-time updates before writing", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    for (const payload of [
+      { subjectIds: [], schedule: subscription.schedule },
+      {
+        subjectIds: Array(5).fill(subject.id),
+        schedule: subscription.schedule,
+      },
+      {
+        subjectIds: [subject.id],
+        schedule: { _tag: "fixed_local_time", sendAtSecondsLocal: 1 },
+      },
+    ]) {
+      expect(
+        (await f.request("/user/subscription", payload, cookie)).status,
+      ).toBe(400);
+    }
+    expect(f.replace).not.toHaveBeenCalled();
+  });
+
+  it("reports invalid team selection and persistence failures", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    f.replace.mockReturnValueOnce(
+      Effect.fail(new InvalidSubjectSelection({ invalidIds: [subject.id] })),
+    );
+    const payload = {
+      subjectIds: [subject.id],
+      schedule: subscription.schedule,
+    };
+    expect(
+      (await f.request("/user/subscription", payload, cookie)).status,
+    ).toBe(400);
+    f.replace.mockReturnValueOnce(
+      Effect.fail(new DatabaseWriteError({ operation: "test" })),
+    );
+    expect(
+      (await f.request("/user/subscription", payload, cookie)).status,
+    ).toBe(500);
+  });
+
   it("mounts Better Auth beneath /api/auth", async () => {
     const f = await makeFixture();
     const response = await f.request("/auth/sign-in/magic-link", {

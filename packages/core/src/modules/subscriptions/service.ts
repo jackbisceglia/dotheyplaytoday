@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, notInArray } from "drizzle-orm";
 import {
   Array,
   Context,
@@ -22,7 +22,7 @@ import {
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { Subject, SubjectId } from "../subjects/schema.js";
-import { User } from "../users/schema.js";
+import { User, usersTable } from "../users/schema.js";
 import { InvalidSubjectSelection, SubjectCapacityReached } from "./errors.js";
 import {
   Subscription,
@@ -61,7 +61,7 @@ export class Subscriptions extends Context.Service<
 
     readonly replaceForUser: (input: {
       readonly user: User;
-      readonly subjectIds: readonly SubjectId[];
+      readonly subjectIds: Array.NonEmptyReadonlyArray<SubjectId>;
       readonly schedule: Subscription["schedule"];
     }) => Effect.Effect<
       readonly Subject[],
@@ -101,10 +101,8 @@ export const SubscriptionsLayer = Layer.effect(
     const SubjectPolicy = SubscriptionPolicy.subject;
 
     const assertSubjectsExist = Effect.fn(function* (
-      subjectIds: readonly SubjectId[],
+      subjectIds: Array.NonEmptyReadonlyArray<SubjectId>,
     ) {
-      if (Array.isReadonlyArrayEmpty(subjectIds)) return [];
-
       const rows = yield* database.query.subjectsTable
         .findMany({
           where: { id: { in: Array.fromIterable(subjectIds) } },
@@ -214,11 +212,28 @@ export const SubscriptionsLayer = Layer.effect(
         return yield* database
           .transaction(() =>
             Effect.gen(function* () {
+              // Lock the user so concurrent edits cannot merge their team lists,
+              // including when the user has no subscriptions yet.
+              yield* database
+                .select({ id: usersTable.id })
+                .from(usersTable)
+                .where(eq(usersTable.id, input.user.id))
+                .for("update")
+                .pipe(
+                  mapToReadError("Subscriptions.replaceForUser.lock", metadata),
+                );
+
               const subjects = yield* assertSubjectsExist(subjectIds);
 
+              // Remove dropped teams; retained rows keep their ID and last send.
               yield* database
                 .delete(subscriptionsTable)
-                .where(eq(subscriptionsTable.userId, input.user.id))
+                .where(
+                  and(
+                    eq(subscriptionsTable.userId, input.user.id),
+                    notInArray(subscriptionsTable.subjectId, subjectIds),
+                  ),
+                )
                 .pipe(
                   Effect.catchTag(
                     "EffectDrizzleQueryError",
@@ -226,14 +241,17 @@ export const SubscriptionsLayer = Layer.effect(
                   ),
                 );
 
-              // Empty input means replacing the user's subscriptions with none.
-              if (Array.isReadonlyArrayEmpty(insertableSubscriptions)) {
-                return subjects;
-              }
-
               yield* database
                 .insert(subscriptionsTable)
                 .values(insertableSubscriptions)
+                .onConflictDoUpdate({
+                  target: [
+                    subscriptionsTable.userId,
+                    subscriptionsTable.subjectId,
+                  ],
+                  // Retained teams keep their identity and last successful send.
+                  set: { schedule: input.schedule },
+                })
                 .pipe(
                   Effect.catchTag(
                     "EffectDrizzleQueryError",

@@ -1,6 +1,6 @@
-import { useNavigate, useSearchParams } from "@solidjs/router";
+import { revalidate, useNavigate, useSearchParams } from "@solidjs/router";
 import { Result } from "effect";
-import { createEffect, createMemo, Show } from "solid-js";
+import { createEffect, createMemo, Loading, Show } from "solid-js";
 
 import { getSessionStatus, useSession } from "../lib/auth.js";
 import { Layout } from "../layouts/Layout.jsx";
@@ -71,14 +71,25 @@ export function Landing() {
         <div class="signup-header">
           <h2 class="signup-title">Get on the roster</h2>
         </div>
-        {Result.match(result(), {
-          onSuccess: (subjects) => <SignupForm subjects={subjects} />,
-          onFailure: () => (
-            <p class="form-error" role="alert">
-              We couldn't load the team list. Try reloading the page.
-            </p>
-          ),
-        })}
+        <Loading fallback={<p role="status">Loading teams…</p>}>
+          {Result.match(result(), {
+            onSuccess: (subjects) => <SignupForm subjects={subjects} />,
+            onFailure: () => (
+              <p class="form-error" role="alert">
+                We couldn't load the team list.{" "}
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onClick={() => {
+                    revalidate(getSubjects.key);
+                  }}
+                >
+                  Try again
+                </button>
+              </p>
+            ),
+          })}
+        </Loading>
       </section>
     </Layout>
   );
