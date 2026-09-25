@@ -241,6 +241,21 @@ the worktree-scoped scheme.
 There is no automated D1 data transfer. Seeds rebuild catalog and development
 data; the current production owner account must be recreated manually.
 
+### Dashboard data and editing
+
+The dashboard loads private user and subscription data together in a client-only
+Solid async memo after the authenticated shell admits the route. `Loading` and
+`Errored` own pending and retry UI; private preferences are not retained in the
+public router query cache. The form derives its saved roster and delivery times
+from that data and initializes a separate draft when editing begins. Successful
+writes refresh the server data; cancelled or failed writes never replace it.
+
+Signup and the dashboard editor share the `getSubjects` router query and the
+presentational `ui/TeamPicker`. The `/home` route preloads the public catalog
+so it is usually ready when editing begins. Each catalog consumer still owns
+its loading boundary and retry UI. Selection feedback lives beside the shared
+picker rather than under signup.
+
 ## Testing and validation
 
 API contract tests live in `packages/core/src/contracts/__tests__`, named for
@@ -277,8 +292,7 @@ Separate follow-ups are:
 1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
 3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
-4. Add account and subscription-management interfaces plus the authenticated
-   team-management APIs needed to update existing preferences. Cookie sharing
+4. Add account email/timezone editing. Cookie sharing
    across subdomains is intentionally still disabled; browser calls target the
    API origin with credentials.
 
@@ -287,6 +301,7 @@ Separate follow-ups are:
 - `GET /api/user`: authenticated user's email and timezone.
 - `POST /api/user`: save a new unverified user and subscriptions, then request a confirmation link; duplicate signup requests another link and returns 409 without changing preferences.
 - `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
+- `POST /api/user/subscription`: replace the session user's one to four teams and fixed send time atomically; retained subscriptions preserve IDs and last-sent state.
 - `POST /api/user/unsubscribe`: delete the authenticated user when no token is supplied, or the token owner for an unauthenticated email link.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
 
@@ -300,7 +315,7 @@ Registration and unsubscribe contracts live with the user group in
 `contracts/user.ts`. `UserApi` composes both groups and applies `/user` once;
 the subscription group declares only `/subscription`. The generated
 client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
-`subscription.list()`. Read responses compose existing domain schemas;
+`subscription.list()` / `subscription.update()`. Read responses compose existing domain schemas;
 there is no Account model. Identity comes exclusively from the session.
 
 Browser API requests include credentials. API cookies remain host-only, so Web
@@ -309,7 +324,8 @@ Web stores a non-authoritative local auth hint. A synchronous document script
 uses that hint to replace-navigate root visits to `/home` before the SSR landing
 page paints; the authenticated route still verifies the real session and clears
 stale hints. The root route exposes sign-in through a query-driven modal, and
-`/home` provides confirmation, sign-out, and unsubscribe entry points. Full
-account and subscription-management interfaces remain separate work. Existing
+`/home` provides confirmation, sign-out, and unsubscribe entry points. The dashboard loads private preferences in the browser and shares its team
+picker with signup. Its edit draft supports save/cancel, team removal, and send
+time changes; account email/timezone editing remains separate work. Existing
 emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
 new endpoint; no legacy API alias is needed.

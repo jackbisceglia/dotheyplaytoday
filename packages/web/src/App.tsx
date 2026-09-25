@@ -4,7 +4,7 @@ import { createRouter, defineRoute, defineRoutes } from "@solidjs/router";
 
 import { paths } from "./lib/paths.js";
 import { AuthenticatedShell } from "./pages/(authenticated)/shell.jsx";
-import { Home } from "./pages/(authenticated)/home.jsx";
+import { Home, preload as homePreload } from "./pages/(authenticated)/home.jsx";
 import { Feedback } from "./pages/Feedback.jsx";
 import { Landing, preload as landingPreload } from "./pages/Landing.jsx";
 import { NotFound } from "./pages/NotFound.jsx";
@@ -31,7 +31,13 @@ const routes = defineRoutes([
       }),
       defineRoute({
         component: AuthenticatedShell,
-        children: [defineRoute({ path: paths.home, component: Home })],
+        children: [
+          defineRoute({
+            path: paths.home,
+            preload: homePreload,
+            component: Home,
+          }),
+        ],
       }),
       { path: "*404", component: NotFound },
     ],

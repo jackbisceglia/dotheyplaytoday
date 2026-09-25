@@ -298,17 +298,6 @@ button {
   line-height: 1;
 }
 
-/* Shares the unsubscribe page's rhythm; see .unsubscribe below. */
-.dashboard {
-  min-height: 62vh;
-  padding: 96px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 28px;
-}
-
 .header-cta:hover {
   background: var(--ink);
   color: var(--paper);
@@ -342,7 +331,6 @@ button {
 .modal-close:focus-visible,
 .login-reset:focus-visible,
 .footer-link:focus-visible,
-.dashboard-note-link:focus-visible,
 .skip-link:focus-visible,
 .form-input:focus-visible,
 .team-card:focus-visible,
@@ -433,6 +421,13 @@ button {
   box-shadow: var(--shadow);
 }
 
+/* Disabled because the form can't be submitted yet, not because it's busy. */
+.btn-primary:disabled[data-unavailable="true"] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .btn-secondary {
   background: var(--paper);
   color: var(--ink);
@@ -440,6 +435,11 @@ button {
 
 .btn-secondary:hover {
   background: var(--kelly-wash);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 /* Ticker */
@@ -707,7 +707,7 @@ button {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  min-height: 78px;
+  min-height: 84px;
   padding: 10px 12px;
   border: 2px solid var(--rule);
   background: #fff;
@@ -1049,8 +1049,7 @@ select.form-input {
   gap: 22px;
 }
 
-.unsubscribe-title,
-.dashboard-title {
+.unsubscribe-title {
   font-weight: 900;
   font-stretch: 65%;
   font-size: clamp(2.6rem, 6.5vw, 5rem);
@@ -1059,14 +1058,12 @@ select.form-input {
   letter-spacing: -0.01em;
 }
 
-.unsubscribe-title em,
-.dashboard-title em {
+.unsubscribe-title em {
   font-style: italic;
   color: var(--kelly);
 }
 
-.unsubscribe-copy,
-.dashboard-copy {
+.unsubscribe-copy {
   color: var(--muted);
   font-size: 1.15rem;
   line-height: 1.55;
@@ -1076,31 +1073,6 @@ select.form-input {
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-
-.dashboard-copy {
-  max-width: 52ch;
-}
-
-/* Stopgap note until the dashboard ships; reads as an aside, not a warning. */
-.dashboard-note {
-  max-width: 52ch;
-  padding-left: 18px;
-  border-left: 3px solid var(--kelly);
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-/* Deliberately quiet: this is a workaround, not a call to action. */
-.dashboard-note-link {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
-.dashboard-note-link:hover {
-  color: var(--ink);
 }
 
 .unsubscribe-actions {
@@ -1190,6 +1162,11 @@ select.form-input {
     display: none;
   }
 
+  .site-footer {
+    flex-wrap: wrap;
+    gap: 12px 20px;
+  }
+
   .site-header-actions {
     gap: 4px;
   }
@@ -1210,8 +1187,7 @@ select.form-input {
     padding: 64px 0 48px;
   }
 
-  .unsubscribe,
-  .dashboard {
+  .unsubscribe {
     min-height: 0;
     justify-content: flex-start;
     padding: 56px 0 48px;
@@ -1263,7 +1239,7 @@ select.form-input {
 
   .app-toast {
     right: 16px;
-    bottom: 88px;
+    bottom: 16px;
     max-width: none;
   }
 }
@@ -1345,5 +1321,256 @@ select.form-input {
 @media (prefers-reduced-motion: reduce) {
   .splash-mark {
     animation: none;
+  }
+}
+
+/* Dashboard */
+
+.dashboard {
+  padding: 40px 0 72px;
+}
+
+.dashboard-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+  margin-bottom: 20px;
+}
+
+.dashboard-title {
+  font-weight: 900;
+  font-stretch: 65%;
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+.dashboard-title em {
+  font-style: italic;
+  color: var(--kelly);
+}
+
+.dashboard-lede {
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.dashboard-lede strong {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+/* While editing, the send time in the sentence becomes the control. */
+.lede-select {
+  padding: 0 14px 0 0;
+  border: 0;
+  border-bottom: 2px solid var(--ink);
+  border-radius: 0;
+  background-color: transparent;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position:
+    calc(100% - 5px) 55%,
+    100% 55%;
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font-weight: 800;
+  line-height: inherit;
+  appearance: none;
+}
+
+.lede-select:focus-visible {
+  outline: 3px solid var(--kelly);
+  outline-offset: 2px;
+}
+
+.dashboard-status {
+  color: var(--muted);
+}
+
+.dashboard-load-error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+/* Shares the picker's .team-card geometry. */
+.roster-team {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  min-height: 84px;
+  padding: 10px 12px;
+  border: 2px solid var(--rule);
+  background: #fff;
+}
+
+.roster-team .team-name {
+  font-weight: 400;
+}
+
+/* Unfilled capacity. Card min-heights cover a filled card's content, so a
+   row of empty slots is exactly as tall as a row with teams in it. */
+.roster-slot {
+  display: grid;
+  place-items: center;
+  min-height: 84px;
+  border: 2px dashed var(--rule);
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  font-stretch: 80%;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+
+button.roster-slot:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+button.roster-slot:focus-visible {
+  outline: 3px solid var(--kelly);
+  outline-offset: 2px;
+}
+
+/* A small .modal-close, shown on roster cards while editing. */
+.roster-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+/* Keep a comfortable tap target around the small visual button. */
+.roster-remove::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+}
+
+.roster-remove:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.roster-remove:disabled {
+  opacity: 0.4;
+  cursor: wait;
+}
+
+.roster-remove:focus-visible {
+  outline: 3px solid var(--kelly);
+  outline-offset: 2px;
+}
+
+.dashboard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  margin-top: 36px;
+}
+
+.dashboard-section h2:focus {
+  outline: none;
+}
+
+/* The dashboard stays quieter than the landing page: selected states keep
+   their wash and ink border but drop the green shadow. */
+.dashboard-picker .league-pill[aria-pressed="true"],
+.dashboard-picker .team-card[aria-pressed="true"] {
+  box-shadow: none;
+}
+
+/* Every league's grid shares one cell and inactive ones only go invisible, so
+   the picker is always as tall as the largest league and switching leagues
+   never moves the controls below it. */
+.dashboard-picker .team-grids {
+  display: grid;
+}
+
+.dashboard-picker .team-grid {
+  grid-area: 1 / 1;
+  align-content: start;
+}
+
+.dashboard-picker .team-grid[hidden] {
+  display: grid !important;
+  visibility: hidden;
+}
+
+.dashboard-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  border: 0;
+}
+
+.dashboard-feedback {
+  margin-top: 16px;
+}
+
+.dashboard-actions {
+  gap: 12px;
+  margin-top: 32px;
+}
+
+@media (max-width: 840px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard {
+    padding: 28px 0 48px;
+  }
+
+  .dashboard-actions .form-error {
+    flex-basis: 100%;
+  }
+
+  .dashboard-actions .btn {
+    flex: 1;
+    padding-right: 10px;
+    padding-left: 10px;
+    text-align: center;
+    white-space: nowrap;
   }
 }
