@@ -21,6 +21,10 @@ export const UpdateSubscriptionsRequest = Schema.Struct({
   schedule: FixedSchedule,
 });
 
+export const UpdateSubscriptionsResponse = Schema.Struct({
+  ok: Schema.Literal(true),
+});
+
 export const SubscriptionGroup = HttpApiGroup.make("subscription")
   .add(
     HttpApiEndpoint.get("list", "/", {
@@ -29,7 +33,7 @@ export const SubscriptionGroup = HttpApiGroup.make("subscription")
     }),
     HttpApiEndpoint.post("update", "/", {
       payload: UpdateSubscriptionsRequest,
-      success: Schema.Struct({ ok: Schema.Literal(true) }),
+      success: UpdateSubscriptionsResponse,
       error: [
         HttpApiError.BadRequest,
         HttpApiError.Unauthorized,

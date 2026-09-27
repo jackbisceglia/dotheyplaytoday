@@ -213,7 +213,8 @@ export const SubscriptionsLayer = Layer.effect(
           .transaction(() =>
             Effect.gen(function* () {
               // Lock the user so concurrent edits cannot merge their team lists,
-              // including when the user has no subscriptions yet.
+              // including when the user has no subscriptions yet. Postgres holds
+              // the row lock until this transaction commits or rolls back.
               yield* database
                 .select({ id: usersTable.id })
                 .from(usersTable)
