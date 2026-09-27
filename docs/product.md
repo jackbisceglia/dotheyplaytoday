@@ -10,8 +10,8 @@ Registration uses `POST /api/user`. Users can subscribe to up to four teams. New
 
 ## Dashboard
 
-Signed-in users see their selected teams on `/home`, followed by a sentence
-naming the email address and send time. Edit, or the first empty roster
+Signed-in users see their selected teams on `/home`, under a sentence naming
+the email address and send time. Edit, or the first empty roster
 slot, opens the shared league/team picker. Teams can be removed from the roster
 or toggled in the picker, with one to four picks required to save. The send time is editable in
 the same draft and applies to all selected teams. Cancel discards the draft;

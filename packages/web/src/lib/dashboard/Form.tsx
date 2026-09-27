@@ -150,6 +150,44 @@ export function Form(props: {
           </button>
         </Show>
       </DashboardHeading>
+      <p class="dashboard-lede">
+        You'll get an email
+        <Show when={state.mode !== "view" || savedTimes().length > 0}>
+          {" at "}
+          <Show
+            when={state.mode !== "view"}
+            fallback={
+              <strong>
+                {savedTimes().map(formatSecondsLocal).join(" / ")}
+              </strong>
+            }
+          >
+            <select
+              class="lede-select"
+              aria-label="Send time"
+              disabled={state.mode === "saving"}
+              onChange={(event) => {
+                setState((draft) => {
+                  draft.seconds = Number(event.currentTarget.value);
+                });
+              }}
+            >
+              <For each={sendTimeIntervals}>
+                {(interval) => (
+                  <option
+                    value={interval.value}
+                    selected={state.seconds === interval.value}
+                  >
+                    {interval.label}
+                  </option>
+                )}
+              </For>
+            </select>
+          </Show>
+        </Show>{" "}
+        on days your teams play, sent to{" "}
+        <strong>{props.preferences.user.email}</strong>.
+      </p>
       <p class="visually-hidden" aria-live="polite">
         {teams().length} of {capacity} teams picked
       </p>
@@ -226,45 +264,6 @@ export function Form(props: {
           </Show>
         </section>
       </Show>
-
-      <p class="dashboard-lede">
-        You'll get an email
-        <Show when={state.mode !== "view" || savedTimes().length > 0}>
-          {" at "}
-          <Show
-            when={state.mode !== "view"}
-            fallback={
-              <strong>
-                {savedTimes().map(formatSecondsLocal).join(" / ")}
-              </strong>
-            }
-          >
-            <select
-              class="lede-select"
-              aria-label="Send time"
-              disabled={state.mode === "saving"}
-              onChange={(event) => {
-                setState((draft) => {
-                  draft.seconds = Number(event.currentTarget.value);
-                });
-              }}
-            >
-              <For each={sendTimeIntervals}>
-                {(interval) => (
-                  <option
-                    value={interval.value}
-                    selected={state.seconds === interval.value}
-                  >
-                    {interval.label}
-                  </option>
-                )}
-              </For>
-            </select>
-          </Show>
-        </Show>{" "}
-        on days your teams play, sent to{" "}
-        <strong>{props.preferences.user.email}</strong>.
-      </p>
 
       <Show when={state.message}>
         {(value) => (

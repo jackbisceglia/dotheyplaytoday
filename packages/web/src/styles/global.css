@@ -1331,7 +1331,7 @@ select.form-input {
   justify-content: space-between;
   gap: 16px;
   min-height: 40px;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
 .dashboard-title {
@@ -1349,7 +1349,7 @@ select.form-input {
 }
 
 .dashboard-lede {
-  margin-top: 24px;
+  margin-bottom: 24px;
   color: var(--muted);
   font-size: 1.05rem;
   line-height: 1.5;
@@ -1381,6 +1381,9 @@ select.form-input {
   font-weight: 800;
   line-height: inherit;
   appearance: none;
+  /* The underline sits in the line's leading, so editing doesn't push the
+     roster down. */
+  margin-bottom: -2px;
 }
 
 .lede-select:focus-visible {
