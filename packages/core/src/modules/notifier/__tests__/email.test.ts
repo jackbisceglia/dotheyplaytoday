@@ -97,7 +97,7 @@ describe("email rendering", () => {
         expect(payload.html).toContain("@media (prefers-color-scheme: dark)");
         // The headline is the team's pre-rendered tile, with its text as alt.
         expect(payload.html).toContain(
-          'src="https://example.com:8080/email/headlines/v1/nba/boston-celtics.png"',
+          'src="https://example.com:8080/email/headlines/v1/celtics-play-today.png"',
         );
         expect(payload.html).toContain('alt="Celtics play today."');
         // The game count restates the subject line, so it is not rendered.
@@ -247,10 +247,10 @@ describe("nfl season opener header", () => {
       const payload = lastPayload();
 
       expect(payload.html).toContain(
-        'src="https://example.com:8080/email/headlines/v1/nfl-kickoff.png"',
+        'src="https://example.com:8080/email/headlines/v1/football-is-back.png"',
       );
       expect(payload.html).toContain('alt="Football is back."');
-      expect(payload.html).not.toContain("philadelphia-eagles.png");
+      expect(payload.html).not.toContain("eagles-play-today.png");
       expect(payload.subject).toBe("Football's back. Eagles play today.");
       // The matchups remain below the kickoff headline.
       expect(payload.html).toContain("Philadelphia Eagles");
@@ -272,28 +272,10 @@ describe("nfl season opener header", () => {
 
       expect(payload.subject).toBe("Eagles play today");
       expect(payload.html).toContain(
-        "/email/headlines/v1/nfl/philadelphia-eagles.png",
+        "/email/headlines/v1/eagles-play-today.png",
       );
-      expect(payload.html).not.toContain("nfl-kickoff.png");
+      expect(payload.html).not.toContain("football-is-back.png");
       expect(payload.text).not.toContain("Football is back.");
-    }),
-  );
-
-  it.effect("falls back to a text headline for a team without a slug", () =>
-    Effect.gen(function* () {
-      const { slug: _slug, ...details } = nflNotification.subject.details;
-
-      yield* send({
-        ...nflNotification,
-        sendAt: DateTime.makeUnsafe("2026-09-20T13:00:00.000Z"),
-        subject: { ...nflNotification.subject, details },
-      });
-
-      const payload = lastPayload();
-
-      expect(payload.html).not.toContain("<img");
-      expect(payload.html).toContain('class="email-ink email-display"');
-      expect(payload.html).toContain("Eagles play");
     }),
   );
 
@@ -306,7 +288,7 @@ describe("nfl season opener header", () => {
 
       const payload = lastPayload();
 
-      expect(payload.html).not.toContain("nfl-kickoff.png");
+      expect(payload.html).not.toContain("football-is-back.png");
       expect(payload.text).not.toContain("Football is back.");
     }),
   );
@@ -326,7 +308,7 @@ describe("nfl season opener header", () => {
 
       const payload = lastPayload();
 
-      expect(payload.html).toContain("nfl-kickoff.png");
+      expect(payload.html).toContain("football-is-back.png");
     }),
   );
 });

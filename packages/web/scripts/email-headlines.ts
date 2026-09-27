@@ -1,13 +1,18 @@
-// Renders every email headline tile into `public/`. Run `pnpm email:generate`
-// after building core and data, whose dists this imports.
-// The specs and tile size live in `@dtpt/core/modules/email/headlines`.
+// Renders every tiled email headline into `public/`. Run `pnpm email:generate`
+// after building core and data, whose dists this imports. Each email owns its
+// headline lines; `imagePath` in `@dtpt/core/modules/email/headline` maps them
+// to the file the email links to.
 
 import { Resvg } from "@resvg/resvg-js";
 import {
-  EmailHeadlines,
-  EmailHeadlineSize,
-  type EmailHeadline,
-} from "@dtpt/core/modules/email/headlines";
+  emphasize,
+  HeadlineImageSize,
+  imagePath,
+  type Lines,
+} from "@dtpt/core/modules/email/headline";
+import { confirmationLines } from "@dtpt/core/modules/email/transactional/confirmation";
+import { signInLines } from "@dtpt/core/modules/email/transactional/sign-in";
+import { gameDayLines, kickoffLines } from "@dtpt/core/modules/notifier/email";
 import { SeedCollections } from "@dtpt/data/seed/index";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -29,7 +34,7 @@ const LINE_HEIGHT = 0.92;
 const ON_INK = "#f4f2ec";
 const KELLY_ON_INK = "#2fbf68";
 
-const { width: WIDTH, height: HEIGHT } = EmailHeadlineSize;
+const { width: WIDTH, height: HEIGHT } = HeadlineImageSize;
 
 const publicDir = fileURLToPath(new URL("../public/", import.meta.url));
 
@@ -52,23 +57,25 @@ const line = (children: unknown): Node =>
     children,
   );
 
-const secondLine = (headline: EmailHeadline): Node => {
-  const accent = (marginLeft: number) =>
-    el(
-      "span",
-      { color: KELLY_ON_INK, marginLeft },
-      headline.accent.toUpperCase(),
-    );
+/** One headline line: the lead in paper, then any kelly accent. */
+const emphasizedLine = ({ lead, accent }: { lead: string; accent: string }) =>
+  line([
+    ...(lead === "" ? [] : [el("span", {}, lead.toUpperCase())]),
+    ...(accent === ""
+      ? []
+      : [
+          el(
+            "span",
+            {
+              color: KELLY_ON_INK,
+              marginLeft: lead === "" ? 0 : SIZE * 0.13 * SCALE,
+            },
+            accent.toUpperCase(),
+          ),
+        ]),
+  ]);
 
-  return headline.second === ""
-    ? line([accent(0)])
-    : line([
-        el("span", {}, headline.second.toUpperCase()),
-        accent(SIZE * 0.13 * SCALE),
-      ]);
-};
-
-const tile = (headline: EmailHeadline): Node =>
+const tile = (lines: Lines): Node =>
   el(
     "div",
     {
@@ -84,8 +91,7 @@ const tile = (headline: EmailHeadline): Node =>
     [
       mascot(MASCOT * SCALE),
       el("div", { display: "flex", height: GAP * SCALE }),
-      line(headline.first.toUpperCase()),
-      secondLine(headline),
+      ...emphasize(lines).map(emphasizedLine),
     ],
   );
 
@@ -100,18 +106,15 @@ const measure = async (node: Node) => {
   return new Resvg(svg).getBBox()?.width ?? 0;
 };
 
-const assertFits = async (headline: EmailHeadline) => {
+const assertFits = async (lines: Lines) => {
   const available = (WIDTH - PAD * 2) * SCALE;
 
-  for (const node of [
-    line(headline.first.toUpperCase()),
-    secondLine(headline),
-  ]) {
+  for (const node of emphasize(lines).map(emphasizedLine)) {
     const width = await measure(node);
 
     if (width > available) {
       throw new Error(
-        `${headline.path} overflows its tile by ${Math.ceil((width - available) / SCALE).toString()}px`,
+        `${imagePath(lines)} overflows its tile by ${Math.ceil((width - available) / SCALE).toString()}px`,
       );
     }
   }
@@ -122,41 +125,40 @@ const contentHeight = Math.round(
 );
 if (contentHeight !== HEIGHT) {
   throw new Error(
-    `EmailHeadlineSize.height should be ${contentHeight.toString()}, not ${HEIGHT.toString()}`,
+    `HeadlineImageSize.height should be ${contentHeight.toString()}, not ${HEIGHT.toString()}`,
   );
 }
 
 const teams = SeedCollections.flatMap((collection) =>
-  collection.subjects.flatMap((subject) => {
-    const headline = EmailHeadlines.team(subject.details);
-
-    return headline === undefined ? [] : [headline];
-  }),
+  collection.subjects.map((subject) => gameDayLines(subject.details)),
 );
 
+// Teams that share a name ("Kings", "Giants") share one image.
 const headlines = [
-  EmailHeadlines.signIn,
-  EmailHeadlines.confirmation,
-  EmailHeadlines.nflKickoff,
-  ...teams,
+  ...new Map(
+    [signInLines, confirmationLines, kickoffLines, ...teams].map((lines) => [
+      imagePath(lines),
+      lines,
+    ]),
+  ),
 ];
 
-// Start clean so renamed or dropped teams leave no stale tiles behind.
-await rm(path.join(publicDir, path.dirname(EmailHeadlines.signIn.path)), {
+// Start clean so renamed or dropped headlines leave no stale images behind.
+await rm(path.join(publicDir, "email/headlines"), {
   recursive: true,
   force: true,
 });
 
-for (const headline of headlines) {
-  await assertFits(headline);
+for (const [file, lines] of headlines) {
+  await assertFits(lines);
 
-  const svg = await satori(tile(headline) as never, {
+  const svg = await satori(tile(lines) as never, {
     width: WIDTH * SCALE,
     height: HEIGHT * SCALE,
     fonts,
   });
   const png = new Resvg(svg).render().asPng();
-  const target = path.join(publicDir, headline.path);
+  const target = path.join(publicDir, file);
 
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, png);

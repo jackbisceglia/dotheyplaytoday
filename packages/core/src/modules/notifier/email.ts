@@ -3,10 +3,9 @@ import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
 import type { ExtractFromTag } from "../../lib/types.js";
-import { exactOptional } from "../../lib/utils.js";
 import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
-import { buildEmailHeadlineUrl, EmailHeadlines } from "../email/headlines.js";
+import { type Lines, makeTiledHeadline } from "../email/headline.js";
 import {
   EmailView,
   Link,
@@ -177,6 +176,13 @@ const orderBySubject = (
   );
 };
 
+export const gameDayLines = (team: SportsTeamSubject["details"]): Lines => [
+  team.name,
+  "play today.",
+];
+
+export const kickoffLines: Lines = ["Football is", "back."];
+
 // TODO: Generalize this into configurable special events. It is dead after NFL
 // kickoff (2026-09-13), and the NBA opener in October will want a variant with
 // slightly different rules. Instead of deleting it, open a PR that moves the
@@ -230,9 +236,6 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
             timezone,
           );
           const playsToday = `${notification.subject.details.name} play today`;
-          const headline = kickoff
-            ? EmailHeadlines.nflKickoff
-            : EmailHeadlines.team(notification.subject.details);
 
           const sharedParticipantTitle = findSharedParticipantTitle(
             notification.events,
@@ -261,14 +264,12 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
 
           return {
             subject: kickoff ? `Football's back. ${playsToday}.` : playsToday,
-            home,
-            headline: kickoff
-              ? "Football is"
-              : `${notification.subject.details.name} play`,
-            accent: kickoff ? "back." : "today.",
-            ...exactOptional(headline, (headline) => ({
-              headlineImage: buildEmailHeadlineUrl(home, headline),
-            })),
+            headline: makeTiledHeadline(
+              home,
+              kickoff
+                ? kickoffLines
+                : gameDayLines(notification.subject.details),
+            ),
             blocks: [
               Matchups.make({ items: matchups }),
               Link.make({

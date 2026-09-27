@@ -3,10 +3,12 @@ import { Effect } from "effect";
 import { Id } from "../../../lib/id/service.js";
 import { Email } from "../service.js";
 import { WebUrl } from "../../../lib/config/web.js";
-import { buildEmailHeadlineUrl, EmailHeadlines } from "../headlines.js";
+import { type Lines, makeTiledHeadline } from "../headline.js";
 import { EmailView, Link, Note, Text } from "../render.js";
 import { EmailLayerResend } from "../resend.js";
 import type { EmailAddress } from "../../users/schema.js";
+
+export const confirmationLines: Lines = ["Confirm your", "updates."];
 
 export const renderConfirmationLink = Effect.fn("ConfirmationLink.render")(
   function* (url: string) {
@@ -14,10 +16,7 @@ export const renderConfirmationLink = Effect.fn("ConfirmationLink.render")(
 
     return EmailView({
       subject: "Confirm your updates",
-      headline: "Confirm your",
-      accent: "updates.",
-      home,
-      headlineImage: buildEmailHeadlineUrl(home, EmailHeadlines.confirmation),
+      headline: makeTiledHeadline(home, confirmationLines),
       preheader: "Confirm your email to start your game-day updates.",
       blocks: [
         Text.make({

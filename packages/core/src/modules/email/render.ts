@@ -1,9 +1,14 @@
-import { Schema } from "effect";
+import { Option, Schema } from "effect";
 
 import { TaggedUnion } from "../../lib/effect/index.js";
 import { StringParts } from "../../lib/string.js";
 import { exactOptional } from "../../lib/utils.js";
-import { EmailHeadlineSize } from "./headlines.js";
+import {
+  emphasize,
+  type Headline,
+  HeadlineImageSize,
+  headlineText,
+} from "./headline.js";
 
 export type EmailMetadata = {
   readonly unsubscribe: string;
@@ -51,20 +56,10 @@ export const Blocks = TaggedUnion([Text, List, Matchups, Note, Entry, Link]);
 
 export type EmailViewProps = {
   readonly subject: string;
-  /** Display headline. Defaults to the email subject. */
-  readonly headline?: string;
-  /** Trailing word set in kelly, as the site hero sets its emphasis. */
-  readonly accent?: string;
-  /**
-   * Absolute URL of a pre-rendered headline tile (see `headlines.ts`). It
-   * replaces the text headline, which becomes its alt text.
-   */
-  readonly headlineImage?: string;
+  readonly headline: Headline;
+  readonly blocks: readonly Block[];
   /** Inbox preview text; defaults to a summary of the first block. */
   readonly preheader?: string;
-  /** Destination for the headline link. */
-  readonly home?: string;
-  readonly blocks: readonly Block[];
   readonly metadata?: EmailMetadata;
 };
 
@@ -135,14 +130,9 @@ const blockText = (block: Block): readonly string[] => {
   }
 };
 
-const headlineText = (input: EmailViewProps) =>
-  StringParts(input.headline ?? input.subject)
-    .addNullable(input.accent)
-    .make(" ");
-
 const text = (input: EmailViewProps) =>
   StringParts()
-    .add(headlineText(input))
+    .add(headlineText(input.headline.lines))
     .add("")
     .addParts(
       ...input.blocks.flatMap((block, index) =>
@@ -167,13 +157,13 @@ const element = {
 </table>`,
 
   headlineImage: (src: string, alt: string) =>
-    `<img src="${escapeHtml(src)}" width="${EmailHeadlineSize.width.toString()}" height="${EmailHeadlineSize.height.toString()}" alt="${alt}" style="display: block; width: 100%; max-width: ${EmailHeadlineSize.width.toString()}px; height: auto; border: 0; border-radius: 18px; background-color: ${color.ink}; font-family: ${font.display}; font-weight: 900; font-size: 28px; line-height: 1.1; text-transform: uppercase; color: ${onInk};" />`,
+    `<img src="${escapeHtml(src)}" width="${HeadlineImageSize.width.toString()}" height="${HeadlineImageSize.height.toString()}" alt="${alt}" style="display: block; width: 100%; max-width: ${HeadlineImageSize.width.toString()}px; height: auto; border: 0; border-radius: 18px; background-color: ${color.ink}; font-family: ${font.display}; font-weight: 900; font-size: 28px; line-height: 1.1; text-transform: uppercase; color: ${onInk};" />`,
 
-  headlineText: (headline: string, accent: string) =>
-    `<h1 class="email-ink email-display" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: condensed; font-size: 36px; line-height: 0.95; text-transform: uppercase; color: ${color.ink}; word-break: break-word;">${headline}${accent}</h1>`,
+  headlineText: (lines: string) =>
+    `<h1 class="email-ink email-display" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: condensed; font-size: 36px; line-height: 0.95; text-transform: uppercase; color: ${color.ink}; word-break: break-word;">${lines}</h1>`,
 
   accent: (value: string) =>
-    ` <span class="email-accent" style="color: ${color.kelly};">${value}</span>`,
+    `<span class="email-accent" style="color: ${color.kelly};">${value}</span>`,
 
   matchup: (matchup: string, time: string) =>
     `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 16px; line-height: 1.4; color: ${color.ink}; word-break: break-word;">${matchup}</p>
@@ -245,25 +235,28 @@ const blockHtml = (block: Block): string => {
   }
 };
 
-const headerHtml = (input: EmailViewProps) => {
-  const headline = escapeHtml(input.headline ?? input.subject);
+const headerHtml = ({ headline }: EmailViewProps) => {
+  const header = Option.match(headline.image, {
+    onSome: (src) =>
+      element.headlineImage(src, escapeHtml(headlineText(headline.lines))),
+    onNone: () =>
+      element.headlineText(
+        emphasize(headline.lines)
+          .map(({ lead, accent }) =>
+            StringParts()
+              .addIf(lead !== "", escapeHtml(lead))
+              .addIf(accent !== "", element.accent(escapeHtml(accent)))
+              .make(" "),
+          )
+          .join("<br />"),
+      ),
+  });
 
-  const header =
-    input.headlineImage === undefined
-      ? element.headlineText(
-          headline,
-          input.accent === undefined
-            ? ""
-            : element.accent(escapeHtml(input.accent)),
-        )
-      : element.headlineImage(
-          input.headlineImage,
-          escapeHtml(headlineText(input)),
-        );
-
-  if (input.home === undefined) return header;
-
-  return `<a href="${escapeHtml(input.home)}" style="display: block; text-decoration: none;">${header}</a>`;
+  return Option.match(headline.href, {
+    onNone: () => header,
+    onSome: (href) =>
+      `<a href="${escapeHtml(href)}" style="display: block; text-decoration: none;">${header}</a>`,
+  });
 };
 
 const previewText = (blocks: readonly Block[]) => {
@@ -340,8 +333,8 @@ const html = (input: EmailViewProps) => {
     <table role="presentation" class="email-bg" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; background-color: ${color.canvas};">
       <tr>
         <td align="center" style="padding: 24px 16px 40px;">
-          <!--[if mso]><table role="presentation" width="${EmailHeadlineSize.width.toString()}" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: ${EmailHeadlineSize.width.toString()}px; margin: 0 auto;">
+          <!--[if mso]><table role="presentation" width="${HeadlineImageSize.width.toString()}" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: ${HeadlineImageSize.width.toString()}px; margin: 0 auto;">
             <tr>
               <td style="padding: 0 0 28px;">
                 ${headerHtml(input)}
