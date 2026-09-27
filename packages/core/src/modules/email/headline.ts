@@ -1,19 +1,27 @@
-import { Array, Option } from "effect";
+import type { Array } from "effect";
 
 /** One string per line. The brand sets the final word in kelly. */
 export type Lines = Array.NonEmptyReadonlyArray<string>;
 
 /**
- * A resolved email headline. Tiled headlines point at a pre-rendered PNG of
- * the brand's condensed display type: no Gmail client loads web fonts, and
- * forced dark modes recolor text but leave images alone. Text headlines render
- * the lines as live text instead.
+ * A tiled headline is a pre-rendered PNG of the brand's condensed display
+ * type, linking home: no Gmail client loads web fonts, and forced dark modes
+ * recolor text but leave images alone.
  */
-export type Headline = {
+export type TiledHeadline = {
+  readonly _tag: "tiled";
   readonly lines: Lines;
-  readonly image: Option.Option<string>;
-  readonly href: Option.Option<string>;
+  readonly image: string;
+  readonly href: string;
 };
+
+/** A text headline renders the lines as live text, for emails with no image. */
+export type TextHeadline = {
+  readonly _tag: "text";
+  readonly lines: Lines;
+};
+
+export type Headline = TiledHeadline | TextHeadline;
 
 /** Size in CSS pixels. The PNGs are drawn at twice this for dense screens. */
 export const HeadlineImageSize = { width: 480, height: 192 } as const;
@@ -52,18 +60,17 @@ export const emphasize = (lines: Lines) =>
     };
   });
 
-export const makeTiledHeadline = (home: string, lines: Lines): Headline => {
-  const root = home.replace(/\/+$/, "");
-
-  return {
-    lines,
-    image: Option.some(`${root}/${imagePath(lines)}`),
-    href: Option.some(home),
-  };
-};
-
-export const makeTextHeadline = (lines: Lines, href?: string): Headline => ({
+export const makeTiledHeadline = (
+  home: string,
+  lines: Lines,
+): TiledHeadline => ({
+  _tag: "tiled",
   lines,
-  image: Option.none(),
-  href: Option.fromUndefinedOr(href),
+  image: `${home.replace(/\/+$/, "")}/${imagePath(lines)}`,
+  href: home,
+});
+
+export const makeTextHeadline = (lines: Lines): TextHeadline => ({
+  _tag: "text",
+  lines,
 });

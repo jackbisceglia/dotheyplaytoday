@@ -1,4 +1,4 @@
-import { Option, Schema } from "effect";
+import { Schema } from "effect";
 
 import { TaggedUnion } from "../../lib/effect/index.js";
 import { StringParts } from "../../lib/string.js";
@@ -236,11 +236,11 @@ const blockHtml = (block: Block): string => {
 };
 
 const headerHtml = ({ headline }: EmailViewProps) => {
-  const header = Option.match(headline.image, {
-    onSome: (src) =>
-      element.headlineImage(src, escapeHtml(headlineText(headline.lines))),
-    onNone: () =>
-      element.headlineText(
+  switch (headline._tag) {
+    case "tiled":
+      return `<a href="${escapeHtml(headline.href)}" style="display: block; text-decoration: none;">${element.headlineImage(headline.image, escapeHtml(headlineText(headline.lines)))}</a>`;
+    case "text":
+      return element.headlineText(
         emphasize(headline.lines)
           .map(({ lead, accent }) =>
             StringParts()
@@ -249,14 +249,8 @@ const headerHtml = ({ headline }: EmailViewProps) => {
               .make(" "),
           )
           .join("<br />"),
-      ),
-  });
-
-  return Option.match(headline.href, {
-    onNone: () => header,
-    onSome: (href) =>
-      `<a href="${escapeHtml(href)}" style="display: block; text-decoration: none;">${header}</a>`,
-  });
+      );
+  }
 };
 
 const previewText = (blocks: readonly Block[]) => {

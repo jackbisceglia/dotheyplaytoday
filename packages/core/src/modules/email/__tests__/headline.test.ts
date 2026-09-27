@@ -1,5 +1,4 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Option } from "effect";
 
 import {
   emphasize,
@@ -30,23 +29,20 @@ describe("email headline", () => {
   });
 
   it("points tiled headlines at the image under the web root", () => {
-    const headline = makeTiledHeadline("https://example.com/", [
-      "Knicks",
-      "play today.",
-    ]);
-
-    expect(headline.image).toEqual(
-      Option.some(
-        "https://example.com/email/headlines/v1/knicks-play-today.png",
-      ),
-    );
-    expect(headline.href).toEqual(Option.some("https://example.com/"));
+    expect(
+      makeTiledHeadline("https://example.com/", ["Knicks", "play today."]),
+    ).toEqual({
+      _tag: "tiled",
+      lines: ["Knicks", "play today."],
+      image: "https://example.com/email/headlines/v1/knicks-play-today.png",
+      href: "https://example.com/",
+    });
   });
 
-  it("gives text headlines no image", () => {
-    const headline = makeTextHeadline(["New feedback", "landed."]);
-
-    expect(headline.image).toEqual(Option.none());
-    expect(headline.href).toEqual(Option.none());
+  it("keeps text headlines to their lines", () => {
+    expect(makeTextHeadline(["New feedback", "landed."])).toEqual({
+      _tag: "text",
+      lines: ["New feedback", "landed."],
+    });
   });
 });
