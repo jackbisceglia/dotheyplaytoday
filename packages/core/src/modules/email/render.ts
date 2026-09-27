@@ -151,8 +151,10 @@ const element = {
 </tr>
 </table>`,
 
+  // Gmail dark mode can lighten background-color while the remote image loads.
+  // A solid gradient keeps the loading surface ink without changing the tile.
   headlineImage: (src: string, alt: string) =>
-    `<img src="${escapeHtml(src)}" width="${HeadlineImageSize.width.toString()}" height="${HeadlineImageSize.height.toString()}" alt="${alt}" style="display: block; width: 100%; max-width: ${HeadlineImageSize.width.toString()}px; height: auto; border: 0; border-radius: 18px; background-color: ${color.ink}; font-family: ${font.display}; font-weight: 900; font-size: 28px; line-height: 1.1; text-transform: uppercase; color: ${onInk};" />`,
+    `<img src="${escapeHtml(src)}" width="${HeadlineImageSize.width.toString()}" height="${HeadlineImageSize.height.toString()}" alt="${alt}" style="display: block; width: 100%; max-width: ${HeadlineImageSize.width.toString()}px; height: auto; border: 0; border-radius: 18px; background-color: ${color.ink}; background-image: linear-gradient(${color.ink}, ${color.ink}); font-family: ${font.display}; font-weight: 900; font-size: 28px; line-height: 1.1; text-transform: uppercase; color: ${onInk};" />`,
 
   headlineText: (lines: string) =>
     `<h1 class="email-ink email-display" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-stretch: condensed; font-size: 36px; line-height: 0.95; text-transform: uppercase; color: ${color.ink}; word-break: break-word;">${lines}</h1>`,
