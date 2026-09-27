@@ -1,6 +1,6 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
-import { createStore, For, Show } from "solid-js";
+import { createMemo, createStore, For, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 
 import { withApiClient } from "../api.js";
@@ -13,7 +13,7 @@ import {
   sendTimeIntervals,
 } from "../time.js";
 import { CatalogPicker } from "./CatalogPicker.jsx";
-import type { SubjectsResult } from "../subjects.js";
+import { getSubjects } from "../subjects.js";
 import type { Preferences } from "./preferences.js";
 
 const capacity = SubscriptionPolicy.subject.constraints.max;
@@ -28,7 +28,6 @@ type FormState = {
 
 export function Form(props: {
   readonly preferences: Preferences;
-  readonly subjects: SubjectsResult;
   readonly onSaved: () => void;
 }) {
   const savedTeams = () =>
@@ -40,6 +39,10 @@ export function Form(props: {
       ),
     ),
   ];
+  // Read here rather than in the picker, which only mounts while editing: the
+  // form lives as long as the page, so the router keeps the preloaded catalog
+  // cached and Edit opens without fetching it again.
+  const subjects = createMemo(() => getSubjects());
   const [state, setState] = createStore<FormState>({
     mode: "view",
     teams: [],
@@ -208,7 +211,7 @@ export function Form(props: {
           </h2>
           <fieldset class="dashboard-picker" disabled={state.mode === "saving"}>
             <CatalogPicker
-              subjects={props.subjects}
+              subjects={subjects()}
               selected={new Set(state.teams.map((team) => team.id))}
               rejectedSelectionId={rejection.rejectedSelectionId()}
               onToggle={toggle}
