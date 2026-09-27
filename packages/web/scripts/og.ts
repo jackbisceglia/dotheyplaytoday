@@ -4,7 +4,7 @@ Agent Zone - only briefly reviewed
 ---
 */
 
-// Renders the Open Graph card to `public/og.png`. Run `pnpm og:generate`.
+// Renders the Open Graph card to `public/og.png`. Run `pnpm assets:generate`.
 
 import { Resvg } from "@resvg/resvg-js";
 import { writeFile } from "node:fs/promises";

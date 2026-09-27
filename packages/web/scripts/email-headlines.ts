@@ -1,4 +1,4 @@
-// Renders every tiled email headline into `public/`. Run `pnpm email:generate`
+// Renders every tiled email headline into `public/`. Run `pnpm assets:generate`
 // after building core and data, whose dists this imports.
 
 import { Resvg } from "@resvg/resvg-js";

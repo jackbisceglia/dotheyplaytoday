@@ -24,7 +24,7 @@ export const Headline = TaggedUnion([TiledHeadline, TextHeadline]);
 /** CSS pixels; the PNGs are drawn at twice this. */
 export const HeadlineImageSize = { width: 480, height: 192 } as const;
 
-/** Named after the copy, so the email and `email:generate` agree on the file. */
+/** Named after the copy, so the email and `assets:generate` agree on the file. */
 export const buildHeadlineImagePath = (lines: Lines) => {
   const slug = lines
     .join(" ")

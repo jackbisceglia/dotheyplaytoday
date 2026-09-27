@@ -174,8 +174,8 @@ brand sets in kelly, and passes `EmailView` a `Headline` from `core`'s
 `email/headline.ts`: a tiled headline built with `makeTiledHeadline`, or a
 live-text `TextHeadline` like the feedback digest's. `buildHeadlineImagePath`
 names each image after its copy, so the email and the renderer agree on the
-file. `pnpm --filter @dtpt/web email:generate` collects every tiled headline's
-lines, including one per catalog team, and renders them into the web app's
+file. `pnpm @web assets:generate` collects every tiled headline's lines,
+including one per catalog team, and renders them into the web app's
 `public/email/headlines/`, which is committed and served with the site. Rerun
 it after building core and data whenever headline copy, the catalog, or the
 artwork changes. Body copy uses each platform's system UI font.
@@ -194,7 +194,7 @@ bindings, avoiding a props-level resource cycle without reconstructing deployed
 URLs. See [Alchemy service URL wiring](./alchemy-service-urls.md).
 
 Link previews are served from a committed `public/og.png`, rendered offline by
-`pnpm @web og:generate` (`packages/web/scripts/og.ts`) through satori and resvg. Keeping
+`pnpm @web assets:generate` (`packages/web/scripts/og.ts`) through satori and resvg. Keeping
 it a build artifact rather than a request-time route keeps native rendering
 dependencies out of the deploy and gives crawlers a cacheable static asset.
 Crawlers fetch `og:image` from their own servers rather than resolving it
