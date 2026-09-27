@@ -243,18 +243,21 @@ data; the current production owner account must be recreated manually.
 
 ### Dashboard data and editing
 
-The dashboard loads private user and subscription data together in a client-only
-Solid async memo after the authenticated shell admits the route. `Loading` and
-`Errored` own pending and retry UI; private preferences are not retained in the
-public router query cache. The form derives its saved roster and delivery times
-from that data and initializes a separate draft when editing begins. Successful
-writes refresh the server data; cancelled or failed writes never replace it.
+The dashboard's user and subscription data is a `getPreferences` router query.
+The `/home` route preloads it on the client only, because the API cookie lives
+in the browser, so it loads alongside the authenticated shell's session check.
+The dashboard reads it together with the `getSubjects` catalog under one
+`Loading` and `Errored` boundary. The router keeps an entry only while something
+reads it, or for a few seconds after, so private data doesn't outlive the
+signed-in page. The form derives its saved roster and delivery times from that
+data and initializes a separate draft when editing begins. Successful writes
+revalidate the query; cancelled or failed writes never replace it.
 
 Signup and the dashboard editor share the `getSubjects` router query and the
-presentational `ui/TeamPicker`. The `/home` route preloads the public catalog
-so it is usually ready when editing begins. Each catalog consumer still owns
-its loading boundary and retry UI. Selection feedback lives beside the shared
-picker rather than under signup.
+presentational `ui/TeamPicker`. The `/home` route preloads the public catalog,
+and the dashboard reads it while mounted so the editor opens without a second
+fetch. Selection feedback lives beside the shared picker rather than under
+signup.
 
 ## Testing and validation
 
