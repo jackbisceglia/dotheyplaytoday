@@ -1,6 +1,6 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
-import { createMemo, createStore, For, Show } from "solid-js";
+import { createMemo, createStore, For, Match, Show, Switch } from "solid-js";
 import type { ParentProps } from "solid-js";
 
 import { withApiClient } from "../api.js";
@@ -57,9 +57,6 @@ export function Form(props: {
   let editorTitle: HTMLHeadingElement | undefined;
   const teams = () => (state.mode === "view" ? savedTeams() : state.teams);
   const isEmptyDraft = () => state.mode !== "view" && state.teams.length === 0;
-  const error = () =>
-    state.error ??
-    (isEmptyDraft() ? "Pick at least one team to save." : undefined);
 
   const beginEdit = () => {
     setState((draft) => {
@@ -149,6 +146,30 @@ export function Form(props: {
             Edit
           </button>
         </Show>
+        {/* Edit's place holds the draft's actions, paired like the landing
+            header's Log in and Sign up. */}
+        <Show when={state.mode !== "view"}>
+          <div class="dashboard-heading-actions">
+            <button
+              class="header-cta header-cta-quiet"
+              type="button"
+              disabled={state.mode === "saving"}
+              onClick={() => {
+                finishEdit(false);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              class="header-cta header-cta-solid"
+              type="submit"
+              disabled={state.mode === "saving" || isEmptyDraft()}
+              data-unavailable={isEmptyDraft() ? "true" : undefined}
+            >
+              {state.mode === "saving" ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </Show>
       </DashboardHeading>
       <p class="dashboard-lede">
         You'll get an email
@@ -220,18 +241,23 @@ export function Form(props: {
             </div>
           )}
         </For>
-        {/* Unfilled capacity reads as quiet empty slots, the first of which
-            opens the editor; the count grows automatically if the cap rises. */}
+        {/* Unfilled capacity reads as quiet empty slots. The first opens the
+            editor, or says why Save is off when the draft is empty; the count
+            grows automatically if the cap rises. */}
         <For each={Array.from({ length: capacity - teams().length })}>
           {(_slot, index) => (
-            <Show
-              when={state.mode === "view" && index() === 0}
-              fallback={<div class="roster-slot" aria-hidden="true" />}
-            >
-              <button class="roster-slot" type="button" onClick={beginEdit}>
-                + Add team
-              </button>
-            </Show>
+            <Switch fallback={<div class="roster-slot" aria-hidden="true" />}>
+              <Match when={index() === 0 && state.mode === "view"}>
+                <button class="roster-slot" type="button" onClick={beginEdit}>
+                  + Add team
+                </button>
+              </Match>
+              <Match when={index() === 0 && isEmptyDraft()}>
+                <p class="roster-slot roster-slot-error" role="alert">
+                  Pick a team to save
+                </p>
+              </Match>
+            </Switch>
           )}
         </For>
       </div>
@@ -273,34 +299,12 @@ export function Form(props: {
         )}
       </Show>
 
-      <Show when={state.mode !== "view"}>
-        <div class="form-submit-row dashboard-actions">
-          <button
-            class="btn btn-primary"
-            type="submit"
-            disabled={state.mode === "saving" || isEmptyDraft()}
-            data-unavailable={isEmptyDraft() ? "true" : undefined}
-          >
-            {state.mode === "saving" ? "Saving…" : "Save changes"}
-          </button>
-          <button
-            class="btn btn-secondary"
-            type="button"
-            disabled={state.mode === "saving"}
-            onClick={() => {
-              finishEdit(false);
-            }}
-          >
-            Cancel
-          </button>
-          <Show when={error()}>
-            {(value) => (
-              <p class="form-error" role="alert">
-                {value()}
-              </p>
-            )}
-          </Show>
-        </div>
+      <Show when={state.error}>
+        {(value) => (
+          <div class="app-toast" role="alert">
+            {value()}
+          </div>
+        )}
       </Show>
     </form>
   );

@@ -326,6 +326,26 @@ button {
   border-color: var(--kelly-deep);
 }
 
+.header-cta:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Disabled because the draft can't be saved yet, not because it's busy. */
+.header-cta:disabled[data-unavailable="true"] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.header-cta-quiet:disabled:hover {
+  color: inherit;
+}
+
+.header-cta-solid:disabled:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
 .wordmark:focus-visible,
 .header-cta:focus-visible,
 .modal-close:focus-visible,
@@ -421,13 +441,6 @@ button {
   box-shadow: var(--shadow);
 }
 
-/* Disabled because the form can't be submitted yet, not because it's busy. */
-.btn-primary:disabled[data-unavailable="true"] {
-  opacity: 0.35;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
 .btn-secondary {
   background: var(--paper);
   color: var(--ink);
@@ -435,11 +448,6 @@ button {
 
 .btn-secondary:hover {
   background: var(--kelly-wash);
-}
-
-.btn-secondary:disabled {
-  opacity: 0.6;
-  cursor: wait;
 }
 
 /* Ticker */
@@ -1334,6 +1342,12 @@ select.form-input {
   margin-bottom: 8px;
 }
 
+.dashboard-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .dashboard-title {
   font-weight: 900;
   font-stretch: 65%;
@@ -1451,6 +1465,10 @@ button.roster-slot:focus-visible {
   outline-offset: 2px;
 }
 
+.roster-slot-error {
+  color: var(--error);
+}
+
 /* A small .modal-close, shown on roster cards while editing. */
 .roster-remove {
   position: absolute;
@@ -1540,11 +1558,6 @@ button.roster-slot:focus-visible {
   margin-top: 16px;
 }
 
-.dashboard-actions {
-  gap: 12px;
-  margin-top: 32px;
-}
-
 @media (max-width: 840px) {
   .dashboard-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1555,16 +1568,12 @@ button.roster-slot:focus-visible {
   .dashboard {
     padding: 28px 0 48px;
   }
+}
 
-  .dashboard-actions .form-error {
-    flex-basis: 100%;
-  }
-
-  .dashboard-actions .btn {
-    flex: 1;
-    padding-right: 10px;
-    padding-left: 10px;
-    text-align: center;
-    white-space: nowrap;
+/* Too narrow for the one-line title beside Cancel and Save: stack it in both
+   modes so the heading keeps its height when editing starts. */
+@media (max-width: 420px) {
+  .dashboard-title em {
+    display: block;
   }
 }
