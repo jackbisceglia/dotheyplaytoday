@@ -10,8 +10,7 @@ function DevCatalogNotice() {
     <Show when={import.meta.env.DEV && isVisible()}>
       <aside class="dev-catalog-notice" role="status">
         <span>
-          Development catalog: event notifications are available for the NBA
-          only.
+          Development catalog: real events were seeded for a two-day window.
         </span>
         <button
           class="modal-close"

@@ -89,6 +89,7 @@ PostgreSQL persistence
 ├── seed actions through a direct PlanetScale role
 │   ├── catalog
 │   │   ├── registers only current league catalogs and explicit season data
+│   │   ├── windows development events to the current UTC day and the next one
 │   │   ├── rejects invalid participants and duplicate source IDs before writing
 │   │   ├── imports events, feed edges, and participants
 │   │   ├── updates stable source IDs without duplication
