@@ -27,7 +27,7 @@ describe("sign-in email", () => {
         expect(rendered.body.text).toContain("only be used once");
         expect(rendered.body.html).toContain(url.replaceAll("&", "&amp;"));
         expect(rendered.body.html).toContain(
-          "/email/headlines/v1/your-sign-in-link.png",
+          "/email/headlines/your-sign-in-link.png",
         );
         expect(rendered.body.html).toContain('alt="Your sign-in link."');
         expect(rendered.metadata).toBeUndefined();

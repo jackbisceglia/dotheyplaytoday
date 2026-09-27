@@ -1,13 +1,11 @@
 // Renders every tiled email headline into `public/`. Run `pnpm email:generate`
-// after building core and data, whose dists this imports. Each email owns its
-// headline lines; `imagePath` in `@dtpt/core/modules/email/headline` maps them
-// to the file the email links to.
+// after building core and data, whose dists this imports.
 
 import { Resvg } from "@resvg/resvg-js";
 import {
   emphasize,
   HeadlineImageSize,
-  imagePath,
+  buildHeadlineImagePath,
   type Lines,
 } from "@dtpt/core/modules/email/headline";
 import { confirmationLines } from "@dtpt/core/modules/email/transactional/confirmation";
@@ -114,7 +112,7 @@ const assertFits = async (lines: Lines) => {
 
     if (width > available) {
       throw new Error(
-        `${imagePath(lines)} overflows its tile by ${Math.ceil((width - available) / SCALE).toString()}px`,
+        `${buildHeadlineImagePath(lines)} overflows its tile by ${Math.ceil((width - available) / SCALE).toString()}px`,
       );
     }
   }
@@ -137,7 +135,7 @@ const teams = SeedCollections.flatMap((collection) =>
 const headlines = [
   ...new Map(
     [signInLines, confirmationLines, kickoffLines, ...teams].map((lines) => [
-      imagePath(lines),
+      buildHeadlineImagePath(lines),
       lines,
     ]),
   ),

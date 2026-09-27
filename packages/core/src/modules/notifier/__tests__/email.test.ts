@@ -97,7 +97,7 @@ describe("email rendering", () => {
         expect(payload.html).toContain("@media (prefers-color-scheme: dark)");
         // The headline is the team's pre-rendered tile, with its text as alt.
         expect(payload.html).toContain(
-          'src="https://example.com:8080/email/headlines/v1/celtics-play-today.png"',
+          'src="https://example.com:8080/email/headlines/celtics-play-today.png"',
         );
         expect(payload.html).toContain('alt="Celtics play today."');
         // The game count restates the subject line, so it is not rendered.
@@ -247,7 +247,7 @@ describe("nfl season opener header", () => {
       const payload = lastPayload();
 
       expect(payload.html).toContain(
-        'src="https://example.com:8080/email/headlines/v1/football-is-back.png"',
+        'src="https://example.com:8080/email/headlines/football-is-back.png"',
       );
       expect(payload.html).toContain('alt="Football is back."');
       expect(payload.html).not.toContain("eagles-play-today.png");
@@ -272,7 +272,7 @@ describe("nfl season opener header", () => {
 
       expect(payload.subject).toBe("Eagles play today");
       expect(payload.html).toContain(
-        "/email/headlines/v1/eagles-play-today.png",
+        "/email/headlines/eagles-play-today.png",
       );
       expect(payload.html).not.toContain("football-is-back.png");
       expect(payload.text).not.toContain("Football is back.");

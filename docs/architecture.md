@@ -170,17 +170,15 @@ Email headlines are pre-rendered PNG tiles rather than live text. No Gmail
 client loads web fonts, and forced dark modes recolor text but leave images
 alone, so the brand's condensed display type on an ink panel only survives as
 an image. Each email owns its headline copy as lines, the last word of which the
-brand sets in kelly, and passes `EmailView` a resolved headline built with
-`makeTiledHeadline` or `makeTextHeadline` from `core`'s `email/headline.ts`.
-`imagePath` names each image after its copy, so the email and the renderer
-agree on the file and new copy gets a new URL. `pnpm --filter @dtpt/web
-email:generate` collects every tiled headline's lines, including one per
-catalog team, and renders them into the web app's `public/email/headlines/`,
-which is committed and served with the site. Rerun it after building core and
-data whenever headline copy or the catalog changes, and bump the design
-version in `imagePath` for artwork changes, because Gmail caches images by URL.
-The feedback digest uses a live-text headline. Body copy uses each platform's
-system UI font.
+brand sets in kelly, and passes `EmailView` a `Headline` from `core`'s
+`email/headline.ts`: a tiled headline built with `makeTiledHeadline`, or a
+live-text `TextHeadline` like the feedback digest's. `buildHeadlineImagePath`
+names each image after its copy, so the email and the renderer agree on the
+file. `pnpm --filter @dtpt/web email:generate` collects every tiled headline's
+lines, including one per catalog team, and renders them into the web app's
+`public/email/headlines/`, which is committed and served with the site. Rerun
+it after building core and data whenever headline copy, the catalog, or the
+artwork changes. Body copy uses each platform's system UI font.
 
 The operations Worker owns feedback's administrator config, digest rendering,
 and a static Resend email layer with its operations-specific sender; `core`

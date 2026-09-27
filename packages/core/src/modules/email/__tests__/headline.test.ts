@@ -1,19 +1,18 @@
 import { describe, expect, it } from "@effect/vitest";
 
 import {
+  buildHeadlineImagePath,
   emphasize,
-  imagePath,
-  makeTextHeadline,
   makeTiledHeadline,
 } from "../headline.js";
 
 describe("email headline", () => {
   it("names the image after the copy", () => {
-    expect(imagePath(["Knicks", "play today."])).toBe(
-      "email/headlines/v1/knicks-play-today.png",
+    expect(buildHeadlineImagePath(["Knicks", "play today."])).toBe(
+      "email/headlines/knicks-play-today.png",
     );
-    expect(imagePath(["Your sign-in", "link."])).toBe(
-      "email/headlines/v1/your-sign-in-link.png",
+    expect(buildHeadlineImagePath(["Your sign-in", "link."])).toBe(
+      "email/headlines/your-sign-in-link.png",
     );
   });
 
@@ -34,15 +33,8 @@ describe("email headline", () => {
     ).toEqual({
       _tag: "tiled",
       lines: ["Knicks", "play today."],
-      image: "https://example.com/email/headlines/v1/knicks-play-today.png",
+      image: "https://example.com/email/headlines/knicks-play-today.png",
       href: "https://example.com/",
-    });
-  });
-
-  it("keeps text headlines to their lines", () => {
-    expect(makeTextHeadline(["New feedback", "landed."])).toEqual({
-      _tag: "text",
-      lines: ["New feedback", "landed."],
     });
   });
 });

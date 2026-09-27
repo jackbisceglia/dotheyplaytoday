@@ -30,7 +30,7 @@ describe("confirmation email", () => {
         expect(rendered.body.text).toContain("only be used once");
         expect(rendered.body.html).toContain(url.replaceAll("&", "&amp;"));
         expect(rendered.body.html).toContain(
-          "/email/headlines/v1/confirm-your-updates.png",
+          "/email/headlines/confirm-your-updates.png",
         );
         expect(rendered.body.html).toContain('alt="Confirm your updates."');
         expect(rendered.metadata).toBeUndefined();

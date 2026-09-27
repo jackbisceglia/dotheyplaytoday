@@ -6,7 +6,7 @@ import {
   Text,
   type EmailRendered,
 } from "@dtpt/core/modules/email/render";
-import { makeTextHeadline } from "@dtpt/core/modules/email/headline";
+import { TextHeadline } from "@dtpt/core/modules/email/headline";
 import { type Feedback } from "@dtpt/core/modules/feedback/schema";
 
 export function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
@@ -35,7 +35,7 @@ export function render(feedback: Array.NonEmptyReadonlyArray<Feedback>) {
 
   return EmailView({
     subject,
-    headline: makeTextHeadline(["New feedback", "landed."]),
+    headline: TextHeadline.make({ lines: ["New feedback", "landed."] }),
     preheader: feedback[0].request,
     blocks: [
       Text.make({ value: `${subject} waiting for review:` }),

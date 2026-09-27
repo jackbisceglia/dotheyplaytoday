@@ -3,12 +3,7 @@ import { Schema } from "effect";
 import { TaggedUnion } from "../../lib/effect/index.js";
 import { StringParts } from "../../lib/string.js";
 import { exactOptional } from "../../lib/utils.js";
-import {
-  emphasize,
-  type Headline,
-  HeadlineImageSize,
-  headlineText,
-} from "./headline.js";
+import { emphasize, Headline, HeadlineImageSize } from "./headline.js";
 
 export type EmailMetadata = {
   readonly unsubscribe: string;
@@ -132,7 +127,7 @@ const blockText = (block: Block): readonly string[] => {
 
 const text = (input: EmailViewProps) =>
   StringParts()
-    .add(headlineText(input.headline.lines))
+    .add(input.headline.lines.join(" "))
     .add("")
     .addParts(
       ...input.blocks.flatMap((block, index) =>
@@ -235,13 +230,13 @@ const blockHtml = (block: Block): string => {
   }
 };
 
-const headerHtml = ({ headline }: EmailViewProps) => {
-  switch (headline._tag) {
-    case "tiled":
-      return `<a href="${escapeHtml(headline.href)}" style="display: block; text-decoration: none;">${element.headlineImage(headline.image, escapeHtml(headlineText(headline.lines)))}</a>`;
-    case "text":
-      return element.headlineText(
-        emphasize(headline.lines)
+const headerHtml = ({ headline }: EmailViewProps) =>
+  Headline.match(headline, {
+    tiled: ({ lines, image, href }) =>
+      `<a href="${escapeHtml(href)}" style="display: block; text-decoration: none;">${element.headlineImage(image, escapeHtml(lines.join(" ")))}</a>`,
+    text: ({ lines }) =>
+      element.headlineText(
+        emphasize(lines)
           .map(({ lead, accent }) =>
             StringParts()
               .addIf(lead !== "", escapeHtml(lead))
@@ -249,9 +244,8 @@ const headerHtml = ({ headline }: EmailViewProps) => {
               .make(" "),
           )
           .join("<br />"),
-      );
-  }
-};
+      ),
+  });
 
 const previewText = (blocks: readonly Block[]) => {
   const [first] = blocks;
