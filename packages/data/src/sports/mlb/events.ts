@@ -27354,7 +27354,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000823491",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000823491",
-    startsAt: "2026-09-25T23:05:00Z",
+    startsAt: "2026-09-25T20:05:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
@@ -27441,7 +27441,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000824706",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000824706",
-    startsAt: "2026-09-25T23:10:00Z",
+    startsAt: "2026-09-25T21:35:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
@@ -27760,7 +27760,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000822678",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000822678",
-    startsAt: "2026-09-26T20:05:00Z",
+    startsAt: "2026-09-26T16:35:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
@@ -27905,7 +27905,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000823489",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000823489",
-    startsAt: "2026-09-26T23:05:00Z",
+    startsAt: "2026-09-25T23:05:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
@@ -28021,7 +28021,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000824705",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000824705",
-    startsAt: "2026-09-26T23:15:00Z",
+    startsAt: "2026-09-27T19:05:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
@@ -28137,7 +28137,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000822679",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000822679",
-    startsAt: "2026-09-27T19:05:00Z",
+    startsAt: "2026-09-27T17:05:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
@@ -28224,7 +28224,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000824703",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000824703",
-    startsAt: "2026-09-27T19:05:00Z",
+    startsAt: "2026-09-25T17:05:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
@@ -28543,7 +28543,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000823490",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000823490",
-    startsAt: "2026-09-27T19:20:00Z",
+    startsAt: "2026-09-27T17:05:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
