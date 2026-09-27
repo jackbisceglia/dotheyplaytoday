@@ -235,6 +235,9 @@ importers:
       '@dtpt/api':
         specifier: workspace:*
         version: link:../api
+      '@dtpt/data':
+        specifier: workspace:*
+        version: link:../data
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2

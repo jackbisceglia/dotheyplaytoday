@@ -5,6 +5,7 @@ import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
 import type { ExtractFromTag } from "../../lib/types.js";
 import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
+import { type Lines, makeTiledHeadline } from "../email/headline.js";
 import {
   EmailView,
   Link,
@@ -175,6 +176,13 @@ const orderBySubject = (
   );
 };
 
+export const gameDayLines = (team: SportsTeamSubject["details"]): Lines => [
+  team.name,
+  "play today.",
+];
+
+export const kickoffLines: Lines = ["Football is", "back."];
+
 // TODO: Generalize this into configurable special events. It is dead after NFL
 // kickoff (2026-09-13), and the NBA opener in October will want a variant with
 // slightly different rules. Instead of deleting it, open a PR that moves the
@@ -256,12 +264,12 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
 
           return {
             subject: kickoff ? `Football's back. ${playsToday}.` : playsToday,
-            home,
-            ...(kickoff && {
-              hero: { headline: "Football is", accent: "back." },
-            }),
-            headline: `${notification.subject.details.name} play`,
-            accent: "today.",
+            headline: makeTiledHeadline(
+              home,
+              kickoff
+                ? kickoffLines
+                : gameDayLines(notification.subject.details),
+            ),
             blocks: [
               Matchups.make({ items: matchups }),
               Link.make({

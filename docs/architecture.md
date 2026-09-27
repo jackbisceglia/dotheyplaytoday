@@ -166,6 +166,20 @@ email delivery, which needs no further database access. Delivery failures are
 logged without changing the registration response. The old team-picks signup
 email is no longer sent.
 
+Email headlines are pre-rendered PNG tiles rather than live text. No Gmail
+client loads web fonts, and forced dark modes recolor text but leave images
+alone, so the brand's condensed display type on an ink panel only survives as
+an image. Each email owns its headline copy as lines, the last word of which the
+brand sets in kelly, and passes `EmailView` a `Headline` from `core`'s
+`email/headline.ts`: a tiled headline built with `makeTiledHeadline`, or a
+live-text `TextHeadline` like the feedback digest's. `buildHeadlineImagePath`
+names each image after its copy, so the email and the renderer agree on the
+file. `pnpm @web assets:generate` collects every tiled headline's lines,
+including one per catalog team, and renders them into the web app's
+`public/email/headlines/`, which is committed and served with the site. Rerun
+it after building core and data whenever headline copy, the catalog, or the
+artwork changes. Body copy uses each platform's system UI font.
+
 The operations Worker owns feedback's administrator config, digest rendering,
 and a static Resend email layer with its operations-specific sender; `core`
 retains the generic email rendering and provider boundaries used by that
@@ -180,7 +194,7 @@ bindings, avoiding a props-level resource cycle without reconstructing deployed
 URLs. See [Alchemy service URL wiring](./alchemy-service-urls.md).
 
 Link previews are served from a committed `public/og.png`, rendered offline by
-`pnpm @web og:generate` (`packages/web/scripts/og.ts`) through satori and resvg. Keeping
+`pnpm @web assets:generate` (`packages/web/scripts/og.ts`) through satori and resvg. Keeping
 it a build artifact rather than a request-time route keeps native rendering
 dependencies out of the deploy and gives crawlers a cacheable static asset.
 Crawlers fetch `og:image` from their own servers rather than resolving it
