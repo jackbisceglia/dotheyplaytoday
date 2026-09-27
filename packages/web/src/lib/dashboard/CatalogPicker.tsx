@@ -1,27 +1,19 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { revalidate } from "@solidjs/router";
 import { Result } from "effect";
-import { createMemo, Loading } from "solid-js";
 
-import { getSubjects } from "../subjects.js";
+import { getSubjects, type SubjectsResult } from "../subjects.js";
 import { TeamPicker } from "../ui/TeamPicker.jsx";
 
 export function CatalogPicker(props: {
+  readonly subjects: SubjectsResult;
   readonly selected: ReadonlySet<string>;
   readonly rejectedSelectionId: string | undefined;
   readonly onToggle: (team: Subject) => void;
 }) {
-  const result = createMemo(() => getSubjects());
-
   return (
-    <Loading
-      fallback={
-        <p class="team-grid-loading" role="status">
-          Loading teams…
-        </p>
-      }
-    >
-      {Result.match(result(), {
+    <>
+      {Result.match(props.subjects, {
         onSuccess: (subjects) => (
           <TeamPicker
             subjects={subjects}
@@ -45,6 +37,6 @@ export function CatalogPicker(props: {
           </p>
         ),
       })}
-    </Loading>
+    </>
   );
 }

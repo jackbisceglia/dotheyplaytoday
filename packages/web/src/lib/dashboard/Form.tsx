@@ -13,6 +13,7 @@ import {
   sendTimeIntervals,
 } from "../time.js";
 import { CatalogPicker } from "./CatalogPicker.jsx";
+import type { SubjectsResult } from "../subjects.js";
 import type { Preferences } from "./preferences.js";
 
 const capacity = SubscriptionPolicy.subject.constraints.max;
@@ -27,6 +28,7 @@ type FormState = {
 
 export function Form(props: {
   readonly preferences: Preferences;
+  readonly subjects: SubjectsResult;
   readonly onSaved: () => void;
 }) {
   const savedTeams = () =>
@@ -206,6 +208,7 @@ export function Form(props: {
           </h2>
           <fieldset class="dashboard-picker" disabled={state.mode === "saving"}>
             <CatalogPicker
+              subjects={props.subjects}
               selected={new Set(state.teams.map((team) => team.id))}
               rejectedSelectionId={rejection.rejectedSelectionId()}
               onToggle={toggle}

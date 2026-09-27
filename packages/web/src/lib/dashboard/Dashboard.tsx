@@ -1,10 +1,18 @@
-import { createMemo, Errored, Loading, refresh } from "solid-js";
+import { revalidate } from "@solidjs/router";
+import { createMemo, Errored, Loading } from "solid-js";
 
+import { getSubjects } from "../subjects.js";
 import { DashboardHeading, Form } from "./Form.jsx";
 import { getPreferences } from "./preferences.js";
 
 export function Dashboard() {
-  const preferences = createMemo(getPreferences, { ssrSource: "client" });
+  // Reading both for as long as the page is mounted keeps their router cache
+  // entries alive, so opening the editor reuses the catalog the route
+  // preloaded instead of fetching it again.
+  const preferences = createMemo(() => getPreferences(), {
+    ssrSource: "client",
+  });
+  const subjects = createMemo(() => getSubjects());
 
   return (
     <section class="dashboard" aria-labelledby="dashboard-title">
@@ -18,7 +26,7 @@ export function Dashboard() {
                 class="btn btn-secondary"
                 type="button"
                 onClick={() => {
-                  refresh(preferences);
+                  revalidate(getPreferences.key);
                   reset();
                 }}
               >
@@ -32,7 +40,7 @@ export function Dashboard() {
           fallback={
             <>
               <DashboardHeading />
-              <p class="dashboard-status" role="status">
+              <p class="visually-hidden" role="status">
                 Loading your picks…
               </p>
             </>
@@ -40,8 +48,9 @@ export function Dashboard() {
         >
           <Form
             preferences={preferences()}
+            subjects={subjects()}
             onSaved={() => {
-              refresh(preferences);
+              revalidate(getPreferences.key);
             }}
           />
         </Loading>

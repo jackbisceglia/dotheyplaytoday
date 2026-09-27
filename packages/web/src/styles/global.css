@@ -693,11 +693,6 @@ button {
   gap: 10px;
 }
 
-.team-grid-loading {
-  color: var(--muted);
-  padding: 24px 0;
-}
-
 .team-message-slot {
   min-height: 1.2rem;
 }
@@ -1391,10 +1386,6 @@ select.form-input {
 .lede-select:focus-visible {
   outline: 3px solid var(--kelly);
   outline-offset: 2px;
-}
-
-.dashboard-status {
-  color: var(--muted);
 }
 
 .dashboard-load-error {
