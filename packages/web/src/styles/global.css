@@ -1339,7 +1339,7 @@ select.form-input {
   justify-content: space-between;
   gap: 16px;
   min-height: 40px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .dashboard-heading-actions {
@@ -1363,7 +1363,7 @@ select.form-input {
 }
 
 .dashboard-lede {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   color: var(--muted);
   font-size: 1.05rem;
   line-height: 1.5;
@@ -1376,7 +1376,8 @@ select.form-input {
 
 /* While editing, the send time in the sentence becomes the control. */
 .lede-select {
-  padding: 0 14px 0 0;
+  field-sizing: content;
+  padding: 0 18px 0 0;
   border: 0;
   border-bottom: 2px solid var(--ink);
   border-radius: 0;
@@ -1385,8 +1386,8 @@ select.form-input {
     linear-gradient(45deg, transparent 50%, var(--ink) 50%),
     linear-gradient(135deg, var(--ink) 50%, transparent 50%);
   background-position:
-    calc(100% - 5px) 55%,
-    100% 55%;
+    calc(100% - 7px) 55%,
+    calc(100% - 2px) 55%;
   background-size:
     5px 5px,
     5px 5px;
@@ -1400,9 +1401,11 @@ select.form-input {
   margin-bottom: -2px;
 }
 
+/* An outline would crowd the words either side; tint the field instead. */
 .lede-select:focus-visible {
-  outline: 3px solid var(--kelly);
-  outline-offset: 2px;
+  outline: none;
+  border-bottom-color: var(--kelly);
+  background-color: var(--kelly-wash);
 }
 
 .dashboard-load-error {
@@ -1515,7 +1518,7 @@ button.roster-slot:focus-visible {
   flex-direction: column;
   gap: 14px;
   min-width: 0;
-  margin-top: 36px;
+  margin-top: 32px;
 }
 
 .dashboard-section h2:focus {
