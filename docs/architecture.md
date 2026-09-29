@@ -329,7 +329,9 @@ SSR cannot assume it has the session cookie. After a browser verifies a session,
 Web stores a non-authoritative local auth hint. A synchronous document script
 uses that hint to replace-navigate root visits to `/home` before the SSR landing
 page paints; the authenticated route still verifies the real session and clears
-stale hints. The root route exposes sign-in through a query-driven modal, and
+stale hints. In-app visits never paint the landing page for a signed-in session
+either: the landing route renders nothing once the session is authenticated,
+and the header wordmark links signed-in visitors to `/home`. The root route exposes sign-in through a query-driven modal, and
 `/home` provides confirmation, sign-out, and unsubscribe entry points. The dashboard loads private preferences in the browser and shares its team
 picker with signup. Its edit draft supports save/cancel, team removal, and send
 time changes; account email/timezone editing remains separate work. Existing

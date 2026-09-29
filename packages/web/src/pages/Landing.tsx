@@ -37,60 +37,64 @@ export function Landing() {
     },
   );
 
+  // Render nothing once the session is known to be signed in, so the redirect
+  // above never paints the landing page first.
   return (
-    <Layout
-      headerActions={[
-        { href: loginHref(), label: "Log in", variant: "quiet" },
-        { href: "#signup", label: "Sign up", variant: "solid" },
-      ]}
-    >
-      <Show when={search.modal === "login"}>
-        <Login />
-      </Show>
-      <section class="hero">
-        <h1 class="hero-headline">
-          Your team plays
-          <br />
-          <em>tonight.</em>
-          <br />
-          Now you know.
-        </h1>
-        <p class="hero-copy">
-          Pick your team, pick a time, and get an update on game day.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#signup">
-            Get game-day updates
-          </a>
-        </div>
-      </section>
+    <Show when={getSessionStatus(session()) !== "authenticated"}>
+      <Layout
+        headerActions={[
+          { href: loginHref(), label: "Log in", variant: "quiet" },
+          { href: "#signup", label: "Sign up", variant: "solid" },
+        ]}
+      >
+        <Show when={search.modal === "login"}>
+          <Login />
+        </Show>
+        <section class="hero">
+          <h1 class="hero-headline">
+            Your team plays
+            <br />
+            <em>tonight.</em>
+            <br />
+            Now you know.
+          </h1>
+          <p class="hero-copy">
+            Pick your team, pick a time, and get an update on game day.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#signup">
+              Get game-day updates
+            </a>
+          </div>
+        </section>
 
-      <ScoreTicker />
+        <ScoreTicker />
 
-      <section class="signup" id="signup">
-        <div class="signup-header">
-          <h2 class="signup-title">Get on the roster</h2>
-        </div>
-        <Loading fallback={<p role="status">Loading teams…</p>}>
-          {Result.match(result(), {
-            onSuccess: (subjects) => <SignupForm subjects={subjects} />,
-            onFailure: () => (
-              <p class="form-error" role="alert">
-                We couldn't load the team list.{" "}
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  onClick={() => {
-                    revalidate(getSubjects.key);
-                  }}
-                >
-                  Try again
-                </button>
-              </p>
-            ),
-          })}
-        </Loading>
-      </section>
-    </Layout>
+        <section class="signup" id="signup">
+          <div class="signup-header">
+            <h2 class="signup-title">Get on the roster</h2>
+          </div>
+          <Loading fallback={<p role="status">Loading teams…</p>}>
+            {Result.match(result(), {
+              onSuccess: (subjects) => <SignupForm subjects={subjects} />,
+              onFailure: () => (
+                <p class="form-error" role="alert">
+                  We couldn't load the team list.{" "}
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onClick={() => {
+                      revalidate(getSubjects.key);
+                    }}
+                  >
+                    Try again
+                  </button>
+                </p>
+              ),
+            })}
+          </Loading>
+        </section>
+      </Layout>
+    </Show>
   );
 }
