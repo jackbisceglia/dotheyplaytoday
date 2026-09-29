@@ -1,5 +1,5 @@
 import { revalidate } from "@solidjs/router";
-import { createMemo, Errored, Loading } from "solid-js";
+import { createMemo, Errored } from "solid-js";
 
 import { DashboardHeading, Form } from "./Form.jsx";
 import { getPreferences } from "./preferences.js";
@@ -7,6 +7,9 @@ import { getPreferences } from "./preferences.js";
 export function Dashboard() {
   const preferences = createMemo(() => getPreferences());
 
+  // No `Loading` here on purpose: a pending read holds the transition, so the
+  // authenticated shell keeps its splash (or blank) until the whole page can
+  // show with its data, instead of revealing the chrome first.
   return (
     <section class="dashboard" aria-labelledby="dashboard-title">
       <Errored
@@ -29,23 +32,12 @@ export function Dashboard() {
           </>
         )}
       >
-        <Loading
-          fallback={
-            <>
-              <DashboardHeading />
-              <p class="visually-hidden" role="status">
-                Loading your picks…
-              </p>
-            </>
-          }
-        >
-          <Form
-            preferences={preferences()}
-            onSaved={() => {
-              revalidate(getPreferences.key);
-            }}
-          />
-        </Loading>
+        <Form
+          preferences={preferences()}
+          onSaved={() => {
+            revalidate(getPreferences.key);
+          }}
+        />
       </Errored>
     </section>
   );

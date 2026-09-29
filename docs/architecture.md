@@ -246,10 +246,13 @@ data; the current production owner account must be recreated manually.
 The dashboard's user and subscription data is a `getPreferences` router query.
 The `/home` route preloads it on the client only, because the API cookie lives
 in the browser, so it loads alongside the authenticated shell's session check.
-The dashboard reads it under its `Loading` and `Errored` boundary. The router
-keeps an entry only while something reads it, or for a few seconds after, so
-private data doesn't outlive the signed-in page. The form derives its saved roster and delivery times from that
-data and initializes a separate draft when editing begins. Successful writes
+The dashboard has an `Errored` boundary but deliberately no `Loading`: its
+pending read holds the transition, so the authenticated shell keeps its splash
+(or blank screen) until the whole page can render with its data, under the same
+200ms/400ms thresholds as the session check. The router keeps an entry only
+while something reads it, or for a few seconds after, so private data doesn't
+outlive the signed-in page. The form derives its saved roster and delivery
+times from that data and initializes a separate draft when editing begins. Successful writes
 revalidate the query; cancelled or failed writes never replace it.
 
 Signup and the dashboard editor share the `getSubjects` router query and the

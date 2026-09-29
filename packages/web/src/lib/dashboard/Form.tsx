@@ -312,7 +312,7 @@ export function Form(props: {
   );
 }
 
-// Rendered by the loading and error states too, so the title never shifts.
+// Rendered by the error state too, so the title never shifts.
 export function DashboardHeading(props: ParentProps) {
   return (
     <div class="dashboard-heading">
