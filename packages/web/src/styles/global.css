@@ -1374,6 +1374,10 @@ select.form-input {
   font-weight: 800;
 }
 
+.dashboard-lede-time {
+  white-space: nowrap;
+}
+
 /* While editing, the send time in the sentence becomes the control. */
 .lede-select {
   field-sizing: content;
@@ -1585,5 +1589,12 @@ button.roster-slot:focus-visible {
   .dashboard-lede {
     font-size: 1rem;
     line-height: 1.7;
+    text-wrap: balance;
+  }
+
+  /* One sentence on wide screens; on phones the address takes its own line
+     instead of wrapping wherever it falls. */
+  .dashboard-lede-address {
+    display: block;
   }
 }

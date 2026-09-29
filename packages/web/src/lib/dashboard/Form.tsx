@@ -172,13 +172,13 @@ export function Form(props: {
         </Show>
       </DashboardHeading>
       <p class="dashboard-lede">
-        Emails
+        You'll get an email
         <Show when={state.mode !== "view" || savedTimes().length > 0}>
           {" at "}
           <Show
             when={state.mode !== "view"}
             fallback={
-              <strong>
+              <strong class="dashboard-lede-time">
                 {savedTimes().map(formatSecondsLocal).join(" / ")}
               </strong>
             }
@@ -206,9 +206,10 @@ export function Form(props: {
             </select>
           </Show>
         </Show>{" "}
-        when your teams play.
-        <br />
-        Sent to <strong>{props.preferences.user.email}</strong>.
+        when your teams play,{" "}
+        <span class="dashboard-lede-address">
+          sent to <strong>{props.preferences.user.email}</strong>.
+        </span>
       </p>
       <p class="visually-hidden" aria-live="polite">
         {teams().length} of {capacity} teams picked
