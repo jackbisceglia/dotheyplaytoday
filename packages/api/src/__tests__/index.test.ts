@@ -594,6 +594,7 @@ describe("assembled HTTP API", () => {
       { ...signup, email: "invalid" },
       { ...signup, timezone: "invalid" },
       { ...signup, subjectIds: [] },
+      { ...signup, subjectIds: Array(5).fill(subject.id) },
       {
         ...signup,
         schedule: { ...signup.schedule, sendAtSecondsLocal: 32401 },

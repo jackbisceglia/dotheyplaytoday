@@ -14,10 +14,12 @@ import {
 
 export const SubscriptionsResponse = Schema.Array(SubscriptionWithSubject);
 
+export const SubjectSelection = Schema.NonEmptyArray(SubjectId).check(
+  Schema.isMaxLength(SubscriptionPolicy.subject.constraints.max),
+);
+
 export const UpdateSubscriptionsRequest = Schema.Struct({
-  subjectIds: Schema.NonEmptyArray(SubjectId).check(
-    Schema.isMaxLength(SubscriptionPolicy.subject.constraints.max),
-  ),
+  subjectIds: SubjectSelection,
   schedule: FixedSchedule,
 });
 

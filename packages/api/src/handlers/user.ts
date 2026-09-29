@@ -96,26 +96,19 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
             return { ok: true as const };
           },
-          Effect.tapErrorTag(CreateErrorTags, (e) =>
-            Effect.logError("signup: unexpected failure", {
-              error: e.message,
-            }),
-          ),
           Effect.catchTags({
             InvalidSubjectSelection: () =>
               Effect.fail(new HttpApiError.BadRequest({})),
             SubjectCapacityReached: () =>
               Effect.fail(new HttpApiError.BadRequest({})),
             RateLimitExceeded: () => Effect.fail(new SignupRateLimited({})),
-            DatabaseReadError: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
-            DatabaseTransactionError: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
-            DatabaseWriteError: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
-            SchemaError: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
           }),
+          Effect.tapErrorTag(CreateErrorTags, (error) =>
+            Effect.logError("signup: unexpected failure", { error }),
+          ),
+          Effect.catchTag(CreateErrorTags, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
+          ),
         ),
       )
       .handle(
