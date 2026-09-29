@@ -28544,7 +28544,7 @@ export const Games = {
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000823490",
     startsAt: "2026-09-27T17:05:00Z",
-    availability: "active",
+    availability: "cancelled",
     details: {
       _tag: "sports_game",
       leagueId: "mlb",
@@ -28564,6 +28564,238 @@ export const Games = {
           _tag: "sports_game",
           role: "away",
           title: "Baltimore Orioles",
+        },
+      },
+    ],
+  },
+  _849845: {
+    id: "00000000-0000-4000-8000-100000849845",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849845",
+    startsAt: "2026-09-29T18:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Atlanta Braves",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Philadelphia Phillies",
+        },
+      },
+    ],
+  },
+  _849849: {
+    id: "00000000-0000-4000-8000-100000849849",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849849",
+    startsAt: "2026-09-29T21:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Houston Astros",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago White Sox",
+        },
+      },
+    ],
+  },
+  _849851: {
+    id: "00000000-0000-4000-8000-100000849851",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849851",
+    startsAt: "2026-09-30T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "New York Yankees",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Boston Red Sox",
+        },
+      },
+    ],
+  },
+  _849843: {
+    id: "00000000-0000-4000-8000-100000849843",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849843",
+    startsAt: "2026-09-30T02:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "San Diego Padres",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago Cubs",
+        },
+      },
+    ],
+  },
+  _849841: {
+    id: "00000000-0000-4000-8000-100000849841",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849841",
+    startsAt: "2026-09-30T18:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Atlanta Braves",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Philadelphia Phillies",
+        },
+      },
+    ],
+  },
+  _849846: {
+    id: "00000000-0000-4000-8000-100000849846",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849846",
+    startsAt: "2026-09-30T21:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Houston Astros",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago White Sox",
+        },
+      },
+    ],
+  },
+  _849848: {
+    id: "00000000-0000-4000-8000-100000849848",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849848",
+    startsAt: "2026-10-01T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "New York Yankees",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Boston Red Sox",
+        },
+      },
+    ],
+  },
+  _849842: {
+    id: "00000000-0000-4000-8000-100000849842",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849842",
+    startsAt: "2026-10-01T02:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "San Diego Padres",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago Cubs",
         },
       },
     ],
