@@ -1401,11 +1401,11 @@ select.form-input {
   margin-bottom: -2px;
 }
 
-/* An outline would crowd the words either side; tint the field instead. */
+/* An outline would crowd the words either side; thicken the underline
+   instead, with a shadow so the line box doesn't grow. */
 .lede-select:focus-visible {
   outline: none;
-  border-bottom-color: var(--kelly);
-  background-color: var(--kelly-wash);
+  box-shadow: 0 2px 0 var(--ink);
 }
 
 .dashboard-load-error {
