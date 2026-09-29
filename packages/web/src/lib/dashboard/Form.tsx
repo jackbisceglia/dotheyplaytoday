@@ -172,7 +172,7 @@ export function Form(props: {
         </Show>
       </DashboardHeading>
       <p class="dashboard-lede">
-        You'll get an email
+        Emails
         <Show when={state.mode !== "view" || savedTimes().length > 0}>
           {" at "}
           <Show
@@ -206,8 +206,9 @@ export function Form(props: {
             </select>
           </Show>
         </Show>{" "}
-        on days your teams play, sent to{" "}
-        <strong>{props.preferences.user.email}</strong>.
+        when your teams play.
+        <br />
+        Sent to <strong>{props.preferences.user.email}</strong>.
       </p>
       <p class="visually-hidden" aria-live="polite">
         {teams().length} of {capacity} teams picked
