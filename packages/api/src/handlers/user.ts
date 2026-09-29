@@ -10,15 +10,12 @@ import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
 import { Effect, Match, Option } from "effect";
-import {
-  type Headers,
-  HttpEffect,
-  HttpServerResponse,
-} from "effect/unstable/http";
+import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
 import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
+import { withNoStoreResponse } from "../lib/no-store.js";
 
 const ReadErrorTags = [
   "AuthRequestError",
@@ -99,26 +96,19 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
             return { ok: true as const };
           },
-          Effect.tapErrorTag(CreateErrorTags, (e) =>
-            Effect.logError("signup: unexpected failure", {
-              error: e.message,
-            }),
-          ),
           Effect.catchTags({
             InvalidSubjectSelection: () =>
               Effect.fail(new HttpApiError.BadRequest({})),
             SubjectCapacityReached: () =>
               Effect.fail(new HttpApiError.BadRequest({})),
             RateLimitExceeded: () => Effect.fail(new SignupRateLimited({})),
-            DatabaseReadError: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
-            DatabaseTransactionError: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
-            DatabaseWriteError: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
-            SchemaError: () =>
-              Effect.fail(new HttpApiError.InternalServerError({})),
           }),
+          Effect.tapErrorTag(CreateErrorTags, (error) =>
+            Effect.logError("signup: unexpected failure", { error }),
+          ),
+          Effect.catchTag(CreateErrorTags, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
+          ),
         ),
       )
       .handle(
@@ -151,15 +141,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
             SchemaError: () =>
               Effect.fail(new HttpApiError.InternalServerError({})),
           }),
-          HttpEffect.withPreResponseHandler((_, response) =>
-            Effect.succeed(
-              HttpServerResponse.setHeader(
-                response,
-                "cache-control",
-                "no-store",
-              ),
-            ),
-          ),
+          withNoStoreResponse,
         ),
       )
       .handle(

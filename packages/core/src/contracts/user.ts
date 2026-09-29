@@ -6,7 +6,6 @@ import {
   HttpApiGroup,
 } from "effect/unstable/httpapi";
 
-import { SubjectId } from "../modules/subjects/schema.js";
 import { FixedSchedule } from "../modules/subscriptions/schema.js";
 import {
   EmailAddressFromString,
@@ -14,7 +13,7 @@ import {
   User,
 } from "../modules/users/schema.js";
 
-import { SubscriptionGroup } from "./subscription.js";
+import { SubjectSelection, SubscriptionGroup } from "./subscription.js";
 
 export const UserResponse = User.mapFields(Struct.pick(["email", "timezone"]));
 
@@ -22,7 +21,7 @@ export const SignupRequest = Schema.Struct({
   email: EmailAddressFromString,
   timezone: Schema.TimeZoneNamedFromString,
   schedule: FixedSchedule,
-  subjectIds: Schema.NonEmptyArray(SubjectId),
+  subjectIds: SubjectSelection,
 });
 
 export const SignupResponse = Schema.Struct({

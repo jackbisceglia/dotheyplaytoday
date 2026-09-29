@@ -15,7 +15,7 @@ export const sendTime = {
 const getStepCount = () =>
   Duration.toSeconds("24 hours") / sendTime.stepSeconds;
 
-const formatSecondsLocal = (seconds: number) => {
+export const formatSecondsLocal = (seconds: number) => {
   const parts = Duration.parts(Duration.seconds(seconds));
 
   const meridiem = parts.hours < 12 ? "AM" : "PM";

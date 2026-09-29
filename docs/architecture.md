@@ -255,6 +255,27 @@ the worktree-scoped scheme.
 There is no automated D1 data transfer. Seeds rebuild catalog and development
 data; the current production owner account must be recreated manually.
 
+### Dashboard data and editing
+
+The dashboard's user and subscription data is a `getPreferences` router query.
+The `/home` route preloads it on the client only, because the API cookie lives
+in the browser, so it loads alongside the authenticated shell's session check.
+The dashboard has an `Errored` boundary but deliberately no `Loading`: its
+pending read holds the transition, so the authenticated shell keeps its splash
+(or blank screen) until the whole page can render with its data, under the same
+200ms/400ms thresholds as the session check. The router keeps an entry only
+while something reads it, or for a few seconds after, so private data doesn't
+outlive the signed-in page. The form derives its saved roster and delivery
+times from that data and initializes a separate draft when editing begins. Successful writes
+revalidate the query; cancelled or failed writes never replace it.
+
+Signup and the dashboard editor share the `getSubjects` router query and the
+presentational `ui/TeamPicker`. The `/home` route preloads the public catalog,
+and the dashboard form reads it from mount, not the picker that only mounts
+while editing, so the entry stays cached and the editor opens without a second
+fetch. Selection feedback lives beside the shared picker rather than under
+signup.
+
 ## Testing and validation
 
 API contract tests live in `packages/core/src/contracts/__tests__`, named for
@@ -291,8 +312,7 @@ Separate follow-ups are:
 1. Implement the remaining PostgreSQL persistence test plan against disposable Alchemy-managed branches.
 2. Evaluate Alchemy `Drizzle.Schema` and generated migrations after the explicit migration flow is stable.
 3. Evaluate native PostgreSQL `UUID` and `TIMESTAMPTZ` columns independently of this migration.
-4. Add account and subscription-management interfaces plus the authenticated
-   team-management APIs needed to update existing preferences. Cookie sharing
+4. Add account email/timezone editing. Cookie sharing
    across subdomains is intentionally still disabled; browser calls target the
    API origin with credentials.
 
@@ -301,6 +321,7 @@ Separate follow-ups are:
 - `GET /api/user`: authenticated user's email and timezone.
 - `POST /api/user`: save a new unverified user and subscriptions, then request a confirmation link; duplicate signup requests another link and returns 409 without changing preferences.
 - `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
+- `POST /api/user/subscription`: replace the session user's one to four teams and fixed send time atomically; retained subscriptions preserve IDs and last-sent state.
 - `POST /api/user/unsubscribe`: delete the authenticated user when no token is supplied, or the token owner for an unauthenticated email link.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
 
@@ -314,7 +335,7 @@ Registration and unsubscribe contracts live with the user group in
 `contracts/user.ts`. `UserApi` composes both groups and applies `/user` once;
 the subscription group declares only `/subscription`. The generated
 client exposes `user.get()`, `user.create()`, `user.unsubscribe()`, and
-`subscription.list()`. Read responses compose existing domain schemas;
+`subscription.list()` / `subscription.update()`. Read responses compose existing domain schemas;
 there is no Account model. Identity comes exclusively from the session.
 
 Browser API requests include credentials. API cookies remain host-only, so Web
@@ -322,8 +343,11 @@ SSR cannot assume it has the session cookie. After a browser verifies a session,
 Web stores a non-authoritative local auth hint. A synchronous document script
 uses that hint to replace-navigate root visits to `/home` before the SSR landing
 page paints; the authenticated route still verifies the real session and clears
-stale hints. The root route exposes sign-in through a query-driven modal, and
-`/home` provides confirmation, sign-out, and unsubscribe entry points. Full
-account and subscription-management interfaces remain separate work. Existing
+stale hints. In-app visits never paint the landing page for a signed-in session
+either: the landing route renders nothing once the session is authenticated,
+and the header wordmark links signed-in visitors to `/home`. The root route exposes sign-in through a query-driven modal, and
+`/home` provides confirmation, sign-out, and unsubscribe entry points. The dashboard loads private preferences in the browser and shares its team
+picker with signup. Its edit draft supports save/cancel, team removal, and send
+time changes; account email/timezone editing remains separate work. Existing
 emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
 new endpoint; no legacy API alias is needed.

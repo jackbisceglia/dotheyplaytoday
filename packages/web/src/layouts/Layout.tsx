@@ -1,5 +1,6 @@
 import { For, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
+import { getSessionStatus, useSession } from "../lib/auth.js";
 import { BrandMark } from "../lib/ui/BrandMark.jsx";
 import { useApplicationPath } from "../lib/paths.js";
 
@@ -28,8 +29,16 @@ function headerActionClass(action: HeaderAction) {
 
 export function Layout(props: LayoutProps) {
   let main: HTMLElement | undefined;
+  const session = useSession();
   const landingHref = useApplicationPath("landing");
+  const homeHref = useApplicationPath("home");
   const feedbackHref = useApplicationPath("feedback");
+  // A signed-in visitor sent to the landing page only bounces back to /home
+  // after it paints, so the wordmark goes straight there.
+  const brandHref = () =>
+    getSessionStatus(session()) === "authenticated"
+      ? homeHref()
+      : landingHref();
 
   return (
     <>
@@ -44,7 +53,7 @@ export function Layout(props: LayoutProps) {
       </a>
 
       <header class="site-header">
-        <a class="wordmark" href={landingHref()}>
+        <a class="wordmark" href={brandHref()}>
           <BrandMark class="wordmark-mark" />
           <span class="visually-hidden">Do they play today</span>
           <span class="wordmark-text" aria-hidden="true">

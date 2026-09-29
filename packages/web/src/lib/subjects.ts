@@ -7,7 +7,7 @@ import { withApiResult } from "./api.js";
 // tag instead of the Effect error (which can hold non-serializable context).
 export const SubjectsLoadFailed = "SubjectsLoadFailed" as const;
 
-export const getSubjects = query(async () => {
+const loadSubjects = async () => {
   const result = await withApiResult((api) => api.subjects.list());
 
   if (import.meta.env.SSR && Result.isFailure(result)) {
@@ -15,4 +15,8 @@ export const getSubjects = query(async () => {
   }
 
   return Result.mapError(result, () => SubjectsLoadFailed);
-}, "subjects");
+};
+
+export const getSubjects = query(loadSubjects, "subjects");
+
+export type SubjectsResult = Awaited<ReturnType<typeof loadSubjects>>;

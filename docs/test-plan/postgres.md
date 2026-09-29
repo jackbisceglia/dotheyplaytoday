@@ -66,7 +66,9 @@ PostgreSQL persistence
 │   │   └── validates event upserts before executing SQL
 │   └── subscriptions
 │       ├── lists subscriptions and notification recipients deterministically
-│       ├── replaces and clears one user's selections
+│       ├── replaces one user's nonempty selections
+│       ├── preserves retained subscription IDs and last-sent state when editing picks/time
+│       ├── serializes concurrent replacements for one user without merging selections
 │       ├── rejects over-capacity and missing-subject replacements before deletion
 │       ├── marks a subscription sent at a UTC instant
 │       ├── reports a missing subscription from mark-sent
