@@ -1571,12 +1571,19 @@ button.roster-slot:focus-visible {
   .dashboard {
     padding: 28px 0 48px;
   }
-}
 
-/* Too narrow for the one-line title beside Cancel and Save: stack it in both
-   modes so the heading keeps its height when editing starts. */
-@media (max-width: 420px) {
+  /* A one-line title crowds Cancel and Save on phones: stack it in both modes
+     so the heading keeps its height when editing starts. */
   .dashboard-title em {
     display: block;
+  }
+
+  .dashboard-heading {
+    margin-bottom: 16px;
+  }
+
+  .dashboard-lede {
+    font-size: 1rem;
+    line-height: 1.7;
   }
 }
