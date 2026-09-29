@@ -1,4 +1,5 @@
 import { Api } from "@dtpt/core/contracts/api";
+import { UpdateSubscriptionsRateLimited } from "@dtpt/core/contracts/subscription";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
@@ -7,6 +8,7 @@ import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
 import { withNoStoreResponse } from "../lib/no-store.js";
+import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
 
 const UnexpectedErrorTags = [
   "AuthRequestError",
@@ -25,6 +27,7 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
   "subscription",
   Effect.fn("SubscriptionHttpApi.group")(function* (handlers) {
     const auth = yield* Auth;
+    const rateLimiter = yield* RateLimiter;
 
     const users = yield* Users;
     const subscriptions = yield* Subscriptions;
@@ -65,6 +68,8 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
         "update",
         Effect.fn("SubscriptionHttpApi.update")(
           function* (ctx) {
+            yield* rateLimiter.check(getRateLimitKey(ctx.request));
+
             const session = yield* auth.getSession(ctx.request.headers);
 
             if (!session) return yield* new HttpApiError.Unauthorized({});
@@ -82,6 +87,8 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
               Effect.fail(new HttpApiError.BadRequest({})),
             SubjectCapacityReached: () =>
               Effect.fail(new HttpApiError.BadRequest({})),
+            RateLimitExceeded: () =>
+              Effect.fail(new UpdateSubscriptionsRateLimited({})),
           }),
           Effect.tapErrorTag(UnexpectedUpdateErrorTags, (error) =>
             Effect.logError("update subscriptions failed", { error }),

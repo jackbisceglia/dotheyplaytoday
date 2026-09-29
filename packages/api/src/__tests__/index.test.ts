@@ -202,6 +202,21 @@ describe("assembled HTTP API", () => {
     });
   });
 
+  it("rate-limits pick updates before writing", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    f.check.mockReturnValue(
+      Effect.fail(new RateLimitExceeded({ key: "test", limit: 1, window: 60 })),
+    );
+    const response = await f.request(
+      "/user/subscription",
+      { subjectIds: [subject.id], schedule: subscription.schedule },
+      cookie,
+    );
+    expect(response.status).toBe(429);
+    expect(f.replace).not.toHaveBeenCalled();
+  });
+
   it("rejects empty, over-capacity, and invalid-time updates before writing", async () => {
     const f = await makeFixture();
     const cookie = await f.signIn();

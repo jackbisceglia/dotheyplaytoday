@@ -27,6 +27,12 @@ export const UpdateSubscriptionsResponse = Schema.Struct({
   ok: Schema.Literal(true),
 });
 
+export class UpdateSubscriptionsRateLimited extends Schema.TaggedErrorClass<UpdateSubscriptionsRateLimited>()(
+  "UpdateSubscriptionsRateLimited",
+  {},
+  { httpApiStatus: 429 },
+) {}
+
 export const SubscriptionGroup = HttpApiGroup.make("subscription")
   .add(
     HttpApiEndpoint.get("list", "/", {
@@ -40,6 +46,7 @@ export const SubscriptionGroup = HttpApiGroup.make("subscription")
         HttpApiError.BadRequest,
         HttpApiError.Unauthorized,
         HttpApiError.InternalServerError,
+        UpdateSubscriptionsRateLimited,
       ],
     }),
   )
