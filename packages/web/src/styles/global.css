@@ -1369,7 +1369,9 @@ select.form-input {
   );
 }
 
-/* The development catalog notice waits above the action bar, not over Save. */
+/* Toasts and the development catalog notice wait above the action bar, not
+   over Cancel and Save. */
+body:has(.dashboard-form[data-editing="true"]) .app-toast,
 body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   bottom: calc(
     var(--dashboard-actions-height) + 16px + env(safe-area-inset-bottom)
