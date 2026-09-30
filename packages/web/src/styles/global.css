@@ -1414,6 +1414,10 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   text-transform: uppercase;
 }
 
+.dashboard-form[data-editing="true"] .dashboard-edit {
+  visibility: hidden;
+}
+
 .dashboard-edit:hover {
   color: var(--ink);
   text-decoration: underline;
@@ -1748,5 +1752,86 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 
   .roster-team .team-name {
     font-size: 0.7rem;
+  }
+}
+
+/* The week ahead shares the dashboard's type and rules. */
+.dashboard-schedule {
+  margin-top: 24px;
+}
+
+.dashboard-schedule-label {
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ink);
+  color: var(--muted);
+  font-weight: 800;
+  font-stretch: 80%;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.dashboard-schedule-list {
+  list-style: none;
+}
+
+.dashboard-schedule-row {
+  display: grid;
+  grid-template-columns: 80px 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(19, 23, 17, 0.12);
+}
+
+.dashboard-schedule-day {
+  font-weight: 900;
+  font-stretch: 70%;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dashboard-schedule-row[data-today="true"] .dashboard-schedule-day {
+  color: var(--kelly);
+}
+
+.dashboard-schedule-glyph {
+  text-align: center;
+}
+
+.dashboard-schedule-matchup {
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 24px;
+}
+
+.dashboard-schedule-matchup strong {
+  font-weight: 700;
+}
+
+.dashboard-schedule-matchup > span,
+.dashboard-schedule-time,
+.dashboard-schedule-empty {
+  color: var(--muted);
+}
+
+.dashboard-schedule-time {
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.dashboard-schedule-empty {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(19, 23, 17, 0.12);
+  font-size: 0.9rem;
+  line-height: 24px;
+}
+
+@media (max-width: 560px) {
+  .dashboard-schedule-row {
+    grid-template-columns: 48px 24px minmax(0, 1fr) auto;
+    padding: 8px 0;
   }
 }

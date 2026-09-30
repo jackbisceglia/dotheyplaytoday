@@ -1,15 +1,18 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
-import { createMemo, createStore, Show } from "solid-js";
+import { createStore, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 
+import type { SubjectsResult } from "../subjects.js";
 import { withApiClient } from "../api.js";
 import { useSelectionRejection } from "../ui/useSelectionRejection.js";
-import { getSubjects } from "../subjects.js";
 import { isValidSendTime, sendTime } from "../time.js";
 import { CatalogPicker } from "./CatalogPicker.jsx";
 import type { Preferences } from "./preferences.js";
 import { Roster } from "./Roster.jsx";
+import { Schedule } from "./Schedule.jsx";
+import { todayHeading } from "./schedule.js";
+import type { ScheduleRow } from "./schedule.js";
 import { SendTimeSentence } from "./SendTimeSentence.jsx";
 
 const capacity = SubscriptionPolicy.subject.constraints.max;
@@ -24,6 +27,9 @@ type FormState = {
 
 export function Form(props: {
   readonly preferences: Preferences;
+  readonly subjects: SubjectsResult;
+  readonly scheduleRows: readonly ScheduleRow[];
+  readonly todayTeams: readonly Subject[];
   readonly onSaved: () => void;
 }) {
   const savedTeams = () =>
@@ -35,10 +41,6 @@ export function Form(props: {
       ),
     ),
   ];
-  // Read here rather than in the picker, which only mounts while editing: the
-  // form lives as long as the page, so the router keeps the preloaded catalog
-  // cached and Edit opens without fetching it again.
-  const subjects = createMemo(() => getSubjects());
   const [state, setState] = createStore<FormState>({
     mode: "view",
     teams: [],
@@ -137,17 +139,17 @@ export function Form(props: {
       data-editing={isEditing() ? "true" : undefined}
       onSubmit={(event) => void save(event)}
     >
-      <DashboardHeading>
-        <Show when={!isEditing()}>
-          <button
-            ref={editButton}
-            class="dashboard-edit"
-            type="button"
-            onClick={beginEdit}
-          >
-            Edit
-          </button>
-        </Show>
+      <DashboardHeading todayTeams={props.todayTeams}>
+        <button
+          ref={editButton}
+          class="dashboard-edit"
+          type="button"
+          disabled={isEditing()}
+          aria-hidden={isEditing() ? "true" : undefined}
+          onClick={beginEdit}
+        >
+          Edit
+        </button>
       </DashboardHeading>
       <SendTimeSentence
         savedTimes={savedTimes()}
@@ -172,6 +174,10 @@ export function Form(props: {
         onRemove={toggle}
       />
 
+      <Show when={!isEditing()}>
+        <Schedule rows={props.scheduleRows} />
+      </Show>
+
       <Show when={isEditing()}>
         <section class="dashboard-section" aria-labelledby="editor-heading">
           {/* Kept for screen readers; beginEdit moves focus here. */}
@@ -189,7 +195,7 @@ export function Form(props: {
             data-full={state.teams.length >= capacity ? "true" : undefined}
           >
             <CatalogPicker
-              subjects={subjects()}
+              subjects={props.subjects}
               selected={new Set(state.teams.map((team) => team.id))}
               rejectedSelectionId={rejection.rejectedSelectionId()}
               onToggle={toggle}
@@ -246,12 +252,18 @@ export function Form(props: {
   );
 }
 
-// Rendered by the error state too, so the title never shifts.
-export function DashboardHeading(props: ParentProps) {
+// Shared by the form and its load-error state.
+export function DashboardHeading(
+  props: ParentProps<{ readonly todayTeams?: readonly Subject[] }>,
+) {
+  const heading = () =>
+    props.todayTeams
+      ? todayHeading(props.todayTeams)
+      : { lead: "Your", answer: "teams." };
   return (
     <div class="dashboard-heading">
       <h1 id="dashboard-title" class="dashboard-title">
-        Welcome <em>back.</em>
+        {heading().lead} <em>{heading().answer}</em>
       </h1>
       {props.children}
     </div>

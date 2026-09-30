@@ -10,6 +10,10 @@ Registration uses `POST /api/user`. Users can subscribe to up to four teams. New
 
 ## Dashboard
 
+The `/home` heading answers whether subscribed teams play today in the user's
+timezone, including games earlier that day. One or two playing teams are named;
+three or more use a count. No matching games reads “No games today.”
+
 Signed-in users see their selected teams on `/home` as a fixed set of roster
 tiles, one per allowed pick, under a sentence naming the send time. Edit, or the
 first empty tile, edits in place: the tiles stay put, the send time in the
@@ -18,6 +22,15 @@ in the picker, with one to four picks required to save; a full roster fades the
 remaining teams. The send time applies to all selected teams. Cancel discards
 the draft; Save persists the picks and time together. Retained teams keep their
 delivery history. Email and timezone are not shown.
+
+In view mode, a “Coming Up” list below the roster shows today plus the next
+six local calendar days, ordered by game start. Each row names the subscribed
+team and opponent, shows home/away and local start time, and marks today in
+green. Each subscribed team gets a row when both play in the same game;
+doubleheaders have separate rows. Cancelled games are excluded. An empty
+window reads “No games in the next 7 days.” Editing replaces the list with the
+picker while keeping the heading, send-time sentence, and roster anchored.
+The heading continues to reflect saved picks until changes are saved.
 
 ## Notifications
 
