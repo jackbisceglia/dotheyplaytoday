@@ -18,6 +18,7 @@ import {
 } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionWithSubject } from "@dtpt/core/modules/subscriptions/schema";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
+import { UserEventsLayer } from "@dtpt/core/modules/users/events/service";
 import { User } from "@dtpt/core/modules/users/schema";
 import {
   UserAlreadyExists,
@@ -112,6 +113,7 @@ const makeFixture = async () => {
 
   const web = HttpRouter.toWebHandler(
     HttpApiLayer.pipe(
+      Layer.provide(UserEventsLayer),
       Layer.provide([
         Layer.succeed(Auth, fixture.auth),
         Layer.mock(Users, {

@@ -143,6 +143,7 @@ export {
   Users,
   UsersLayer,
 } from "./modules/users/service.js";
+export { UserEvents, UserEventsLayer } from "./modules/users/events/service.js";
 
 export {
   UserApi,

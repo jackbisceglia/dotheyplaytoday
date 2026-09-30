@@ -36,12 +36,15 @@ import {
   EventInsert,
   eventsTable,
 } from "./schema.js";
-import { EventWithParticipants } from "./read-models.js";
 import type { Range } from "../subscriptions/time.js";
 
-export { EventWithParticipants } from "./read-models.js";
-
 export type DateRangeUtc = Range<DateTime.Utc>;
+
+export type EventWithParticipants = typeof EventWithParticipants.Type;
+export const EventWithParticipants = Schema.Struct({
+  ...Event.fields,
+  participants: Schema.Array(Participant),
+});
 
 export type ListBySubjectOptions = {
   readonly range?: Range<DateTime.Utc>;

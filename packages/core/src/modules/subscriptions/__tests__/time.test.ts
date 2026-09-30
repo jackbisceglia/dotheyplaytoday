@@ -104,7 +104,7 @@ describe("subscription time utilities", () => {
       "2026-11-07T05:00:00.000Z",
     ],
   ])("builds seven local days across DST from %s", (now, from, to) => {
-    const range = SubscriptionTiming.localDayUtcRange({
+    const range = SubscriptionTiming.localUtcRange({
       nowUtc: utc(now),
       timezone: makeUser("America/New_York").timezone,
       days: 7,

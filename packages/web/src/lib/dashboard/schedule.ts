@@ -1,4 +1,4 @@
-import type { UserSchedule } from "@dtpt/core/modules/events/read-models";
+import type { EventsResponse } from "@dtpt/core/contracts/events";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
 import { DateTime } from "effect";
@@ -17,7 +17,7 @@ export type ScheduleRow = {
 const normalizeName = (value: string) => value.trim().toLowerCase();
 
 export function scheduleRows(
-  schedule: UserSchedule,
+  schedule: EventsResponse,
   teams: readonly Subject[],
   catalog: readonly Subject[],
 ): readonly ScheduleRow[] {
@@ -91,7 +91,10 @@ export function scheduleRows(
   });
 }
 
-export function todayTeams(schedule: UserSchedule, teams: readonly Subject[]) {
+export function todayTeams(
+  schedule: EventsResponse,
+  teams: readonly Subject[],
+) {
   const playing = new Set(
     schedule.events
       .filter(

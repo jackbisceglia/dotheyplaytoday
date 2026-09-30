@@ -1,10 +1,8 @@
 import { Api } from "@dtpt/core/contracts/api";
-import { Events } from "@dtpt/core/modules/events/service";
-import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
-import { getUserSchedule } from "@dtpt/core/modules/events/schedule";
+import { UserEvents } from "@dtpt/core/modules/users/events/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { DateTime, Effect } from "effect";
+import { Effect } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -21,22 +19,22 @@ export const EventsGroupLayer = HttpApiBuilder.group(
   "events",
   Effect.fn("EventsHttpApi.group")(function* (handlers) {
     const auth = yield* Auth;
+
     const users = yield* Users;
-    const events = yield* Events;
-    const subscriptions = yield* Subscriptions;
+    const userEvents = yield* UserEvents;
+
     return handlers.handle(
       "list",
       Effect.fn("EventsHttpApi.list")(
         function* (ctx) {
           const session = yield* auth.getSession(ctx.request.headers);
+
           if (!session) return yield* new HttpApiError.Unauthorized({});
+
           const userId = yield* UserId.makeEffect(session.user.id);
           const user = yield* users.get(userId);
-          const nowUtc = yield* DateTime.now;
-          return yield* getUserSchedule(user, nowUtc).pipe(
-            Effect.provideService(Events, events),
-            Effect.provideService(Subscriptions, subscriptions),
-          );
+
+          return yield* userEvents.listForUser(user);
         },
         Effect.tapErrorTag(UnexpectedErrorTags, (error) =>
           Effect.logError("user events: unexpected failure", { error }),

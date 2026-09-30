@@ -1,12 +1,13 @@
+import { TestClock } from "effect/testing";
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
-import { Subject } from "../../subjects/schema.js";
-import { SubscriptionWithSubject } from "../../subscriptions/schema.js";
-import { Subscriptions } from "../../subscriptions/service.js";
-import { User } from "../../users/schema.js";
-import { getUserSchedule } from "../schedule.js";
-import { Events, EventWithParticipants } from "../service.js";
+import { Subject } from "../../../subjects/schema.js";
+import { SubscriptionWithSubject } from "../../../subscriptions/schema.js";
+import { Subscriptions } from "../../../subscriptions/service.js";
+import { User } from "../../schema.js";
+import { UserEvents, UserEventsLayer } from "../service.js";
+import { Events, EventWithParticipants } from "../../../events/service.js";
 
 const user = Schema.decodeUnknownSync(User)({
   id: "00000000-0000-4000-8000-000000000001",
@@ -74,10 +75,11 @@ describe("user schedule", () => {
         "2026-03-08T06:00:00.000Z",
       );
       return Effect.gen(function* () {
-        const result = yield* getUserSchedule(
-          user,
-          utc("2026-03-08T12:00:00.000Z"),
+        yield* TestClock.setTime(
+          DateTime.toEpochMillis(utc("2026-03-08T12:00:00.000Z")),
         );
+        const userEvents = yield* UserEvents;
+        const result = yield* userEvents.listForUser(user);
         expect(result.today).toBe("2026-03-08");
         expect(result.events.map((event) => event.id)).toEqual([
           earlier.id,
@@ -86,6 +88,7 @@ describe("user schedule", () => {
         expect(result.events[1]?.subjectIds).toEqual([celtics.id, knicks.id]);
         expect(result.events[1]?.participants).toEqual(shared.participants);
       }).pipe(
+        Effect.provide(UserEventsLayer),
         Effect.provide([
           Layer.mock(Subscriptions, {
             listForUser: (id) => {
@@ -116,13 +119,15 @@ describe("user schedule", () => {
     "returns an empty schedule without event lookups for an empty roster",
     () =>
       Effect.gen(function* () {
-        const result = yield* getUserSchedule(
-          user,
-          utc("2026-02-10T04:00:00.000Z"),
+        yield* TestClock.setTime(
+          DateTime.toEpochMillis(utc("2026-02-10T04:00:00.000Z")),
         );
+        const userEvents = yield* UserEvents;
+        const result = yield* userEvents.listForUser(user);
         expect(result.today).toBe("2026-02-09");
         expect(result.events).toEqual([]);
       }).pipe(
+        Effect.provide(UserEventsLayer),
         Effect.provide([
           Layer.mock(Subscriptions, { listForUser: () => Effect.succeed([]) }),
           Layer.mock(Events, {

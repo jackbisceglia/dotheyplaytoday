@@ -262,12 +262,12 @@ Its schedule is a separate `getEvents` router query backed by authenticated
 `GET /api/user/events`. The endpoint takes identity from the session and
 timezone from the stored user, returns a local-date/timezone snapshot and
 events with participants and matching subscribed subject IDs, and sets
-`Cache-Control: no-store`. Core `getUserSchedule` composes
+`Cache-Control: no-store`. Core `UserEvents.listForUser` composes
 `Subscriptions.listForUser` and `Events.listBySubject`, querying active events
 from today's local midnight through the exclusive midnight seven calendar days
-later. `SubscriptionTiming.localDayUtcRange` accepts a day count and preserves
-local midnight boundaries across DST. Events are deduplicated by ID and sorted
-by start time then ID. The UI expands them into one row per subscribed team.
+later. `SubscriptionTiming.localUtcRange` accepts a day count and preserves
+local midnight boundaries across DST; `localDayUtcRange` is its one-day wrapper.
+Events are deduplicated by ID and sorted by start time then ID. The UI expands them into one row per subscribed team.
 The `/home` route preloads both private queries on the client only, because
 the API cookie lives in the browser, so they load alongside the authenticated
 shell's session check.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DateTime, Schema } from "effect";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
-import { SubscribedEvent } from "@dtpt/core/modules/events/read-models";
+import { SubscribedEvent } from "@dtpt/core/contracts/events";
 
 import { scheduleRows, todayHeading, todayTeams } from "../schedule.js";
 
