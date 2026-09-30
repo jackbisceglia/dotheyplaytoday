@@ -10,13 +10,14 @@ Registration uses `POST /api/user`. Users can subscribe to up to four teams. New
 
 ## Dashboard
 
-Signed-in users see their selected teams on `/home`, under a sentence naming
-the send time and email address. Edit, or the first empty roster
-slot, opens the shared league/team picker. Teams can be removed from the roster
-or toggled in the picker, with one to four picks required to save. The send time is editable in
-the same draft and applies to all selected teams. Cancel discards the draft;
-Save persists the picks and time together. Retained teams keep their delivery
-history. Email is displayed but is not editable here; timezone is not shown.
+Signed-in users see their selected teams on `/home` as a fixed set of roster
+tiles, one per allowed pick, under a sentence naming the send time. Edit, or the
+first empty tile, edits in place: the tiles stay put, the send time in the
+sentence becomes a select, and the shared league/team picker opens below. Teams can be removed from their tile or toggled
+in the picker, with one to four picks required to save; a full roster fades the
+remaining teams. The send time applies to all selected teams. Cancel discards
+the draft; Save persists the picks and time together. Retained teams keep their
+delivery history. Email and timezone are not shown.
 
 ## Notifications
 

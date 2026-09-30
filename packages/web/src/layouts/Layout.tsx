@@ -9,8 +9,9 @@ import { useApplicationPath } from "../lib/paths.js";
 // should own the header/footer once per navigation instead.
 type HeaderAction = {
   readonly label: string;
-  /** Omit for the default outlined button; pages with two actions rank them. */
-  readonly variant?: "quiet" | "solid";
+  /** Omit for the default outlined button; pages with two actions rank them,
+   * and `link` sets a minor action as plain text. */
+  readonly variant?: "quiet" | "solid" | "link";
 } & (
   | { readonly href: string; readonly onClick?: never }
   | { readonly href?: never; readonly onClick: () => void }
@@ -52,48 +53,51 @@ export function Layout(props: LayoutProps) {
         Skip to main content
       </a>
 
-      <header class="site-header">
-        <a class="wordmark" href={brandHref()}>
-          <BrandMark class="wordmark-mark" />
-          <span class="visually-hidden">Do they play today</span>
-          <span class="wordmark-text" aria-hidden="true">
-            dothey<em>play</em>today
-          </span>
-        </a>
-        <Show when={props.headerActions?.length}>
-          <div class="site-header-actions">
-            <For each={props.headerActions}>
-              {(action) => (
-                <Show
-                  when={action.href}
-                  fallback={
-                    <button
-                      class={headerActionClass(action)}
-                      type="button"
-                      onClick={action.onClick}
-                    >
-                      {action.label}
-                    </button>
-                  }
-                >
-                  {(href) => (
-                    <a class={headerActionClass(action)} href={href()}>
-                      {action.label}
-                    </a>
-                  )}
-                </Show>
-              )}
-            </For>
-          </div>
-        </Show>
-      </header>
+      {/* Header and page fill the first screen together, so the footer starts
+          at the fold without the page ever scrolling past its content. */}
+      <div class="site-page">
+        <header class="site-header">
+          <a class="wordmark" href={brandHref()}>
+            <BrandMark class="wordmark-mark" />
+            <span class="visually-hidden">Do they play today</span>
+            <span class="wordmark-text" aria-hidden="true">
+              dothey<em>play</em>today
+            </span>
+          </a>
+          <Show when={props.headerActions?.length}>
+            <div class="site-header-actions">
+              <For each={props.headerActions}>
+                {(action) => (
+                  <Show
+                    when={action.href}
+                    fallback={
+                      <button
+                        class={headerActionClass(action)}
+                        type="button"
+                        onClick={action.onClick}
+                      >
+                        {action.label}
+                      </button>
+                    }
+                  >
+                    {(href) => (
+                      <a class={headerActionClass(action)} href={href()}>
+                        {action.label}
+                      </a>
+                    )}
+                  </Show>
+                )}
+              </For>
+            </div>
+          </Show>
+        </header>
 
-      <main id="main-content" tabindex="-1" ref={main}>
-        {props.children}
-      </main>
+        <main id="main-content" tabindex="-1" ref={main}>
+          {props.children}
+        </main>
+      </div>
 
       <footer class="site-footer">
-        <span>dotheyplaytoday</span>
         <div class="site-footer-links">
           <Show when={props.unsubscribeHref}>
             {(href) => (
@@ -106,6 +110,7 @@ export function Layout(props: LayoutProps) {
             Feedback
           </a>
         </div>
+        <BrandMark class="footer-mark" />
       </footer>
     </>
   );

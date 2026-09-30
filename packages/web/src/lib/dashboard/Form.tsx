@@ -1,20 +1,16 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
-import { createMemo, createStore, For, Match, Show, Switch } from "solid-js";
+import { createMemo, createStore, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 
 import { withApiClient } from "../api.js";
-import { getSportsLogo } from "../catalog/sports/index.js";
 import { useSelectionRejection } from "../ui/useSelectionRejection.js";
-import {
-  formatSecondsLocal,
-  isValidSendTime,
-  sendTime,
-  sendTimeIntervals,
-} from "../time.js";
-import { CatalogPicker } from "./CatalogPicker.jsx";
 import { getSubjects } from "../subjects.js";
+import { isValidSendTime, sendTime } from "../time.js";
+import { CatalogPicker } from "./CatalogPicker.jsx";
 import type { Preferences } from "./preferences.js";
+import { Roster } from "./Roster.jsx";
+import { SendTimeSentence } from "./SendTimeSentence.jsx";
 
 const capacity = SubscriptionPolicy.subject.constraints.max;
 
@@ -55,8 +51,10 @@ export function Form(props: {
   );
   let editButton: HTMLButtonElement | undefined;
   let editorTitle: HTMLHeadingElement | undefined;
-  const teams = () => (state.mode === "view" ? savedTeams() : state.teams);
-  const isEmptyDraft = () => state.mode !== "view" && state.teams.length === 0;
+  const isEditing = () => state.mode !== "view";
+  const isSaving = () => state.mode === "saving";
+  const teams = () => (isEditing() ? state.teams : savedTeams());
+  const isEmptyDraft = () => isEditing() && state.teams.length === 0;
 
   const beginEdit = () => {
     setState((draft) => {
@@ -134,137 +132,47 @@ export function Form(props: {
   };
 
   return (
-    <form onSubmit={(event) => void save(event)}>
+    <form
+      class="dashboard-form"
+      data-editing={isEditing() ? "true" : undefined}
+      onSubmit={(event) => void save(event)}
+    >
       <DashboardHeading>
-        <Show when={state.mode === "view"}>
+        <Show when={!isEditing()}>
           <button
             ref={editButton}
-            class="header-cta"
+            class="dashboard-edit"
             type="button"
             onClick={beginEdit}
           >
             Edit
           </button>
         </Show>
-        {/* Edit's place holds the draft's actions, paired like the landing
-            header's Log in and Sign up. */}
-        <Show when={state.mode !== "view"}>
-          <div class="dashboard-heading-actions">
-            <button
-              class="header-cta header-cta-quiet"
-              type="button"
-              disabled={state.mode === "saving"}
-              onClick={() => {
-                finishEdit(false);
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              class="header-cta header-cta-solid"
-              type="submit"
-              disabled={state.mode === "saving" || isEmptyDraft()}
-              data-unavailable={isEmptyDraft() ? "true" : undefined}
-            >
-              {state.mode === "saving" ? "Saving…" : "Save"}
-            </button>
-          </div>
-        </Show>
       </DashboardHeading>
-      <p class="dashboard-lede">
-        You'll get an email
-        <Show when={state.mode !== "view" || savedTimes().length > 0}>
-          {" at "}
-          <Show
-            when={state.mode !== "view"}
-            fallback={
-              <strong class="dashboard-lede-time">
-                {savedTimes().map(formatSecondsLocal).join(" / ")}
-              </strong>
-            }
-          >
-            <select
-              class="lede-select"
-              aria-label="Send time"
-              disabled={state.mode === "saving"}
-              onChange={(event) => {
-                setState((draft) => {
-                  draft.seconds = Number(event.currentTarget.value);
-                });
-              }}
-            >
-              <For each={sendTimeIntervals}>
-                {(interval) => (
-                  <option
-                    value={interval.value}
-                    selected={state.seconds === interval.value}
-                  >
-                    {interval.label}
-                  </option>
-                )}
-              </For>
-            </select>
-          </Show>
-        </Show>{" "}
-        when your teams play,{" "}
-        <span class="dashboard-lede-address">
-          sent to <strong>{props.preferences.user.email}</strong>.
-        </span>
-      </p>
+      <SendTimeSentence
+        savedTimes={savedTimes()}
+        editing={isEditing()}
+        saving={isSaving()}
+        seconds={state.seconds}
+        onChange={(seconds) => {
+          setState((draft) => {
+            draft.seconds = seconds;
+          });
+        }}
+      />
       <p class="visually-hidden" aria-live="polite">
         {teams().length} of {capacity} teams picked
       </p>
-      <div class="dashboard-grid">
-        <For each={teams()}>
-          {(team) => (
-            <div class="roster-team">
-              <span class="team-glyph" aria-hidden="true">
-                {getSportsLogo(team.details)}
-              </span>
-              <span class="team-abbr">{team.details.abbreviation}</span>
-              <span class="team-name">
-                {team.details.display}
-                <span aria-hidden="true"> · </span>
-                {team.details.leagueId.toUpperCase()}
-              </span>
-              <Show when={state.mode !== "view"}>
-                <button
-                  class="roster-remove"
-                  type="button"
-                  disabled={state.mode === "saving"}
-                  aria-label={`Remove ${team.details.display}`}
-                  onClick={() => {
-                    toggle(team);
-                  }}
-                >
-                  ×
-                </button>
-              </Show>
-            </div>
-          )}
-        </For>
-        {/* Unfilled capacity reads as quiet empty slots. The first opens the
-            editor, or says why Save is off when the draft is empty; the count
-            grows automatically if the cap rises. */}
-        <For each={Array.from({ length: capacity - teams().length })}>
-          {(_slot, index) => (
-            <Switch fallback={<div class="roster-slot" aria-hidden="true" />}>
-              <Match when={index() === 0 && state.mode === "view"}>
-                <button class="roster-slot" type="button" onClick={beginEdit}>
-                  + Add team
-                </button>
-              </Match>
-              <Match when={index() === 0 && isEmptyDraft()}>
-                <p class="roster-slot roster-slot-error" role="alert">
-                  Pick a team to save
-                </p>
-              </Match>
-            </Switch>
-          )}
-        </For>
-      </div>
+      <Roster
+        teams={teams()}
+        capacity={capacity}
+        editing={isEditing()}
+        saving={isSaving()}
+        onAdd={beginEdit}
+        onRemove={toggle}
+      />
 
-      <Show when={state.mode !== "view"}>
+      <Show when={isEditing()}>
         <section class="dashboard-section" aria-labelledby="editor-heading">
           {/* Kept for screen readers; beginEdit moves focus here. */}
           <h2
@@ -275,7 +183,11 @@ export function Form(props: {
           >
             Make your picks
           </h2>
-          <fieldset class="dashboard-picker" disabled={state.mode === "saving"}>
+          <fieldset
+            class="dashboard-picker"
+            disabled={isSaving()}
+            data-full={state.teams.length >= capacity ? "true" : undefined}
+          >
             <CatalogPicker
               subjects={subjects()}
               selected={new Set(state.teams.map((team) => team.id))}
@@ -291,6 +203,28 @@ export function Form(props: {
             )}
           </Show>
         </section>
+        <div class="dashboard-actions">
+          <div class="dashboard-actions-inner">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              disabled={isSaving()}
+              onClick={() => {
+                finishEdit(false);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              type="submit"
+              disabled={isSaving() || isEmptyDraft()}
+              data-unavailable={isEmptyDraft() ? "true" : undefined}
+            >
+              {isSaving() ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
       </Show>
 
       <Show when={state.message}>
@@ -317,7 +251,7 @@ export function DashboardHeading(props: ParentProps) {
   return (
     <div class="dashboard-heading">
       <h1 id="dashboard-title" class="dashboard-title">
-        Your <em>roster.</em>
+        Welcome <em>back.</em>
       </h1>
       {props.children}
     </div>
