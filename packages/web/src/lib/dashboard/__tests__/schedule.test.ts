@@ -71,6 +71,43 @@ describe("dashboard schedule", () => {
     expect(todayTeams(schedule, [celtics, knicks])).toEqual([celtics, knicks]);
   });
 
+  it("matches participants and catalog names despite case and surrounding whitespace", () => {
+    const formatted = {
+      ...schedule,
+      events: schedule.events.map((event) => ({
+        ...event,
+        participants: event.participants.map((participant) => ({
+          ...participant,
+          details: {
+            ...participant.details,
+            title: `  ${participant.details.title.toUpperCase()}  `,
+          },
+        })),
+      })),
+    };
+    const rows = scheduleRows(formatted, [celtics, knicks], [celtics, knicks]);
+    expect(rows.map((row) => [row.teamName, row.opponent])).toEqual([
+      ["Celtics", "vs Knicks"],
+      ["Knicks", "at Celtics"],
+      ["Celtics", "vs Knicks"],
+      ["Knicks", "at Celtics"],
+    ]);
+  });
+
+  it("preserves both participants in away-at-home order when the subscribed display is unrecognized", () => {
+    const renamed = {
+      ...celtics,
+      details: { ...celtics.details, display: "An unrecognized display name" },
+    };
+    const oneGame = { ...schedule, events: schedule.events.slice(0, 1) };
+    expect(scheduleRows(oneGame, [renamed], [celtics, knicks])).toMatchObject([
+      { team: renamed, teamName: "Knicks", opponent: "at Celtics" },
+    ]);
+    expect(scheduleRows(oneGame, [renamed], [])).toMatchObject([
+      { teamName: "New York Knicks", opponent: "at Boston Celtics" },
+    ]);
+  });
+
   it("keeps doubleheaders separate and names each playing team only once", () => {
     const doubleheader = {
       ...schedule,

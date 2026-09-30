@@ -5,6 +5,7 @@ import { DateTime } from "effect";
 
 export type ScheduleRow = {
   readonly team: Subject;
+  readonly teamName: string;
   readonly eventId: string;
   readonly startsAt: string;
   readonly today: boolean;
@@ -12,6 +13,8 @@ export type ScheduleRow = {
   readonly time: string;
   readonly opponent: string;
 };
+
+const normalizeName = (value: string) => value.trim().toLowerCase();
 
 export function scheduleRows(
   schedule: UserSchedule,
@@ -43,30 +46,45 @@ export function scheduleRows(
     return teams
       .filter((team) => event.subjectIds.includes(team.id))
       .map((team) => {
-        const own = event.participants.find(
-          (participant) => participant.details.title === team.details.display,
-        );
-        const opponent =
-          own &&
-          event.participants.find(
-            (participant) => participant.details.role !== own.details.role,
-          );
-        const opponentTeam =
-          opponent &&
+        const participantName = (title: string) =>
           catalog.find(
             (subject) =>
-              subject.details.leagueId === team.details.leagueId &&
-              subject.details.display === opponent.details.title,
+              subject.details.leagueId === event.details.leagueId &&
+              normalizeName(subject.details.display) === normalizeName(title),
+          )?.details.name ?? title.trim();
+        const own = event.participants.find(
+          (participant) =>
+            normalizeName(participant.details.title) ===
+            normalizeName(team.details.display),
+        );
+        // Like the notifier, keep both sides in away-at-home order when the
+        // subscribed team's display name cannot identify its participant.
+        const leading =
+          own ??
+          event.participants.find(
+            (participant) => participant.details.role === "away",
+          ) ??
+          event.participants.find(
+            (participant) => participant.details.role === "home",
+          );
+        const opponent =
+          leading &&
+          event.participants.find(
+            (participant) => participant.details.role !== leading.details.role,
           );
         return {
           team,
+          teamName:
+            own || !leading
+              ? team.details.name
+              : participantName(leading.details.title),
           eventId: event.id,
           startsAt,
           today,
           day,
           time: timeFormat.format(date),
           opponent: opponent
-            ? `${own.details.role === "away" ? "at" : "vs"} ${opponentTeam?.details.name ?? opponent.details.title}`
+            ? `${leading.details.role === "away" ? "at" : "vs"} ${participantName(opponent.details.title)}`
             : "",
         };
       });

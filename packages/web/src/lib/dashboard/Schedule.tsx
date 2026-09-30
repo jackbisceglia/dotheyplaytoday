@@ -27,8 +27,7 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
                   {getSportsLogo(row.team.details)}
                 </span>
                 <span class="dashboard-schedule-matchup">
-                  <strong>{row.team.details.name}</strong>{" "}
-                  <span>{row.opponent}</span>
+                  <strong>{row.teamName}</strong> <span>{row.opponent}</span>
                 </span>
                 <time class="dashboard-schedule-time" datetime={row.startsAt}>
                   {row.time}
