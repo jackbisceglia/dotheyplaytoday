@@ -1,3 +1,4 @@
+import { EventsResponse } from "@dtpt/core/contracts/events";
 import { makeAuthFixture } from "../auth/__tests__/fixtures.js";
 import { RuntimeContext } from "alchemy/RuntimeContext";
 import {
@@ -5,6 +6,10 @@ import {
   DatabaseWriteError,
 } from "@dtpt/core/lib/database/errors";
 import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import {
+  Events,
+  EventWithParticipants,
+} from "@dtpt/core/modules/events/service";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { Subjects } from "@dtpt/core/modules/subjects/service";
 import {
@@ -19,7 +24,15 @@ import {
   UserNotFound,
   Users,
 } from "@dtpt/core/modules/users/service";
-import { Context, Effect, FileSystem, Layer, Path, Schema } from "effect";
+import {
+  Context,
+  DateTime,
+  Effect,
+  FileSystem,
+  Layer,
+  Path,
+  Schema,
+} from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { Pool } from "pg";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
@@ -86,6 +99,9 @@ const makeFixture = async () => {
   const subjects = vi.fn<Subjects["Service"]["list"]>(() =>
     Effect.succeed([subject]),
   );
+  const listBySubject = vi.fn<Events["Service"]["listBySubject"]>(() =>
+    Effect.succeed([]),
+  );
   const check = vi.fn<RateLimiter["Service"]["check"]>(() => Effect.void);
   const transactions: ("begin" | "commit" | "rollback")[] = [];
   const pool = new Pool();
@@ -109,6 +125,7 @@ const makeFixture = async () => {
           replaceForUser: replace,
         }),
         Layer.mock(Subjects, { list: subjects }),
+        Layer.mock(Events, { listBySubject }),
         Layer.succeed(RateLimiter, { check }),
         mockTransactions(Effect.succeed(pool), (event) =>
           transactions.push(event),
@@ -159,6 +176,7 @@ const makeFixture = async () => {
     transactions,
     signIn,
     subjects,
+    listBySubject,
     get,
     create,
     getByToken,
@@ -169,7 +187,7 @@ const makeFixture = async () => {
   };
 };
 
-const reads = ["/user", "/user/subscription"];
+const reads = ["/user", "/user/subscription", "/user/events"];
 
 describe("assembled HTTP API", () => {
   it("requires a session to update picks", async () => {
@@ -651,5 +669,93 @@ describe("assembled HTTP API", () => {
     expect((await f.request("/account")).status).toBe(404);
     expect((await f.request("/ping")).status).toBe(200);
     expect((await f.request("/subjects")).status).toBe(200);
+  });
+});
+
+describe("user events", () => {
+  it("returns only subscribed events with participants and the user's local calendar", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    const game = Schema.decodeUnknownSync(EventWithParticipants)({
+      id: "00000000-0000-4000-8000-000000000010",
+      _tag: "sports_game",
+      sourceId: "sports_game:manual:00000000-0000-4000-8000-000000000010",
+      startsAt: "2026-03-08T23:30:00.000Z",
+      availability: "active",
+      details: { _tag: "sports_game", leagueId: "nba" },
+      participants: [
+        {
+          id: "00000000-0000-4000-8000-000000000011",
+          eventId: "00000000-0000-4000-8000-000000000010",
+          _tag: "sports_game",
+          details: {
+            _tag: "sports_game",
+            role: "home",
+            title: "Boston Celtics",
+          },
+        },
+      ],
+    });
+    f.listBySubject.mockReturnValue(Effect.succeed([game]));
+    const response = await f.request(
+      "/user/events?userId=other&timezone=Asia/Tokyo",
+      undefined,
+      cookie,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true",
+    );
+    const body = Schema.decodeUnknownSync(EventsResponse)(
+      await response.json(),
+    );
+    expect(Schema.encodeSync(EventsResponse)(body)).toMatchObject({
+      timezone: "America/New_York",
+      events: [
+        {
+          ...Schema.encodeSync(EventWithParticipants)(game),
+          subjectIds: [subject.id],
+        },
+      ],
+    });
+    expect(f.get).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(f.list).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(f.listBySubject).toHaveBeenCalledTimes(1);
+    const call = f.listBySubject.mock.calls[0];
+    if (!call?.[1]?.range) throw new Error("Missing event range");
+    const [subjectId] = call;
+    const range = call[1].range;
+    expect(subjectId).toBe(subject.id);
+    expect(
+      DateTime.formatIsoDate(DateTime.setZone(range.from, user.timezone)),
+    ).toBe(body.today);
+    expect(
+      DateTime.formatIsoDate(DateTime.setZone(range.to, user.timezone)),
+    ).toBe(
+      DateTime.formatIsoDate(
+        DateTime.add(DateTime.setZone(range.from, user.timezone), { days: 7 }),
+      ),
+    );
+  });
+
+  it("supports empty subscriptions and maps event failures to uncached errors", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    f.list.mockReturnValue(Effect.succeed([]));
+    const empty = await f.request("/user/events", undefined, cookie);
+    expect(empty.status).toBe(200);
+    expect(await empty.json()).toMatchObject({
+      events: [],
+      timezone: "America/New_York",
+    });
+    expect(f.listBySubject).not.toHaveBeenCalled();
+    f.list.mockReturnValue(Effect.succeed([subscription]));
+    f.listBySubject.mockReturnValue(
+      Effect.fail(new DatabaseReadError({ operation: "Events.listBySubject" })),
+    );
+    const failed = await f.request("/user/events", undefined, cookie);
+    expect(failed.status).toBe(500);
+    expect(failed.headers.get("cache-control")).toBe("no-store");
   });
 });

@@ -92,6 +92,27 @@ describe("subscription time utilities", () => {
     );
   });
 
+  it.each([
+    [
+      "2026-03-07T12:00:00.000Z",
+      "2026-03-07T05:00:00.000Z",
+      "2026-03-14T04:00:00.000Z",
+    ],
+    [
+      "2026-10-31T12:00:00.000Z",
+      "2026-10-31T04:00:00.000Z",
+      "2026-11-07T05:00:00.000Z",
+    ],
+  ])("builds seven local days across DST from %s", (now, from, to) => {
+    const range = SubscriptionTiming.localDayUtcRange({
+      nowUtc: utc(now),
+      timezone: makeUser("America/New_York").timezone,
+      days: 7,
+    });
+    expect(DateTime.formatIso(range.from)).toBe(from);
+    expect(DateTime.formatIso(range.to)).toBe(to);
+  });
+
   it("converts fixed local schedule intent to UTC across DST", () => {
     const user = makeUser("America/New_York");
     const sendAtUtc = SubscriptionTiming.computeScheduleSendAtUtc({

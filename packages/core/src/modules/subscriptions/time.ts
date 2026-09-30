@@ -25,12 +25,13 @@ const formatLocalDate = (utc: DateTime.Utc, tz: User["timezone"]) =>
 /**
  * Returns the UTC range for the local day containing `nowUtc`.
  * The range starts at the local day's midnight and ends at the next local
- * midnight. Use `from` as the inclusive lower bound and `to` as the exclusive
- * upper bound for event queries.
+ * midnight (or `days` local calendar days later). Use `from` as the inclusive
+ * lower bound and `to` as the exclusive upper bound for event queries.
  */
 const localDayUtcRange = (input: {
   readonly nowUtc: DateTime.Utc;
   readonly timezone: User["timezone"];
+  readonly days?: number;
 }): Range<DateTime.Utc> => {
   const zonedNow = DateTime.setZone(input.nowUtc, input.timezone);
   const fromLocal = DateTime.setParts(zonedNow, {
@@ -39,7 +40,7 @@ const localDayUtcRange = (input: {
     second: 0,
     millisecond: 0,
   });
-  const toLocal = DateTime.add(fromLocal, { days: 1 });
+  const toLocal = DateTime.add(fromLocal, { days: input.days ?? 1 });
 
   return {
     from: DateTime.toUtc(fromLocal),
