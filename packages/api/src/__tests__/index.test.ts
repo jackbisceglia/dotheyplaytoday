@@ -1,3 +1,4 @@
+import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
 import { EventsResponse } from "@dtpt/core/contracts/events";
 import { makeAuthFixture } from "../auth/__tests__/fixtures.js";
 import { RuntimeContext } from "alchemy/RuntimeContext";
@@ -712,15 +713,12 @@ describe("user events", () => {
     const body = Schema.decodeUnknownSync(EventsResponse)(
       await response.json(),
     );
-    expect(Schema.encodeSync(EventsResponse)(body)).toMatchObject({
-      timezone: "America/New_York",
-      events: [
-        {
-          ...Schema.encodeSync(EventWithParticipants)(game),
-          subjectIds: [subject.id],
-        },
-      ],
-    });
+    expect(Schema.encodeSync(EventsResponse)(body)).toEqual([
+      {
+        ...Schema.encodeSync(SubscriptionWithSubject)(subscription),
+        events: [Schema.encodeSync(EventWithParticipants)(game)],
+      },
+    ]);
     expect(f.get).toHaveBeenCalledExactlyOnceWith(user.id);
     expect(f.list).toHaveBeenCalledExactlyOnceWith(user.id);
     expect(f.listBySubject).toHaveBeenCalledTimes(1);
@@ -731,7 +729,9 @@ describe("user events", () => {
     expect(subjectId).toBe(subject.id);
     expect(
       DateTime.formatIsoDate(DateTime.setZone(range.from, user.timezone)),
-    ).toBe(body.today);
+    ).toBe(
+      SubscriptionTiming.formatLocalDate(DateTime.nowUnsafe(), user.timezone),
+    );
     expect(
       DateTime.formatIsoDate(DateTime.setZone(range.to, user.timezone)),
     ).toBe(
@@ -747,10 +747,7 @@ describe("user events", () => {
     f.list.mockReturnValue(Effect.succeed([]));
     const empty = await f.request("/user/events", undefined, cookie);
     expect(empty.status).toBe(200);
-    expect(await empty.json()).toMatchObject({
-      events: [],
-      timezone: "America/New_York",
-    });
+    expect(await empty.json()).toEqual([]);
     expect(f.listBySubject).not.toHaveBeenCalled();
     f.list.mockReturnValue(Effect.succeed([subscription]));
     f.listBySubject.mockReturnValue(

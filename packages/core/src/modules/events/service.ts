@@ -25,6 +25,7 @@ import type { WithOptionalKeys } from "../../lib/types.js";
 import { SubjectId } from "../subjects/schema.js";
 import { EventNotFound } from "./errors.js";
 import {
+  EventWithParticipants,
   Participant,
   ParticipantInsert,
   participantsTable,
@@ -38,13 +39,9 @@ import {
 } from "./schema.js";
 import type { Range } from "../subscriptions/time.js";
 
-export type DateRangeUtc = Range<DateTime.Utc>;
+export { EventWithParticipants } from "./participants/schema.js";
 
-export type EventWithParticipants = typeof EventWithParticipants.Type;
-export const EventWithParticipants = Schema.Struct({
-  ...Event.fields,
-  participants: Schema.Array(Participant),
-});
+export type DateRangeUtc = Range<DateTime.Utc>;
 
 export type ListBySubjectOptions = {
   readonly range?: Range<DateTime.Utc>;

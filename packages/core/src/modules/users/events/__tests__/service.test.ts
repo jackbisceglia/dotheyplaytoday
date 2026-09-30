@@ -5,6 +5,7 @@ import { DateTime, Effect, Layer, Schema } from "effect";
 import { Subject } from "../../../subjects/schema.js";
 import { SubscriptionWithSubject } from "../../../subscriptions/schema.js";
 import { Subscriptions } from "../../../subscriptions/service.js";
+import { Users } from "../../service.js";
 import { User } from "../../schema.js";
 import { UserEvents, UserEventsLayer } from "../service.js";
 import { Events, EventWithParticipants } from "../../../events/service.js";
@@ -64,7 +65,7 @@ const utc = Schema.decodeUnknownSync(Schema.DateTimeUtcFromString);
 
 describe("user schedule", () => {
   it.effect(
-    "combines subscribed subjects, deduplicates games, preserves participants, and orders starts",
+    "returns each subscription with its events and preserves participants",
     () => {
       const shared = game(
         "00000000-0000-4000-8000-000000000010",
@@ -79,17 +80,20 @@ describe("user schedule", () => {
           DateTime.toEpochMillis(utc("2026-03-08T12:00:00.000Z")),
         );
         const userEvents = yield* UserEvents;
-        const result = yield* userEvents.listForUser(user);
-        expect(result.today).toBe("2026-03-08");
-        expect(result.events.map((event) => event.id)).toEqual([
-          earlier.id,
-          shared.id,
+        const result = yield* userEvents.listForUser(user.id);
+        expect(result).toEqual([
+          { ...pick(celtics), events: [shared, earlier] },
+          { ...pick(knicks), events: [shared] },
         ]);
-        expect(result.events[1]?.subjectIds).toEqual([celtics.id, knicks.id]);
-        expect(result.events[1]?.participants).toEqual(shared.participants);
       }).pipe(
         Effect.provide(UserEventsLayer),
         Effect.provide([
+          Layer.mock(Users, {
+            get: (id) => {
+              expect(id).toBe(user.id);
+              return Effect.succeed(user);
+            },
+          }),
           Layer.mock(Subscriptions, {
             listForUser: (id) => {
               expect(id).toBe(user.id);
@@ -123,12 +127,17 @@ describe("user schedule", () => {
           DateTime.toEpochMillis(utc("2026-02-10T04:00:00.000Z")),
         );
         const userEvents = yield* UserEvents;
-        const result = yield* userEvents.listForUser(user);
-        expect(result.today).toBe("2026-02-09");
-        expect(result.events).toEqual([]);
+        const result = yield* userEvents.listForUser(user.id);
+        expect(result).toEqual([]);
       }).pipe(
         Effect.provide(UserEventsLayer),
         Effect.provide([
+          Layer.mock(Users, {
+            get: (id) => {
+              expect(id).toBe(user.id);
+              return Effect.succeed(user);
+            },
+          }),
           Layer.mock(Subscriptions, { listForUser: () => Effect.succeed([]) }),
           Layer.mock(Events, {
             listBySubject: () => Effect.die("Unexpected event lookup"),

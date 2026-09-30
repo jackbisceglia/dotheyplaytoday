@@ -18,34 +18,36 @@ const normalizeName = (value: string) => value.trim().toLowerCase();
 
 export function scheduleRows(
   schedule: EventsResponse,
-  teams: readonly Subject[],
+  timezone: DateTime.TimeZone.Named,
   catalog: readonly Subject[],
+  now: DateTime.Utc = DateTime.nowUnsafe(),
 ): readonly ScheduleRow[] {
-  const timezone = DateTime.zoneToString(schedule.timezone);
+  const todayDate = SubscriptionTiming.formatLocalDate(now, timezone);
+  const zoneName = DateTime.zoneToString(timezone);
   const dayFormat = new Intl.DateTimeFormat("en-US", {
-    timeZone: timezone,
+    timeZone: zoneName,
     weekday: "short",
   });
   const timeFormat = new Intl.DateTimeFormat("en-US", {
-    timeZone: timezone,
+    timeZone: zoneName,
     hour: "numeric",
     minute: "2-digit",
   });
-  return schedule.events.flatMap((event) => {
-    const startsAt = DateTime.formatIso(event.startsAt);
-    const date = new Date(startsAt);
-    const today =
-      SubscriptionTiming.formatLocalDate(event.startsAt, schedule.timezone) ===
-      schedule.today;
-    const localDay = DateTime.toParts(
-      DateTime.setZone(event.startsAt, schedule.timezone),
-    ).day;
-    const day = today
-      ? "Today"
-      : `${dayFormat.format(date)} ${localDay.toString()}`;
-    return teams
-      .filter((team) => event.subjectIds.includes(team.id))
-      .map((team) => {
+  return schedule
+    .flatMap(({ subject: team, events }) =>
+      events.map((event) => {
+        const startsAt = DateTime.formatIso(event.startsAt);
+        const date = new Date(startsAt);
+        const today =
+          SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
+          todayDate;
+        const localDay = DateTime.toParts(
+          DateTime.setZone(event.startsAt, timezone),
+        ).day;
+        const day = today
+          ? "Today"
+          : `${dayFormat.format(date)} ${localDay.toString()}`;
+
         const participantName = (title: string) =>
           catalog.find(
             (subject) =>
@@ -87,26 +89,21 @@ export function scheduleRows(
             ? `${leading.details.role === "away" ? "at" : "vs"} ${participantName(opponent.details.title)}`
             : "",
         };
-      });
-  });
+      }),
+    )
+    .sort(
+      (a, b) =>
+        a.startsAt.localeCompare(b.startsAt) ||
+        a.eventId.localeCompare(b.eventId),
+    );
 }
 
-export function todayTeams(
-  schedule: EventsResponse,
-  teams: readonly Subject[],
-) {
-  const playing = new Set(
-    schedule.events
-      .filter(
-        (event) =>
-          SubscriptionTiming.formatLocalDate(
-            event.startsAt,
-            schedule.timezone,
-          ) === schedule.today,
-      )
-      .flatMap((event) => event.subjectIds),
-  );
-  return teams.filter((team) => playing.has(team.id));
+export function todayTeams(rows: readonly ScheduleRow[]) {
+  return [
+    ...new Map(
+      rows.filter((row) => row.today).map((row) => [row.team.id, row.team]),
+    ).values(),
+  ];
 }
 
 export function todayHeading(teams: readonly Subject[]) {

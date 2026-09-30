@@ -12,7 +12,13 @@ export function Dashboard() {
   const preferences = createMemo(() => getPreferences());
   const schedule = createMemo(() => getEvents());
   const subjects = createMemo(() => getSubjects());
-  const teams = () => preferences().subscriptions.map((pick) => pick.subject);
+  const rows = createMemo(() =>
+    scheduleRows(
+      schedule(),
+      preferences().user.timezone,
+      Result.getOrElse(subjects(), () => []),
+    ),
+  );
 
   // No `Loading` here on purpose: a pending read holds the transition, so the
   // authenticated shell keeps its splash (or blank) until the whole page can
@@ -46,12 +52,8 @@ export function Dashboard() {
         <Form
           preferences={preferences()}
           subjects={subjects()}
-          scheduleRows={scheduleRows(
-            schedule(),
-            teams(),
-            Result.getOrElse(subjects(), () => []),
-          )}
-          todayTeams={todayTeams(schedule(), teams())}
+          scheduleRows={rows()}
+          todayTeams={todayTeams(rows())}
           onSaved={() => {
             revalidate([getPreferences.key, getEvents.key]);
           }}

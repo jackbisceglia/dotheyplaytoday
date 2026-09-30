@@ -9,7 +9,7 @@ import { postgresTable } from "../../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../../lib/database/utils.js";
 import { Id } from "../../../lib/id/service.js";
 import { TaggedUnion } from "../../../lib/effect/index.js";
-import { EventId, eventsTable } from "../schema.js";
+import { Event, EventId, eventsTable } from "../schema.js";
 import { SportParticipant } from "./variants/sport.schema.js";
 
 export type ParticipantSchemasMatchTable = Check<
@@ -56,3 +56,9 @@ export const ParticipantInsert = createInsertSchema(
   participantsTable,
   overrides,
 );
+
+export type EventWithParticipants = typeof EventWithParticipants.Type;
+export const EventWithParticipants = Schema.Struct({
+  ...Event.fields,
+  participants: Schema.Array(Participant),
+});
