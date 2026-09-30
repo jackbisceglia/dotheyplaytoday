@@ -35,6 +35,12 @@ body {
   flex-direction: column;
 }
 
+.site-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
 main {
   width: 100%;
   max-width: 1060px;
@@ -105,11 +111,11 @@ button {
   max-width: 1060px;
   width: 100%;
   margin: 0 auto;
-  padding: 24px 32px;
+  padding: 16px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 3px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
 }
 
 .wordmark {
@@ -321,29 +327,26 @@ button {
   color: var(--paper);
 }
 
+/* A minor action set as plain text, in the footer links' voice. */
+.header-cta-link {
+  border-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+}
+
+.header-cta-link:hover {
+  background: transparent;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .header-cta-solid:hover {
   background: var(--kelly-deep);
   border-color: var(--kelly-deep);
-}
-
-.header-cta:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-
-/* Disabled because the draft can't be saved yet, not because it's busy. */
-.header-cta:disabled[data-unavailable="true"] {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.header-cta-quiet:disabled:hover {
-  color: inherit;
-}
-
-.header-cta-solid:disabled:hover {
-  background: var(--ink);
-  border-color: var(--ink);
 }
 
 .wordmark:focus-visible,
@@ -1108,21 +1111,29 @@ select.form-input {
 
 /* Footer */
 
+/* A quiet band, so it never reads as a second header. */
 .site-footer {
-  max-width: 1060px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 24px 32px;
+  padding: 22px max(32px, calc((100% - 1060px) / 2 + 32px))
+    calc(28px + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 3px solid var(--ink);
-  font-weight: 700;
+  border-top: 2px solid rgba(19, 23, 17, 0.12);
+  background: rgba(19, 23, 17, 0.04);
+  font-weight: 800;
   font-stretch: 80%;
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.footer-mark {
+  display: block;
+  width: 24px;
+  height: 24px;
+  filter: grayscale(1);
+  opacity: 0.55;
 }
 
 .site-footer-links {
@@ -1157,8 +1168,8 @@ select.form-input {
      actions overflows a 320px viewport and clips the trailing button. */
   .site-header {
     gap: 12px;
-    padding-top: 16px;
-    padding-bottom: 16px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   .wordmark-text {
@@ -1166,7 +1177,6 @@ select.form-input {
   }
 
   .site-footer {
-    flex-wrap: wrap;
     gap: 12px 20px;
   }
 
@@ -1184,6 +1194,13 @@ select.form-input {
   .header-cta-quiet {
     padding-left: 2px;
     padding-right: 12px;
+  }
+
+  .header-cta-link {
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
   }
 
   .hero {
@@ -1327,31 +1344,49 @@ select.form-input {
   }
 }
 
-/* Dashboard */
+/* Dashboard
+
+   Spacing runs on an 8px scale: tight inside a group (heading and sentence,
+   league pills and their grid), 24px between groups. View and edit share
+   every measurement, so starting an edit moves nothing already on screen. */
+
+:root {
+  --dashboard-actions-height: 64px;
+}
 
 .dashboard {
-  padding: 40px 0 72px;
+  padding: 48px 0 72px;
+}
+
+/* While editing, the page ends 16px above the fixed action bar. */
+.dashboard:has(.dashboard-form[data-editing="true"]) {
+  padding-bottom: 0;
+}
+
+.dashboard-form[data-editing="true"] {
+  padding-bottom: calc(
+    var(--dashboard-actions-height) + 16px + env(safe-area-inset-bottom)
+  );
+}
+
+/* The development catalog notice waits above the action bar, not over Save. */
+body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
+  bottom: calc(
+    var(--dashboard-actions-height) + 16px + env(safe-area-inset-bottom)
+  );
 }
 
 .dashboard-heading {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  min-height: 40px;
-  margin-bottom: 12px;
-}
-
-.dashboard-heading-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .dashboard-title {
   font-weight: 900;
   font-stretch: 65%;
-  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  font-size: clamp(1.7rem, 4.5vw, 2.5rem);
   line-height: 0.92;
   text-transform: uppercase;
   letter-spacing: -0.01em;
@@ -1362,54 +1397,77 @@ select.form-input {
   color: var(--kelly);
 }
 
-.dashboard-lede {
-  margin-bottom: 32px;
+/* Line height 1 keeps the heading row as tall as the title, so the sentence
+   below doesn't move when Edit goes away. */
+.dashboard-edit {
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--muted);
-  font-size: 1.05rem;
-  line-height: 1.5;
+  font-weight: 800;
+  font-stretch: 80%;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dashboard-edit:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dashboard-edit:focus-visible {
+  outline: 3px solid var(--kelly);
+  outline-offset: 2px;
+}
+
+.dashboard-lede {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 24px;
 }
 
 .dashboard-lede strong {
   color: var(--ink);
-  font-weight: 800;
+  font-weight: 700;
 }
 
-.dashboard-lede-time {
-  white-space: nowrap;
-}
-
-/* While editing, the send time in the sentence becomes the control. */
+/* While editing, the send time in the sentence becomes the control. Its box
+   matches the line, so the sentence keeps its height. */
 .lede-select {
   field-sizing: content;
-  padding: 0 18px 0 0;
+  height: 24px;
+  padding: 0 16px 0 0;
   border: 0;
-  border-bottom: 2px solid var(--ink);
   border-radius: 0;
   background-color: transparent;
   background-image:
-    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
-    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, var(--kelly-deep) 50%),
+    linear-gradient(135deg, var(--kelly-deep) 50%, transparent 50%);
   background-position:
-    calc(100% - 7px) 55%,
-    calc(100% - 2px) 55%;
+    calc(100% - 6px) 55%,
+    calc(100% - 1px) 55%;
   background-size:
     5px 5px,
     5px 5px;
   background-repeat: no-repeat;
   color: var(--ink);
-  font-weight: 800;
-  line-height: inherit;
+  font-weight: 700;
+  line-height: 24px;
+  vertical-align: top;
+  text-decoration: underline;
+  text-decoration-color: var(--kelly);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
   appearance: none;
-  /* The underline sits in the line's leading, so editing doesn't push the
-     roster down. */
-  margin-bottom: -2px;
 }
 
-/* An outline would crowd the words either side; thicken the underline
-   instead, with a shadow so the line box doesn't grow. */
 .lede-select:focus-visible {
-  outline: none;
-  box-shadow: 0 2px 0 var(--ink);
+  outline: 3px solid var(--kelly);
+  outline-offset: 2px;
 }
 
 .dashboard-load-error {
@@ -1417,44 +1475,66 @@ select.form-input {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px 16px;
+  margin-top: 24px;
 }
 
-.dashboard-grid {
+/* The roster: capacity-many tiles in a fixed grid, so picks fill slots rather
+   than pushing anything down. The four slots span the content width, two by
+   two on phones. */
+.roster {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
+  margin-top: 24px;
 }
 
-/* Shares the picker's .team-card geometry. */
+/* Shares the picker's .team-card border and fill. */
 .roster-team {
   position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
-  min-height: 84px;
-  padding: 10px 12px;
+  height: 56px;
+  padding: 0 12px;
   border: 2px solid var(--rule);
   background: #fff;
 }
 
-.roster-team .team-name {
-  font-weight: 400;
+.roster-team-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
 
-/* Unfilled capacity. Card min-heights cover a filled card's content, so a
-   row of empty slots is exactly as tall as a row with teams in it. */
+.roster-team .team-abbr {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.roster-team .team-name {
+  overflow: hidden;
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Unfilled capacity. */
 .roster-slot {
   display: grid;
   place-items: center;
-  min-height: 84px;
+  height: 56px;
+  padding: 0 12px;
+  text-align: center;
+  line-height: 1.3;
+  text-wrap: balance;
   border: 2px dashed var(--rule);
   background: transparent;
   color: var(--muted);
   font-weight: 800;
   font-stretch: 80%;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   transition:
@@ -1473,38 +1553,37 @@ button.roster-slot:focus-visible {
 }
 
 .roster-slot-error {
+  border-color: var(--error);
   color: var(--error);
+  letter-spacing: 0.12em;
 }
 
-/* A small .modal-close, shown on roster cards while editing. */
+/* Tucked into the corner so the name keeps its width. */
 .roster-remove {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 4px;
+  right: 4px;
   display: grid;
   place-items: center;
-  width: 18px;
-  height: 18px;
-  border: 1px solid var(--ink);
-  background: var(--paper);
-  font-size: 0.75rem;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1;
-  transition:
-    background 0.15s,
-    color 0.15s;
 }
 
 /* Keep a comfortable tap target around the small visual button. */
 .roster-remove::after {
   content: "";
   position: absolute;
-  inset: -10px;
+  inset: -8px;
 }
 
 .roster-remove:hover:not(:disabled) {
-  background: var(--ink);
-  color: var(--paper);
+  color: var(--ink);
 }
 
 .roster-remove:disabled {
@@ -1514,19 +1593,38 @@ button.roster-slot:focus-visible {
 
 .roster-remove:focus-visible {
   outline: 3px solid var(--kelly);
-  outline-offset: 2px;
+  outline-offset: 0;
 }
 
 .dashboard-section {
   display: flex;
   flex-direction: column;
-  gap: 14px;
   min-width: 0;
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
 .dashboard-section h2:focus {
   outline: none;
+}
+
+/* The league row keeps 5px under its pills for focus outlines; with this gap
+   the pills sit 16px above their grid. */
+.dashboard-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  min-width: 0;
+  border: 0;
+}
+
+.dashboard-picker .league-row {
+  padding-bottom: 5px;
+}
+
+/* The action bar sits where the footer would; hide the footer so the page ends
+   at the picker. */
+body:has(.dashboard-form[data-editing="true"]) .site-footer {
+  display: none;
 }
 
 /* The dashboard stays quieter than the landing page: selected states keep
@@ -1536,65 +1634,117 @@ button.roster-slot:focus-visible {
   box-shadow: none;
 }
 
-/* Every league's grid shares one cell and inactive ones only go invisible, so
-   the picker is always as tall as the largest league and switching leagues
-   never moves the controls below it. */
-.dashboard-picker .team-grids {
-  display: grid;
+/* A full roster fades what can't be added; tapping one still shakes. */
+.dashboard-picker[data-full="true"] .team-card[aria-pressed="false"] {
+  opacity: 0.45;
 }
 
-.dashboard-picker .team-grid {
-  grid-area: 1 / 1;
-  align-content: start;
-}
-
-.dashboard-picker .team-grid[hidden] {
-  display: grid !important;
-  visibility: hidden;
-}
-
-.dashboard-picker {
+/* Sized like the header's controls on desktop; phones get full-size buttons
+   below. */
+.dashboard-actions {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-  border: 0;
+  align-items: center;
+  height: calc(var(--dashboard-actions-height) + env(safe-area-inset-bottom));
+  padding: 0 32px env(safe-area-inset-bottom);
+  border-top: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.dashboard-actions-inner {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  gap: 12px;
+  max-width: 996px;
+  margin: 0 auto;
+}
+
+.dashboard-actions .btn {
+  min-width: 120px;
+  padding: 10px 20px;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.dashboard-actions .btn-primary,
+.dashboard-actions .btn-primary:hover,
+.dashboard-actions .btn-primary:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.dashboard-actions .btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Disabled because the draft can't be saved yet, not because it's busy. */
+.dashboard-actions .btn-primary[data-unavailable="true"] {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .dashboard-feedback {
   margin-top: 16px;
 }
 
-@media (max-width: 840px) {
-  .dashboard-grid {
+@media (max-width: 719px) {
+  .roster {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 720px) {
+  .dashboard-lede {
+    margin-top: 12px;
+    font-size: 1.05rem;
   }
 }
 
 @media (max-width: 560px) {
   .dashboard {
-    padding: 28px 0 48px;
+    padding: 24px 0 48px;
   }
 
-  /* A one-line title crowds Cancel and Save on phones: stack it in both modes
-     so the heading keeps its height when editing starts. */
-  .dashboard-title em {
-    display: block;
+  :root {
+    --dashboard-actions-height: 80px;
   }
 
-  .dashboard-heading {
-    margin-bottom: 16px;
+  .dashboard-actions {
+    padding-right: 20px;
+    padding-left: 20px;
   }
 
-  .dashboard-lede {
-    font-size: 1rem;
-    line-height: 1.7;
-    text-wrap: balance;
+  .dashboard-actions-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
-  /* One sentence on wide screens; on phones the address takes its own line
-     instead of wrapping wherever it falls. */
-  .dashboard-lede-address {
-    display: block;
+  .dashboard-actions .btn {
+    min-width: 0;
+    padding: 14px 0;
+    font-size: 0.95rem;
+  }
+}
+
+/* The narrowest phones: trim the tile's insides so "Red Sox · MLB" fits. */
+@media (max-width: 360px) {
+  .roster-team {
+    gap: 8px;
+    padding-right: 8px;
+    padding-left: 12px;
+  }
+
+  .roster-team .team-glyph {
+    font-size: 1.1rem;
+  }
+
+  .roster-team .team-name {
+    font-size: 0.7rem;
   }
 }

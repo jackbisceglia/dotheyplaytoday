@@ -43,7 +43,9 @@ export function Home() {
 
   return (
     <Layout
-      headerActions={[{ label: "Sign out", onClick: () => void signOut() }]}
+      headerActions={[
+        { label: "Sign out", variant: "link", onClick: () => void signOut() },
+      ]}
       unsubscribeHref={unsubscribePath()}
     >
       <Show when={signOutError()}>
