@@ -27,7 +27,24 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
                   {getSportsLogo(row.team.details)}
                 </span>
                 <span class="dashboard-schedule-matchup">
-                  <strong>{row.teamName}</strong> <span>{row.opponent}</span>
+                  <strong>{row.teamName}</strong>
+                  <Show when={row.opponent}>
+                    {" "}
+                    <span>{row.matchup}</span>{" "}
+                    <Show
+                      when={row.opponentTeam}
+                      fallback={<span>{row.opponent}</span>}
+                    >
+                      {(team) => (
+                        <>
+                          <span aria-hidden="true">
+                            {getSportsLogo(team().details)}
+                          </span>{" "}
+                          <strong>{row.opponent}</strong>
+                        </>
+                      )}
+                    </Show>
+                  </Show>
                 </span>
                 <time class="dashboard-schedule-time" datetime={row.startsAt}>
                   {row.time}

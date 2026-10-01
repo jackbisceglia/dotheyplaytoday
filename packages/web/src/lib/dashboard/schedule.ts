@@ -12,6 +12,8 @@ export type ScheduleRow = {
   readonly day: string;
   readonly time: string;
   readonly opponent: string;
+  readonly opponentTeam: Subject | undefined;
+  readonly matchup: "at" | "vs";
 };
 
 const normalizeName = (value: string) => value.trim().toLowerCase();
@@ -58,7 +60,7 @@ export function scheduleRows(
       seen.add(key);
       return true;
     })
-    .map(({ team, event }) => {
+    .map(({ team, event }): ScheduleRow => {
       const startsAt = DateTime.formatIso(event.startsAt);
       const date = new Date(startsAt);
       const today =
@@ -97,6 +99,14 @@ export function scheduleRows(
         event.participants.find(
           (participant) => participant.details.role !== leading.details.role,
         );
+      const opponentTeam = opponent
+        ? schedule.find(
+            ({ subject }) =>
+              subject.details.leagueId === event.details.leagueId &&
+              normalizeName(subject.details.display) ===
+                normalizeName(opponent.details.title),
+          )?.subject
+        : undefined;
       return {
         team,
         teamName:
@@ -108,9 +118,9 @@ export function scheduleRows(
         today,
         day,
         time: timeFormat.format(date),
-        opponent: opponent
-          ? `${leading.details.role === "away" ? "at" : "vs"} ${participantName(opponent.details.title)}`
-          : "",
+        opponent: opponent ? participantName(opponent.details.title) : "",
+        opponentTeam,
+        matchup: leading?.details.role === "away" ? "at" : "vs",
       };
     })
     .sort(

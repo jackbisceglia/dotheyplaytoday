@@ -86,7 +86,12 @@ describe("dashboard schedule", () => {
   it("sorts subscription batches by start and uses the user's calendar and local time", () => {
     const result = rows(schedule);
     expect(
-      result.map((row) => [row.day, row.time, row.opponent, row.today]),
+      result.map((row) => [
+        row.day,
+        row.time,
+        `${row.matchup} ${row.opponent}`,
+        row.today,
+      ]),
     ).toEqual([
       ["Today", "8:30 PM", "vs Knicks", true],
       ["Mon 9", "1:00 PM", "vs Knicks", false],
@@ -108,7 +113,13 @@ describe("dashboard schedule", () => {
         })),
       })),
     }));
-    expect(rows(formatted).map((row) => [row.teamName, row.opponent])).toEqual([
+    expect(rows(formatted)[0]?.opponentTeam).toEqual(knicks);
+    expect(
+      rows(formatted).map((row) => [
+        row.teamName,
+        `${row.matchup} ${row.opponent}`,
+      ]),
+    ).toEqual([
       ["Celtics", "vs Knicks"],
       ["Celtics", "vs Knicks"],
     ]);
@@ -121,10 +132,14 @@ describe("dashboard schedule", () => {
     };
     const schedule = [subscription(renamed, [todayGame])];
     expect(rows(schedule)).toMatchObject([
-      { team: renamed, teamName: "Knicks", opponent: "at Celtics" },
+      { team: renamed, teamName: "Knicks", matchup: "at", opponent: "Celtics" },
     ]);
     expect(rows(schedule, [])).toMatchObject([
-      { teamName: "New York Knicks", opponent: "at Boston Celtics" },
+      {
+        teamName: "New York Knicks",
+        matchup: "at",
+        opponent: "Boston Celtics",
+      },
     ]);
   });
 
@@ -152,7 +167,21 @@ describe("dashboard schedule", () => {
       rows([subscription(celtics, [todayGame, tomorrowGame])]),
     ).toHaveLength(2);
     expect(rows([subscription(knicks, [todayGame])])).toMatchObject([
-      { team: knicks, opponent: "at Celtics" },
+      { team: knicks, matchup: "at", opponent: "Celtics" },
+    ]);
+  });
+
+  it("retains both subscribed teams on a single matchup, in either subscription order", () => {
+    expect(rows(schedule)).toMatchObject([
+      { team: celtics, opponentTeam: knicks },
+      { team: celtics, opponentTeam: knicks },
+    ]);
+    expect(rows([...schedule].reverse())).toMatchObject([
+      { team: knicks, opponentTeam: celtics },
+      { team: knicks, opponentTeam: celtics },
+    ]);
+    expect(rows([subscription(celtics, [todayGame])])).toMatchObject([
+      { team: celtics, opponentTeam: undefined },
     ]);
   });
 
@@ -175,7 +204,7 @@ describe("dashboard schedule", () => {
     expect(rows([subscription(celtics, [])])).toEqual([]);
     expect(todayTeams([], timezone, now)).toEqual([]);
     expect(rows([subscription(celtics, [todayGame])], [])).toMatchObject([
-      { opponent: "vs New York Knicks", today: true },
+      { matchup: "vs", opponent: "New York Knicks", today: true },
     ]);
   });
 

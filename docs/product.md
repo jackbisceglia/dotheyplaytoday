@@ -27,7 +27,8 @@ In view mode, a “Coming Up” list below the roster shows today plus the next
 six local calendar days, ordered by game start. Each row names the subscribed
 team and opponent, shows home/away and local start time, and marks today in
 green. Matching participant sets at the same start time appear once, including
-when both teams are subscribed; the first subscription supplies the row’s team.
+when both teams are subscribed; the first subscription supplies the row’s order.
+Both subscribed sides show their emoji and bold nickname within that one row.
 Rematches and doubleheaders at different start times have separate rows. Cancelled games are excluded. An empty
 window reads “No games in the next 7 days.” Editing replaces the list with the
 picker while keeping the heading, send-time sentence, and roster anchored.
