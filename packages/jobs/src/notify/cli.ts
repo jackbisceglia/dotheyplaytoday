@@ -13,6 +13,9 @@ const DryRunFlag = Flag.boolean("dry-run").pipe(
 const ForceFlag = Flag.boolean("force").pipe(
   Flag.withSchema(NotifyOptions.fields.force),
   Flag.withDefault(false),
+  Flag.withDescription(
+    "Bypass daily due-time and already-sent checks; unnecessary for weekly runs",
+  ),
 );
 const NowFlag = Flag.string("now").pipe(
   Flag.withSchema(NotifyOptions.fields.now),

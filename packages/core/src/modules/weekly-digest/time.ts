@@ -2,24 +2,33 @@ import { DateTime } from "effect";
 
 import type { User } from "../users/schema.js";
 
-/** Calendar arithmetic keeps both bounds at local midnight across DST. */
+const batchTimezone = DateTime.zoneMakeNamedUnsafe("America/New_York");
+
+/** Cloudflare supplies the scheduled instant, so late execution keeps the same batch. */
+export const isWeeklyDigestBatchTime = (now: DateTime.Utc) => {
+  const parts = DateTime.toParts(DateTime.setZone(now, batchTimezone));
+  return parts.weekDay === 1 && parts.hour === 9 && parts.minute === 0;
+};
+
+/** All recipients cover the batch's Monday–Sunday dates, at their local midnights. */
 export const weeklyDigestWindow = (
   now: DateTime.Utc,
   timezone: User["timezone"],
 ) => {
-  const fromLocal = DateTime.startOf(DateTime.setZone(now, timezone), "week", {
-    weekStartsOn: 1,
+  const monday = DateTime.startOf(
+    DateTime.setZone(now, batchTimezone),
+    "week",
+    {
+      weekStartsOn: 1,
+    },
+  );
+  const fromLocal = DateTime.makeZonedUnsafe(DateTime.toParts(monday), {
+    timeZone: timezone,
+    adjustForTimeZone: true,
   });
-  const sendAt = DateTime.setParts(fromLocal, { hour: 9 });
-  const nowMs = DateTime.toEpochMillis(now);
-  const sendAtMs = DateTime.toEpochMillis(sendAt);
-
   return {
     from: DateTime.toUtc(fromLocal),
     to: DateTime.toUtc(DateTime.add(fromLocal, { days: 7 })),
-    weekStart: DateTime.formatIsoDate(fromLocal),
-    sendAt: DateTime.toUtc(sendAt),
-    // The quarter-hour cron gets four attempts, including fractional-offset zones.
-    isDue: nowMs >= sendAtMs && nowMs < sendAtMs + 60 * 60 * 1_000,
+    weekStart: DateTime.formatIsoDate(monday),
   };
 };

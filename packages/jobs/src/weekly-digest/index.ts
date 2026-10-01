@@ -6,7 +6,6 @@ import {
 } from "@dtpt/core/modules/subscriptions/service";
 import { renderWeeklyDigest } from "@dtpt/core/modules/weekly-digest/email";
 import { WeeklyDigest } from "@dtpt/core/modules/weekly-digest/schema";
-import { WeeklyDigestDeliveries } from "@dtpt/core/modules/weekly-digest/service";
 import { weeklyDigestWindow } from "@dtpt/core/modules/weekly-digest/time";
 import { Array, DateTime, Effect } from "effect";
 
@@ -47,7 +46,6 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
   opts: WeeklyDigestOptions,
 ) {
   const subscriptions = yield* Subscriptions;
-  const deliveries = yield* WeeklyDigestDeliveries;
   const now = opts.now ?? (yield* DateTime.now);
   const recipients = yield* subscriptions.listNotificationRecipients();
   const selected = recipients.filter(
@@ -64,12 +62,7 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
         const user = group[0].user;
         const window = weeklyDigestWindow(now, user.timezone);
         const identity = { userId: user.id, weekStart: window.weekStart };
-        if (!opts.force && !window.isDue) return;
-        const existing = yield* deliveries.find(identity);
-        if (!opts.force && existing?.sentAt) return;
-
-        const rendered =
-          existing?.rendered ?? (yield* renderCurrentDigest(group, window));
+        const rendered = yield* renderCurrentDigest(group, window);
         if (opts.dryRun) {
           yield* Effect.logInfo("weekly digest: dry-run", {
             ...identity,
@@ -78,19 +71,14 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
           return;
         }
 
-        const prepared =
-          existing ??
-          (yield* deliveries.prepare({ ...identity, rendered, sentAt: null }));
-        if (!opts.force && prepared.sentAt) return;
         const email = yield* Email;
         yield* email.send(
           {
             recipient: user.email,
             idempotencyKey: `weekly-digest:${user.id}:${window.weekStart}`,
           },
-          prepared.rendered,
+          rendered,
         );
-        yield* deliveries.markSent({ ...identity, sentAt: now });
         yield* Effect.logInfo("weekly digest: sent", identity);
       },
       Effect.catchTags({
@@ -100,8 +88,6 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
           Effect.logError("weekly digest: delivery failed", error),
         EmailResponseError: (error) =>
           Effect.logError("weekly digest: delivery rejected", error),
-        DatabaseWriteError: (error) =>
-          Effect.logError("weekly digest: delivery state write failed", error),
       }),
       (effect, group) =>
         effect.pipe(Effect.annotateLogs({ userId: group[0].user.id })),

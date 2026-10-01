@@ -123,20 +123,6 @@ serialized catalog transaction used in production.
 
 ## Existing coverage
 
-Weekly digest persistence needs these provider-backed cases in the disposable
-PostgreSQL suite:
-
-- Migration 0006 creates the per-user/per-local-week key and user foreign key.
-- Concurrent prepares return the first committed snapshot without overwriting
-  its content; both delivery attempts use the same provider payload and key.
-- Successful delivery is recorded for exactly one user/week, independently of
-  daily subscription history; a missing snapshot reports a write failure.
-- Deleting a user cascades both pending and completed weekly delivery records.
-
-Local weekly service tests use real Drizzle and Effect SQL with a fake driver
-to check query shape, conflict handling, and stored-row decoding. They do not
-prove PostgreSQL concurrency or foreign-key behavior.
-
 Keep fast schema, domain, contract, scheduling, notifier, and rendering tests in
 the normal local suite. The opt-in test under
 `packages/core/src/lib/database/__tests__/infra/` deploys the actual application

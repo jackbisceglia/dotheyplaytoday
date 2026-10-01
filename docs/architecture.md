@@ -278,37 +278,35 @@ signup.
 
 ## Weekly digest
 
-The existing notification Worker's quarter-hour cron also invokes
-`jobs/src/weekly-digest`. It groups eligible subscription recipients by user
-and applies a separate Monday 09:00–10:00 local delivery window. The daily and
-weekly runs observe their results independently, so a typed failure in daily
-processing does not prevent weekly processing. The weekly workflow uses the
-existing `Events.listBySubject` active-event query with a half-open local-week
-UTC range; it never writes a subscription's `lastSentAt`.
+The notification Worker keeps its quarter-hour daily reminder cron and adds a
+separate Monday batch at 9:00 AM Eastern. Cloudflare cron fires at both 13:00
+and 14:00 UTC Mondays (`0 13,14 * * 1`); an Eastern-time guard admits exactly
+one candidate across daylight saving changes. The guard and week selection use
+Cloudflare’s scheduled timestamp, so late execution retains the same batch.
+`jobs/src/weekly-digest` groups eligible subscription recipients by user and
+sends one personalized email to each, without consulting daily send times or
+last-sent timestamps. It uses the existing `Events.listBySubject` active-event
+query with a half-open local-week UTC range and never writes a subscription's
+`lastSentAt`.
 
 Core's `weekly-digest` module owns the digest model, timezone/calendar rules,
-email assembly, and delivery persistence. Shared `EmailView` provides the
+and email assembly. Shared `EmailView` provides the
 branded image tile, single date range, team schedule blocks, and compact footer
 links in HTML and plain text. Participant titles currently carry no subject
 identity; the weekly renderer matches the
 normalized subject display title and returns a typed error when it cannot
 identify the followed team's side or when home/away roles are malformed.
 
-Migration `0006_weekly_digest_deliveries.sql` adds a record keyed by user ID and
-local Monday date, with rendered JSON and a nullable successful-send timestamp.
-`WeeklyDigestDeliveries.prepare` inserts without overwriting an existing record,
-then reads the winning snapshot. This makes overlapping cron invocations and
-post-delivery write failures use identical provider payloads with
-`weekly-digest:<user-id>:<local-Monday>` as the idempotency key. The provider
-still owns deduplication of simultaneous sends; the local record suppresses
-subsequent completed-week runs. The retry window stays within the provider's
-idempotency lifetime. Failed pending snapshots remain for operational diagnosis;
-the next week's key is independent. User deletion cascades to these records.
+Weekly sending requires no new database schema or saved email snapshots.
+Each send uses `weekly-digest:<user-id>:<Monday-date>` as its provider
+idempotency key. The email adapter retries transient failures within a send;
+recipient-specific render and provider failures are logged while the batch
+continues. There is no durable record of individual batch completion.
 
 `POST /test/weekly-digest` is a development-only trigger using the existing
 notify options and CLI's `--weekly` flag. A dry run logs the rendered email,
 uses no email provider, and writes no delivery state. Production exposes no
-manual trigger. Migration and Worker changes must deploy together.
+manual trigger. The Worker and generated weekly headline asset deploy together.
 
 ## Testing and validation
 

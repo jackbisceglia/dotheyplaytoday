@@ -37,12 +37,13 @@ delivery history. Email and timezone are not shown.
 - Verified users with followed teams receive one weekly email by default,
   alongside their existing game-day reminders. Separate weekly preferences are
   deferred; changing the daily send time does not change weekly delivery.
-- Delivery starts Monday at 9:00 AM in the user's IANA timezone. The
-  quarter-hour Worker cron retries pending deliveries until 10:00 AM local.
-  The 9:00 AM time is the initial implementation choice for Monday morning.
-- Coverage is the local Monday–Sunday calendar week, including Monday games
-  before delivery. Queries include local Monday midnight and exclude the next
-  Monday midnight, using calendar arithmetic across daylight saving changes.
+- Delivery is one Monday 9:00 AM Eastern (`America/New_York`) batch for all
+  eligible recipients, following daylight saving time and independent of daily
+  reminder preferences. The emails remain personalized by team and recipient timezone.
+- Coverage is the batch's Monday–Sunday calendar week, including Monday games
+  before delivery. All recipients cover the same dates. Queries include each
+  recipient's local Monday midnight and exclude the next Monday midnight,
+  using calendar arithmetic across daylight saving changes.
 - The By team email includes every followed team, chronological dates,
   opponents, `vs.` / `@`, and local start times. A fixture between two followed
   teams appears in both sections. Cancelled games are excluded.
@@ -56,15 +57,16 @@ delivery history. Email and timezone are not shown.
   start times still use the recipient's timezone. “Manage teams” and “Unsubscribe”
   share one compact footer. Unsubscribe retains its existing unsubscribe-from-all behavior.
   There is no weekly-only unsubscribe until separate preferences exist.
-- Weekly delivery state is independent of daily subscription history. The first
-  rendered snapshot is persisted before sending; retries use that exact snapshot
-  and the same user/week provider idempotency key. Completion is recorded only
-  after successful delivery. Unsubscribe deletes the user's weekly records too.
+- Weekly sends do not write daily subscription history or introduce a delivery
+  table. Each recipient uses `weekly-digest:<user-id>:<Monday-date>` as the
+  provider idempotency key. Transient transport failures use the email
+  adapter's existing bounded retries. There are no saved message snapshots or
+  durable per-recipient completion records.
 - Development supports `pnpm @jobs start:notify --weekly` with `--dry-run`,
-  `--force`, `--user <email>`, and `--now <ISO-UTC-instant>`. Dry runs render without sending or
-  writing weekly or daily delivery state. Force bypasses due/completed guards,
-  retains verified-user eligibility and the same provider key, and covers the
-  current local calendar week. It does not guarantee a fresh provider delivery.
+  `--user <email>`, and `--now <ISO-UTC-instant>`. Manual weekly runs execute
+  immediately; `--force` is unnecessary. Dry runs render without sending or
+  writing delivery state. Repeating a week retains its provider key and does
+  not guarantee a fresh delivery.
 
 ## Registration and confirmation rollout
 

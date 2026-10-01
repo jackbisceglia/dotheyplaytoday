@@ -1,10 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, DateTime, Effect, Layer } from "effect";
 
-import {
-  DatabaseReadError,
-  DatabaseWriteError,
-} from "@dtpt/core/lib/database/errors";
+import { DatabaseReadError } from "@dtpt/core/lib/database/errors";
 import { Email } from "@dtpt/core/modules/email/service";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { Events } from "@dtpt/core/modules/events/service";
@@ -16,8 +13,6 @@ import { SubscriptionId } from "@dtpt/core/modules/subscriptions/schema";
 import { UserId, EmailAddress } from "@dtpt/core/modules/users/schema";
 import { notification } from "@dtpt/core/modules/notifier/__tests__/fixtures";
 import { digest } from "@dtpt/core/modules/weekly-digest/__tests__/fixtures";
-import { type WeeklyDigestDelivery } from "@dtpt/core/modules/weekly-digest/delivery-schema";
-import { WeeklyDigestDeliveries } from "@dtpt/core/modules/weekly-digest/service";
 import { weeklyDigest } from "../index.js";
 
 const now = DateTime.makeUnsafe("2026-10-05T13:00:00Z");
@@ -53,11 +48,9 @@ type HarnessOptions = {
   readonly recipients?: readonly NotificationRecipient[];
   readonly quiet?: boolean;
   readonly send?: Email["Service"]["send"];
-  readonly markSent?: WeeklyDigestDeliveries["Service"]["markSent"];
   readonly readFailure?: boolean;
 };
 const makeHarness = (opts: HarnessOptions = {}) => {
-  const records = new Map<string, WeeklyDigestDelivery>();
   const sends: {
     delivery: Parameters<Email["Service"]["send"]>[0];
     rendered: Parameters<Email["Service"]["send"]>[1];
@@ -66,31 +59,6 @@ const makeHarness = (opts: HarnessOptions = {}) => {
     subjectId: string;
     options: Parameters<Events["Service"]["listBySubject"]>[1];
   }[] = [];
-  const preparations: WeeklyDigestDelivery[] = [];
-  const marks: Parameters<WeeklyDigestDeliveries["Service"]["markSent"]>[0][] =
-    [];
-  const key = (input: Pick<WeeklyDigestDelivery, "userId" | "weekStart">) =>
-    `${input.userId}:${input.weekStart}`;
-  const state = WeeklyDigestDeliveries.of({
-    find: (input) => Effect.sync(() => records.get(key(input))),
-    prepare: (input) =>
-      Effect.sync(() => {
-        preparations.push(input);
-        const existing = records.get(key(input));
-        if (existing) return existing;
-        records.set(key(input), input);
-        return input;
-      }),
-    markSent: (input) =>
-      Effect.gen(function* () {
-        marks.push(input);
-        if (opts.markSent) yield* opts.markSent(input);
-        const row = records.get(key(input));
-        if (!row)
-          return yield* new DatabaseWriteError({ operation: "test.markSent" });
-        records.set(key(input), { ...row, sentAt: input.sentAt });
-      }),
-  });
   const layer = Layer.mergeAll(
     Layer.succeed(
       Subscriptions,
@@ -124,7 +92,6 @@ const makeHarness = (opts: HarnessOptions = {}) => {
           }),
       }),
     ),
-    Layer.succeed(WeeklyDigestDeliveries, state),
     Layer.succeed(
       Email,
       Email.of({
@@ -139,35 +106,71 @@ const makeHarness = (opts: HarnessOptions = {}) => {
       ConfigProvider.fromUnknown({ VITE_WEB_URL_BASE: "https://example.com" }),
     ),
   );
-  return { records, sends, queries, preparations, marks, layer, key };
+  return { sends, queries, layer };
 };
 
 describe("weekly digest orchestration", () => {
   it.effect(
-    "sends one email covering all followed teams and marks weekly delivery after success",
+    "sends in one batch regardless of daily time preferences or recipient timezone",
     () =>
       Effect.gen(function* () {
-        const harness = makeHarness();
-        yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
-        expect(harness.sends).toHaveLength(1);
-        expect(harness.sends[0]?.rendered.body.text).toContain("New York Mets");
-        expect(harness.queries).toHaveLength(4);
-        for (const query of harness.queries) {
-          expect(DateTime.formatIso(query.options?.range?.from ?? now)).toBe(
-            "2026-10-05T04:00:00.000Z",
-          );
-          expect(DateTime.formatIso(query.options?.range?.to ?? now)).toBe(
-            "2026-10-12T04:00:00.000Z",
-          );
-          expect(query.options?.availability).toBeUndefined(); // Existing query defaults to active games.
-        }
-        expect(harness.marks).toEqual([
-          { userId: digest.user.id, weekStart: "2026-10-05", sentAt: now },
+        const other = {
+          ...otherRecipient,
+          user: {
+            ...otherRecipient.user,
+            timezone: DateTime.zoneMakeNamedUnsafe("Pacific/Honolulu"),
+          },
+          subscription: {
+            ...otherRecipient.subscription,
+            lastSentAt: now,
+            schedule: {
+              ...otherRecipient.subscription.schedule,
+              sendAtSecondsLocal: 20 * 3600,
+            },
+          },
+        };
+        const harness = makeHarness({
+          recipients: [...recipients, other],
+          quiet: true,
+        });
+        yield* weeklyDigest({
+          now: DateTime.makeUnsafe("2026-10-05T09:00:00Z"),
+        }).pipe(Effect.provide(harness.layer));
+        expect(harness.sends.map((send) => send.delivery.recipient)).toEqual([
+          digest.user.email,
+          other.user.email,
         ]);
-        expect(harness.sends[0]?.delivery.idempotencyKey).toBe(
-          `weekly-digest:${digest.user.id}:2026-10-05`,
+        expect(harness.sends[1]?.delivery.idempotencyKey).toBe(
+          `weekly-digest:${other.user.id}:2026-10-05`,
         );
+        expect(
+          DateTime.formatIso(
+            harness.queries.at(-1)?.options?.range?.from ?? now,
+          ),
+        ).toBe("2026-10-05T10:00:00.000Z");
       }),
+  );
+
+  it.effect("sends one personalized email covering all followed teams", () =>
+    Effect.gen(function* () {
+      const harness = makeHarness();
+      yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
+      expect(harness.sends).toHaveLength(1);
+      expect(harness.sends[0]?.rendered.body.text).toContain("New York Mets");
+      expect(harness.queries).toHaveLength(4);
+      for (const query of harness.queries) {
+        expect(DateTime.formatIso(query.options?.range?.from ?? now)).toBe(
+          "2026-10-05T04:00:00.000Z",
+        );
+        expect(DateTime.formatIso(query.options?.range?.to ?? now)).toBe(
+          "2026-10-12T04:00:00.000Z",
+        );
+        expect(query.options?.availability).toBeUndefined(); // Existing query defaults to active games.
+      }
+      expect(harness.sends[0]?.delivery.idempotencyKey).toBe(
+        `weekly-digest:${digest.user.id}:2026-10-05`,
+      );
+    }),
   );
 
   it.effect("sends a quiet-week email with every followed team", () =>
@@ -178,7 +181,6 @@ describe("weekly digest orchestration", () => {
       expect(harness.sends[0]?.rendered.body.text).toContain(
         "No games this week.",
       );
-      expect(harness.marks).toHaveLength(1);
     }),
   );
 
@@ -194,24 +196,11 @@ describe("weekly digest orchestration", () => {
         Effect.provide(harness.layer),
       );
       expect(harness.queries).toHaveLength(0);
-      expect(harness.preparations).toHaveLength(0);
       expect(harness.sends).toHaveLength(0);
     }),
   );
 
-  it.effect("does not query events or write state outside the due window", () =>
-    Effect.gen(function* () {
-      const harness = makeHarness();
-      yield* weeklyDigest({
-        now: DateTime.makeUnsafe("2026-10-05T12:45:00Z"),
-      }).pipe(Effect.provide(harness.layer));
-      expect(harness.queries).toHaveLength(0);
-      expect(harness.sends).toHaveLength(0);
-      expect(harness.preparations).toHaveLength(0);
-    }),
-  );
-
-  it.effect("dry runs render without sending or preparing delivery state", () =>
+  it.effect("dry runs render without sending", () =>
     Effect.gen(function* () {
       const harness = makeHarness();
       yield* weeklyDigest({ now, dryRun: true }).pipe(
@@ -219,84 +208,25 @@ describe("weekly digest orchestration", () => {
       );
       expect(harness.queries).toHaveLength(4);
       expect(harness.sends).toHaveLength(0);
-      expect(harness.preparations).toHaveLength(0);
-      expect(harness.marks).toHaveLength(0);
     }),
   );
 
   it.effect(
-    "does not resend a completed week, including after a retry tick",
+    "uses the same provider key when rerunning the same weekly batch",
     () =>
       Effect.gen(function* () {
         const harness = makeHarness();
         yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
-        yield* weeklyDigest({ now: DateTime.add(now, { minutes: 15 }) }).pipe(
-          Effect.provide(harness.layer),
-        );
-        expect(harness.sends).toHaveLength(1);
-        expect(harness.queries).toHaveLength(4);
-      }),
-  );
-
-  it.effect(
-    "reuses the exact persisted message and key after successful send but failed mark-sent",
-    () =>
-      Effect.gen(function* () {
-        let fail = true;
-        const harness = makeHarness({
-          markSent: () =>
-            fail
-              ? Effect.fail(
-                  new DatabaseWriteError({ operation: "test.markSent" }),
-                )
-              : Effect.void,
-        });
         yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
-        expect(harness.marks).toHaveLength(1);
-        expect([...harness.records.values()][0]?.sentAt).toBeNull();
-        fail = false;
-        yield* weeklyDigest({ now: DateTime.add(now, { minutes: 15 }) }).pipe(
-          Effect.provide(harness.layer),
-        );
         expect(harness.sends).toHaveLength(2);
-        expect(harness.sends[1]).toEqual(harness.sends[0]);
-        expect(harness.queries).toHaveLength(4);
-        expect(harness.preparations).toHaveLength(1);
-        expect([...harness.records.values()][0]?.sentAt).not.toBeNull();
-      }),
-  );
-
-  it.effect(
-    "does not mark a provider failure as sent and retries the saved snapshot",
-    () =>
-      Effect.gen(function* () {
-        let fail = true;
-        const harness = makeHarness({
-          send: () =>
-            fail
-              ? Effect.fail(
-                  new EmailResponseError({
-                    message: "temporary failure",
-                    code: "internal_server_error",
-                    statusCode: 500,
-                  }),
-                )
-              : Effect.void,
-        });
-        yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
-        expect(harness.marks).toHaveLength(0);
-        expect([...harness.records.values()][0]?.sentAt).toBeNull();
-        fail = false;
-        yield* weeklyDigest({ now: DateTime.add(now, { minutes: 15 }) }).pipe(
-          Effect.provide(harness.layer),
+        expect(harness.sends[1]?.delivery.idempotencyKey).toBe(
+          harness.sends[0]?.delivery.idempotencyKey,
         );
-        expect(harness.sends[1]).toEqual(harness.sends[0]);
-        expect(harness.marks).toHaveLength(1);
       }),
   );
 
   it.effect(
-    "does not prepare or send an incomplete digest after an event read failure",
+    "does not send an incomplete digest after an event read failure",
     () =>
       Effect.gen(function* () {
         const harness = makeHarness({ readFailure: true });
@@ -306,23 +236,20 @@ describe("weekly digest orchestration", () => {
         );
         expect(error).toBeInstanceOf(DatabaseReadError);
         expect(harness.sends).toHaveLength(0);
-        expect(harness.preparations).toHaveLength(0);
       }),
   );
 
   it.effect(
-    "force can preview the current calendar week outside Monday, still without state writes",
+    "manual runs can preview the current calendar week outside Monday",
     () =>
       Effect.gen(function* () {
         const harness = makeHarness();
         yield* weeklyDigest({
           now: DateTime.makeUnsafe("2026-10-08T15:00:00Z"),
-          force: true,
           dryRun: true,
         }).pipe(Effect.provide(harness.layer));
         expect(harness.queries).toHaveLength(4);
         expect(harness.sends).toHaveLength(0);
-        expect(harness.preparations).toHaveLength(0);
       }),
   );
 
@@ -358,8 +285,6 @@ describe("weekly digest orchestration", () => {
       });
       yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
       expect(harness.sends).toHaveLength(2);
-      expect(harness.marks).toHaveLength(1);
-      expect(harness.marks[0]?.userId).toBe(otherRecipient.user.id);
     }),
   );
 
@@ -374,7 +299,6 @@ describe("weekly digest orchestration", () => {
       expect(harness.sends[1]?.delivery.idempotencyKey).toBe(
         `weekly-digest:${digest.user.id}:2026-10-12`,
       );
-      expect(harness.records.size).toBe(2);
     }),
   );
 });
