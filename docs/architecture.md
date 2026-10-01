@@ -276,6 +276,40 @@ while editing, so the entry stays cached and the editor opens without a second
 fetch. Selection feedback lives beside the shared picker rather than under
 signup.
 
+## Weekly digest
+
+The existing notification Worker's quarter-hour cron also invokes
+`jobs/src/weekly-digest`. It groups eligible subscription recipients by user
+and applies a separate Monday 09:00–10:00 local delivery window. The daily and
+weekly runs observe their results independently, so a typed failure in daily
+processing does not prevent weekly processing. The weekly workflow uses the
+existing `Events.listBySubject` active-event query with a half-open local-week
+UTC range; it never writes a subscription's `lastSentAt`.
+
+Core's `weekly-digest` module owns the digest model, timezone/calendar rules,
+email assembly, and delivery persistence. Shared `EmailView` provides the
+branded image tile, single date range, team schedule blocks, and compact footer
+links in HTML and plain text. Participant titles currently carry no subject
+identity; the weekly renderer matches the
+normalized subject display title and returns a typed error when it cannot
+identify the followed team's side or when home/away roles are malformed.
+
+Migration `0006_weekly_digest_deliveries.sql` adds a record keyed by user ID and
+local Monday date, with rendered JSON and a nullable successful-send timestamp.
+`WeeklyDigestDeliveries.prepare` inserts without overwriting an existing record,
+then reads the winning snapshot. This makes overlapping cron invocations and
+post-delivery write failures use identical provider payloads with
+`weekly-digest:<user-id>:<local-Monday>` as the idempotency key. The provider
+still owns deduplication of simultaneous sends; the local record suppresses
+subsequent completed-week runs. The retry window stays within the provider's
+idempotency lifetime. Failed pending snapshots remain for operational diagnosis;
+the next week's key is independent. User deletion cascades to these records.
+
+`POST /test/weekly-digest` is a development-only trigger using the existing
+notify options and CLI's `--weekly` flag. A dry run logs the rendered email,
+uses no email provider, and writes no delivery state. Production exposes no
+manual trigger. Migration and Worker changes must deploy together.
+
 ## Testing and validation
 
 API contract tests live in `packages/core/src/contracts/__tests__`, named for

@@ -11,23 +11,25 @@ import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/databa
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
-import {
-  EmailConfig,
-  ResendConfig,
-} from "@dtpt/core/modules/email/config";
+import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
 import { NotifierLayerConsole } from "@dtpt/core/modules/notifier/console";
 import { NotifierLayerEmail } from "@dtpt/core/modules/notifier/email";
+import { EmailLayerResend } from "@dtpt/core/modules/email/resend";
+import { Email } from "@dtpt/core/modules/email/service";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
+import { WeeklyDigestDeliveriesLayer } from "@dtpt/core/modules/weekly-digest/service";
+import { weeklyDigest } from "../weekly-digest/index.js";
 import { notify, NotifyOptions } from "./index.js";
 
 const NotifySchedule = "*/15 * * * *";
 
 export const Trigger = {
   path: "/test/notify",
+  weeklyPath: "/test/weekly-digest",
   port: 8788,
-  getLocalUrl: () =>
-    `http://localhost:${Trigger.port.toString()}${Trigger.path}`,
+  getLocalUrl: (weekly = false) =>
+    `http://localhost:${Trigger.port.toString()}${weekly ? Trigger.weeklyPath : Trigger.path}`,
 } as const;
 
 const NotifyDomainsLayer = pipe(
@@ -65,6 +67,10 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
     const NotifyLayer = NotifyDomainsLayer.pipe(Layer.provide(DatabaseLayer));
+    const WeeklyLayer = Layer.merge(
+      NotifyLayer,
+      WeeklyDigestDeliveriesLayer.pipe(Layer.provide(DatabaseLayer)),
+    );
 
     yield* Cloudflare.Workers.cron(
       NotifySchedule,
@@ -72,9 +78,20 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
         function* () {
           yield* Effect.logInfo("notify job: scheduled");
 
-          yield* notify({}).pipe(
-            Effect.provide(Layer.merge(NotifyLayer, NotifierLayerEmail)),
+          // Observe both results so a daily failure cannot prevent weekly processing.
+          const daily = yield* Effect.result(
+            notify({}).pipe(
+              Effect.provide(Layer.merge(NotifyLayer, NotifierLayerEmail)),
+            ),
           );
+          const weekly = yield* Effect.result(
+            weeklyDigest({}).pipe(
+              Effect.provide(Layer.merge(WeeklyLayer, EmailLayerResend)),
+            ),
+          );
+          if (Result.isFailure(daily)) return yield* Effect.fail(daily.failure);
+          if (Result.isFailure(weekly))
+            return yield* Effect.fail(weekly.failure);
         },
         Effect.tapCause((cause) =>
           Effect.logError("notify job: cron failed", cause),
@@ -93,7 +110,10 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
           return HttpServerResponse.empty({ status: 401 });
         }
 
-        if (request.method !== "POST" || pathname !== Trigger.path) {
+        if (
+          request.method !== "POST" ||
+          (pathname !== Trigger.path && pathname !== Trigger.weeklyPath)
+        ) {
           return HttpServerResponse.empty({ status: 404 });
         }
 
@@ -106,6 +126,21 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
         }
 
         const body = bodyResult.success;
+        if (pathname === Trigger.weeklyPath) {
+          // Dry runs never build the provider layer or require its configuration.
+          const run = weeklyDigest(body);
+          yield* body.dryRun
+            ? run.pipe(
+                Effect.provide(WeeklyLayer),
+                Effect.provideService(Email, {
+                  send: () => Effect.die("Dry runs must not send email"),
+                }),
+              )
+            : run.pipe(
+                Effect.provide(Layer.merge(WeeklyLayer, EmailLayerResend)),
+              );
+          return yield* HttpServerResponse.json({ ok: true });
+        }
         const NotifyRunLayer = Layer.merge(
           NotifyLayer,
           Boolean.match(body.dryRun, {

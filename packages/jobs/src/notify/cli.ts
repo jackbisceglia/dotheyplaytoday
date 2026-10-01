@@ -32,12 +32,16 @@ const NotifyCommand = Command.make(
     force: ForceFlag,
     now: NowFlag,
     user: UserFlag,
+    weekly: Flag.boolean("weekly").pipe(
+      Flag.withDefault(false),
+      Flag.withDescription("Run the weekly digest instead of daily reminders"),
+    ),
   },
   Effect.fn("Notify.Cli")(function* (opts) {
     const now = Option.getOrUndefined(opts.now);
     const userEmail = Option.getOrUndefined(opts.user);
 
-    const triggerUrl = Trigger.getLocalUrl();
+    const triggerUrl = Trigger.getLocalUrl(opts.weekly);
 
     const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
     const request = yield* HttpClientRequest.post(triggerUrl).pipe(

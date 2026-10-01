@@ -359,6 +359,11 @@ export function Form(props: FormProps) {
             </p>
           </fieldset>
 
+          <p class="form-hint">
+            Game-day reminders at your chosen time, plus a weekly schedule every
+            Monday at 9 AM in your timezone.
+          </p>
+
           <div class="form-submit-row">
             <button
               class="btn btn-primary"

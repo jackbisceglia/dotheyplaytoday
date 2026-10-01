@@ -11,6 +11,7 @@ import {
 import { confirmationLines } from "@dtpt/core/modules/email/transactional/confirmation";
 import { signInLines } from "@dtpt/core/modules/email/transactional/sign-in";
 import { gameDayLines, kickoffLines } from "@dtpt/core/modules/notifier/email";
+import { weeklyDigestLines } from "@dtpt/core/modules/weekly-digest/email";
 import { SeedCollections } from "@dtpt/data/seed/index";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -134,10 +135,13 @@ const teams = SeedCollections.flatMap((collection) =>
 // Teams that share a name ("Kings", "Giants") share one image.
 const headlines = [
   ...new Map(
-    [signInLines, confirmationLines, kickoffLines, ...teams].map((lines) => [
-      buildHeadlineImagePath(lines),
-      lines,
-    ]),
+    [
+      signInLines,
+      confirmationLines,
+      kickoffLines,
+      weeklyDigestLines,
+      ...teams,
+    ].map((lines) => [buildHeadlineImagePath(lines), lines]),
   ),
 ];
 

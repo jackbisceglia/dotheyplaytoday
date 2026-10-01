@@ -160,6 +160,10 @@ export function Form(props: {
           });
         }}
       />
+      <p class="form-hint">
+        Your weekly schedule arrives every Monday at 9 AM, including weeks with
+        no games.
+      </p>
       <p class="visually-hidden" aria-live="polite">
         {teams().length} of {capacity} teams picked
       </p>
