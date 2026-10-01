@@ -573,6 +573,8 @@ export const Teams = {
       Games._824058.sourceId,
       Games._824057.sourceId,
       Games._824055.sourceId,
+      Games._849829.sourceId,
+      Games._849834.sourceId,
     ],
   },
   ColoradoRockies: {
@@ -1377,6 +1379,8 @@ export const Teams = {
       Games._823246.sourceId,
       Games._849843.sourceId,
       Games._849842.sourceId,
+      Games._849830.sourceId,
+      Games._849825.sourceId,
     ],
   },
   SeattleMariners: {
@@ -1703,6 +1707,8 @@ export const Teams = {
       Games._823409.sourceId,
       Games._823407.sourceId,
       Games._823408.sourceId,
+      Games._849835.sourceId,
+      Games._849839.sourceId,
     ],
   },
   TexasRangers: {
@@ -2026,6 +2032,7 @@ export const Teams = {
       Games._823408.sourceId,
       Games._849845.sourceId,
       Games._849841.sourceId,
+      Games._849844.sourceId,
     ],
   },
   AtlantaBraves: {
@@ -2110,6 +2117,7 @@ export const Teams = {
       Games._823814.sourceId,
       Games._849845.sourceId,
       Games._849841.sourceId,
+      Games._849844.sourceId,
     ],
   },
   ChicagoWhiteSox: {
@@ -2194,6 +2202,8 @@ export const Teams = {
       Games._824542.sourceId,
       Games._849849.sourceId,
       Games._849846.sourceId,
+      Games._849829.sourceId,
+      Games._849834.sourceId,
     ],
   },
   MiamiMarlins: {
@@ -2357,6 +2367,8 @@ export const Teams = {
       Games._823490.sourceId,
       Games._849851.sourceId,
       Games._849848.sourceId,
+      Games._849835.sourceId,
+      Games._849839.sourceId,
     ],
   },
   MilwaukeeBrewers: {
@@ -2438,6 +2450,8 @@ export const Teams = {
       Games._823735.sourceId,
       Games._823733.sourceId,
       Games._823731.sourceId,
+      Games._849830.sourceId,
+      Games._849825.sourceId,
     ],
   },
 } as const satisfies Record<string, MlbSportSubjectSeed>;
