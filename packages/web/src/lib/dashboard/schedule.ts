@@ -33,64 +33,86 @@ export function scheduleRows(
     hour: "numeric",
     minute: "2-digit",
   });
+  const seen = new Set<string>();
   return schedule
     .flatMap(({ subject: team, events }) =>
-      events.map((event) => {
-        const startsAt = DateTime.formatIso(event.startsAt);
-        const date = new Date(startsAt);
-        const today =
-          SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
-          todayDate;
-        const localDay = DateTime.toParts(
-          DateTime.setZone(event.startsAt, timezone),
-        ).day;
-        const day = today
-          ? "Today"
-          : `${dayFormat.format(date)} ${localDay.toString()}`;
-
-        const participantName = (title: string) =>
-          catalog.find(
-            (subject) =>
-              subject.details.leagueId === event.details.leagueId &&
-              normalizeName(subject.details.display) === normalizeName(title),
-          )?.details.name ?? title.trim();
-        const own = event.participants.find(
-          (participant) =>
-            normalizeName(participant.details.title) ===
-            normalizeName(team.details.display),
-        );
-        // Like the notifier, keep both sides in away-at-home order when the
-        // subscribed team's display name cannot identify its participant.
-        const leading =
-          own ??
-          event.participants.find(
-            (participant) => participant.details.role === "away",
-          ) ??
-          event.participants.find(
-            (participant) => participant.details.role === "home",
-          );
-        const opponent =
-          leading &&
-          event.participants.find(
-            (participant) => participant.details.role !== leading.details.role,
-          );
-        return {
-          team,
-          teamName:
-            own || !leading
-              ? team.details.name
-              : participantName(leading.details.title),
-          eventId: event.id,
-          startsAt,
-          today,
-          day,
-          time: timeFormat.format(date),
-          opponent: opponent
-            ? `${leading.details.role === "away" ? "at" : "vs"} ${participantName(opponent.details.title)}`
-            : "",
-        };
-      }),
+      events.map((event) => ({ team, event })),
     )
+    .filter(({ event }) => {
+      const participants = [
+        ...new Set(
+          event.participants.map((participant) =>
+            normalizeName(participant.details.title),
+          ),
+        ),
+      ].sort();
+      const key =
+        participants.length >= 2
+          ? JSON.stringify([
+              event.details.leagueId,
+              DateTime.formatIso(event.startsAt),
+              participants,
+            ])
+          : event.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map(({ team, event }) => {
+      const startsAt = DateTime.formatIso(event.startsAt);
+      const date = new Date(startsAt);
+      const today =
+        SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
+        todayDate;
+      const localDay = DateTime.toParts(
+        DateTime.setZone(event.startsAt, timezone),
+      ).day;
+      const day = today
+        ? "Today"
+        : `${dayFormat.format(date)} ${localDay.toString()}`;
+
+      const participantName = (title: string) =>
+        catalog.find(
+          (subject) =>
+            subject.details.leagueId === event.details.leagueId &&
+            normalizeName(subject.details.display) === normalizeName(title),
+        )?.details.name ?? title.trim();
+      const own = event.participants.find(
+        (participant) =>
+          normalizeName(participant.details.title) ===
+          normalizeName(team.details.display),
+      );
+      // Like the notifier, keep both sides in away-at-home order when the
+      // subscribed team's display name cannot identify its participant.
+      const leading =
+        own ??
+        event.participants.find(
+          (participant) => participant.details.role === "away",
+        ) ??
+        event.participants.find(
+          (participant) => participant.details.role === "home",
+        );
+      const opponent =
+        leading &&
+        event.participants.find(
+          (participant) => participant.details.role !== leading.details.role,
+        );
+      return {
+        team,
+        teamName:
+          own || !leading
+            ? team.details.name
+            : participantName(leading.details.title),
+        eventId: event.id,
+        startsAt,
+        today,
+        day,
+        time: timeFormat.format(date),
+        opponent: opponent
+          ? `${leading.details.role === "away" ? "at" : "vs"} ${participantName(opponent.details.title)}`
+          : "",
+      };
+    })
     .sort(
       (a, b) =>
         a.startsAt.localeCompare(b.startsAt) ||
@@ -98,12 +120,21 @@ export function scheduleRows(
     );
 }
 
-export function todayTeams(rows: readonly ScheduleRow[]) {
-  return [
-    ...new Map(
-      rows.filter((row) => row.today).map((row) => [row.team.id, row.team]),
-    ).values(),
-  ];
+export function todayTeams(
+  schedule: EventsResponse,
+  timezone: DateTime.TimeZone.Named,
+  now: DateTime.Utc = DateTime.nowUnsafe(),
+) {
+  const today = SubscriptionTiming.formatLocalDate(now, timezone);
+  return schedule
+    .filter(({ events }) =>
+      events.some(
+        (event) =>
+          SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
+          today,
+      ),
+    )
+    .map(({ subject }) => subject);
 }
 
 export function todayHeading(teams: readonly Subject[]) {

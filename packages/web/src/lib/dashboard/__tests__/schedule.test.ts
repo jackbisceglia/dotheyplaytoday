@@ -89,11 +89,9 @@ describe("dashboard schedule", () => {
       result.map((row) => [row.day, row.time, row.opponent, row.today]),
     ).toEqual([
       ["Today", "8:30 PM", "vs Knicks", true],
-      ["Today", "8:30 PM", "at Celtics", true],
       ["Mon 9", "1:00 PM", "vs Knicks", false],
-      ["Mon 9", "1:00 PM", "at Celtics", false],
     ]);
-    expect(todayTeams(result)).toEqual([celtics, knicks]);
+    expect(todayTeams(schedule, timezone, now)).toEqual([celtics, knicks]);
   });
 
   it("matches participants and catalog names despite case and surrounding whitespace", () => {
@@ -112,9 +110,7 @@ describe("dashboard schedule", () => {
     }));
     expect(rows(formatted).map((row) => [row.teamName, row.opponent])).toEqual([
       ["Celtics", "vs Knicks"],
-      ["Knicks", "at Celtics"],
       ["Celtics", "vs Knicks"],
-      ["Knicks", "at Celtics"],
     ]);
   });
 
@@ -132,6 +128,34 @@ describe("dashboard schedule", () => {
     ]);
   });
 
+  it("deduplicates matching participant sets at the same start, even with different IDs and ordering", () => {
+    const duplicate = {
+      ...todayGame,
+      id: tomorrowGame.id,
+      participants: [...todayGame.participants]
+        .reverse()
+        .map((participant) => ({
+          ...participant,
+          details: {
+            ...participant.details,
+            title: `  ${participant.details.title.toUpperCase()}  `,
+          },
+        })),
+    };
+    expect(
+      rows([
+        subscription(celtics, [todayGame]),
+        subscription(knicks, [duplicate]),
+      ]),
+    ).toHaveLength(1);
+    expect(
+      rows([subscription(celtics, [todayGame, tomorrowGame])]),
+    ).toHaveLength(2);
+    expect(rows([subscription(knicks, [todayGame])])).toMatchObject([
+      { team: knicks, opponent: "at Celtics" },
+    ]);
+  });
+
   it("keeps doubleheaders separate and names each playing team only once", () => {
     const schedule = [
       subscription(celtics, [
@@ -143,13 +167,13 @@ describe("dashboard schedule", () => {
       ]),
     ];
     expect(rows(schedule)).toHaveLength(2);
-    expect(todayTeams(rows(schedule))).toEqual([celtics]);
+    expect(todayTeams(schedule, timezone, now)).toEqual([celtics]);
   });
 
   it("supports empty and one-game states and retains unknown opponent names", () => {
     expect(rows([])).toEqual([]);
     expect(rows([subscription(celtics, [])])).toEqual([]);
-    expect(todayTeams(rows([]))).toEqual([]);
+    expect(todayTeams([], timezone, now)).toEqual([]);
     expect(rows([subscription(celtics, [todayGame])], [])).toMatchObject([
       { opponent: "vs New York Knicks", today: true },
     ]);

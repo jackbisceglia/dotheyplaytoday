@@ -53,7 +53,7 @@ export function Dashboard() {
           preferences={preferences()}
           subjects={subjects()}
           scheduleRows={rows()}
-          todayTeams={todayTeams(rows())}
+          todayTeams={todayTeams(schedule(), preferences().user.timezone)}
           onSaved={() => {
             revalidate([getPreferences.key, getEvents.key]);
           }}
