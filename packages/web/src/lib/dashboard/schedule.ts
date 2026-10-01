@@ -8,7 +8,6 @@ export type ScheduleRow = {
   readonly teamName: string;
   readonly eventId: string;
   readonly startsAt: string;
-  readonly today: boolean;
   readonly day: string;
   readonly time: string;
   readonly opponent: string;
@@ -112,7 +111,6 @@ export function scheduleRows(
             : participantName(leading.details.title),
         eventId: event.id,
         startsAt,
-        today,
         day,
         time: timeFormat.format(date),
         opponent: opponent ? participantName(opponent.details.title) : "",

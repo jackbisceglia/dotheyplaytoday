@@ -90,11 +90,10 @@ describe("dashboard schedule", () => {
         row.day,
         row.time,
         `${row.matchup} ${row.opponent}`,
-        row.today,
       ]),
     ).toEqual([
-      ["Today", "8:30 PM", "vs Knicks", true],
-      ["Monday, Mar 9", "1:00 PM", "vs Knicks", false],
+      ["Today", "8:30 PM", "vs Knicks"],
+      ["Monday, Mar 9", "1:00 PM", "vs Knicks"],
     ]);
   });
 
@@ -201,7 +200,7 @@ describe("dashboard schedule", () => {
     expect(rows([])).toEqual([]);
     expect(rows([subscription(celtics, [])])).toEqual([]);
     expect(rows([subscription(celtics, [todayGame])], [])).toMatchObject([
-      { matchup: "vs", opponent: "New York Knicks", today: true },
+      { matchup: "vs", opponent: "New York Knicks", day: "Today" },
     ]);
   });
 });

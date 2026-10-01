@@ -32,10 +32,7 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
               <ol class="dashboard-schedule-list">
                 <For each={group.rows}>
                   {(row) => (
-                    <li
-                      class="dashboard-schedule-row"
-                      data-today={row.today ? "true" : undefined}
-                    >
+                    <li class="dashboard-schedule-row">
                       <time
                         class="dashboard-schedule-time"
                         datetime={row.startsAt}
