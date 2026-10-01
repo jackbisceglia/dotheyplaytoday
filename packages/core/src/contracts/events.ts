@@ -5,7 +5,7 @@ import {
   HttpApiGroup,
 } from "effect/unstable/httpapi";
 
-import { SubscriptionWithEvents } from "../modules/users/events/schema.js";
+import { SubscriptionWithEvents } from "../modules/subscriptions/schema.js";
 
 export const EventsResponse = Schema.Array(SubscriptionWithEvents);
 export type EventsResponse = typeof EventsResponse.Type;

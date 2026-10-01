@@ -1,4 +1,3 @@
-import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
 import { EventsResponse } from "@dtpt/core/contracts/events";
 import { makeAuthFixture } from "../auth/__tests__/fixtures.js";
 import { RuntimeContext } from "alchemy/RuntimeContext";
@@ -19,22 +18,13 @@ import {
 } from "@dtpt/core/modules/subscriptions/errors";
 import { SubscriptionWithSubject } from "@dtpt/core/modules/subscriptions/schema";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
-import { UserEventsLayer } from "@dtpt/core/modules/users/events/service";
 import { User } from "@dtpt/core/modules/users/schema";
 import {
   UserAlreadyExists,
   UserNotFound,
   Users,
 } from "@dtpt/core/modules/users/service";
-import {
-  Context,
-  DateTime,
-  Effect,
-  FileSystem,
-  Layer,
-  Path,
-  Schema,
-} from "effect";
+import { Context, Effect, FileSystem, Layer, Path, Schema } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { Pool } from "pg";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
@@ -101,7 +91,7 @@ const makeFixture = async () => {
   const subjects = vi.fn<Subjects["Service"]["list"]>(() =>
     Effect.succeed([subject]),
   );
-  const listBySubject = vi.fn<Events["Service"]["listBySubject"]>(() =>
+  const listEvents = vi.fn<Events["Service"]["listForUser"]>(() =>
     Effect.succeed([]),
   );
   const check = vi.fn<RateLimiter["Service"]["check"]>(() => Effect.void);
@@ -114,7 +104,6 @@ const makeFixture = async () => {
 
   const web = HttpRouter.toWebHandler(
     HttpApiLayer.pipe(
-      Layer.provide(UserEventsLayer),
       Layer.provide([
         Layer.succeed(Auth, fixture.auth),
         Layer.mock(Users, {
@@ -128,7 +117,7 @@ const makeFixture = async () => {
           replaceForUser: replace,
         }),
         Layer.mock(Subjects, { list: subjects }),
-        Layer.mock(Events, { listBySubject }),
+        Layer.mock(Events, { listForUser: listEvents }),
         Layer.succeed(RateLimiter, { check }),
         mockTransactions(Effect.succeed(pool), (event) =>
           transactions.push(event),
@@ -179,7 +168,7 @@ const makeFixture = async () => {
     transactions,
     signIn,
     subjects,
-    listBySubject,
+    listEvents,
     get,
     create,
     getByToken,
@@ -331,6 +320,7 @@ describe("assembled HTTP API", () => {
     }
     expect(f.get).not.toHaveBeenCalled();
     expect(f.list).not.toHaveBeenCalled();
+    expect(f.listEvents).not.toHaveBeenCalled();
   });
 
   it("uses only the session identity and returns domain projections with credentialed CORS", async () => {
@@ -383,6 +373,7 @@ describe("assembled HTTP API", () => {
       [new DatabaseReadError({ operation: "Users.get" }), 500],
     ] as const) {
       f.get.mockReturnValue(Effect.fail(error));
+      f.listEvents.mockReturnValue(Effect.fail(error));
       for (const path of reads) {
         const response = await f.request(path, undefined, cookie);
         expect(response.status).toBe(status);
@@ -676,7 +667,7 @@ describe("assembled HTTP API", () => {
 });
 
 describe("user events", () => {
-  it("returns only subscribed events with participants and the user's local calendar", async () => {
+  it("returns the signed-in user's subscription events with participants", async () => {
     const f = await makeFixture();
     const cookie = await f.signIn();
     const game = Schema.decodeUnknownSync(EventWithParticipants)({
@@ -699,7 +690,9 @@ describe("user events", () => {
         },
       ],
     });
-    f.listBySubject.mockReturnValue(Effect.succeed([game]));
+    f.listEvents.mockReturnValue(
+      Effect.succeed([{ ...subscription, events: [game] }]),
+    );
     const response = await f.request(
       "/user/events?userId=other&timezone=Asia/Tokyo",
       undefined,
@@ -719,38 +712,20 @@ describe("user events", () => {
         events: [Schema.encodeSync(EventWithParticipants)(game)],
       },
     ]);
-    expect(f.get).toHaveBeenCalledExactlyOnceWith(user.id);
-    expect(f.list).toHaveBeenCalledExactlyOnceWith(user.id);
-    expect(f.listBySubject).toHaveBeenCalledTimes(1);
-    const call = f.listBySubject.mock.calls[0];
-    if (!call?.[1]?.range) throw new Error("Missing event range");
-    const [subjectId] = call;
-    const range = call[1].range;
-    expect(subjectId).toBe(subject.id);
-    expect(
-      DateTime.formatIsoDate(DateTime.setZone(range.from, user.timezone)),
-    ).toBe(
-      SubscriptionTiming.formatLocalDate(DateTime.nowUnsafe(), user.timezone),
-    );
-    expect(
-      DateTime.formatIsoDate(DateTime.setZone(range.to, user.timezone)),
-    ).toBe(
-      DateTime.formatIsoDate(
-        DateTime.add(DateTime.setZone(range.from, user.timezone), { days: 7 }),
-      ),
-    );
+    expect(f.listEvents).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(f.get).not.toHaveBeenCalled();
+    expect(f.list).not.toHaveBeenCalled();
   });
 
   it("supports empty subscriptions and maps event failures to uncached errors", async () => {
     const f = await makeFixture();
     const cookie = await f.signIn();
-    f.list.mockReturnValue(Effect.succeed([]));
+    f.listEvents.mockReturnValue(Effect.succeed([]));
     const empty = await f.request("/user/events", undefined, cookie);
     expect(empty.status).toBe(200);
     expect(await empty.json()).toEqual([]);
-    expect(f.listBySubject).not.toHaveBeenCalled();
-    f.list.mockReturnValue(Effect.succeed([subscription]));
-    f.listBySubject.mockReturnValue(
+    expect(f.listEvents).toHaveBeenCalledExactlyOnceWith(user.id);
+    f.listEvents.mockReturnValue(
       Effect.fail(new DatabaseReadError({ operation: "Events.listBySubject" })),
     );
     const failed = await f.request("/user/events", undefined, cookie);

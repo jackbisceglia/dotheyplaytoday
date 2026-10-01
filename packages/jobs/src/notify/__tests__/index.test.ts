@@ -173,6 +173,7 @@ const makeHarness = (opts: HarnessOptions) => {
   const EventsLayerTest = Layer.succeed(
     Events,
     Events.of({
+      listForUser: () => Effect.die("unused"),
       get: () => Effect.die("unused"),
       upsert: () => Effect.die("unused"),
       setParticipants: () => Effect.die("unused"),

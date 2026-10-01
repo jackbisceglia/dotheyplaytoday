@@ -11,13 +11,11 @@ import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/databa
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
-import {
-  EmailConfig,
-  ResendConfig,
-} from "@dtpt/core/modules/email/config";
+import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
 import { NotifierLayerConsole } from "@dtpt/core/modules/notifier/console";
 import { NotifierLayerEmail } from "@dtpt/core/modules/notifier/email";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
+import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { notify, NotifyOptions } from "./index.js";
 
@@ -31,7 +29,8 @@ export const Trigger = {
 } as const;
 
 const NotifyDomainsLayer = pipe(
-  Layer.mergeAll(SubscriptionsLayer, EventsLayer),
+  EventsLayer,
+  Layer.provideMerge(Layer.mergeAll(UsersLayer, SubscriptionsLayer)),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );

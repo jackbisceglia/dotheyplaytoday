@@ -11,7 +11,6 @@ import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
-import { UserEventsLayer } from "@dtpt/core/modules/users/events/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
@@ -21,9 +20,9 @@ import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
 const ApiBaseLayer = pipe(
-  UserEventsLayer,
+  EventsLayer,
   Layer.provideMerge(
-    Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer, EventsLayer),
+    Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
   ),
   Layer.provideMerge(IdLayer),
   Layer.provide(CloudflareCryptoLayer),

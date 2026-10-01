@@ -2,13 +2,14 @@ import { TestClock } from "effect/testing";
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect, Layer, Schema } from "effect";
 
-import { Subject } from "../../../subjects/schema.js";
-import { SubscriptionWithSubject } from "../../../subscriptions/schema.js";
-import { Subscriptions } from "../../../subscriptions/service.js";
-import { Users } from "../../service.js";
-import { User } from "../../schema.js";
-import { UserEvents, UserEventsLayer } from "../service.js";
-import { Events, EventWithParticipants } from "../../../events/service.js";
+import { Subject } from "../../subjects/schema.js";
+import { SubscriptionWithSubject } from "../../subscriptions/schema.js";
+import { Subscriptions } from "../../subscriptions/service.js";
+import { Users } from "../../users/service.js";
+import { User } from "../../users/schema.js";
+import { Events, EventsLayer, EventWithParticipants } from "../service.js";
+import { Database } from "../../../lib/database/service.js";
+import { Id } from "../../../lib/id/service.js";
 
 const user = Schema.decodeUnknownSync(User)({
   id: "00000000-0000-4000-8000-000000000001",
@@ -79,14 +80,14 @@ describe("user schedule", () => {
         yield* TestClock.setTime(
           DateTime.toEpochMillis(utc("2026-03-08T12:00:00.000Z")),
         );
-        const userEvents = yield* UserEvents;
-        const result = yield* userEvents.listForUser(user.id);
+        const events = yield* Events;
+        const result = yield* events.listForUser(user.id);
         expect(result).toEqual([
           { ...pick(celtics), events: [shared, earlier] },
           { ...pick(knicks), events: [shared] },
         ]);
       }).pipe(
-        Effect.provide(UserEventsLayer),
+        Effect.provide(EventsLayer),
         Effect.provide([
           Layer.mock(Users, {
             get: (id) => {
@@ -100,20 +101,35 @@ describe("user schedule", () => {
               return Effect.succeed([pick(celtics), pick(knicks)]);
             },
           }),
-          Layer.mock(Events, {
-            listBySubject: (id, options) => {
-              expect(options?.availability).toBeUndefined(); // Default is active only.
-              expect(
-                options?.range && DateTime.formatIso(options.range.from),
-              ).toBe("2026-03-08T05:00:00.000Z");
-              expect(
-                options?.range && DateTime.formatIso(options.range.to),
-              ).toBe("2026-03-15T04:00:00.000Z");
-              return Effect.succeed(
-                id === celtics.id ? [shared, earlier] : [shared],
-              );
+          Layer.mock(Id, {}),
+          Layer.succeed(Database, {
+            query: {
+              eventsTable: {
+                findMany: (options: {
+                  where: {
+                    availability: string;
+                    startsAt: { gte: string; lt: string };
+                    subjectEvents: { subjectId: string };
+                  };
+                }) => {
+                  expect(options.where.availability).toBe("active");
+                  expect(options.where.startsAt).toEqual({
+                    gte: "2026-03-08T05:00:00.000Z",
+                    lt: "2026-03-15T04:00:00.000Z",
+                  });
+                  const games =
+                    options.where.subjectEvents.subjectId === celtics.id
+                      ? [shared, earlier]
+                      : [shared];
+                  return Effect.succeed(
+                    games.map((game) =>
+                      Schema.encodeSync(EventWithParticipants)(game),
+                    ),
+                  );
+                },
+              },
             },
-          }),
+          } as unknown as Database),
         ]),
       );
     },
@@ -126,11 +142,11 @@ describe("user schedule", () => {
         yield* TestClock.setTime(
           DateTime.toEpochMillis(utc("2026-02-10T04:00:00.000Z")),
         );
-        const userEvents = yield* UserEvents;
-        const result = yield* userEvents.listForUser(user.id);
+        const events = yield* Events;
+        const result = yield* events.listForUser(user.id);
         expect(result).toEqual([]);
       }).pipe(
-        Effect.provide(UserEventsLayer),
+        Effect.provide(EventsLayer),
         Effect.provide([
           Layer.mock(Users, {
             get: (id) => {
@@ -139,9 +155,14 @@ describe("user schedule", () => {
             },
           }),
           Layer.mock(Subscriptions, { listForUser: () => Effect.succeed([]) }),
-          Layer.mock(Events, {
-            listBySubject: () => Effect.die("Unexpected event lookup"),
-          }),
+          Layer.mock(Id, {}),
+          Layer.succeed(Database, {
+            query: {
+              eventsTable: {
+                findMany: () => Effect.die("Unexpected event lookup"),
+              },
+            },
+          } as unknown as Database),
         ]),
       ),
   );
