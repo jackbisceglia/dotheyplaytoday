@@ -1757,7 +1757,7 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 
 /* The week ahead shares the dashboard's type and rules. */
 .dashboard-schedule {
-  margin-top: 24px;
+  margin-top: 32px;
 }
 
 .dashboard-schedule-group {
