@@ -11,7 +11,6 @@ import { CatalogPicker } from "./CatalogPicker.jsx";
 import type { Preferences } from "./preferences.js";
 import { Roster } from "./Roster.jsx";
 import { Schedule } from "./Schedule.jsx";
-import { todayHeading } from "./schedule.js";
 import type { ScheduleRow } from "./schedule.js";
 import { SendTimeSentence } from "./SendTimeSentence.jsx";
 
@@ -29,7 +28,6 @@ export function Form(props: {
   readonly preferences: Preferences;
   readonly subjects: SubjectsResult;
   readonly scheduleRows: readonly ScheduleRow[];
-  readonly todayTeams: readonly Subject[];
   readonly onSaved: () => void;
 }) {
   const savedTeams = () =>
@@ -139,7 +137,7 @@ export function Form(props: {
       data-editing={isEditing() ? "true" : undefined}
       onSubmit={(event) => void save(event)}
     >
-      <DashboardHeading todayTeams={props.todayTeams}>
+      <DashboardHeading>
         <button
           ref={editButton}
           class="dashboard-edit"
@@ -253,17 +251,11 @@ export function Form(props: {
 }
 
 // Shared by the form and its load-error state.
-export function DashboardHeading(
-  props: ParentProps<{ readonly todayTeams?: readonly Subject[] }>,
-) {
-  const heading = () =>
-    props.todayTeams
-      ? todayHeading(props.todayTeams)
-      : { lead: "Your", answer: "teams." };
+export function DashboardHeading(props: ParentProps) {
   return (
     <div class="dashboard-heading">
       <h1 id="dashboard-title" class="dashboard-title">
-        {heading().lead} <em>{heading().answer}</em>
+        Welcome <em>back.</em>
       </h1>
       {props.children}
     </div>

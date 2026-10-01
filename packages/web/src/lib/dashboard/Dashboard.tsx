@@ -5,7 +5,7 @@ import { createMemo, Errored } from "solid-js";
 import { DashboardHeading, Form } from "./Form.jsx";
 import { getEvents } from "./events.js";
 import { getSubjects } from "../subjects.js";
-import { scheduleRows, todayTeams } from "./schedule.js";
+import { scheduleRows } from "./schedule.js";
 import { getPreferences } from "./preferences.js";
 
 export function Dashboard() {
@@ -53,7 +53,6 @@ export function Dashboard() {
           preferences={preferences()}
           subjects={subjects()}
           scheduleRows={rows()}
-          todayTeams={todayTeams(schedule(), preferences().user.timezone)}
           onSaved={() => {
             revalidate([getPreferences.key, getEvents.key]);
           }}

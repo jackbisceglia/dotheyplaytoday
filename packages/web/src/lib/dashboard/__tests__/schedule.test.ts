@@ -4,7 +4,7 @@ import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { EventWithParticipants } from "@dtpt/core/modules/events/participants/schema";
 import { SubscriptionWithSubject } from "@dtpt/core/modules/subscriptions/schema";
 
-import { scheduleRows, todayHeading, todayTeams } from "../schedule.js";
+import { scheduleRows } from "../schedule.js";
 
 const team = (id: string, display: string, name: string) =>
   Schema.decodeUnknownSync(Subject)({
@@ -94,9 +94,8 @@ describe("dashboard schedule", () => {
       ]),
     ).toEqual([
       ["Today", "8:30 PM", "vs Knicks", true],
-      ["Mon 9", "1:00 PM", "vs Knicks", false],
+      ["Monday, Mar 9", "1:00 PM", "vs Knicks", false],
     ]);
-    expect(todayTeams(schedule, timezone, now)).toEqual([celtics, knicks]);
   });
 
   it("matches participants and catalog names despite case and surrounding whitespace", () => {
@@ -185,7 +184,7 @@ describe("dashboard schedule", () => {
     ]);
   });
 
-  it("keeps doubleheaders separate and names each playing team only once", () => {
+  it("keeps doubleheaders separate", () => {
     const schedule = [
       subscription(celtics, [
         todayGame,
@@ -196,31 +195,13 @@ describe("dashboard schedule", () => {
       ]),
     ];
     expect(rows(schedule)).toHaveLength(2);
-    expect(todayTeams(schedule, timezone, now)).toEqual([celtics]);
   });
 
   it("supports empty and one-game states and retains unknown opponent names", () => {
     expect(rows([])).toEqual([]);
     expect(rows([subscription(celtics, [])])).toEqual([]);
-    expect(todayTeams([], timezone, now)).toEqual([]);
     expect(rows([subscription(celtics, [todayGame])], [])).toMatchObject([
       { matchup: "vs", opponent: "New York Knicks", today: true },
     ]);
-  });
-
-  it("formats zero, one, two, and several playing teams", () => {
-    expect(todayHeading([])).toEqual({ lead: "No games", answer: "today." });
-    expect(todayHeading([celtics])).toEqual({
-      lead: "The Celtics",
-      answer: "play today.",
-    });
-    expect(todayHeading([celtics, knicks])).toEqual({
-      lead: "The Celtics and Knicks",
-      answer: "play today.",
-    });
-    expect(todayHeading([celtics, knicks, celtics])).toEqual({
-      lead: "3 of your teams",
-      answer: "play today.",
-    });
   });
 });

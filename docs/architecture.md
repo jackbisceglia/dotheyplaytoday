@@ -270,7 +270,7 @@ a day count and preserves local midnight boundaries across DST;
 `localDayUtcRange` is its one-day wrapper. The UI flattens subscription events
 into rows, deduplicates normalized participant sets within the same league and
 start time, and sorts by start time then event ID, using the timezone already
-loaded by `getPreferences` for dates, times, and today's heading.
+loaded by `getPreferences` for dates and times.
 The `/home` route preloads both private queries on the client only, because
 the API cookie lives in the browser, so they load alongside the authenticated
 shell's session check.

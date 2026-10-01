@@ -1,12 +1,22 @@
-import { For, Show } from "solid-js";
+import { createMemo, For, Show } from "solid-js";
 
 import { getSportsLogo } from "../catalog/sports/index.js";
 import type { ScheduleRow } from "./schedule.js";
 
 export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
+  const days = createMemo(() => {
+    const groups = new Map<string, ScheduleRow[]>();
+    for (const row of props.rows) {
+      const rows = groups.get(row.day);
+      if (rows) rows.push(row);
+      else groups.set(row.day, [row]);
+    }
+    return [...groups].map(([day, rows]) => ({ day, rows }));
+  });
+
   return (
     <section class="dashboard-schedule" aria-labelledby="schedule-heading">
-      <h2 id="schedule-heading" class="dashboard-schedule-label">
+      <h2 id="schedule-heading" class="visually-hidden">
         Coming Up
       </h2>
       <Show
@@ -15,44 +25,53 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
           <p class="dashboard-schedule-empty">No games in the next 7 days.</p>
         }
       >
-        <ol class="dashboard-schedule-list">
-          <For each={props.rows}>
-            {(row) => (
-              <li
-                class="dashboard-schedule-row"
-                data-today={row.today ? "true" : undefined}
-              >
-                <span class="dashboard-schedule-day">{row.day}</span>
-                <span class="dashboard-schedule-glyph" aria-hidden="true">
-                  {getSportsLogo(row.team.details)}
-                </span>
-                <span class="dashboard-schedule-matchup">
-                  <strong>{row.teamName}</strong>
-                  <Show when={row.opponent}>
-                    {" "}
-                    <span>{row.matchup}</span>{" "}
-                    <Show
-                      when={row.opponentTeam}
-                      fallback={<span>{row.opponent}</span>}
+        <For each={days()}>
+          {(group) => (
+            <div class="dashboard-schedule-group">
+              <h3 class="dashboard-schedule-day">{group.day}</h3>
+              <ol class="dashboard-schedule-list">
+                <For each={group.rows}>
+                  {(row) => (
+                    <li
+                      class="dashboard-schedule-row"
+                      data-today={row.today ? "true" : undefined}
                     >
-                      {(team) => (
-                        <>
-                          <span aria-hidden="true">
-                            {getSportsLogo(team().details)}
-                          </span>{" "}
-                          <strong>{row.opponent}</strong>
-                        </>
-                      )}
-                    </Show>
-                  </Show>
-                </span>
-                <time class="dashboard-schedule-time" datetime={row.startsAt}>
-                  {row.time}
-                </time>
-              </li>
-            )}
-          </For>
-        </ol>
+                      <time
+                        class="dashboard-schedule-time"
+                        datetime={row.startsAt}
+                      >
+                        {row.time}
+                      </time>
+                      <span class="dashboard-schedule-glyph" aria-hidden="true">
+                        {getSportsLogo(row.team.details)}
+                      </span>
+                      <span class="dashboard-schedule-matchup">
+                        <strong>{row.teamName}</strong>
+                        <Show when={row.opponent}>
+                          {" "}
+                          <span>{row.matchup}</span>{" "}
+                          <Show
+                            when={row.opponentTeam}
+                            fallback={<span>{row.opponent}</span>}
+                          >
+                            {(team) => (
+                              <>
+                                <span aria-hidden="true">
+                                  {getSportsLogo(team().details)}
+                                </span>{" "}
+                                <strong>{row.opponent}</strong>
+                              </>
+                            )}
+                          </Show>
+                        </Show>
+                      </span>
+                    </li>
+                  )}
+                </For>
+              </ol>
+            </div>
+          )}
+        </For>
       </Show>
     </section>
   );

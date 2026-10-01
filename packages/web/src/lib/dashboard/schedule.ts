@@ -28,7 +28,9 @@ export function scheduleRows(
   const zoneName = DateTime.zoneToString(timezone);
   const dayFormat = new Intl.DateTimeFormat("en-US", {
     timeZone: zoneName,
-    weekday: "short",
+    weekday: "long",
+    month: "short",
+    day: "numeric",
   });
   const timeFormat = new Intl.DateTimeFormat("en-US", {
     timeZone: zoneName,
@@ -66,12 +68,7 @@ export function scheduleRows(
       const today =
         SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
         todayDate;
-      const localDay = DateTime.toParts(
-        DateTime.setZone(event.startsAt, timezone),
-      ).day;
-      const day = today
-        ? "Today"
-        : `${dayFormat.format(date)} ${localDay.toString()}`;
+      const day = today ? "Today" : dayFormat.format(date);
 
       const participantName = (title: string) =>
         catalog.find(
@@ -128,34 +125,4 @@ export function scheduleRows(
         a.startsAt.localeCompare(b.startsAt) ||
         a.eventId.localeCompare(b.eventId),
     );
-}
-
-export function todayTeams(
-  schedule: EventsResponse,
-  timezone: DateTime.TimeZone.Named,
-  now: DateTime.Utc = DateTime.nowUnsafe(),
-) {
-  const today = SubscriptionTiming.formatLocalDate(now, timezone);
-  return schedule
-    .filter(({ events }) =>
-      events.some(
-        (event) =>
-          SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
-          today,
-      ),
-    )
-    .map(({ subject }) => subject);
-}
-
-export function todayHeading(teams: readonly Subject[]) {
-  if (teams.length === 0) return { lead: "No games", answer: "today." };
-  if (teams.length >= 3)
-    return {
-      lead: `${teams.length.toString()} of your teams`,
-      answer: "play today.",
-    };
-  return {
-    lead: `The ${teams.map((team) => team.details.name).join(" and ")}`,
-    answer: "play today.",
-  };
 }
