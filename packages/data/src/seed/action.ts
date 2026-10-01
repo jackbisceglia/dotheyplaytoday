@@ -22,13 +22,15 @@ type SeedRevision = {
 };
 
 const SeedDevLayer = pipe(
-  Layer.mergeAll(SubjectsLayer, EventsLayer, UsersLayer, SubscriptionsLayer),
+  Layer.mergeAll(SubjectsLayer, EventsLayer),
+  Layer.provideMerge(Layer.mergeAll(UsersLayer, SubscriptionsLayer)),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );
 
 const SeedProductionLayer = pipe(
   Layer.mergeAll(SubjectsLayer, EventsLayer),
+  Layer.provide(Layer.mergeAll(UsersLayer, SubscriptionsLayer)),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );

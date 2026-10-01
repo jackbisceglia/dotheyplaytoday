@@ -1414,6 +1414,10 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   text-transform: uppercase;
 }
 
+.dashboard-form[data-editing="true"] .dashboard-edit {
+  visibility: hidden;
+}
+
 .dashboard-edit:hover {
   color: var(--ink);
   text-decoration: underline;
@@ -1748,5 +1752,79 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 
   .roster-team .team-name {
     font-size: 0.7rem;
+  }
+}
+
+/* The week ahead shares the dashboard's type and rules. */
+.dashboard-schedule {
+  margin-top: 32px;
+}
+
+.dashboard-schedule-group {
+  margin-top: 16px;
+}
+
+.dashboard-schedule-group + .dashboard-schedule-group {
+  margin-top: 24px;
+}
+
+.dashboard-schedule-list {
+  list-style: none;
+}
+
+.dashboard-schedule-row {
+  display: grid;
+  grid-template-columns: 80px 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(19, 23, 17, 0.12);
+}
+
+.dashboard-schedule-time {
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dashboard-schedule-glyph {
+  text-align: center;
+}
+
+.dashboard-schedule-matchup {
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 24px;
+}
+
+.dashboard-schedule-matchup strong {
+  font-weight: 700;
+}
+
+.dashboard-schedule-matchup > span,
+.dashboard-schedule-day,
+.dashboard-schedule-empty {
+  color: var(--muted);
+}
+
+.dashboard-schedule-day {
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 24px;
+}
+
+.dashboard-schedule-empty {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(19, 23, 17, 0.12);
+  font-size: 0.9rem;
+  line-height: 24px;
+}
+
+@media (max-width: 560px) {
+  .dashboard-schedule-row {
+    grid-template-columns: 72px 24px minmax(0, 1fr);
+    padding: 8px 0;
   }
 }

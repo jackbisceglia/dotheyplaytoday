@@ -23,14 +23,14 @@ const formatLocalDate = (utc: DateTime.Utc, tz: User["timezone"]) =>
   DateTime.formatIsoDate(DateTime.setZone(utc, tz));
 
 /**
- * Returns the UTC range for the local day containing `nowUtc`.
- * The range starts at the local day's midnight and ends at the next local
- * midnight. Use `from` as the inclusive lower bound and `to` as the exclusive
- * upper bound for event queries.
+ * Covers `days` local calendar days starting at today's local midnight.
+ * Use `from` as the inclusive lower bound and `to` as the exclusive upper
+ * bound for event queries. Local day boundaries account for DST changes.
  */
-const localDayUtcRange = (input: {
+const localUtcRange = (input: {
   readonly nowUtc: DateTime.Utc;
   readonly timezone: User["timezone"];
+  readonly days: number;
 }): Range<DateTime.Utc> => {
   const zonedNow = DateTime.setZone(input.nowUtc, input.timezone);
   const fromLocal = DateTime.setParts(zonedNow, {
@@ -39,13 +39,19 @@ const localDayUtcRange = (input: {
     second: 0,
     millisecond: 0,
   });
-  const toLocal = DateTime.add(fromLocal, { days: 1 });
+  const toLocal = DateTime.add(fromLocal, { days: input.days });
 
   return {
     from: DateTime.toUtc(fromLocal),
     to: DateTime.toUtc(toLocal),
   };
 };
+
+/** Returns the UTC range for the local day containing `nowUtc`. */
+const localDayUtcRange = (input: {
+  readonly nowUtc: DateTime.Utc;
+  readonly timezone: User["timezone"];
+}): Range<DateTime.Utc> => localUtcRange({ ...input, days: 1 });
 
 /**
  * Returns the UTC instant when a fixed-local subscription should send on the
@@ -123,5 +129,6 @@ export const SubscriptionTiming = {
   formatLocalDate,
   isDue,
   localDayUtcRange,
+  localUtcRange,
   wasSentOnLocalDate,
 };

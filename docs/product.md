@@ -10,6 +10,8 @@ Registration uses `POST /api/user`. Users can subscribe to up to four teams. New
 
 ## Dashboard
 
+The `/home` heading reads “Welcome back.”
+
 Signed-in users see their selected teams on `/home` as a fixed set of roster
 tiles, one per allowed pick, under a sentence naming the send time. Edit, or the
 first empty tile, edits in place: the tiles stay put, the send time in the
@@ -18,6 +20,17 @@ in the picker, with one to four picks required to save; a full roster fades the
 remaining teams. The send time applies to all selected teams. Cancel discards
 the draft; Save persists the picks and time together. Retained teams keep their
 delivery history. Email and timezone are not shown.
+
+In view mode, the schedule below the roster shows today plus the next six
+local calendar days, grouped by day and ordered by game start, with quiet
+“Today” or “Monday, Oct 5” group headings and light row separators. Each row
+puts a neutral, medium-weight local start time beside the teams and home/away
+matchup. Matching participant sets at the same start time appear once, including
+when both teams are subscribed; the first subscription supplies the row’s order.
+Both subscribed sides show their emoji and bold nickname within that one row.
+Rematches and doubleheaders at different start times have separate rows.
+Cancelled games are excluded. An empty window reads “No games in the next 7 days.” Editing replaces the list with the
+picker while keeping the heading, send-time sentence, and roster anchored.
 
 ## Notifications
 

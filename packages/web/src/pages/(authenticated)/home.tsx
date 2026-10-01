@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from "@solidjs/router";
 import { createSignal, Show } from "solid-js";
 
 import { Dashboard } from "../../lib/dashboard/Dashboard.jsx";
+import { getEvents } from "../../lib/dashboard/events.js";
 import { getPreferences } from "../../lib/dashboard/preferences.js";
 
 import { auth } from "../../lib/auth.js";
@@ -11,9 +12,12 @@ import { useApplicationPath } from "../../lib/paths.js";
 import { getSubjects } from "../../lib/subjects.js";
 
 export function preload() {
-  // Preferences need the browser's API cookie, so only the client starts them;
-  // they then load alongside the session check instead of after it.
-  if (!import.meta.env.SSR) void getPreferences();
+  // Private queries need the browser's API cookie, so only the client starts
+  // them; they load alongside the session check instead of after it.
+  if (!import.meta.env.SSR) {
+    void getPreferences();
+    void getEvents();
+  }
   return getSubjects();
 }
 

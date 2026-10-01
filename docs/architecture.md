@@ -258,8 +258,22 @@ data; the current production owner account must be recreated manually.
 ### Dashboard data and editing
 
 The dashboard's user and subscription data is a `getPreferences` router query.
-The `/home` route preloads it on the client only, because the API cookie lives
-in the browser, so it loads alongside the authenticated shell's session check.
+Its schedule is a separate `getEvents` router query backed by authenticated
+`GET /api/user/events`. The endpoint takes identity from the session and
+timezone from the stored user, returns each subscription with its events and
+participants, and sets `Cache-Control: no-store`. Core `Events.listForUser`
+accepts the session's user ID and composes `Users.get`,
+`Subscriptions.listForUser`, and concurrent `Events.listBySubject` calls,
+querying active events from today's local midnight through the exclusive
+midnight seven calendar days later. `SubscriptionTiming.localUtcRange` accepts
+a day count and preserves local midnight boundaries across DST;
+`localDayUtcRange` is its one-day wrapper. The UI flattens subscription events
+into rows, deduplicates normalized participant sets within the same league and
+start time, and sorts by start time then event ID, using the timezone already
+loaded by `getPreferences` for dates and times.
+The `/home` route preloads both private queries on the client only, because
+the API cookie lives in the browser, so they load alongside the authenticated
+shell's session check.
 The dashboard has an `Errored` boundary but deliberately no `Loading`: its
 pending read holds the transition, so the authenticated shell keeps its splash
 (or blank screen) until the whole page can render with its data, under the same
@@ -267,11 +281,11 @@ pending read holds the transition, so the authenticated shell keeps its splash
 while something reads it, or for a few seconds after, so private data doesn't
 outlive the signed-in page. The form derives its saved roster and delivery
 times from that data and initializes a separate draft when editing begins. Successful writes
-revalidate the query; cancelled or failed writes never replace it.
+revalidate preferences and events; cancelled or failed writes never replace it.
 
 Signup and the dashboard editor share the `getSubjects` router query and the
 presentational `ui/TeamPicker`. The `/home` route preloads the public catalog,
-and the dashboard form reads it from mount, not the picker that only mounts
+and the dashboard reads it from mount, not the picker that only mounts
 while editing, so the entry stays cached and the editor opens without a second
 fetch. Selection feedback lives beside the shared picker rather than under
 signup.
