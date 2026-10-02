@@ -66,7 +66,7 @@ const utc = Schema.decodeUnknownSync(Schema.DateTimeUtcFromString);
 
 describe("user schedule", () => {
   it.effect(
-    "returns each subscription with its events and preserves participants",
+    "queries two local calendar weeks across DST and preserves each subscription's events and participants",
     () => {
       const shared = game(
         "00000000-0000-4000-8000-000000000010",
@@ -115,7 +115,7 @@ describe("user schedule", () => {
                   expect(options.where.availability).toBe("active");
                   expect(options.where.startsAt).toEqual({
                     gte: "2026-03-08T05:00:00.000Z",
-                    lt: "2026-03-15T04:00:00.000Z",
+                    lt: "2026-03-22T04:00:00.000Z",
                   });
                   const games =
                     options.where.subjectEvents.subjectId === celtics.id

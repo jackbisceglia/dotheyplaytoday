@@ -1755,7 +1755,7 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   }
 }
 
-/* The week ahead shares the dashboard's type and rules. */
+/* The schedule ahead shares the dashboard's type and rules. */
 .dashboard-schedule {
   margin-top: 32px;
 }

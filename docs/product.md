@@ -21,7 +21,7 @@ remaining teams. The send time applies to all selected teams. Cancel discards
 the draft; Save persists the picks and time together. Retained teams keep their
 delivery history. Email and timezone are not shown.
 
-In view mode, the schedule below the roster shows today plus the next six
+In view mode, the schedule below the roster shows today plus the next thirteen
 local calendar days, grouped by day and ordered by game start, with quiet
 “Today” or “Monday, Oct 5” group headings and light row separators. Each row
 puts a neutral, medium-weight local start time beside the teams and home/away
@@ -29,7 +29,7 @@ matchup. Matching participant sets at the same start time appear once, including
 when both teams are subscribed; the first subscription supplies the row’s order.
 Both subscribed sides show their emoji and bold nickname within that one row.
 Rematches and doubleheaders at different start times have separate rows.
-Cancelled games are excluded. An empty window reads “No games in the next 7 days.” Editing replaces the list with the
+Cancelled games are excluded. An empty window reads “No games in the next 14 days.” Editing replaces the list with the
 picker while keeping the heading, send-time sentence, and roster anchored.
 
 ## Notifications

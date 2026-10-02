@@ -22,7 +22,7 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
       <Show
         when={props.rows.length > 0}
         fallback={
-          <p class="dashboard-schedule-empty">No games in the next 7 days.</p>
+          <p class="dashboard-schedule-empty">No games in the next 14 days.</p>
         }
       >
         <For each={days()}>
