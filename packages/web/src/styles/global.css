@@ -1774,7 +1774,8 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 
 .dashboard-schedule-row {
   display: grid;
-  grid-template-columns: 80px 24px minmax(0, 1fr);
+  /* Fits the widest time, "10:00 AM", with a little room to spare. */
+  grid-template-columns: 64px 24px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 16px 0;
@@ -1803,6 +1804,20 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   font-weight: 700;
 }
 
+/* Sized to the widest label so the tags line up down the edge. */
+.dashboard-schedule-league {
+  min-width: 44px;
+  padding: 6px 8px 5px;
+  background: rgba(19, 23, 17, 0.07);
+  color: var(--muted);
+  font-weight: 800;
+  font-stretch: 70%;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-align: center;
+}
+
 .dashboard-schedule-matchup > span,
 .dashboard-schedule-day,
 .dashboard-schedule-empty {
@@ -1824,7 +1839,13 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 
 @media (max-width: 560px) {
   .dashboard-schedule-row {
-    grid-template-columns: 72px 24px minmax(0, 1fr);
     padding: 8px 0;
+  }
+
+  .dashboard-schedule-league {
+    min-width: 36px;
+    padding: 4px 6px 3px;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
   }
 }

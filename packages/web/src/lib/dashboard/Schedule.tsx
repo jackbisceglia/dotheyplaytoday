@@ -62,6 +62,9 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
                           </Show>
                         </Show>
                       </span>
+                      <span class="dashboard-schedule-league">
+                        {row.team.details.leagueId.toUpperCase()}
+                      </span>
                     </li>
                   )}
                 </For>
