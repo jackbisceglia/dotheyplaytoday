@@ -29003,6 +29003,180 @@ export const Games = {
       },
     ],
   },
+  _849828: {
+    id: "00000000-0000-4000-8000-100000849828",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849828",
+    startsAt: "2026-10-03T20:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Los Angeles Dodgers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Atlanta Braves",
+        },
+      },
+    ],
+  },
+  _849823: {
+    id: "00000000-0000-4000-8000-100000849823",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849823",
+    startsAt: "2026-10-05T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Los Angeles Dodgers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Atlanta Braves",
+        },
+      },
+    ],
+  },
+  _849819: {
+    id: "00000000-0000-4000-8000-100000849819",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849819",
+    startsAt: "2026-10-06T22:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Atlanta Braves",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Los Angeles Dodgers",
+        },
+      },
+    ],
+  },
+  _849826: {
+    id: "00000000-0000-4000-8000-100000849826",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849826",
+    startsAt: "2026-10-07T01:30:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "San Diego Padres",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Milwaukee Brewers",
+        },
+      },
+    ],
+  },
+  _849833: {
+    id: "00000000-0000-4000-8000-100000849833",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849833",
+    startsAt: "2026-10-07T20:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Chicago White Sox",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Cleveland Guardians",
+        },
+      },
+    ],
+  },
+  _849838: {
+    id: "00000000-0000-4000-8000-100000849838",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849838",
+    startsAt: "2026-10-08T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "New York Yankees",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Tampa Bay Rays",
+        },
+      },
+    ],
+  },
 } as const satisfies Record<string, MlbSportEventSeed>;
 
 export const events = Object.values(Games);
