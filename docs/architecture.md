@@ -265,7 +265,7 @@ participants, and sets `Cache-Control: no-store`. Core `Events.listForUser`
 accepts the session's user ID and composes `Users.get`,
 `Subscriptions.listForUser`, and concurrent `Events.listBySubject` calls,
 querying active events from today's local midnight through the exclusive
-midnight seven calendar days later. `SubscriptionTiming.localUtcRange` accepts
+midnight fourteen calendar days later. `SubscriptionTiming.localUtcRange` accepts
 a day count and preserves local midnight boundaries across DST;
 `localDayUtcRange` is its one-day wrapper. The UI flattens subscription events
 into rows, deduplicates normalized participant sets within the same league and

@@ -176,7 +176,7 @@ export const EventsLayer = Layer.effect(
       const range = SubscriptionTiming.localUtcRange({
         nowUtc,
         timezone: user.timezone,
-        days: 7,
+        days: 14,
       });
 
       const picks = yield* subscriptions.listForUser(userId);
