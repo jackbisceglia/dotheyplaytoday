@@ -58,9 +58,11 @@ export { Recipient } from "./modules/notifier/schema.js";
 export { Notifier } from "./modules/notifier/service.js";
 export type { NotifierLayerFactoryDefinition } from "./modules/notifier/service.js";
 export {
-  EmailRenderError,
   NotifierLayerEmail,
+  UnsupportedFeedError,
 } from "./modules/notifier/email.js";
+export { EmailRenderError } from "./modules/notifier/feeds/sports.js";
+export { EsportsEmailRenderError } from "./modules/notifier/feeds/esports.js";
 export { NotifierLayerConsole } from "./modules/notifier/console.js";
 export type { ConsoleRendered } from "./modules/notifier/console.js";
 export { Blocks, EmailView } from "./modules/email/render.js";

@@ -379,3 +379,13 @@ The API infers scope from submitted subject kinds; it does not receive a site ID
 Mixed-kind requests therefore replace both represented kinds within one combined
 four-pick allowance. Empty selections remain invalid, so a save cannot clear an
 entire kind. Account deletion and token unsubscribe still remove the whole user.
+
+## Esports domain boundaries
+
+Esports adds `esports_team`, `esports_match`, and title-only match participants
+next to the sports variants; persisted tag columns remain text, so no database
+migration is needed. Sports catalog, schedule, and seed callers narrow to sports
+variants. Email rendering is split into sports and esports feeds, and rejects
+subjects paired with another feed's events or participants. Esports rendering
+uses `vs` and puts the subscribed team first instead of inferring home/away.
+Email links and headline assets still use the sports Web URL and shared palette.

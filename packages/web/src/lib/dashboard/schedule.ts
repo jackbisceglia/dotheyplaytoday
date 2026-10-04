@@ -3,26 +3,38 @@ import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
 import { DateTime } from "effect";
 
+import {
+  isSportsGame,
+  isSportsTeam,
+  type SportsTeam,
+} from "../catalog/sports/index.js";
+
 export type ScheduleRow = {
-  readonly team: Subject;
+  readonly team: SportsTeam;
   readonly teamName: string;
   readonly eventId: string;
   readonly startsAt: string;
   readonly day: string;
   readonly time: string;
   readonly opponent: string;
-  readonly opponentTeam: Subject | undefined;
+  readonly opponentTeam: SportsTeam | undefined;
   readonly matchup: "at" | "vs";
 };
 
 const normalizeName = (value: string) => value.trim().toLowerCase();
 
 export function scheduleRows(
-  schedule: EventsResponse,
+  response: EventsResponse,
   timezone: DateTime.TimeZone.Named,
-  catalog: readonly Subject[],
+  subjects: readonly Subject[],
   now: DateTime.Utc = DateTime.nowUnsafe(),
 ): readonly ScheduleRow[] {
+  const schedule = response.flatMap(({ subject, events }) =>
+    isSportsTeam(subject)
+      ? [{ subject, events: events.filter(isSportsGame) }]
+      : [],
+  );
+  const catalog = subjects.filter(isSportsTeam);
   const todayDate = SubscriptionTiming.formatLocalDate(now, timezone);
   const zoneName = DateTime.zoneToString(timezone);
   const dayFormat = new Intl.DateTimeFormat("en-US", {

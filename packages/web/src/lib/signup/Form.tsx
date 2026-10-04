@@ -5,7 +5,7 @@ import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { withApiClient } from "../api.js";
-import { getSportsLogo } from "../catalog/sports/index.js";
+import { getSportsLogo, type SportsTeam } from "../catalog/sports/index.js";
 import {
   defaultTimezone,
   detectTimezone,
@@ -48,7 +48,7 @@ const hasSelectedSubjects = <SubjectId,>(
 ): subjectIds is readonly [SubjectId, ...SubjectId[]] => subjectIds.length > 0;
 
 type FormProps = {
-  readonly subjects: readonly Subject[];
+  readonly subjects: readonly SportsTeam[];
 };
 
 export function Form(props: FormProps) {

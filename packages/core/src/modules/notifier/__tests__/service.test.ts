@@ -2,7 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { Cause, Effect, Exit } from "effect";
 
 import type { EmailRendered } from "../../email/render.js";
-import { EmailRenderError } from "../email.js";
+import { EmailRenderError } from "../feeds/sports.js";
 import type { Notification } from "../notification.js";
 import { Notifier } from "../service.js";
 import { notification } from "./fixtures.js";

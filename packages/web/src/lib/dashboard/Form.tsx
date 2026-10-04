@@ -1,8 +1,8 @@
-import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { createStore, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 
+import type { SportsTeam } from "../catalog/sports/index.js";
 import type { SubjectsResult } from "../subjects.js";
 import { withApiClient } from "../api.js";
 import { useSelectionRejection } from "../ui/useSelectionRejection.js";
@@ -18,7 +18,7 @@ const capacity = SubscriptionPolicy.subject.constraints.max;
 
 type FormState = {
   mode: "view" | "editing" | "saving";
-  teams: readonly Subject[];
+  teams: readonly SportsTeam[];
   seconds: number;
   error: string | undefined;
   message: string | undefined;
@@ -75,7 +75,7 @@ export function Form(props: {
     rejection.clearRejection();
     queueMicrotask(() => editButton?.focus());
   };
-  const toggle = (team: Subject) => {
+  const toggle = (team: SportsTeam) => {
     if (state.mode !== "editing") return;
     const isSelected = state.teams.some((picked) => picked.id === team.id);
     if (!isSelected && state.teams.length >= capacity) {

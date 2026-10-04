@@ -4,9 +4,15 @@ import type { CreateEmailOptions, CreateEmailResponse } from "resend";
 import { beforeEach, vi } from "vitest";
 
 import { EmailResponseError } from "../../email/errors.js";
-import { NotifierLayerEmail, EmailRenderError } from "../email.js";
+import { NotifierLayerEmail, UnsupportedFeedError } from "../email.js";
+import { EsportsEmailRenderError } from "../feeds/esports.js";
+import { EmailRenderError } from "../feeds/sports.js";
 import { NotifierError } from "../errors.js";
-import { nflNotification, notification } from "./fixtures.js";
+import {
+  esportsNotification,
+  nflNotification,
+  notification,
+} from "./fixtures.js";
 import type { Notification } from "../notification.js";
 import { Notifier } from "../service.js";
 
@@ -271,9 +277,7 @@ describe("nfl season opener header", () => {
       const payload = lastPayload();
 
       expect(payload.subject).toBe("Eagles play today");
-      expect(payload.html).toContain(
-        "/email/headlines/eagles-play-today.png",
-      );
+      expect(payload.html).toContain("/email/headlines/eagles-play-today.png");
       expect(payload.html).not.toContain("football-is-back.png");
       expect(payload.text).not.toContain("Football is back.");
     }),
@@ -309,6 +313,62 @@ describe("nfl season opener header", () => {
       const payload = lastPayload();
 
       expect(payload.html).toContain("football-is-back.png");
+    }),
+  );
+
+  it.effect("renders an esports match with the subscribed team first", () =>
+    Effect.gen(function* () {
+      yield* send(esportsNotification);
+
+      const payload = lastPayload();
+
+      expect(payload.subject).toBe("OpTic play today");
+      expect(payload.text).toContain(
+        "3:00 PM EST - OpTic Texas vs. FaZe Vegas",
+      );
+      expect(payload.html).toContain(
+        'src="https://example.com:8080/email/headlines/optic-play-today.png"',
+      );
+      expect(payload.html).toContain('alt="OpTic play today."');
+    }),
+  );
+
+  it.effect("dies with a typed render error for a one-sided match", () => {
+    const [match] = esportsNotification.events;
+    const [first] = match.participants;
+
+    if (!first) {
+      throw new Error("Expected fixture match to have participants");
+    }
+
+    return Effect.gen(function* () {
+      const exit = yield* send({
+        ...esportsNotification,
+        events: [{ ...match, participants: [first] }],
+      }).pipe(Effect.exit);
+
+      expect(Exit.isFailure(exit)).toBe(true);
+      if (Exit.isFailure(exit)) {
+        expect(Cause.squash(exit.cause)).toBeInstanceOf(
+          EsportsEmailRenderError,
+        );
+      }
+      expect(resendMock.send).not.toHaveBeenCalled();
+    });
+  });
+
+  it.effect("refuses to render a subject with another feed's events", () =>
+    Effect.gen(function* () {
+      const exit = yield* send({
+        ...notification,
+        events: esportsNotification.events,
+      }).pipe(Effect.exit);
+
+      expect(Exit.isFailure(exit)).toBe(true);
+      if (Exit.isFailure(exit)) {
+        expect(Cause.squash(exit.cause)).toBeInstanceOf(UnsupportedFeedError);
+      }
+      expect(resendMock.send).not.toHaveBeenCalled();
     }),
   );
 });

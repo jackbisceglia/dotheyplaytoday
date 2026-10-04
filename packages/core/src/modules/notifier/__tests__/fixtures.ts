@@ -184,3 +184,74 @@ export const nflNotification = decode(Notification)({
     },
   ],
 });
+
+/** A COD match day; the subscribed team is listed second on the match. */
+export const esportsNotification = decode(Notification)({
+  sendAt: "2026-12-05T14:00:00.000Z",
+  user: {
+    id: "00000000-0000-4000-8000-000000000103",
+    name: "green@example.com",
+    email: "green@example.com",
+    emailVerified: true,
+    timezone: "America/New_York",
+    unsubscribeToken: "00000000-0000-4000-8000-000000000203",
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  },
+  subscription: {
+    id: "00000000-0000-4000-8000-000000000403",
+    userId: "00000000-0000-4000-8000-000000000103",
+    subjectId: "00000000-0000-4000-8000-000000000303",
+    schedule: {
+      _tag: "fixed_local_time",
+      sendAtSecondsLocal: 32400,
+    },
+    lastSentAt: null,
+  },
+  subject: {
+    id: "00000000-0000-4000-8000-000000000303",
+    _tag: "esports_team",
+    details: {
+      _tag: "esports_team",
+      gameId: "cod",
+      location: "Texas",
+      name: "OpTic",
+      display: "OpTic Texas",
+      abbreviation: "TX",
+      slug: "optic-texas",
+    },
+  },
+  events: [
+    {
+      id: "00000000-0000-4000-8000-000000000704",
+      _tag: "esports_match",
+      sourceId: "esports_match:seed:00000000-0000-4000-8000-000000000704",
+      startsAt: "2026-12-05T20:00:00.000Z",
+      availability: "active",
+      details: {
+        _tag: "esports_match",
+        gameId: "cod",
+      },
+      participants: [
+        {
+          _tag: "esports_match",
+          id: "00000000-0000-4000-8000-000000000807",
+          eventId: "00000000-0000-4000-8000-000000000704",
+          details: {
+            _tag: "esports_match",
+            title: "FaZe Vegas",
+          },
+        },
+        {
+          _tag: "esports_match",
+          id: "00000000-0000-4000-8000-000000000808",
+          eventId: "00000000-0000-4000-8000-000000000704",
+          details: {
+            _tag: "esports_match",
+            title: "OpTic Texas",
+          },
+        },
+      ],
+    },
+  ],
+});

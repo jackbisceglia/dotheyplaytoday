@@ -1,18 +1,17 @@
-import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { For, Match, Show, Switch } from "solid-js";
 
-import { getSportsLogo } from "../catalog/sports/index.js";
+import { getSportsLogo, type SportsTeam } from "../catalog/sports/index.js";
 
 // The same tiles in view and edit mode, so editing only adds controls around
 // what's already on screen. Unfilled capacity reads as quiet empty slots; the
 // first opens the editor, or says why Save is off when the draft is empty.
 export function Roster(props: {
-  readonly teams: readonly Subject[];
+  readonly teams: readonly SportsTeam[];
   readonly capacity: number;
   readonly editing: boolean;
   readonly saving: boolean;
   readonly onAdd: () => void;
-  readonly onRemove: (team: Subject) => void;
+  readonly onRemove: (team: SportsTeam) => void;
 }) {
   const openSlots = () =>
     Array.from({ length: props.capacity - props.teams.length });

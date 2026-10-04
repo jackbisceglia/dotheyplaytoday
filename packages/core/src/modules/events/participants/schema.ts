@@ -10,6 +10,7 @@ import type { Check, TableSchemasMatch } from "../../../lib/database/utils.js";
 import { Id } from "../../../lib/id/service.js";
 import { TaggedUnion } from "../../../lib/effect/index.js";
 import { Event, EventId, eventsTable } from "../schema.js";
+import { EsportsParticipant } from "./variants/esports.schema.js";
 import { SportParticipant } from "./variants/sport.schema.js";
 
 export type ParticipantSchemasMatchTable = Check<
@@ -24,7 +25,10 @@ export type ParticipantId = typeof ParticipantId.Type;
 export const ParticipantId = Id.SchemaBranded("ParticipantId");
 
 export type ParticipantDetails = typeof ParticipantDetails.Type;
-export const ParticipantDetails = TaggedUnion([SportParticipant]);
+export const ParticipantDetails = TaggedUnion([
+  SportParticipant,
+  EsportsParticipant,
+]);
 
 const overrides = {
   _tag: Schema.Literals(ParticipantDetails.tags),
