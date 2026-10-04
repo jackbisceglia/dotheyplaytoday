@@ -15,11 +15,13 @@ import { Effect, Layer, pipe } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
 import { createAuthLayerFromHyperdriveResource } from "./auth/auth.js";
 import { AuthConfig } from "./auth/config.js";
+import { BillingConfig } from "./billing/config.js";
+import { BillingLayer } from "@dtpt/core/modules/billing/service";
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
 const ApiBaseLayer = pipe(
-  Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
+  Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer, BillingLayer),
   Layer.provideMerge(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );
@@ -50,6 +52,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
 
     // Read deferred auth/email config during init so Alchemy binds it to the Worker.
     yield* AuthConfig;
+    yield* BillingConfig;
     yield* EmailConfig;
     yield* ResendConfig;
 
