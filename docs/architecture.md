@@ -389,3 +389,10 @@ variants. Email rendering is split into sports and esports feeds, and rejects
 subjects paired with another feed's events or participants. Esports rendering
 uses `vs` and puts the subscribed team first instead of inferring home/away.
 Email links and headline assets still use the sports Web URL and shared palette.
+
+## Frontend copy scaffold
+
+`packages/web-esports` is a mechanical copy of the narrowed sports frontend, with
+its own package name and matching workspace dependencies. It is not yet included
+in the deployment stack. Vertical adaptation and hosting are a later layer;
+this commit intentionally preserves the source app's components and styles.

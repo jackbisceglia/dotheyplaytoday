@@ -1,0 +1,100 @@
+import { revalidate, useNavigate, useSearchParams } from "@solidjs/router";
+import { Result } from "effect";
+import { createEffect, createMemo, Loading, Show } from "solid-js";
+
+import { getSessionStatus, useSession } from "../lib/auth.js";
+import { Layout } from "../layouts/Layout.jsx";
+import { usePageMetadata } from "../lib/metadata.js";
+import { useApplicationPath } from "../lib/paths.js";
+import { getSubjects } from "../lib/subjects.js";
+import { Login } from "../lib/auth/Login.jsx";
+import { Form as SignupForm } from "../lib/signup/Form.jsx";
+import { Ticker as ScoreTicker } from "../lib/ui/Ticker.jsx";
+
+const description =
+  "Game-day emails for your teams. Pick your team, pick a time, and get an update on game day.";
+
+export function preload() {
+  return getSubjects();
+}
+
+export function Landing() {
+  usePageMetadata("dotheyplaytoday", description);
+  const result = createMemo(() => getSubjects());
+  const session = useSession();
+  const navigate = useNavigate();
+  const homeHref = useApplicationPath("home");
+  const loginHref = useApplicationPath("login");
+  const [search] = useSearchParams();
+
+  // Signed-in visitors upgrade to /home after the session settles.
+  createEffect(
+    () => getSessionStatus(session()),
+    (state) => {
+      if (state === "authenticated") {
+        navigate(homeHref(), { replace: true });
+      }
+    },
+  );
+
+  // Render nothing once the session is known to be signed in, so the redirect
+  // above never paints the landing page first.
+  return (
+    <Show when={getSessionStatus(session()) !== "authenticated"}>
+      <Layout
+        headerActions={[
+          { href: loginHref(), label: "Log in", variant: "quiet" },
+          { href: "#signup", label: "Sign up", variant: "solid" },
+        ]}
+      >
+        <Show when={search.modal === "login"}>
+          <Login />
+        </Show>
+        <section class="hero">
+          <h1 class="hero-headline">
+            Your team plays
+            <br />
+            <em>tonight.</em>
+            <br />
+            Now you know.
+          </h1>
+          <p class="hero-copy">
+            Pick your team, pick a time, and get an update on game day.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#signup">
+              Get game-day updates
+            </a>
+          </div>
+        </section>
+
+        <ScoreTicker />
+
+        <section class="signup" id="signup">
+          <div class="signup-header">
+            <h2 class="signup-title">Get on the roster</h2>
+          </div>
+          <Loading fallback={<p role="status">Loading teams…</p>}>
+            {Result.match(result(), {
+              onSuccess: (subjects) => <SignupForm subjects={subjects} />,
+              onFailure: () => (
+                <p class="form-error" role="alert">
+                  We couldn't load the team list.{" "}
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onClick={() => {
+                      revalidate(getSubjects.key);
+                    }}
+                  >
+                    Try again
+                  </button>
+                </p>
+              ),
+            })}
+          </Loading>
+        </section>
+      </Layout>
+    </Show>
+  );
+}
