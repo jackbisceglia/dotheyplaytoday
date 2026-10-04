@@ -10,6 +10,7 @@ import { CatalogPicker } from "./CatalogPicker.jsx";
 import type { Preferences } from "./preferences.js";
 import { Roster } from "./Roster.jsx";
 import { SendTimeSentence } from "./SendTimeSentence.jsx";
+import { BillingPanel } from "../billing/Panel.jsx";
 
 type FormState = {
   mode: "view" | "editing" | "saving";
@@ -180,6 +181,11 @@ export function Form(props: {
           keep all six.
         </p>
       </Show>
+      <BillingPanel
+        billing={props.preferences.billing}
+        editing={isEditing()}
+        onRefresh={props.onSaved}
+      />
 
       <Show when={isEditing()}>
         <section class="dashboard-section" aria-labelledby="editor-heading">

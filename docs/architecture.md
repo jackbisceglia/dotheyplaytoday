@@ -401,3 +401,11 @@ Return sync and webhooks retrieve current Stripe state through the same
 synchronization function. Revision-checked writes refetch after concurrent
 updates, so an older response cannot overwrite newer state. Invalid signatures
 return 400; provider/storage failures return 500 so Stripe retries.
+
+The dashboard displays the account's current plan, permanent free Pro status,
+and server-side allowance. Verified Free users can upgrade through hosted
+Checkout, and paid members can manage billing through the customer portal.
+The return flow calls `/api/billing/sync` before exposing the larger roster. Signup
+and confirmation explain the two-team Free plan and the upgrade after email
+confirmation. Checkout remains unavailable until all Stripe configuration is
+present.
