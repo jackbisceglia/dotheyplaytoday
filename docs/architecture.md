@@ -365,3 +365,17 @@ picker with signup. Its edit draft supports save/cancel, team removal, and send
 time changes; account email/timezone editing remains separate work. Existing
 emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
 new endpoint; no legacy API alias is needed.
+
+## Subscription replacement scope
+
+Accounts, sessions, and notification recipients remain global to the shared API.
+A save replaces only subscriptions whose subject kind matches a submitted pick.
+For example, saving sports picks leaves picks of a future different kind intact.
+The existing one-to-four policy applies to the submitted selection, rather than
+the total number of subscriptions owned by the account. Retained rows keep their
+identity and last-send history. Each subscription continues to own its send time.
+
+The API infers scope from submitted subject kinds; it does not receive a site ID.
+Mixed-kind requests therefore replace both represented kinds within one combined
+four-pick allowance. Empty selections remain invalid, so a save cannot clear an
+entire kind. Account deletion and token unsubscribe still remove the whole user.
