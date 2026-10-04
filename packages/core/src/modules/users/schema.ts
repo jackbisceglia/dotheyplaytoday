@@ -50,6 +50,7 @@ const domainOverrides = {
 const insertOverrides = {
   ...domainOverrides,
   emailVerified: Schema.optional(Schema.Boolean),
+  grandfatheredPro: Schema.optional(Schema.Boolean),
   createdAt: Schema.optional(Schema.DateTimeUtcFromDate),
   updatedAt: Schema.optional(Schema.DateTimeUtcFromDate),
 };
@@ -63,6 +64,8 @@ export const usersTable = postgresTable(
     unsubscribeToken: text().notNull(),
     name: text(),
     emailVerified: boolean().default(false).notNull(),
+    grandfatheredPro: boolean().default(false).notNull(),
+    stripeCustomerId: text(),
     createdAt: timestamp({ withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
@@ -73,6 +76,7 @@ export const usersTable = postgresTable(
   },
   (table) => [
     uniqueIndex("users_email_idx").on(table.email),
+    uniqueIndex("users_stripe_customer_id_idx").on(table.stripeCustomerId),
     uniqueIndex("users_unsubscribe_token_idx").on(table.unsubscribeToken),
   ],
 );

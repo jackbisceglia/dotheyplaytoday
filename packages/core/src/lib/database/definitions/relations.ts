@@ -4,6 +4,10 @@ import * as schema from "./schema.js";
 
 export const relations = defineRelations(schema, (d) => ({
   usersTable: {
+    billingSubscriptions: d.many.billingSubscriptionsTable({
+      from: d.usersTable.id,
+      to: d.billingSubscriptionsTable.userId,
+    }),
     authSessions: d.many.authSessionsTable({
       from: d.usersTable.id,
       to: d.authSessionsTable.userId,

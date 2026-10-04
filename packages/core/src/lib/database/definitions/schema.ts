@@ -10,3 +10,4 @@ export { subjectEventsTable } from "../../../modules/subjects/feed/schema.js";
 export { subjectsTable } from "../../../modules/subjects/schema.js";
 export { subscriptionsTable } from "../../../modules/subscriptions/schema.js";
 export { usersTable } from "../../../modules/users/schema.js";
+export { billingSubscriptionsTable } from "../../../modules/billing/schema.js";

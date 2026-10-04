@@ -19,6 +19,8 @@ import {
 import { SubscriptionWithSubject } from "@dtpt/core/modules/subscriptions/schema";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { User } from "@dtpt/core/modules/users/schema";
+import { Billing } from "@dtpt/core/modules/billing/service";
+import { resolveBillingAccess } from "@dtpt/core/modules/billing/policy";
 import {
   UserAlreadyExists,
   UserNotFound,
@@ -42,6 +44,8 @@ const user = Schema.decodeUnknownSync(User)({
   unsubscribeToken: "00000000-0000-4000-8000-000000000002",
   name: null,
   emailVerified: false,
+  grandfatheredPro: false,
+  stripeCustomerId: null,
   createdAt: new Date("2026-01-01"),
   updatedAt: new Date("2026-01-01"),
 });
@@ -118,6 +122,10 @@ const makeFixture = async () => {
         }),
         Layer.mock(Subjects, { list: subjects }),
         Layer.mock(Events, { listForUser: listEvents }),
+        Layer.succeed(Billing, {
+          getAccess: () =>
+            Effect.succeed(resolveBillingAccess(user, [], Date.now())),
+        }),
         Layer.succeed(RateLimiter, { check }),
         mockTransactions(Effect.succeed(pool), (event) =>
           transactions.push(event),
@@ -154,7 +162,11 @@ const makeFixture = async () => {
     );
     const url = fixture.sendConfirmationLink.mock.calls[0]?.[1];
     if (!url) throw new Error("Missing magic link");
-    const response = await fixture.auth.client.handler(new Request(url));
+    const response = await fixture.auth.client.handler(
+      new Request(url, {
+        headers: fixture.request("/magic-link/verify").headers,
+      }),
+    );
     const cookie = response.headers.get("set-cookie")?.split(";", 1)[0];
     if (!cookie) throw new Error("Missing session cookie");
     return cookie;
@@ -180,6 +192,26 @@ const makeFixture = async () => {
 const reads = ["/user", "/user/subscription", "/user/events"];
 
 describe("assembled HTTP API", () => {
+  it("returns the session user's plan without caching and leaves checkout disabled without credentials", async () => {
+    const f = await makeFixture();
+    const anonymous = await f.request("/billing");
+    expect(anonymous.status).toBe(401);
+    expect(anonymous.headers.get("cache-control")).toBe("no-store");
+    const response = await f.request(
+      "/billing?userId=someone-else",
+      undefined,
+      await f.signIn(),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toMatchObject({
+      plan: "free",
+      teamLimit: 2,
+      available: false,
+    });
+    expect(f.get).toHaveBeenCalledWith(user.id);
+  });
+
   it("requires a session to update picks", async () => {
     const f = await makeFixture();
     const response = await f.request("/user/subscription", {
