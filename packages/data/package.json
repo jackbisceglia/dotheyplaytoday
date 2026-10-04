@@ -23,7 +23,8 @@
   "dependencies": {
     "@dtpt/core": "workspace:*",
     "alchemy": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "drizzle-orm": "catalog:"
   },
   "devDependencies": {
     "@effect/vitest": "catalog:"

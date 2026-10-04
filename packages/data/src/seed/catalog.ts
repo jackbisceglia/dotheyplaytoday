@@ -9,6 +9,8 @@ import {
 } from "@dtpt/core";
 import { DateTime, Effect, HashMap, Option, Schema } from "effect";
 
+import { seedMmaCatalog } from "../mma/import.js";
+import { ufcCatalog } from "../mma/ufc.js";
 import { SportsSeed } from "../schema/sports.js";
 import { SeedCollections } from "./index.js";
 
@@ -235,6 +237,8 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
             ),
           ),
         ).pipe(Effect.map((edges) => edges.flat(2)));
+
+        if (input === undefined) yield* seedMmaCatalog(ufcCatalog);
 
         yield* Effect.forEach(feedEdges, subjects.addEventToFeed, {
           discard: true,

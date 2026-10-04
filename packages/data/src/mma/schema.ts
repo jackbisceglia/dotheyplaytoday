@@ -1,0 +1,30 @@
+import {
+  EventId,
+  EventSourceId,
+  EventAvailability,
+} from "@dtpt/core/modules/events/schema";
+import { MmaCard } from "@dtpt/core/modules/events/variants/mma.schema";
+import { SubjectId } from "@dtpt/core/modules/subjects/schema";
+import { MmaFighterSubject } from "@dtpt/core/modules/subjects/variants/mma.schema";
+import { Schema } from "effect";
+
+export const MmaImport = Schema.Struct({
+  fighters: Schema.Array(
+    Schema.Struct({
+      id: SubjectId,
+      details: MmaFighterSubject,
+    }),
+  ),
+  cards: Schema.Array(
+    Schema.Struct({
+      id: EventId,
+      sourceId: EventSourceId.check(Schema.isPattern(/^mma_card:ufc:/)),
+      availability: EventAvailability,
+      // Completeness applies ONLY to this card's bout list. Absent cards are untouched.
+      boutsComplete: Schema.Boolean,
+      details: MmaCard,
+    }),
+  ),
+});
+export type MmaImport = typeof MmaImport.Type;
+export type MmaImportInput = typeof MmaImport.Encoded;

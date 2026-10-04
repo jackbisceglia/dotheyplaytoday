@@ -66,6 +66,10 @@ notes on other leagues are at the end.
    for corrections) describing the source query and which games were
    deliberately left out.
 
+## UFC
+
+UFC cards, bouts, and fighters use a separate [catalog update workflow](./update-ufc-catalog.md). Do not apply the two-team or known-start requirements above to MMA.
+
 ## Other leagues
 
 NBA and NHL events are generated from ESPN schedule entries and have

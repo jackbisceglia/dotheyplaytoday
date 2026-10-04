@@ -131,5 +131,5 @@ card and participant snapshot is authoritative. When reviewing incomplete source
 metadata unless a change is confirmed. Catalog publication is a separate rollout
 step; coverage choices apply to catalogued UFC events.
 
-Backend and UI reader support must be released before publishing UFC
-catalog subjects and cards. Existing team subscriptions remain unchanged.
+See the [UFC catalog runbook](./runbooks/update-ufc-catalog.md) for timing,
+reconciliation, source authority, and rollout details.
