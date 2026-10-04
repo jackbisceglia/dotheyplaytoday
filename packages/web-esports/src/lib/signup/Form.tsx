@@ -5,7 +5,7 @@ import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { withApiClient } from "../api.js";
-import { getSportsLogo, type SportsTeam } from "../catalog/sports/index.js";
+import { getEsportsLogo, type EsportsTeam } from "../catalog/esports/index.js";
 import {
   defaultTimezone,
   detectTimezone,
@@ -48,7 +48,7 @@ const hasSelectedSubjects = <SubjectId,>(
 ): subjectIds is readonly [SubjectId, ...SubjectId[]] => subjectIds.length > 0;
 
 type FormProps = {
-  readonly subjects: readonly SportsTeam[];
+  readonly subjects: readonly EsportsTeam[];
 };
 
 export function Form(props: FormProps) {
@@ -230,7 +230,12 @@ export function Form(props: FormProps) {
               toggleTeam(team.id);
             }}
           >
-            <div class="selection-summary" role="group" aria-label="Your picks">
+            <div
+              class="selection-summary"
+              data-has-picks={selectedTeams().length > 0 ? "true" : "false"}
+              role="group"
+              aria-label="Your picks"
+            >
               <div class="selection-summary-list">
                 <Show
                   when={selectedTeams().length > 0}
@@ -245,7 +250,7 @@ export function Form(props: FormProps) {
                         title={team.details.display}
                       >
                         <span class="selection-summary-logo" aria-hidden="true">
-                          {getSportsLogo(team.details)}
+                          {getEsportsLogo(team.details)}
                         </span>
                         <strong aria-hidden="true">
                           {team.details.abbreviation}
@@ -365,7 +370,7 @@ export function Form(props: FormProps) {
               type="submit"
               disabled={isSubmitting()}
             >
-              {isSubmitting() ? "Signing up..." : "Sign up"}
+              {isSubmitting() ? "Locking in..." : "Lock in"}
             </button>
           </div>
 

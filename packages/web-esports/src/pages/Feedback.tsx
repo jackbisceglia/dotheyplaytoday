@@ -26,7 +26,7 @@ export function Feedback() {
   const landingHref = useApplicationPath("landing");
   usePageMetadata(
     "Feedback | dotheyplaytoday",
-    "Request a league, team, or sport, or send general feedback.",
+    "Request a game, league, or team, or send general feedback.",
   );
 
   const [type, setType] = createSignal<FeedbackType>("new_subject");
@@ -88,8 +88,8 @@ export function Feedback() {
             </span>
           </h1>
           <p class="feedback-copy">
-            Request a league, team, or sport, or let us know if something is
-            not working.
+            Request a game, league, or team, or let us know if something is not
+            working.
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export function Feedback() {
                   setType(event.currentTarget.value as FeedbackType)
                 }
               >
-                <option value="new_subject">New league, team, or sport</option>
+                <option value="new_subject">New game, league, or team</option>
                 <option value="general">General feedback or support</option>
               </select>
             </div>

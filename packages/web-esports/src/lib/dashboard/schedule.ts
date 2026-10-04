@@ -4,21 +4,20 @@ import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
 import { DateTime } from "effect";
 
 import {
-  isSportsGame,
-  isSportsTeam,
-  type SportsTeam,
-} from "../catalog/sports/index.js";
+  isEsportsMatch,
+  isEsportsTeam,
+  type EsportsTeam,
+} from "../catalog/esports/index.js";
 
 export type ScheduleRow = {
-  readonly team: SportsTeam;
+  readonly team: EsportsTeam;
   readonly teamName: string;
   readonly eventId: string;
   readonly startsAt: string;
   readonly day: string;
   readonly time: string;
   readonly opponent: string;
-  readonly opponentTeam: SportsTeam | undefined;
-  readonly matchup: "at" | "vs";
+  readonly opponentTeam: EsportsTeam | undefined;
 };
 
 const normalizeName = (value: string) => value.trim().toLowerCase();
@@ -30,11 +29,11 @@ export function scheduleRows(
   now: DateTime.Utc = DateTime.nowUnsafe(),
 ): readonly ScheduleRow[] {
   const schedule = response.flatMap(({ subject, events }) =>
-    isSportsTeam(subject)
-      ? [{ subject, events: events.filter(isSportsGame) }]
+    isEsportsTeam(subject)
+      ? [{ subject, events: events.filter(isEsportsMatch) }]
       : [],
   );
-  const catalog = subjects.filter(isSportsTeam);
+  const catalog = subjects.filter(isEsportsTeam);
   const todayDate = SubscriptionTiming.formatLocalDate(now, timezone);
   const zoneName = DateTime.zoneToString(timezone);
   const dayFormat = new Intl.DateTimeFormat("en-US", {
@@ -64,7 +63,7 @@ export function scheduleRows(
       const key =
         participants.length >= 2
           ? JSON.stringify([
-              event.details.leagueId,
+              event.details.gameId,
               DateTime.formatIso(event.startsAt),
               participants,
             ])
@@ -81,10 +80,15 @@ export function scheduleRows(
         todayDate;
       const day = today ? "Today" : dayFormat.format(date);
 
+      // Organizations field rosters in several games, so names only match
+      // within the event's game. COD is the only game until CS2 and VAL land.
+      const inGame = (subject: EsportsTeam) =>
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        subject.details.gameId === event.details.gameId;
       const participantName = (title: string) =>
         catalog.find(
           (subject) =>
-            subject.details.leagueId === event.details.leagueId &&
+            inGame(subject) &&
             normalizeName(subject.details.display) === normalizeName(title),
         )?.details.name ?? title.trim();
       const own = event.participants.find(
@@ -92,25 +96,16 @@ export function scheduleRows(
           normalizeName(participant.details.title) ===
           normalizeName(team.details.display),
       );
-      // Like the notifier, keep both sides in away-at-home order when the
-      // subscribed team's display name cannot identify its participant.
-      const leading =
-        own ??
-        event.participants.find(
-          (participant) => participant.details.role === "away",
-        ) ??
-        event.participants.find(
-          (participant) => participant.details.role === "home",
-        );
+      // Like the notifier, keep the listed order when the subscribed team's
+      // display name cannot identify its participant.
+      const leading = own ?? event.participants[0];
       const opponent =
         leading &&
-        event.participants.find(
-          (participant) => participant.details.role !== leading.details.role,
-        );
+        event.participants.find((participant) => participant !== leading);
       const opponentTeam = opponent
         ? schedule.find(
             ({ subject }) =>
-              subject.details.leagueId === event.details.leagueId &&
+              inGame(subject) &&
               normalizeName(subject.details.display) ===
                 normalizeName(opponent.details.title),
           )?.subject
@@ -127,7 +122,6 @@ export function scheduleRows(
         time: timeFormat.format(date),
         opponent: opponent ? participantName(opponent.details.title) : "",
         opponentTeam,
-        matchup: leading?.details.role === "away" ? "at" : "vs",
       };
     })
     .sort(

@@ -15,6 +15,9 @@ import { SeedDev, SeedProduction } from "./packages/data/dist/seed/action.js";
 import { CatalogSeedVersion } from "./packages/data/dist/seed/config.js";
 import NotifyJobWorker from "./packages/jobs/dist/notify/worker.js";
 import OpsWorker from "./packages/jobs/dist/ops/worker.js";
+import WebEsports, {
+  bindWebEsportsUrl,
+} from "./packages/web-esports/resource.ts";
 import Web, { bindWebUrl } from "./packages/web/resource.ts";
 
 export default Alchemy.Stack(
@@ -46,6 +49,7 @@ export default Alchemy.Stack(
     }
 
     const web = yield* Web;
+    const webEsports = yield* WebEsports;
     const apiWorker = yield* ApiWorker;
     const notifyJobWorker = yield* NotifyJobWorker;
     const opsWorker = yield* OpsWorker;
@@ -54,6 +58,7 @@ export default Alchemy.Stack(
     // supports separate definition and implementation declarations.
     yield* bindApiUrl(apiWorker, apiWorker);
     yield* bindWebUrl(apiWorker, web);
+    yield* bindWebEsportsUrl(apiWorker, webEsports);
     yield* bindWebUrl(notifyJobWorker, web);
 
     return {
@@ -66,6 +71,8 @@ export default Alchemy.Stack(
       apiWorkerUrl: apiWorker.url,
       webWorkerName: web.workerName,
       webWorkerUrl: web.url,
+      webEsportsWorkerName: webEsports.workerName,
+      webEsportsWorkerUrl: webEsports.url,
       notifyJobWorkerName: notifyJobWorker.workerName,
       notifyJobWorkerUrl: notifyJobWorker.url,
       opsWorkerName: opsWorker.workerName,

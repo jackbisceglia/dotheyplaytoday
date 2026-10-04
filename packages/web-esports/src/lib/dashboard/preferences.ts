@@ -1,7 +1,7 @@
 import { query } from "@solidjs/router";
 
 import { withApiClient } from "../api.js";
-import { isSportsTeam, type SportsTeam } from "../catalog/sports/index.js";
+import { isEsportsTeam, type EsportsTeam } from "../catalog/esports/index.js";
 
 const loadPreferences = async () => {
   const [user, subscriptions] = await Promise.all([
@@ -14,8 +14,8 @@ const loadPreferences = async () => {
       (
         subscription,
       ): subscription is typeof subscription & {
-        readonly subject: SportsTeam;
-      } => isSportsTeam(subscription.subject),
+        readonly subject: EsportsTeam;
+      } => isEsportsTeam(subscription.subject),
     ),
   };
 };

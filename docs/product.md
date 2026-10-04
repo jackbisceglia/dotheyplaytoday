@@ -6,6 +6,17 @@
 
 **Subject** and **Event** are intentionally reusable domain terms. Sports teams and games are the current production implementation, but the model can support other event-driven subjects without redefining the core behavior.
 
+## Esports
+
+The esports vertical applies the same behavior to esports teams and matches on
+its own site. Accounts and sign-ins are shared with sports; each site keeps its
+own picks and four-team limit. It currently covers the twelve 2027 Call
+of Duty League franchises; CS2 and Valorant appear in the picker as coming
+soon. Copy says “match day” where sports says “game day”. Matches have no home
+side, so the dashboard and email list the subscribed team first and the
+opponent after “vs”. No CDL matches are scheduled until the 2027 schedule is
+published.
+
 Registration uses `POST /api/user`. Users can subscribe to up to four teams. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
 
 ## Dashboard
@@ -75,8 +86,8 @@ picker while keeping the heading, send-time sentence, and roster anchored.
 | Term                | Meaning                                                                                                  |
 | ------------------- | -------------------------------------------------------------------------------------------------------- |
 | User                | A notification recipient identified by email, timezone, and unsubscribe identity.                        |
-| Subject             | Something a user can follow; currently a supported sports team.                                          |
-| Event               | A time-bound occurrence that may cause a notification; currently a game.                                 |
+| Subject             | Something a user can follow; currently a supported sports or esports team.                               |
+| Event               | A time-bound occurrence that may cause a notification; currently a game or match.                        |
 | Subject Event       | The association that says an event is relevant to a subject.                                             |
 | Participant         | An entity taking part in an event, used to describe the event independently of subscriptions.            |
 | Subscription        | A user's choice to follow one subject on a schedule, including its last successful send state.           |
@@ -85,17 +96,3 @@ picker while keeping the heading, send-time sentence, and roster anchored.
 | Notifier            | The notification-specific boundary that renders and sends a `Notification`.                              |
 | Email               | The provider-neutral transport boundary that sends a complete outbound email.                            |
 | Transactional Email | An application workflow that owns its input, rendering, and delivery through `Email`.                    |
-
-## Pick replacement scope
-
-Saving a selection replaces picks of the submitted subject kind and preserves
-other kinds. The existing four-pick limit is checked on the submitted selection.
-Accounts and unsubscribe identity remain shared; unsubscribe deletes the whole
-account rather than one kind of picks.
-
-## Esports catalog
-
-The catalog includes twelve Call of Duty League franchises with stable subject
-IDs. Checked-in match data is empty until a confirmed schedule is available.
-Development seeds both collections and gives its default user one pick of each
-kind. Production seeds the catalog without changing users or subscriptions.

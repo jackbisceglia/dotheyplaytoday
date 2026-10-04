@@ -69,6 +69,7 @@ export const makeAuthFixture = async () => {
             "test-secret-that-is-at-least-thirty-two-characters",
           VITE_API_URL_BASE: "https://api.example.com",
           VITE_WEB_URL_BASE: "https://www.example.com",
+          VITE_WEB_ESPORTS_URL_BASE: "https://esports.example.com",
         },
       }),
     ),

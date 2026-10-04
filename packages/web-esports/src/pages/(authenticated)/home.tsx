@@ -26,7 +26,7 @@ export function Home() {
   const [search, setSearch] = useSearchParams();
   const [signOutError, setSignOutError] = createSignal<string>();
   const unsubscribePath = useApplicationPath("unsubscribe");
-  usePageMetadata("Home | dotheyplaytoday", "Your game-day subscriptions.");
+  usePageMetadata("Home | dotheyplaytoday", "Your match-day subscriptions.");
 
   const signOut = async () => {
     setSignOutError(undefined);
@@ -61,7 +61,7 @@ export function Home() {
       </Show>
       <Show when={search.confirmation === "1"}>
         <aside class="confirmation-alert" role="alert">
-          <span>Your email is confirmed. You're on the roster.</span>
+          <span>Your email is confirmed. You're locked in.</span>
           <button
             type="button"
             aria-label="Dismiss confirmation"
