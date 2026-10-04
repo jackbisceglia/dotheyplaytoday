@@ -22,6 +22,7 @@ export function Confirmation(props: {
   readonly token: UnsubscribeTokenSuccess | undefined;
 }) {
   const landingHref = useApplicationPath("landing");
+  const homeHref = useApplicationPath("home");
   const [formError, setFormError] = createSignal<string>();
   const [isSubmitting, setSubmitting] = createSignal(false);
   const [isSucceeded, setSucceeded] = createSignal(false);
@@ -60,10 +61,11 @@ export function Confirmation(props: {
         </h1>
         <div class="unsubscribe-copy-group">
           <p class="unsubscribe-copy">
-            This stops every dotheyplaytoday email for this address.
+            This stops every game-day email for this address.
           </p>
           <p class="unsubscribe-copy">
-            Sign up again any time with a fresh set of teams.
+            If you pay for Pro, your membership continues. Cancel it separately
+            in Manage billing on your dashboard.
           </p>
         </div>
 
@@ -106,6 +108,9 @@ export function Confirmation(props: {
         </p>
         <a class="btn btn-secondary" href={landingHref()}>
           Back home
+        </a>
+        <a class="btn btn-secondary" href={homeHref()}>
+          Manage your account
         </a>
       </div>
     </section>

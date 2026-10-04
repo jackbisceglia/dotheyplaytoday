@@ -336,8 +336,8 @@ Separate follow-ups are:
 - `POST /api/user`: save a new unverified user and subscriptions, then request a confirmation link; duplicate signup requests another link and returns 409 without changing preferences.
 - `GET /api/billing`: read the session user’s plan, team allowance, billing status, and checkout availability.
 - `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
-- `POST /api/user/subscription`: replace the session user's one to four teams and fixed send time atomically; retained subscriptions preserve IDs and last-sent state.
-- `POST /api/user/unsubscribe`: delete the authenticated user when no token is supplied, or the token owner for an unauthenticated email link.
+- `POST /api/user/subscription`: replace the session user's one to six teams, subject to the session user's plan allowance, and fixed send time atomically; retained subscriptions preserve IDs and last-sent state.
+- `POST /api/user/unsubscribe`: stop the authenticated user’s game-day emails, or the token owner’s for an unauthenticated email link; preserve Stripe customer and grandfathered accounts, and delete ordinary Free accounts.
 - Better Auth `/api/auth/*`, subjects, feedback, and ping retain their existing routes.
 
 Contracts follow OpenCode's instance HttpApi structure: each domain exports a
@@ -398,3 +398,11 @@ end. `/api/billing` returns the current account's allowance and checkout
 availability through an authenticated, uncached read. Missing Stripe
 configuration reports checkout as unavailable. The dashboard preference loader
 fetches this response alongside the existing user and team subscriptions.
+
+Signup accepts up to two teams. Roster writes lock and re-read the user before
+checking the current billing allowance inside the transaction. Notification
+reads join billing records and enforce the same allowance in stable
+subscription-ID order, including forced runs. Downgrade preserves saved teams
+and their delivery history but requires reducing the selection before saving.
+Unsubscribe removes teams while preserving accounts with Stripe history or
+permanent free Pro so those users can sign in again.
