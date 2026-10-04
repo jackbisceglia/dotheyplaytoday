@@ -29,6 +29,7 @@ import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { mockTransactions } from "./fixtures.js";
 import { Auth } from "../auth/auth.js";
 import { HttpApiLayer } from "../index.js";
+import { StripeBilling } from "../billing/service.js";
 import { RateLimitExceeded } from "../rate-limit/errors.js";
 import { RateLimiter } from "../rate-limit/service.js";
 
@@ -101,6 +102,7 @@ const makeFixture = async () => {
   const web = HttpRouter.toWebHandler(
     HttpApiLayer.pipe(
       Layer.provide([
+        Layer.mock(StripeBilling, {}),
         Layer.succeed(Auth, fixture.auth),
         Layer.mock(Users, {
           get,
