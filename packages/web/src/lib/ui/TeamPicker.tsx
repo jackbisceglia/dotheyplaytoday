@@ -1,10 +1,10 @@
-import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import type { ParentProps } from "solid-js";
 import { createMemo, createSignal, For } from "solid-js";
 import {
   getTeams,
   getSportsLogo,
   leagues as sportsLeagues,
+  type SportsTeam,
 } from "../catalog/sports/index.js";
 import { ComingSoon } from "./ComingSoon.jsx";
 
@@ -13,10 +13,10 @@ const comingSoonLeagues = ["EPL"] as const;
 export function TeamPicker(props: {
   readonly children?: ParentProps["children"];
   readonly errorId?: string;
-  readonly subjects: readonly Subject[];
+  readonly subjects: readonly SportsTeam[];
   readonly selected: ReadonlySet<string>;
   readonly rejectedSelectionId?: string | undefined;
-  readonly onToggle: (team: Subject) => void;
+  readonly onToggle: (team: SportsTeam) => void;
 }) {
   const leagues = createMemo(() => {
     const teams = getTeams(props.subjects);

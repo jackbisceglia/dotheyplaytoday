@@ -10,7 +10,10 @@ import {
 } from "@dtpt/core/modules/email/headline";
 import { confirmationLines } from "@dtpt/core/modules/email/transactional/confirmation";
 import { signInLines } from "@dtpt/core/modules/email/transactional/sign-in";
-import { gameDayLines, kickoffLines } from "@dtpt/core/modules/notifier/email";
+import {
+  gameDayLines,
+  kickoffLines,
+} from "@dtpt/core/modules/notifier/feeds/sports";
 import { SeedCollections } from "@dtpt/data/seed/index";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";

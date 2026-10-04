@@ -1,13 +1,23 @@
 import { query } from "@solidjs/router";
 
 import { withApiClient } from "../api.js";
+import { isSportsTeam, type SportsTeam } from "../catalog/sports/index.js";
 
 const loadPreferences = async () => {
   const [user, subscriptions] = await Promise.all([
     withApiClient((api) => api.user.get()),
     withApiClient((api) => api.subscription.list()),
   ]);
-  return { user, subscriptions };
+  return {
+    user,
+    subscriptions: subscriptions.filter(
+      (
+        subscription,
+      ): subscription is typeof subscription & {
+        readonly subject: SportsTeam;
+      } => isSportsTeam(subscription.subject),
+    ),
+  };
 };
 
 // The API cookie lives in the browser, so only the client calls this. The

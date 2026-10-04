@@ -1,7 +1,7 @@
-import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { revalidate } from "@solidjs/router";
 import { Result } from "effect";
 
+import type { SportsTeam } from "../catalog/sports/index.js";
 import { getSubjects, type SubjectsResult } from "../subjects.js";
 import { TeamPicker } from "../ui/TeamPicker.jsx";
 
@@ -9,7 +9,7 @@ export function CatalogPicker(props: {
   readonly subjects: SubjectsResult;
   readonly selected: ReadonlySet<string>;
   readonly rejectedSelectionId: string | undefined;
-  readonly onToggle: (team: Subject) => void;
+  readonly onToggle: (team: SportsTeam) => void;
 }) {
   return (
     <>

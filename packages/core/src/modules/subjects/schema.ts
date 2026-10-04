@@ -9,6 +9,7 @@ import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
+import { EsportsTeamSubject } from "./variants/esports.schema.js";
 import { SportTeamSubject } from "./variants/sport.schema.js";
 
 export type SubjectSchemasMatchTable = Check<
@@ -19,7 +20,10 @@ export type SubjectId = typeof SubjectId.Type;
 export const SubjectId = Id.SchemaBranded("SubjectId");
 
 export type SubjectDetails = typeof SubjectDetails.Type;
-export const SubjectDetails = TaggedUnion([SportTeamSubject]);
+export const SubjectDetails = TaggedUnion([
+  SportTeamSubject,
+  EsportsTeamSubject,
+]);
 
 const overrides = {
   id: SubjectId,

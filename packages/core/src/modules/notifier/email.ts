@@ -1,24 +1,15 @@
-import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
+import { Effect, Layer, Match, Schema } from "effect";
 
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
-import type { ExtractFromTag } from "../../lib/types.js";
 import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
-import { type Lines, makeTiledHeadline } from "../email/headline.js";
-import {
-  EmailView,
-  Link,
-  Matchups,
-  type EmailMatchup,
-  type EmailRendered,
-  type EmailViewProps,
-} from "../email/render.js";
-import { EventId } from "../events/schema.js";
-import type { EventWithParticipants } from "../events/service.js";
-import type { Subject } from "../subjects/schema.js";
-import type { User } from "../users/schema.js";
+import { EmailView, type EmailRendered } from "../email/render.js";
+import { SubjectId } from "../subjects/schema.js";
 import { NotifierError } from "./errors.js";
+import { esportsTeamEmail, esportsTeamFeed } from "./feeds/esports.js";
+import type { FeedContext } from "./feeds/shared.js";
+import { sportsTeamEmail, sportsTeamFeed } from "./feeds/sports.js";
 import type { Notification } from "./notification.js";
 import { Notifier } from "./service.js";
 
@@ -27,261 +18,39 @@ const makeEmailDelivery = (notification: Notification): EmailDelivery => ({
   idempotencyKey: Notifier.createDeliveryHash(notification),
 });
 
-const isTaggedAs =
-  <const TTag extends PropertyKey>(tag: TTag) =>
-  <TValue extends { readonly _tag: PropertyKey }>(
-    value: TValue,
-  ): value is Extract<TValue, { readonly _tag: TTag }> =>
-    value._tag === tag;
-
-export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>()(
-  "EmailRenderError",
+export class UnsupportedFeedError extends Schema.TaggedErrorClass<UnsupportedFeedError>()(
+  "UnsupportedFeedError",
   {
     message: Schema.String,
-    eventId: EventId,
-    role: Schema.Literals(["home", "away"]),
+    subjectId: SubjectId,
   },
 ) {}
 
-type SportsGameEvents = Array.NonEmptyReadonlyArray<SportsGameEvent>;
-type SportsGameEvent = ExtractFromTag<EventWithParticipants, "sports_game">;
-type SportsGameParticipant = SportsGameEvent["participants"][number];
-
-type SportsTeamSubject = Subject & {
-  readonly details: ExtractFromTag<Subject["details"], "sports_team">;
-};
-
-function createFeedCases() {
-  // subjects
-  const isSportsTeam = (
-    subject: Notification["subject"],
-  ): subject is SportsTeamSubject => isTaggedAs("sports_team")(subject.details);
-
-  // events
-  const areSportsGames = (
-    events: Notification["events"],
-  ): events is SportsGameEvents =>
-    events.length > 0 && events.every(isTaggedAs("sports_game"));
-
-  return {
-    sportsTeamFeed: {
-      subject: isSportsTeam,
-      events: areSportsGames,
-    },
-  };
-}
-
-const requireSportsParticipantsRoles = Effect.fn(
-  "NotifierLayerEmail.requireSportsParticipantsRoles",
-)(function* (event: SportsGameEvent) {
-  const home = event.participants.find((p) => p.details.role === "home");
-  const away = event.participants.find((p) => p.details.role === "away");
-
-  if (!home || !away) {
-    const role = home ? "away" : "home";
-
-    return yield* new EmailRenderError({
-      message: "Expected sports_game event to have participant role",
-      eventId: event.id,
-      role,
-    });
-  }
-
-  return { home, away };
-});
-
-type SubjectSide = {
-  readonly leading: SportsGameParticipant;
-  readonly trailing: SportsGameParticipant;
-  readonly separator: "@" | "vs.";
-};
-
-/**
- * When every event in the batch shares exactly one participant title, that
- * title must be the subscriber's team: the events were pulled in because
- * they're the subject's games, so a team present in all of them can only be
- * the subject. This is a structural inference, not a guess.
- */
-const findSharedParticipantTitle = (
-  events: SportsGameEvents,
-): string | undefined => {
-  if (events.length < 2) return undefined;
-
-  const titleCounts = new Map<string, number>();
-
-  for (const event of events) {
-    for (const participant of event.participants) {
-      const title = participant.details.title;
-
-      titleCounts.set(title, (titleCounts.get(title) ?? 0) + 1);
-    }
-  }
-
-  let sharedTitle: string | undefined;
-
-  for (const [title, count] of titleCounts) {
-    if (count !== events.length) continue;
-    if (sharedTitle !== undefined) return undefined;
-    sharedTitle = title;
-  }
-
-  return sharedTitle;
-};
-
-/**
- * Best-effort guess at which participant is the subscriber's team, used when
- * {@link findSharedParticipantTitle} has nothing to compare across (a single
- * event). Participant titles carry no id back to the subject, so this is a
- * plain string match against the subject's display name — it can miss
- * (differing formatting, renamed teams), in which case callers should treat
- * `undefined` as "ordering doesn't matter".
- */
-const guessSubjectSide = (
-  home: SportsGameParticipant,
-  away: SportsGameParticipant,
-  subjectDisplay: string,
-): SubjectSide | undefined => {
-  const normalize = (value: string) => value.trim().toLowerCase();
-  const target = normalize(subjectDisplay);
-
-  if (normalize(home.details.title) === target) {
-    return { leading: home, trailing: away, separator: "vs." };
-  }
-  if (normalize(away.details.title) === target) {
-    return { leading: away, trailing: home, separator: "@" };
-  }
-
-  return undefined;
-};
-
-const orderBySubject = (
-  home: SportsGameParticipant,
-  away: SportsGameParticipant,
-  sharedParticipantTitle: string | undefined,
-  subjectDisplay: string,
-): SubjectSide => {
-  if (sharedParticipantTitle === home.details.title) {
-    return { leading: home, trailing: away, separator: "vs." };
-  }
-  if (sharedParticipantTitle === away.details.title) {
-    return { leading: away, trailing: home, separator: "@" };
-  }
-
-  return (
-    guessSubjectSide(home, away, subjectDisplay) ?? {
-      leading: away,
-      trailing: home,
-      separator: "@",
-    }
-  );
-};
-
-export const gameDayLines = (team: SportsTeamSubject["details"]): Lines => [
-  team.name,
-  "play today.",
-];
-
-export const kickoffLines: Lines = ["Football is", "back."];
-
-// TODO: Generalize this into configurable special events. It is dead after NFL
-// kickoff (2026-09-13), and the NBA opener in October will want a variant with
-// slightly different rules. Instead of deleting it, open a PR that moves the
-// date, league, and header/subject copy into data (likely a database table),
-// so each season opener is a row rather than a code change.
-const shouldIncludeNflKickoffEvent = (
-  events: SportsGameEvents,
-  sendAt: Notification["sendAt"],
-  timezone: User["timezone"],
-) => {
-  const NFL_KICKOFF_DATE = "2026-09-13";
-
-  const hasNflGame = () =>
-    events.some((event) => event.details.leagueId === "nfl");
-
-  /** Local to the recipient: a Pacific Sunday evening is already Monday in UTC. */
-  const isNflKickoffDay = () =>
-    DateTime.formatIsoDate(DateTime.setZone(sendAt, timezone)) ===
-    NFL_KICKOFF_DATE;
-
-  return hasNflGame() && isNflKickoffDay();
-};
-
-const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
-  const userLocaleDateTime = DateTime.setZone(event.startsAt, tz);
-
-  return DateTime.format(userLocaleDateTime, {
-    locale: "en-US",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZoneName: "short",
-  });
-};
-
 const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
   function* (notification: Notification) {
-    const timezone = notification.user.timezone;
-    const home = yield* WebUrl;
-    const unsubscribeUrl = yield* buildUnsubscribeUrl(
-      notification.user.unsubscribeToken,
-    );
-    const cases = createFeedCases();
+    const context: FeedContext = {
+      home: yield* WebUrl,
+      unsubscribeUrl: yield* buildUnsubscribeUrl(
+        notification.user.unsubscribeToken,
+      ),
+    };
 
     return yield* Match.value(notification).pipe(
-      Match.when(cases.sportsTeamFeed, (notification) =>
-        Effect.gen(function* () {
-          const kickoff = shouldIncludeNflKickoffEvent(
-            notification.events,
-            notification.sendAt,
-            timezone,
-          );
-          const playsToday = `${notification.subject.details.name} play today`;
-
-          const sharedParticipantTitle = findSharedParticipantTitle(
-            notification.events,
-          );
-
-          const matchups = yield* Effect.forEach(notification.events, (game) =>
-            Effect.gen(function* () {
-              const { home, away } =
-                yield* requireSportsParticipantsRoles(game);
-
-              const { leading, trailing, separator } = orderBySubject(
-                home,
-                away,
-                sharedParticipantTitle,
-                notification.subject.details.display,
-              );
-
-              return {
-                leading: leading.details.title,
-                separator,
-                trailing: trailing.details.title,
-                detail: formatStartTime(game, timezone),
-              } satisfies EmailMatchup;
-            }),
-          );
-
-          return {
-            subject: kickoff ? `Football's back. ${playsToday}.` : playsToday,
-            headline: makeTiledHeadline(
-              home,
-              kickoff
-                ? kickoffLines
-                : gameDayLines(notification.subject.details),
-            ),
-            blocks: [
-              Matchups.make({ items: matchups }),
-              Link.make({
-                href: unsubscribeUrl,
-                text: "Unsubscribe",
-              }),
-            ],
-            metadata: { unsubscribe: unsubscribeUrl },
-          } satisfies EmailViewProps;
-        }),
+      Match.when(sportsTeamFeed, (notification) =>
+        sportsTeamEmail(notification, context),
       ),
-      Match.exhaustive,
+      Match.when(esportsTeamFeed, (notification) =>
+        esportsTeamEmail(notification, context),
+      ),
+      Match.orElse((notification) =>
+        Effect.fail(
+          new UnsupportedFeedError({
+            message:
+              "Expected the subject and every event to belong to one feed",
+            subjectId: notification.subject.id,
+          }),
+        ),
+      ),
     );
   },
 );
