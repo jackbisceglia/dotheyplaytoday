@@ -320,6 +320,7 @@ Separate follow-ups are:
 
 - `GET /api/user`: authenticated user's email and timezone.
 - `POST /api/user`: save a new unverified user and subscriptions, then request a confirmation link; duplicate signup requests another link and returns 409 without changing preferences.
+- `GET /api/billing`: read the session user’s plan, team allowance, billing status, and checkout availability.
 - `GET /api/user/subscription`: authenticated user's subscriptions with subjects.
 - `POST /api/user/subscription`: replace the session user's one to four teams and fixed send time atomically; retained subscriptions preserve IDs and last-sent state.
 - `POST /api/user/unsubscribe`: delete the authenticated user when no token is supplied, or the token owner for an unauthenticated email link.
@@ -369,3 +370,11 @@ and Drizzle rc.5. Platform and SQL packages share the same Effect version.
 Alchemy's PostgreSQL bridge uses the `Drizzle/Postgres` entrypoint; the
 production migration ledger retains its existing table name. Standalone Vite
 uses the matching `@alchemy.run/cloudflare-runtime` package.
+
+Core's Billing service resolves Free (two teams), Pro (six teams), and permanent
+free Pro from persisted billing state and the grandfathered flag. Paid access
+requires a Pro subscription with active or trialing status and a future period
+end. `/api/billing` returns the current account's allowance and checkout
+availability through an authenticated, uncached read. Missing Stripe
+configuration reports checkout as unavailable. The dashboard preference loader
+fetches this response alongside the existing user and team subscriptions.

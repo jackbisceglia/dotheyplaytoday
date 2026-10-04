@@ -10,6 +10,7 @@ import { PingGroupLayer } from "./handlers/ping.js";
 import { SubjectsGroupLayer } from "./handlers/subjects.js";
 import { UserGroupLayer } from "./handlers/user.js";
 import { SubscriptionGroupLayer } from "./handlers/subscription.js";
+import { BillingGroupLayer } from "./handlers/billing.js";
 
 const CorsLayer = Layer.unwrap(
   Effect.gen(function* () {
@@ -28,6 +29,7 @@ export const HttpApiLayer = Layer.mergeAll(
     Layer.provide([
       UserGroupLayer,
       SubscriptionGroupLayer,
+      BillingGroupLayer,
       AuthGroupLayer,
       PingGroupLayer,
       FeedbackGroupLayer,
