@@ -85,3 +85,10 @@ picker while keeping the heading, send-time sentence, and roster anchored.
 | Notifier            | The notification-specific boundary that renders and sends a `Notification`.                              |
 | Email               | The provider-neutral transport boundary that sends a complete outbound email.                            |
 | Transactional Email | An application workflow that owns its input, rendering, and delivery through `Email`.                    |
+
+## Pick replacement scope
+
+Saving a selection replaces picks of the submitted subject kind and preserves
+other kinds. The existing four-pick limit is checked on the submitted selection.
+Accounts and unsubscribe identity remain shared; unsubscribe deletes the whole
+account rather than one kind of picks.

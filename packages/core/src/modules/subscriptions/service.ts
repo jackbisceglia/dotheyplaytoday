@@ -1,4 +1,4 @@
-import { and, eq, notInArray } from "drizzle-orm";
+import { and, eq, inArray, notInArray } from "drizzle-orm";
 import {
   Array,
   Context,
@@ -21,7 +21,7 @@ import {
 } from "../../lib/database/errors.js";
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
-import { Subject, SubjectId } from "../subjects/schema.js";
+import { Subject, SubjectId, subjectsTable } from "../subjects/schema.js";
 import { User, usersTable } from "../users/schema.js";
 import { InvalidSubjectSelection, SubjectCapacityReached } from "./errors.js";
 import {
@@ -226,21 +226,50 @@ export const SubscriptionsLayer = Layer.effect(
 
               const subjects = yield* assertSubjectsExist(subjectIds);
 
-              // Remove dropped teams; retained rows keep their ID and last send.
-              yield* database
-                .delete(subscriptionsTable)
+              // Each site edits picks of its own kind, so only dropped teams of
+              // the submitted kinds are removed; retained rows keep their ID
+              // and last send.
+              const kinds = Array.dedupe(
+                subjects.map((subject) => subject._tag),
+              );
+
+              const dropped = yield* database
+                .select({ id: subscriptionsTable.id })
+                .from(subscriptionsTable)
+                .innerJoin(
+                  subjectsTable,
+                  eq(subjectsTable.id, subscriptionsTable.subjectId),
+                )
                 .where(
                   and(
                     eq(subscriptionsTable.userId, input.user.id),
                     notInArray(subscriptionsTable.subjectId, subjectIds),
+                    inArray(subjectsTable._tag, kinds),
                   ),
                 )
                 .pipe(
-                  Effect.catchTag(
-                    "EffectDrizzleQueryError",
-                    toWriteError("Subscriptions.replaceForUser", metadata),
+                  mapToReadError(
+                    "Subscriptions.replaceForUser.dropped",
+                    metadata,
                   ),
                 );
+
+              if (Array.isReadonlyArrayNonEmpty(dropped)) {
+                yield* database
+                  .delete(subscriptionsTable)
+                  .where(
+                    inArray(
+                      subscriptionsTable.id,
+                      dropped.map((row) => row.id),
+                    ),
+                  )
+                  .pipe(
+                    Effect.catchTag(
+                      "EffectDrizzleQueryError",
+                      toWriteError("Subscriptions.replaceForUser", metadata),
+                    ),
+                  );
+              }
 
               yield* database
                 .insert(subscriptionsTable)
