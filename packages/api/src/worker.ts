@@ -16,12 +16,19 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter";
 import { createAuthLayerFromHyperdriveResource } from "./auth/auth.js";
 import { AuthConfig } from "./auth/config.js";
 import { BillingConfig } from "./billing/config.js";
+import { StripeBillingLayer } from "./billing/service.js";
 import { BillingLayer } from "@dtpt/core/modules/billing/service";
 import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
 const ApiBaseLayer = pipe(
-  Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer, BillingLayer),
+  Layer.mergeAll(
+    SubjectsLayer,
+    SubscriptionsLayer,
+    UsersLayer,
+    BillingLayer,
+    StripeBillingLayer,
+  ),
   Layer.provideMerge(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );

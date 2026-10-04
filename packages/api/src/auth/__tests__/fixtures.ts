@@ -27,7 +27,9 @@ vi.mock("@dtpt/core/modules/email/transactional/sign-in", () => ({
 
 let client = 0;
 
-export const makeAuthFixture = async () => {
+export const makeAuthFixture = async (
+  configuration: Record<string, string> = {},
+) => {
   const database = new PGlite();
   onTestFinished(() => database.close());
   await database.exec(
@@ -78,6 +80,7 @@ export const makeAuthFixture = async () => {
             "test-secret-that-is-at-least-thirty-two-characters",
           VITE_API_URL_BASE: "https://api.example.com",
           VITE_WEB_URL_BASE: "https://www.example.com",
+          ...configuration,
         },
       }),
     ),
