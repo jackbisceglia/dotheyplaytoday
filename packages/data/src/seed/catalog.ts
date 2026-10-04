@@ -12,7 +12,7 @@ import { Effect, HashMap, Option, Schema } from "effect";
 import { SportsSeed } from "../schema/sports.js";
 import { SeedCollections } from "./index.js";
 
-export class SeedEventResolutionError extends Schema.TaggedErrorClass<SeedEventResolutionError>()(
+export class SeedEventResolutionError extends Schema.TaggedError<SeedEventResolutionError>()(
   "SeedEventResolutionError",
   {
     collectionId: Schema.String,
@@ -21,7 +21,7 @@ export class SeedEventResolutionError extends Schema.TaggedErrorClass<SeedEventR
   },
 ) {}
 
-export class SeedDuplicateEventSourceIdError extends Schema.TaggedErrorClass<SeedDuplicateEventSourceIdError>()(
+export class SeedDuplicateEventSourceIdError extends Schema.TaggedError<SeedDuplicateEventSourceIdError>()(
   "SeedDuplicateEventSourceIdError",
   {
     sourceId: Schema.String,

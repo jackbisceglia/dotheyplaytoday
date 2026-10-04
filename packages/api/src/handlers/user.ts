@@ -9,7 +9,7 @@ import { Database } from "@dtpt/core/lib/database/service";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Match, Option } from "effect";
+import { Effect, Match, Option, Schema } from "effect";
 import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
@@ -123,7 +123,9 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
               return yield* new HttpApiError.Unauthorized({});
             }
 
-            const userId = yield* UserId.makeEffect(session.user.id);
+            const userId = yield* Schema.decodeUnknownEffect(UserId)(
+              session.user.id,
+            );
 
             const user = yield* users.get(userId);
 

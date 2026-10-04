@@ -3,7 +3,7 @@ import { UpdateSubscriptionsRateLimited } from "@dtpt/core/contracts/subscriptio
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -43,7 +43,9 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
               return yield* new HttpApiError.Unauthorized({});
             }
 
-            const userId = yield* UserId.makeEffect(session.user.id);
+            const userId = yield* Schema.decodeUnknownEffect(UserId)(
+              session.user.id,
+            );
 
             const user = yield* users.get(userId);
 
@@ -74,7 +76,9 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
 
             if (!session) return yield* new HttpApiError.Unauthorized({});
 
-            const userId = yield* UserId.makeEffect(session.user.id);
+            const userId = yield* Schema.decodeUnknownEffect(UserId)(
+              session.user.id,
+            );
             const user = yield* users.get(userId);
 
             yield* subscriptions.replaceForUser({ user, ...ctx.payload });

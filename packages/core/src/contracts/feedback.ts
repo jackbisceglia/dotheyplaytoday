@@ -23,7 +23,7 @@ export const FeedbackRequest = Schema.Struct({
   request: FeedbackRequestTextFromString,
 });
 
-export class FeedbackRateLimited extends Schema.TaggedErrorClass<FeedbackRateLimited>()(
+export class FeedbackRateLimited extends Schema.TaggedError<FeedbackRateLimited>()(
   "FeedbackRateLimited",
   {},
   { httpApiStatus: 429 },

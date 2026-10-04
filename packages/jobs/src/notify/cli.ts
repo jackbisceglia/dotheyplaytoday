@@ -6,20 +6,20 @@ import { JobsCliRuntime } from "../runtime.js";
 import { NotifyOptions } from "./index.js";
 import { Trigger } from "./worker.js";
 
-const DryRunFlag = Flag.boolean("dry-run").pipe(
+const DryRunFlag = Flag.Boolean("dry-run").pipe(
   Flag.withSchema(NotifyOptions.fields.dryRun),
   Flag.withDefault(false),
 );
-const ForceFlag = Flag.boolean("force").pipe(
+const ForceFlag = Flag.Boolean("force").pipe(
   Flag.withSchema(NotifyOptions.fields.force),
   Flag.withDefault(false),
 );
-const NowFlag = Flag.string("now").pipe(
+const NowFlag = Flag.String("now").pipe(
   Flag.withSchema(NotifyOptions.fields.now),
   Flag.optional,
   Flag.withDescription("Run as if the job started at this ISO UTC instant"),
 );
-const UserFlag = Flag.string("user").pipe(
+const UserFlag = Flag.String("user").pipe(
   Flag.withSchema(NotifyOptions.fields.userEmail),
   Flag.optional,
   Flag.withDescription("Process only recipients for this email address"),

@@ -365,3 +365,21 @@ picker with signup. Its edit draft supports save/cancel, team removal, and send
 time changes; account email/timezone editing remains separate work. Existing
 emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
 new endpoint; no legacy API alias is needed.
+
+## Pro billing
+
+Migration 0006 adds `users.grandfathered_pro` and `users.stripe_customer_id`.
+Every user present when the migration runs receives the permanent grandfathered
+flag; later registrations default to false. This flag does not verify an email
+or create a session.
+
+Billing records live in `billing_subscriptions`, separately from notification
+subscriptions. The app-owned table has a user relationship, a unique Stripe
+subscription ID, one pending checkout per user, and revisions for synchronization.
+Stripe's server SDK is installed for the following billing integration.
+
+The coordinated infrastructure upgrade uses Alchemy beta.78, Effect rc.115,
+and Drizzle rc.5. Platform and SQL packages share the same Effect version.
+Alchemy's PostgreSQL bridge uses the `Drizzle/Postgres` entrypoint; the
+production migration ledger retains its existing table name. Standalone Vite
+uses the matching `@alchemy.run/cloudflare-runtime` package.
