@@ -37,6 +37,8 @@ const user = Schema.decodeUnknownSync(User)({
   unsubscribeToken: "00000000-0000-4000-8000-000000000002",
   name: null,
   emailVerified: false,
+  grandfatheredPro: false,
+  stripeCustomerId: null,
   createdAt: new Date("2026-01-01"),
   updatedAt: new Date("2026-01-01"),
 });

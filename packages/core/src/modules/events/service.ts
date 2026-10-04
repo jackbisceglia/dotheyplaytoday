@@ -140,8 +140,10 @@ export const EventsLayer = Layer.effect(
       const rows = yield* database.query.eventsTable
         .findMany({
           where: {
-            availability: availabilityFilter,
-            startsAt,
+            ...(availabilityFilter === undefined
+              ? {}
+              : { availability: availabilityFilter }),
+            ...(startsAt === undefined ? {} : { startsAt }),
             subjectEvents: { subjectId },
           },
           with: {

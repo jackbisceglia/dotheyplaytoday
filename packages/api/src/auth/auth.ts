@@ -39,14 +39,13 @@ type MagicLinkContext = { readonly user: BetterAuthUser | null };
 const decodeMagicLinkBody = Schema.decodeUnknownOption(
   Schema.Struct({ email: EmailAddressFromString }),
 );
-
 const createAuthPool = (connectionString: string) =>
   Effect.acquireRelease(
     Effect.sync(() => new Pool({ connectionString, max: 1 })),
     (pool) => Effect.promise(() => pool.end()),
   );
 
-export class AuthRequestError extends Schema.TaggedErrorClass<AuthRequestError>()(
+export class AuthRequestError extends Schema.TaggedError<AuthRequestError>()(
   "AuthRequestError",
   { cause: Schema.Defect() },
 ) {}
@@ -58,6 +57,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
     const webUrl = new URL("/", yield* WebUrl);
     const homeUrl = new URL("/home", webUrl);
     const pool = yield* createAuthPool(connectionString);
+    const authDatabase = drizzle({ client: pool });
     const cloudflare = yield* Cloudflare.WorkerExecutionContext;
     // Preserve runtime config and Id when Better Auth calls back into Effect.
     const runPromise = Effect.runPromiseWith(yield* Effect.context<Id>());
@@ -68,7 +68,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
       baseURL: apiUrl.origin,
       secret: Redacted.value(config.secret),
       trustedOrigins: [apiUrl.origin, webUrl.origin],
-      database: drizzleAdapter(drizzle({ client: pool }), {
+      database: drizzleAdapter(authDatabase, {
         provider: "pg",
         transaction: true,
         schema: {

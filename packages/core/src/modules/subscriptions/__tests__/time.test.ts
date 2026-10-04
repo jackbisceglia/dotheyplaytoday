@@ -18,6 +18,8 @@ const userInput = {
   name: "test@example.com",
   email: "test@example.com",
   emailVerified: false,
+  grandfatheredPro: false,
+  stripeCustomerId: null,
   timezone: "America/New_York",
   unsubscribeToken: "00000000-0000-4000-8000-000000000201",
   createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -72,24 +74,14 @@ describe("subscription time utilities", () => {
       timezone: makeUser("America/New_York").timezone,
     });
 
-    expect(DateTime.formatIso(lagging.from)).toBe(
-      "2026-02-09T05:00:00.000Z",
-    );
-    expect(DateTime.formatIso(lagging.to)).toBe(
-      "2026-02-10T05:00:00.000Z",
-    );
-    expect(DateTime.formatIso(leading.from)).toBe(
-      "2026-02-10T15:00:00.000Z",
-    );
-    expect(DateTime.formatIso(leading.to)).toBe(
-      "2026-02-11T15:00:00.000Z",
-    );
+    expect(DateTime.formatIso(lagging.from)).toBe("2026-02-09T05:00:00.000Z");
+    expect(DateTime.formatIso(lagging.to)).toBe("2026-02-10T05:00:00.000Z");
+    expect(DateTime.formatIso(leading.from)).toBe("2026-02-10T15:00:00.000Z");
+    expect(DateTime.formatIso(leading.to)).toBe("2026-02-11T15:00:00.000Z");
     expect(DateTime.formatIso(dstChanging.from)).toBe(
       "2026-03-08T05:00:00.000Z",
     );
-    expect(DateTime.formatIso(dstChanging.to)).toBe(
-      "2026-03-09T04:00:00.000Z",
-    );
+    expect(DateTime.formatIso(dstChanging.to)).toBe("2026-03-09T04:00:00.000Z");
   });
 
   it("converts fixed local schedule intent to UTC across DST", () => {
@@ -120,9 +112,9 @@ describe("subscription time utilities", () => {
       milliseconds: due.msHigh + 1000,
     });
 
-    expect(SubscriptionTiming.isDue({ subscription, user, nowUtc: onTime })).toBe(
-      true,
-    );
+    expect(
+      SubscriptionTiming.isDue({ subscription, user, nowUtc: onTime }),
+    ).toBe(true);
     expect(
       SubscriptionTiming.isDue({ subscription, user, nowUtc: slightlyEarly }),
     ).toBe(true);

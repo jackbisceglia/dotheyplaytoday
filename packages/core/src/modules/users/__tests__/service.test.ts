@@ -1,3 +1,4 @@
+import { makeTestPgClient } from "../../../lib/database/__tests__/fixtures.js";
 import * as PgClient from "@effect/sql-pg/PgClient";
 import { describe, expect, it } from "@effect/vitest";
 import * as Drizzle from "drizzle-orm/effect-postgres";
@@ -26,7 +27,9 @@ const now = new Date("2026-01-01T00:00:00Z");
 // and row decoding. The driver boundary is fake: this is not a persistence test.
 const makeFixture = () => {
   const execute = vi.fn<Connection["executeValues"]>(() =>
-    Effect.succeed([[id, email, timezone.id, id, null, false, now, now]]),
+    Effect.succeed([
+      [id, email, timezone.id, id, null, false, false, null, now, now],
+    ]),
   );
   const connection: Connection = {
     executeValues: execute,
@@ -39,12 +42,7 @@ const makeFixture = () => {
   const database = Layer.effect(
     Database,
     Effect.gen(function* () {
-      const client = yield* PgClient.makeWith({
-        acquirer: Effect.succeed(connection),
-        transactionAcquirer: Effect.succeed(connection),
-        listenAcquirer: Effect.die("Unexpected LISTEN"),
-        config: {},
-      });
+      const client = yield* makeTestPgClient(connection);
       return yield* Drizzle.makeWithDefaults({ relations }).pipe(
         Effect.provideService(PgClient.PgClient, client),
       );

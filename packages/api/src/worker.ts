@@ -33,7 +33,6 @@ const getApiDomain = (stage: string) => getManagedServiceDomain("api", stage);
 
 export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   "ApiWorker",
-  // TODO: Remove this typecast when upgrading Alchemy to beta.72 or later.
   Effect.gen(function* () {
     const stack = yield* Stack;
     const domain = getApiDomain(stack.stage);
@@ -44,7 +43,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
       dev: { port: 8080, strictPort: true },
       ...exactOptional(domain, (domain) => ({ domain })),
     };
-  }) as unknown as Cloudflare.WorkerProps,
+  }),
   Effect.gen(function* () {
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);

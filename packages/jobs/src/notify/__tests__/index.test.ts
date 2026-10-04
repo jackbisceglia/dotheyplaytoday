@@ -55,6 +55,8 @@ const makeRecipient = (
       name: opts.email ?? "fan@example.com",
       email: opts.email ?? "fan@example.com",
       emailVerified: false,
+      grandfatheredPro: false,
+      stripeCustomerId: null,
       timezone: opts.timezone ?? "America/New_York",
       unsubscribeToken: opts.unsubscribeToken ?? ids.unsubscribeA,
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
