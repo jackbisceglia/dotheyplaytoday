@@ -406,3 +406,18 @@ subscription-ID order, including forced runs. Downgrade preserves saved teams
 and their delivery history but requires reducing the selection before saving.
 Unsubscribe removes teams while preserving accounts with Stripe history or
 permanent free Pro so those users can sign in again.
+
+The API owns billing through the Stripe SDK; Better Auth supplies identity.
+Authenticated, origin-checked `/api/billing/checkout`, `/api/billing/portal`,
+and `/api/billing/sync` routes create checkout, open the portal, and refresh
+subscription state. Signed events go to `/api/billing/webhook`. Customers
+are created lazily and mapped to the account before checkout.
+
+Checkout requires a verified account, refuses grandfathered accounts, and
+blocks additional purchases while a nonterminal subscription exists. The
+monthly Pro price and quantity are fixed by the server. Open checkout sessions
+are reused; expired sessions create a new attempt with a new idempotency key.
+Return sync and webhooks retrieve current Stripe state through the same
+synchronization function. Revision-checked writes refetch after concurrent
+updates, so an older response cannot overwrite newer state. Invalid signatures
+return 400; provider/storage failures return 500 so Stripe retries.

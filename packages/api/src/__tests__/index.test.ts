@@ -34,6 +34,7 @@ import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { mockTransactions } from "./fixtures.js";
 import { Auth } from "../auth/auth.js";
 import { HttpApiLayer } from "../index.js";
+import { StripeBilling } from "../billing/service.js";
 import { RateLimitExceeded } from "../rate-limit/errors.js";
 import { RateLimiter } from "../rate-limit/service.js";
 
@@ -109,6 +110,7 @@ const makeFixture = async () => {
   const web = HttpRouter.toWebHandler(
     HttpApiLayer.pipe(
       Layer.provide([
+        Layer.mock(StripeBilling, {}),
         Layer.succeed(Auth, fixture.auth),
         Layer.mock(Users, {
           get,
@@ -426,11 +428,29 @@ describe("assembled HTTP API", () => {
     const f = await makeFixture();
     await f.database.query("UPDATE users SET id = 'not-a-uuid'");
     const cookie = await f.signIn();
-    for (const path of reads) {
+    for (const path of [...reads, "/billing"]) {
       const response = await f.request(path, undefined, cookie);
       expect(response.status).toBe(500);
       expect(response.headers.get("cache-control")).toBe("no-store");
     }
+    for (const path of [
+      "/user/subscription",
+      "/billing/checkout",
+      "/billing/portal",
+      "/billing/sync",
+    ]) {
+      const response = await f.request(
+        path,
+        {
+          subjectIds: [subject.id],
+          schedule: subscription.schedule,
+        },
+        cookie,
+      );
+      expect(response.status).toBe(500);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+    }
+    expect(f.replace).not.toHaveBeenCalled();
     vi.spyOn(f.auth.client.api, "getSession").mockRejectedValue(
       new Error("Auth unavailable"),
     );
