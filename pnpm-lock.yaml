@@ -9,6 +9,18 @@ catalogs:
     '@effect/language-service':
       specifier: 0.86.2
       version: 0.86.2
+    '@effect/platform-browser':
+      specifier: 4.0.0-rc.115
+      version: 4.0.0-rc.115
+    '@effect/platform-node':
+      specifier: 4.0.0-rc.115
+      version: 4.0.0-rc.115
+    '@effect/sql-pg':
+      specifier: 4.0.0-rc.115
+      version: 4.0.0-rc.115
+    '@effect/vitest':
+      specifier: 4.0.0-rc.115
+      version: 4.0.0-rc.115
     '@types/pg':
       specifier: 8.15.5
       version: 8.15.5
@@ -32,13 +44,6 @@ overrides:
   effect: 4.0.0-rc.115
   vite: 8.2.1
   vitest: 5.0.3
-  '@effect/platform-node': 4.0.0-rc.115
-  '@effect/platform-node-shared': 4.0.0-rc.115
-  '@effect/platform-browser': 4.0.0-rc.115
-  '@effect/sql-pg': 4.0.0-rc.115
-  '@effect/sql-d1': 4.0.0-rc.115
-  '@effect/sql-sqlite-do': 4.0.0-rc.115
-  '@effect/vitest': 4.0.0-rc.115
 
 importers:
 
@@ -51,11 +56,8 @@ importers:
         specifier: 'catalog:'
         version: 0.86.2
       '@effect/platform-node':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)(redis@6.3.0)
-      '@effect/vitest':
-        specifier: 4.0.0-rc.115
-        version: 4.0.0-rc.115(effect@4.0.0-rc.115)(vitest@5.0.3(@types/node@20.19.27)(vite@8.2.1(@types/node@20.19.27)(esbuild@0.27.7)(yaml@2.9.0)))
       '@eslint/js':
         specifier: ^9.36.0
         version: 9.39.2
@@ -121,13 +123,13 @@ importers:
         version: 8.22.0
     devDependencies:
       '@effect/platform-node':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)(redis@6.3.0)
       '@effect/sql-pg':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)
       '@effect/vitest':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)(vitest@5.0.3(@types/node@20.19.27)(vite@8.2.1(@types/node@20.19.27)(esbuild@0.27.7)(yaml@2.9.0)))
       '@electric-sql/pglite':
         specifier: 0.3.15
@@ -139,10 +141,10 @@ importers:
   packages/core:
     dependencies:
       '@effect/platform-browser':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)
       '@effect/sql-pg':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)
       alchemy:
         specifier: 'catalog:'
@@ -158,10 +160,10 @@ importers:
         version: 6.9.1
     devDependencies:
       '@effect/platform-node':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)(redis@6.3.0)
       '@effect/vitest':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)(vitest@5.0.3(@types/node@20.19.27)(vite@8.2.1(@types/node@20.19.27)(esbuild@0.27.7)(yaml@2.9.0)))
 
   packages/data:
@@ -177,7 +179,7 @@ importers:
         version: 4.0.0-rc.115
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)(vitest@5.0.3(@types/node@20.19.27)(vite@8.2.1(@types/node@20.19.27)(esbuild@0.27.7)(yaml@2.9.0)))
 
   packages/jobs:
@@ -186,7 +188,7 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@effect/platform-node':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)(redis@6.3.0)
       alchemy:
         specifier: 'catalog:'
@@ -196,7 +198,7 @@ importers:
         version: 4.0.0-rc.115
     devDependencies:
       '@effect/vitest':
-        specifier: 4.0.0-rc.115
+        specifier: 'catalog:'
         version: 4.0.0-rc.115(effect@4.0.0-rc.115)(vitest@5.0.3(@types/node@20.19.27)(vite@8.2.1(@types/node@20.19.27)(esbuild@0.27.7)(yaml@2.9.0)))
 
   packages/web:
@@ -255,7 +257,7 @@ packages:
     peerDependencies:
       '@distilled.cloud/cloudflare': 1.0.0-rc.12
       '@effect/platform-bun': '>=4.0.0-rc.115 || >=4.0.0'
-      '@effect/platform-node': 4.0.0-rc.115
+      '@effect/platform-node': '>=4.0.0-rc.115 || >=4.0.0'
       effect: 4.0.0-rc.115
       rolldown: 1.2.5
       vite: 8.2.1
@@ -1784,9 +1786,9 @@ packages:
       '@alchemy.run/frontend-frameworks': 2.0.0-beta.78
       '@aws/durable-execution-sdk-js': ^2.1.0
       '@effect/platform-bun': '>=4.0.0-rc.115 || >=4.0.0'
-      '@effect/platform-node': 4.0.0-rc.115
+      '@effect/platform-node': '>=4.0.0-rc.115 || >=4.0.0'
       '@effect/sql-mysql2': '>=4.0.0-rc.115 || >=4.0.0'
-      '@effect/sql-pg': 4.0.0-rc.115
+      '@effect/sql-pg': '>=4.0.0-rc.115 || >=4.0.0'
       '@vercel/nft': ^1.10.2
       drizzle-kit: 1.0.0-rc.5-ab785fc
       drizzle-orm: 1.0.0-rc.5-ab785fc
@@ -2093,13 +2095,13 @@ packages:
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
-      '@effect/sql-d1': 4.0.0-rc.115
+      '@effect/sql-d1': '>=4.0.0-beta.105 || >=4.0.0'
       '@effect/sql-libsql': '>=4.0.0-beta.105 || >=4.0.0'
       '@effect/sql-mysql2': '>=4.0.0-beta.105 || >=4.0.0'
-      '@effect/sql-pg': 4.0.0-rc.115
+      '@effect/sql-pg': '>=4.0.0-beta.105 || >=4.0.0'
       '@effect/sql-pglite': '>=4.0.0-beta.105 || >=4.0.0'
       '@effect/sql-sqlite-bun': '>=4.0.0-beta.105 || >=4.0.0'
-      '@effect/sql-sqlite-do': 4.0.0-rc.115
+      '@effect/sql-sqlite-do': '>=4.0.0-beta.105 || >=4.0.0'
       '@effect/sql-sqlite-node': '>=4.0.0-beta.105 || >=4.0.0'
       '@effect/sql-sqlite-wasm': '>=4.0.0-beta.105 || >=4.0.0'
       '@electric-sql/pglite': '>=0.2.0'

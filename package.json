@@ -30,7 +30,6 @@
     "@cloudflare/workers-types": "4.20260626.1",
     "@effect/language-service": "catalog:",
     "@effect/platform-node": "catalog:",
-    "@effect/vitest": "catalog:",
     "@eslint/js": "^9.36.0",
     "@tsconfig/bun": "^1.0.7",
     "@tsconfig/strictest": "^2.0.6",
@@ -50,14 +49,7 @@
     "overrides": {
       "effect": "4.0.0-rc.115",
       "vite": "8.2.1",
-      "vitest": "5.0.3",
-      "@effect/platform-node": "4.0.0-rc.115",
-      "@effect/platform-node-shared": "4.0.0-rc.115",
-      "@effect/platform-browser": "4.0.0-rc.115",
-      "@effect/sql-pg": "4.0.0-rc.115",
-      "@effect/sql-d1": "4.0.0-rc.115",
-      "@effect/sql-sqlite-do": "4.0.0-rc.115",
-      "@effect/vitest": "4.0.0-rc.115"
+      "vitest": "5.0.3"
     },
     "onlyBuiltDependencies": [
       "esbuild"
