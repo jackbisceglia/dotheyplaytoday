@@ -2,65 +2,62 @@ import type { ParentProps } from "solid-js";
 import { createMemo, createSignal, For } from "solid-js";
 import {
   getTeams,
-  getSportsLogo,
-  leagues as sportsLeagues,
-  type SportsTeam,
-} from "../catalog/sports/index.js";
+  getEsportsLogo,
+  games as esportsGames,
+  type EsportsTeam,
+} from "../catalog/esports/index.js";
 import { ComingSoon } from "./ComingSoon.jsx";
 
-const comingSoonLeagues = ["EPL"] as const;
+const comingSoonGames = ["CS2", "VAL"] as const;
 
 export function TeamPicker(props: {
   readonly children?: ParentProps["children"];
   readonly errorId?: string;
-  readonly subjects: readonly SportsTeam[];
+  readonly subjects: readonly EsportsTeam[];
   readonly selected: ReadonlySet<string>;
   readonly rejectedSelectionId?: string | undefined;
-  readonly onToggle: (team: SportsTeam) => void;
+  readonly onToggle: (team: EsportsTeam) => void;
 }) {
-  const leagues = createMemo(() => {
+  const games = createMemo(() => {
     const teams = getTeams(props.subjects);
-    const teamsByLeague = Object.groupBy(
-      teams,
-      (team) => team.details.leagueId,
-    );
+    const teamsByGame = Object.groupBy(teams, (team) => team.details.gameId);
 
-    return sportsLeagues
-      .map((league) => ({
-        ...league,
-        teams: teamsByLeague[league.id] ?? [],
+    return esportsGames
+      .map((game) => ({
+        ...game,
+        teams: teamsByGame[game.id] ?? [],
       }))
-      .filter((league) => league.teams.length > 0);
+      .filter((game) => game.teams.length > 0);
   });
 
-  const [selectedLeague, setSelectedLeague] = createSignal<string>();
-  const activeLeague = createMemo(() => {
-    const selected = selectedLeague();
-    const available = leagues();
+  const [selectedGame, setSelectedGame] = createSignal<string>();
+  const activeGame = createMemo(() => {
+    const selected = selectedGame();
+    const available = games();
 
-    return available.some((league) => league.id === selected)
+    return available.some((game) => game.id === selected)
       ? selected
       : (available[0]?.id ?? "");
   });
   return (
     <>
       <fieldset class="form-section">
-        <legend class="visually-hidden">League</legend>
+        <legend class="visually-hidden">Game</legend>
         <div class="league-row">
-          <For each={leagues()}>
-            {(league) => (
+          <For each={games()}>
+            {(game) => (
               <button
                 class="league-pill"
                 type="button"
-                aria-pressed={activeLeague() === league.id ? "true" : "false"}
-                onClick={() => setSelectedLeague(league.id)}
+                aria-pressed={activeGame() === game.id ? "true" : "false"}
+                onClick={() => setSelectedGame(game.id)}
               >
-                {league.label}
+                {game.label}
               </button>
             )}
           </For>
-          <For each={comingSoonLeagues}>
-            {(league) => <ComingSoon class="league-pill">{league}</ComingSoon>}
+          <For each={comingSoonGames}>
+            {(game) => <ComingSoon class="league-pill">{game}</ComingSoon>}
           </For>
         </div>
       </fieldset>
@@ -71,10 +68,10 @@ export function TeamPicker(props: {
         aria-describedby={props.errorId}
       >
         <legend class="visually-hidden">Teams</legend>
-        <For each={leagues()}>
-          {(league) => (
-            <div class="team-grid" hidden={activeLeague() !== league.id}>
-              <For each={league.teams}>
+        <For each={games()}>
+          {(game) => (
+            <div class="team-grid" hidden={activeGame() !== game.id}>
+              <For each={game.teams}>
                 {(team) => (
                   <button
                     type="button"
@@ -90,7 +87,7 @@ export function TeamPicker(props: {
                     }}
                   >
                     <span class="team-glyph" aria-hidden="true">
-                      {getSportsLogo(team.details)}
+                      {getEsportsLogo(team.details)}
                     </span>
                     <span class="team-abbr">{team.details.abbreviation}</span>
                     <span class="team-name">{team.details.display}</span>

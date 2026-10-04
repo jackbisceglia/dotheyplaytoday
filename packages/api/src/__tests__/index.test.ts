@@ -131,13 +131,18 @@ const makeFixture = async () => {
   );
   onTestFinished(web.dispose);
 
-  const request = (path: string, body?: unknown, cookie?: string) =>
+  const request = (
+    path: string,
+    body?: unknown,
+    cookie?: string,
+    origin = "https://www.example.com",
+  ) =>
     web.handler(
       new Request(`https://api.example.com/api${path}`, {
         method: body === undefined ? "GET" : "POST",
         headers: {
           "content-type": "application/json",
-          origin: "https://www.example.com",
+          origin,
           ...(cookie ? { cookie } : {}),
         },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -363,6 +368,15 @@ describe("assembled HTTP API", () => {
     await f.auth.client.api.signOut({ headers: new Headers({ cookie }) });
     for (const path of reads)
       expect((await f.request(path, undefined, cookie)).status).toBe(401);
+    const esports = await f.request(
+      "/user",
+      undefined,
+      cookie,
+      "https://esports.example.com",
+    );
+    expect(esports.headers.get("access-control-allow-origin")).toBe(
+      "https://esports.example.com",
+    );
   });
 
   it("maps missing users and persistence failures and keeps errors uncached", async () => {

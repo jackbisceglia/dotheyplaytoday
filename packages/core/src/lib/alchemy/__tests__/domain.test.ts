@@ -9,6 +9,9 @@ describe("service domains", () => {
     expect(getServiceDomain("jobs", "production")).toBe(
       "jobs.dotheyplay.today",
     );
+    expect(getServiceDomain("esports", "production")).toBe(
+      "esports.dotheyplay.today",
+    );
     expect(getManagedServiceDomain("api", "production")).toBe(
       "api.dotheyplay.today",
     );
@@ -23,6 +26,9 @@ describe("service domains", () => {
     );
     expect(getManagedServiceDomain("jobs", "QA_")).toBe(
       "qa.jobs.dotheyplay.today",
+    );
+    expect(getManagedServiceDomain("esports", "staging")).toBe(
+      "staging.esports.dotheyplay.today",
     );
   });
 

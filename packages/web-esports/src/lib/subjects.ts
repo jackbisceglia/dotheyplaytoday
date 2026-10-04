@@ -2,7 +2,7 @@ import { query } from "@solidjs/router";
 import { Result } from "effect";
 
 import { withApiResult } from "./api.js";
-import { isSportsTeam } from "./catalog/sports/index.js";
+import { isEsportsTeam } from "./catalog/esports/index.js";
 
 // Query results cross the SSR boundary, so the error channel stays a plain
 // tag instead of the Effect error (which can hold non-serializable context).
@@ -16,7 +16,7 @@ const loadSubjects = async () => {
   }
 
   return Result.mapError(result, () => SubjectsLoadFailed).pipe(
-    Result.map((subjects) => subjects.filter(isSportsTeam)),
+    Result.map((subjects) => subjects.filter(isEsportsTeam)),
   );
 };
 

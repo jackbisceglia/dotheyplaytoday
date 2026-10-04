@@ -22,7 +22,7 @@ const decodeSubdomainLabel = Schema.decodeUnknownSync(
   ),
 );
 
-type Service = "api" | "jobs" | "web";
+type Service = "api" | "jobs" | "web" | "esports";
 
 export const getServiceDomain = (service: Service, stage: string) =>
   StringParts()

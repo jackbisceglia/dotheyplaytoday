@@ -9,6 +9,7 @@
 - `packages/jobs`: scheduled notification worker and notify orchestration.
 - `packages/data`: catalog, event, and development seed data.
 - `packages/web`: Solid 2 frontend and SSR Worker.
+- `packages/web-esports`: esports copy of `packages/web`.
 
 ## Working agreements
 

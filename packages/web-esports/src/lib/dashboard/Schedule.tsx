@@ -1,6 +1,6 @@
 import { createMemo, For, Show } from "solid-js";
 
-import { getSportsLogo } from "../catalog/sports/index.js";
+import { getEsportsLogo } from "../catalog/esports/index.js";
 import type { ScheduleRow } from "./schedule.js";
 
 export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
@@ -22,7 +22,9 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
       <Show
         when={props.rows.length > 0}
         fallback={
-          <p class="dashboard-schedule-empty">No games in the next 14 days.</p>
+          <p class="dashboard-schedule-empty">
+            No matches in the next 14 days.
+          </p>
         }
       >
         <For each={days()}>
@@ -40,13 +42,13 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
                         {row.time}
                       </time>
                       <span class="dashboard-schedule-glyph" aria-hidden="true">
-                        {getSportsLogo(row.team.details)}
+                        {getEsportsLogo(row.team.details)}
                       </span>
                       <span class="dashboard-schedule-matchup">
                         <strong>{row.teamName}</strong>
                         <Show when={row.opponent}>
                           {" "}
-                          <span>{row.matchup}</span>{" "}
+                          <span>vs</span>{" "}
                           <Show
                             when={row.opponentTeam}
                             fallback={<span>{row.opponent}</span>}
@@ -54,7 +56,7 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
                             {(team) => (
                               <>
                                 <span aria-hidden="true">
-                                  {getSportsLogo(team().details)}
+                                  {getEsportsLogo(team().details)}
                                 </span>{" "}
                                 <strong>{row.opponent}</strong>
                               </>
@@ -63,7 +65,7 @@ export function Schedule(props: { readonly rows: readonly ScheduleRow[] }) {
                         </Show>
                       </span>
                       <span class="dashboard-schedule-league">
-                        {row.team.details.leagueId.toUpperCase()}
+                        {row.team.details.gameId.toUpperCase()}
                       </span>
                     </li>
                   )}

@@ -13,3 +13,15 @@ export const WebUrl = Effect.gen(function* () {
 
   return buildServiceUrl(config.baseUrl, config.port);
 }).pipe(Effect.orDie);
+
+export type WebEsportsConfig = Config.Success<typeof WebEsportsConfig>;
+export const WebEsportsConfig = Config.all({
+  baseUrl: Config.string("VITE_WEB_ESPORTS_URL_BASE"),
+  port: Config.port("VITE_WEB_ESPORTS_URL_PORT").pipe(Config.option),
+});
+
+export const WebEsportsUrl = Effect.gen(function* () {
+  const config = yield* WebEsportsConfig;
+
+  return buildServiceUrl(config.baseUrl, config.port);
+}).pipe(Effect.orDie);

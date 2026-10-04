@@ -44,7 +44,7 @@ export function SendTimeSentence(props: {
           </select>
         </Show>
       </Show>{" "}
-      on game day
+      on match day
     </p>
   );
 }

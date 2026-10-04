@@ -6,23 +6,24 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import { Effect } from "effect";
 import { fileURLToPath } from "node:url";
 
-const getWebDomain = (stage: string) => getManagedServiceDomain("web", stage);
+const getWebEsportsDomain = (stage: string) =>
+  getManagedServiceDomain("esports", stage);
 
-export default class Web extends Cloudflare.Website.Vite<Web>()(
-  "Web",
+export default class WebEsports extends Cloudflare.Website.Vite<WebEsports>()(
+  "WebEsports",
   Effect.gen(function* () {
     const stage = yield* Stage;
     const apiWorker = yield* ApiWorker;
-    const domain = getWebDomain(stage);
+    const domain = getWebEsportsDomain(stage);
 
     return {
-      name: `dotheyplaytoday-web-${stage}`,
+      name: `dotheyplaytoday-web-esports-${stage}`,
       rootDir: fileURLToPath(new URL(".", import.meta.url)),
       compatibility: {
         date: "2026-06-02",
         flags: ["nodejs_compat"],
       },
-      dev: { port: 4321, strictPort: true },
+      dev: { port: 4322, strictPort: true },
       ...exactOptional(domain, (domain) => ({ domain })),
       env: {
         API: apiWorker,
@@ -32,13 +33,13 @@ export default class Web extends Cloudflare.Website.Vite<Web>()(
   }),
 ) {}
 
-/** Late-binds Web's resolved public URL without creating a props-level cycle. */
-export const bindWebUrl = (worker: Cloudflare.Worker, web: Web) =>
-  worker.bind("WebUrl", {
+/** Late-binds WebEsports' resolved public URL without creating a props-level cycle. */
+export const bindWebEsportsUrl = (worker: Cloudflare.Worker, web: WebEsports) =>
+  worker.bind("WebEsportsUrl", {
     bindings: [
       {
         type: "plain_text",
-        name: "VITE_WEB_URL_BASE",
+        name: "VITE_WEB_ESPORTS_URL_BASE",
         text: web.url.as<string>(),
       },
     ],

@@ -1,6 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
-import { WebUrl } from "@dtpt/core/lib/config/web";
+import { WebEsportsUrl, WebUrl } from "@dtpt/core/lib/config/web";
 import type { Id } from "@dtpt/core/lib/id/service";
 import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
 import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
@@ -56,6 +56,8 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL("/", yield* WebUrl);
+    const webEsportsUrl = new URL("/", yield* WebEsportsUrl);
+    // TODO: return esports sign-ins to the esports site; links all land on Web.
     const homeUrl = new URL("/home", webUrl);
     const pool = yield* createAuthPool(connectionString);
     const cloudflare = yield* Cloudflare.WorkerExecutionContext;
@@ -67,7 +69,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
       basePath: "/api/auth",
       baseURL: apiUrl.origin,
       secret: Redacted.value(config.secret),
-      trustedOrigins: [apiUrl.origin, webUrl.origin],
+      trustedOrigins: [apiUrl.origin, webUrl.origin, webEsportsUrl.origin],
       database: drizzleAdapter(drizzle({ client: pool }), {
         provider: "pg",
         transaction: true,

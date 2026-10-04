@@ -23,6 +23,7 @@ Production deployment setup and operations are documented in the
 - `packages/jobs`: scheduled notification worker and notify orchestration.
 - `packages/data`: catalog, event, and development seed data.
 - `packages/web`: Solid 2 frontend and SSR Worker.
+- `packages/web-esports`: the esports copy of `packages/web`.
 
 ## Commands
 
@@ -70,6 +71,9 @@ pnpm dev            # start this checkout's stage
 pnpm dev:destroy    # interactively destroy this checkout's stage
 pnpm dev:seed       # destroy --yes, recreate, seed, and start this checkout's stage
 ```
+
+Each stage runs the sports web app on port 4321 and the esports web app on
+port 4322 against the same API and database.
 
 `pnpm dev:seed` affects only the calling worktree's stage. It seeds every
 subject, real events starting within the current UTC day and the next one, and

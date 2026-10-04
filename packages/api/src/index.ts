@@ -1,5 +1,5 @@
 import { Api } from "@dtpt/core/contracts/api";
-import { WebUrl } from "@dtpt/core/lib/config/web";
+import { WebEsportsUrl, WebUrl } from "@dtpt/core/lib/config/web";
 import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
@@ -14,10 +14,10 @@ import { SubscriptionGroupLayer } from "./handlers/subscription.js";
 
 const CorsLayer = Layer.unwrap(
   Effect.gen(function* () {
-    const origin = yield* WebUrl;
+    const origins = [yield* WebUrl, yield* WebEsportsUrl];
 
     return HttpRouter.cors({
-      allowedOrigins: [origin],
+      allowedOrigins: origins,
       allowedMethods: ["GET", "POST", "OPTIONS"],
       credentials: true,
     });

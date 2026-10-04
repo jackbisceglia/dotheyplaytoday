@@ -148,6 +148,18 @@ describe("authentication boundaries", () => {
     );
   });
 
+  it("accepts magic-link requests from the esports site", async () => {
+    const { auth, request } = await makeAuthFixture();
+    const response = await auth.client.handler(
+      request(
+        "/sign-in/magic-link",
+        { email: "user@example.com" },
+        "https://esports.example.com",
+      ),
+    );
+    expect(response.status).toBe(200);
+  });
+
   it("rejects untrusted request origins and callback URLs", async () => {
     const { auth, sendConfirmationLink, request } = await makeAuthFixture();
     const response = await auth.client.handler(

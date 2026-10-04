@@ -9,6 +9,7 @@
   `src/ops`, grouped by concern.
 - `packages/data` owns catalog, event, and development seed data and writes through `core` domain services.
 - `packages/web` is the Solid 2 Start-mode frontend and consumes shared `core` contracts.
+- `packages/web-esports` is the esports copy of `packages/web`, scoped to esports subjects and restyled.
 
 The feedback write path is intentionally small: its API handler validates the
 shared contract and inserts directly through the `Database` service. The
@@ -17,6 +18,43 @@ UTC window; there is no feedback domain service because neither path has
 reusable domain behavior.
 
 Dependencies point inward toward `core`. The API, jobs, data, and web packages do not provide domain abstractions for `core` or depend on one another for their primary behavior.
+
+## Verticals
+
+A vertical is one problem space the same backend serves: `sports` or
+`esports`. Each vertical plugs in at the same seams, and no seam
+mixes them:
+
+| Seam                | Sports                                     | Esports                                 |
+| ------------------- | ------------------------------------------ | --------------------------------------- |
+| Subject details     | `sports_team` (`leagueId`)                 | `esports_team` (`gameId`)               |
+| Event details       | `sports_game` (`leagueId`)                 | `esports_match` (`gameId`)              |
+| Participant details | `sports_game` (`role`: home/away, `title`) | `esports_match` (`title`; listed order) |
+| Seed schema         | `data/src/schema/sports.ts`                | `data/src/schema/esports.ts`            |
+| Catalog collections | `data/src/sports/{nba,nfl,mlb,nhl}`        | `data/src/esports/cod`                  |
+| Email feed          | `core/.../notifier/feeds/sports.ts`        | `core/.../notifier/feeds/esports.ts`    |
+| Web app             | `packages/web`                             | `packages/web-esports`                  |
+
+The `details` unions in `core` list every variant; the row-level `_tag`
+columns are plain text, so a new variant needs no migration. Code that only
+understands one vertical narrows at its boundary instead of reading the union:
+seed schemas pin their variant literals, each web app filters the catalog,
+subscriptions, and schedule through its catalog's `is…Team` guards, and the
+email notifier matches the subject and every event against one feed's guards,
+failing with `UnsupportedFeedError` otherwise.
+
+Every stage serves both verticals from one backend: the stack deploys `Web`
+and `WebEsports` side by side against the same API, jobs, and database, and
+seeds every collection. `WebEsports` serves `esports.dotheyplay.today` in
+production (`<stage>.esports.dotheyplay.today` on other non-development
+stages) and port 4322 in development. The API receives both resolved web URLs
+and trusts both origins for CORS and Better Auth. The session cookie belongs
+to the API origin, so one sign-in covers both sites.
+
+Accounts are shared. Saving picks replaces only the user's subscriptions whose
+subjects share a kind (`_tag`) with the submitted picks, so each site keeps its
+own roster and four-team limit. Magic-link returns, unsubscribe links, and
+notification emails still use `Web`'s URL.
 
 ## Runtime and infrastructure
 
@@ -175,8 +213,10 @@ brand sets in kelly, and passes `EmailView` a `Headline` from `core`'s
 live-text `TextHeadline` like the feedback digest's. `buildHeadlineImagePath`
 names each image after its copy, so the email and the renderer agree on the
 file. `pnpm @web assets:generate` collects every tiled headline's lines,
-including one per catalog team, and renders them into the web app's
-`public/email/headlines/`, which is committed and served with the site. Rerun
+including one per sports team, and renders them into the web app's
+`public/email/headlines/`, which is committed and served with the site.
+`pnpm -F @dtpt/web-esports assets:generate` does the same for esports teams
+in the esports theme. Rerun
 it after building core and data whenever headline copy, the catalog, or the
 artwork changes. Body copy uses each platform's system UI font.
 
@@ -329,6 +369,11 @@ Separate follow-ups are:
 4. Add account email/timezone editing. Cookie sharing
    across subdomains is intentionally still disabled; browser calls target the
    API origin with credentials.
+5. Point esports magic links, unsubscribe links, and notification emails
+   (including headline images) at `WebEsports` instead of `Web`. Shared email
+   body colors still use the sports palette.
+6. Add the 2027 Call of Duty League schedule once it is published, then CS2
+   and Valorant teams.
 
 ## Public API
 
@@ -365,34 +410,3 @@ picker with signup. Its edit draft supports save/cancel, team removal, and send
 time changes; account email/timezone editing remains separate work. Existing
 emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
 new endpoint; no legacy API alias is needed.
-
-## Subscription replacement scope
-
-Accounts, sessions, and notification recipients remain global to the shared API.
-A save replaces only subscriptions whose subject kind matches a submitted pick.
-For example, saving sports picks leaves picks of a future different kind intact.
-The existing one-to-four policy applies to the submitted selection, rather than
-the total number of subscriptions owned by the account. Retained rows keep their
-identity and last-send history. Each subscription continues to own its send time.
-
-The API infers scope from submitted subject kinds; it does not receive a site ID.
-Mixed-kind requests therefore replace both represented kinds within one combined
-four-pick allowance. Empty selections remain invalid, so a save cannot clear an
-entire kind. Account deletion and token unsubscribe still remove the whole user.
-
-## Esports domain boundaries
-
-Esports adds `esports_team`, `esports_match`, and title-only match participants
-next to the sports variants; persisted tag columns remain text, so no database
-migration is needed. Sports catalog, schedule, and seed callers narrow to sports
-variants. Email rendering is split into sports and esports feeds, and rejects
-subjects paired with another feed's events or participants. Esports rendering
-uses `vs` and puts the subscribed team first instead of inferring home/away.
-Email links and headline assets still use the sports Web URL and shared palette.
-
-## Frontend copy scaffold
-
-`packages/web-esports` is a mechanical copy of the narrowed sports frontend, with
-its own package name and matching workspace dependencies. It is not yet included
-in the deployment stack. Vertical adaptation and hosting are a later layer;
-this commit intentionally preserves the source app's components and styles.
