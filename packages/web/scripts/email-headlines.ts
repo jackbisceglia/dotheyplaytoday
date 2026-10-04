@@ -14,7 +14,7 @@ import {
   gameDayLines,
   kickoffLines,
 } from "@dtpt/core/modules/notifier/feeds/sports";
-import { SeedCollections } from "@dtpt/data/seed/index";
+import { SportsCollections } from "@dtpt/data/seed/index";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -130,7 +130,7 @@ if (contentHeight !== HEIGHT) {
   );
 }
 
-const teams = SeedCollections.flatMap((collection) =>
+const teams = SportsCollections.flatMap((collection) =>
   collection.subjects.map((subject) => gameDayLines(subject.details)),
 );
 

@@ -92,3 +92,10 @@ Saving a selection replaces picks of the submitted subject kind and preserves
 other kinds. The existing four-pick limit is checked on the submitted selection.
 Accounts and unsubscribe identity remain shared; unsubscribe deletes the whole
 account rather than one kind of picks.
+
+## Esports catalog
+
+The catalog includes twelve Call of Duty League franchises with stable subject
+IDs. Checked-in match data is empty until a confirmed schedule is available.
+Development seeds both collections and gives its default user one pick of each
+kind. Production seeds the catalog without changing users or subscriptions.
