@@ -15,8 +15,8 @@ import satori from "satori";
 import {
   el,
   INK,
-  KELLY,
-  KELLY_WASH,
+  ACCENT,
+  ACCENT_WASH,
   loadFont,
   mascot,
   MUTED,
@@ -26,17 +26,17 @@ import {
 
 const WIDTH = 1200;
 const HEIGHT = 630;
-const TAGLINE = "Game-day emails for your teams";
+const TAGLINE = "Match-day emails for your teams";
 
-const DISPLAY = "ArchivoCondensed-Black.ttf";
-const TEXT = "Archivo-Regular.ttf";
+const DISPLAY = "SairaCondensed-Black.ttf";
+const TEXT = "Saira-Regular.ttf";
 
 function wordmark(size: number): Node {
   const part = (text: string, color: string) =>
     el(
       "span",
       {
-        fontFamily: "Archivo Condensed",
+        fontFamily: "Saira Condensed",
         fontWeight: 900,
         fontSize: size,
         letterSpacing: size * 0.02,
@@ -47,7 +47,7 @@ function wordmark(size: number): Node {
 
   return el("div", { display: "flex", alignItems: "baseline" }, [
     part("dothey", INK),
-    part("play", KELLY),
+    part("play", ACCENT),
     part("today", INK),
   ]);
 }
@@ -63,7 +63,7 @@ const card = (): Node =>
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: PAPER,
-      backgroundImage: `radial-gradient(circle at 50% 44%, ${KELLY_WASH} 0%, ${PAPER} 62%)`,
+      backgroundImage: `radial-gradient(circle at 50% 44%, ${ACCENT_WASH} 0%, ${PAPER} 62%)`,
     },
     [
       el("div", { display: "flex", alignItems: "center", gap: 22 }, [
@@ -75,7 +75,7 @@ const card = (): Node =>
         {
           display: "flex",
           marginTop: 30,
-          fontFamily: "Archivo",
+          fontFamily: "Saira",
           fontWeight: 400,
           fontSize: 32,
           lineHeight: 1.4,
@@ -92,8 +92,8 @@ const svg = await satori(card() as never, {
   width: WIDTH,
   height: HEIGHT,
   fonts: [
-    { name: "Archivo Condensed", data: display, weight: 900, style: "normal" },
-    { name: "Archivo", data: text, weight: 400, style: "normal" },
+    { name: "Saira Condensed", data: display, weight: 900, style: "normal" },
+    { name: "Saira", data: text, weight: 400, style: "normal" },
   ] as never,
 });
 

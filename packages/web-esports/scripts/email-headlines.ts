@@ -10,17 +10,22 @@ import {
 } from "@dtpt/core/modules/email/headline";
 import { confirmationLines } from "@dtpt/core/modules/email/transactional/confirmation";
 import { signInLines } from "@dtpt/core/modules/email/transactional/sign-in";
-import {
-  gameDayLines,
-  kickoffLines,
-} from "@dtpt/core/modules/notifier/feeds/sports";
-import { SportsCollections } from "@dtpt/data/seed/index";
+import { gameDayLines } from "@dtpt/core/modules/notifier/feeds/esports";
+import { EsportsCollections } from "@dtpt/data/seed/index";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import satori from "satori";
 
-import { el, INK, loadFont, mascot, type Node } from "./brand.ts";
+import {
+  ACCENT,
+  el,
+  INK,
+  loadFont,
+  mascot,
+  PAPER,
+  type Node,
+} from "./brand.ts";
 
 /** Drawn at twice the CSS size for dense screens. */
 const SCALE = 2;
@@ -31,17 +36,13 @@ const GAP = 20;
 const SIZE = 48;
 const LINE_HEIGHT = 0.92;
 
-// Reversed out, a softer paper and a brighter kelly hold up better on ink.
-const ON_INK = "#f4f2ec";
-const KELLY_ON_INK = "#2fbf68";
-
 const { width: WIDTH, height: HEIGHT } = HeadlineImageSize;
 
 const publicDir = fileURLToPath(new URL("../public/", import.meta.url));
 
-const font = await loadFont("ArchivoCondensed-Black.ttf");
+const font = await loadFont("SairaCondensed-Black.ttf");
 const fonts = [
-  { name: "Archivo Condensed", data: font, weight: 900, style: "normal" },
+  { name: "Saira Condensed", data: font, weight: 900, style: "normal" },
 ] as never;
 
 const line = (children: unknown): Node =>
@@ -49,16 +50,16 @@ const line = (children: unknown): Node =>
     "div",
     {
       display: "flex",
-      fontFamily: "Archivo Condensed",
+      fontFamily: "Saira Condensed",
       fontSize: SIZE * SCALE,
       lineHeight: LINE_HEIGHT,
       letterSpacing: -0.01 * SIZE * SCALE,
-      color: ON_INK,
+      color: INK,
     },
     children,
   );
 
-/** One headline line: the lead in paper, then any kelly accent. */
+/** One headline line: the lead in ink, then any accent. */
 const emphasizedLine = ({ lead, accent }: { lead: string; accent: string }) =>
   line([
     ...(lead === "" ? [] : [el("span", {}, lead.toUpperCase())]),
@@ -68,7 +69,7 @@ const emphasizedLine = ({ lead, accent }: { lead: string; accent: string }) =>
           el(
             "span",
             {
-              color: KELLY_ON_INK,
+              color: ACCENT,
               marginLeft: lead === "" ? 0 : SIZE * 0.13 * SCALE,
             },
             accent.toUpperCase(),
@@ -87,7 +88,7 @@ const tile = (lines: Lines): Node =>
       alignItems: "flex-start",
       padding: PAD * SCALE,
       borderRadius: 18 * SCALE,
-      backgroundColor: INK,
+      backgroundColor: PAPER,
     },
     [
       mascot(MASCOT * SCALE),
@@ -130,14 +131,13 @@ if (contentHeight !== HEIGHT) {
   );
 }
 
-const teams = SportsCollections.flatMap((collection) =>
+const teams = EsportsCollections.flatMap((collection) =>
   collection.subjects.map((subject) => gameDayLines(subject.details)),
 );
 
-// Teams that share a name ("Kings", "Giants") share one image.
 const headlines = [
   ...new Map(
-    [signInLines, confirmationLines, kickoffLines, ...teams].map((lines) => [
+    [signInLines, confirmationLines, ...teams].map((lines) => [
       buildHeadlineImagePath(lines),
       lines,
     ]),

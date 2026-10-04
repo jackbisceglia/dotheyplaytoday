@@ -59,9 +59,12 @@ export function Layout(props: LayoutProps) {
         <header class="site-header">
           <a class="wordmark" href={brandHref()}>
             <BrandMark class="wordmark-mark" />
-            <span class="visually-hidden">Do they play today</span>
+            <span class="visually-hidden">Do they play today — esports</span>
             <span class="wordmark-text" aria-hidden="true">
-              dothey<em>play</em>today
+              <span class="wordmark-name">
+                dothey<em>play</em>today
+              </span>
+              <span class="wordmark-subtitle">esports</span>
             </span>
           </a>
           <Show when={props.headerActions?.length}>
