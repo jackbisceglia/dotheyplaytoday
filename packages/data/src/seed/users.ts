@@ -8,7 +8,8 @@ import {
 } from "@dtpt/core";
 import { Effect, Schema, Struct } from "effect";
 
-import { Teams } from "../sports/nba/subjects.js";
+import { Teams as CodTeams } from "../esports/cod/subjects.js";
+import { Teams as NbaTeams } from "../sports/nba/subjects.js";
 import { SeedConfig } from "./config.js";
 
 const UserSeed = Schema.Struct({
@@ -26,7 +27,7 @@ const DefaultSeedUsers = Effect.gen(function* () {
     {
       email: config.email,
       timezone: "America/New_York",
-      subjectIds: [Teams.BostonCeltics.id],
+      subjectIds: [NbaTeams.BostonCeltics.id, CodTeams.OpTicTexas.id],
       schedule: {
         _tag: "fixed_local_time",
         sendAtSecondsLocal: 11 * 60 * 60 + 45 * 60,

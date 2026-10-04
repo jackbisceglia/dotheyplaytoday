@@ -9,7 +9,7 @@ import {
 } from "@dtpt/core";
 import { Effect, HashMap, Option, Schema } from "effect";
 
-import { SportsSeed } from "../schema/sports.js";
+import { CatalogSeed } from "../schema/catalog.js";
 import { SeedCollections } from "./index.js";
 
 export class SeedEventResolutionError extends Schema.TaggedErrorClass<SeedEventResolutionError>()(
@@ -30,17 +30,18 @@ export class SeedDuplicateEventSourceIdError extends Schema.TaggedErrorClass<See
   },
 ) {}
 
-export type SportsSeedInput = Schema.Codec.Encoded<typeof SportsSeed>;
-export type SportsSeedCollection = SportsSeed;
-type SportsSeedSubject = SportsSeed["subjects"][number];
-type SportsEventIndex = HashMap.HashMap<EventSourceId, EventId>;
+export type CatalogSeedInput = Schema.Codec.Encoded<typeof CatalogSeed>;
+export type CatalogSeedCollection = CatalogSeed;
+type CatalogSeedSubject = CatalogSeed["subjects"][number];
+type CatalogSeedEvent = CatalogSeed["events"][number];
+type CatalogEventIndex = HashMap.HashMap<EventSourceId, EventId>;
 
-export const decodeSportsSeedCollections = Schema.decodeUnknownEffect(
-  Schema.Array(SportsSeed),
+export const decodeCatalogSeedCollections = Schema.decodeUnknownEffect(
+  Schema.Array(CatalogSeed),
 );
 
 export const summarizeCatalog = (
-  collections: readonly SportsSeedCollection[],
+  collections: readonly CatalogSeedCollection[],
 ) => {
   const summary = {
     collections: collections.length,
@@ -83,13 +84,13 @@ export const summarizeCatalog = (
 };
 
 const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
-  collections: readonly SportsSeedCollection[],
+  collections: readonly CatalogSeedCollection[],
 ) {
   const buildEventIdsBySourceId = Effect.fn(function* () {
     const eventIdsBySourceId = new Map<EventSourceId, EventId>();
 
     for (const event of collections.flatMap(
-      (collection) => collection.events,
+      (collection): readonly CatalogSeedEvent[] => collection.events,
     )) {
       const existingEventId = eventIdsBySourceId.get(event.sourceId);
 
@@ -132,9 +133,9 @@ const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
 });
 
 export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
-  input?: readonly SportsSeedInput[],
+  input?: readonly CatalogSeedInput[],
 ) {
-  const collections = yield* decodeSportsSeedCollections(
+  const collections = yield* decodeCatalogSeedCollections(
     input ?? SeedCollections,
   );
 
@@ -148,7 +149,9 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
     .transaction(() =>
       Effect.gen(function* () {
         yield* Effect.forEach(
-          collections.flatMap((collection) => collection.subjects),
+          collections.flatMap(
+            (collection): readonly CatalogSeedSubject[] => collection.subjects,
+          ),
           (subjectSeed) => {
             const { feedIds: _feedIds, ...subject } = subjectSeed;
 
@@ -158,7 +161,9 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
         );
 
         const importedEvents = yield* Effect.forEach(
-          collections.flatMap((collection) => collection.events),
+          collections.flatMap(
+            (collection): readonly CatalogSeedEvent[] => collection.events,
+          ),
           (eventSeed) =>
             Effect.gen(function* () {
               const { participants, ...eventInput } = eventSeed;
@@ -205,9 +210,9 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 const resolveEventSource = Effect.fn("DataSeed.resolveEventSource")(
   function* (input: {
     readonly collectionId: string;
-    readonly eventIndex: SportsEventIndex;
+    readonly eventIndex: CatalogEventIndex;
     readonly sourceId: EventSourceId;
-    readonly subjectId: SportsSeedSubject["id"];
+    readonly subjectId: CatalogSeedSubject["id"];
   }) {
     const eventId = HashMap.get(input.eventIndex, input.sourceId);
 
