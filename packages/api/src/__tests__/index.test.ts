@@ -251,7 +251,7 @@ describe("assembled HTTP API", () => {
     for (const payload of [
       { subjectIds: [], schedule: subscription.schedule },
       {
-        subjectIds: Array(5).fill(subject.id),
+        subjectIds: Array(7).fill(subject.id),
         schedule: subscription.schedule,
       },
       {

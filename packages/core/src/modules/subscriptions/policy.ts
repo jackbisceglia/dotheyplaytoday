@@ -1,19 +1,17 @@
 import { Effect } from "effect";
 
-import type { User } from "../users/schema.js";
+import { plans } from "../billing/policy.js";
 import { SubjectCapacityReached } from "./errors.js";
 
 const CONSTRAINTS = {
-  subject: { min: 1, max: 4 },
+  subject: { min: 1, max: plans.pro.teamLimit },
 } as const;
 
 const SubscriptionSubjectPolicy = {
   constraints: CONSTRAINTS.subject,
-  ensureAllowance(_user: User, received: number) {
-    const { max } = CONSTRAINTS.subject;
-
-    if (received > max) {
-      return Effect.fail(new SubjectCapacityReached({ limit: max, received }));
+  ensureAllowance(limit: number, received: number) {
+    if (received > limit) {
+      return Effect.fail(new SubjectCapacityReached({ limit, received }));
     }
 
     return Effect.void;
