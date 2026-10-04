@@ -9,7 +9,7 @@ import { Database } from "@dtpt/core/lib/database/service";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Match, Option, Schema } from "effect";
+import { Effect, Schema, Match, Option } from "effect";
 import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
@@ -187,7 +187,9 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
               ),
             );
 
-            yield* Effect.logInfo("unsubscribe: user removed", { removed });
+            yield* Effect.logInfo("unsubscribe: team notifications stopped", {
+              userId: removed,
+            });
 
             return { ok: true as const };
           },

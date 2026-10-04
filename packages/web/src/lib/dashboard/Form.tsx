@@ -1,5 +1,4 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
-import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { createMemo, createStore, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 
@@ -11,8 +10,6 @@ import { CatalogPicker } from "./CatalogPicker.jsx";
 import type { Preferences } from "./preferences.js";
 import { Roster } from "./Roster.jsx";
 import { SendTimeSentence } from "./SendTimeSentence.jsx";
-
-const capacity = SubscriptionPolicy.subject.constraints.max;
 
 type FormState = {
   mode: "view" | "editing" | "saving";
@@ -26,6 +23,7 @@ export function Form(props: {
   readonly preferences: Preferences;
   readonly onSaved: () => void;
 }) {
+  const capacity = () => props.preferences.billing.teamLimit;
   const savedTeams = () =>
     props.preferences.subscriptions.map((subscription) => subscription.subject);
   const savedTimes = () => [
@@ -46,8 +44,10 @@ export function Form(props: {
     error: undefined,
     message: undefined,
   });
-  const rejection = useSelectionRejection(
-    `You can pick up to ${capacity.toString()} teams. Remove one to make room.`,
+  const rejection = useSelectionRejection(() =>
+    props.preferences.billing.plan === "free"
+      ? "Free includes two teams. Remove a team to make room, or get Pro for six."
+      : "Pro includes six teams. Remove a team to make room.",
   );
   let editButton: HTMLButtonElement | undefined;
   let editorTitle: HTMLHeadingElement | undefined;
@@ -55,6 +55,7 @@ export function Form(props: {
   const isSaving = () => state.mode === "saving";
   const teams = () => (isEditing() ? state.teams : savedTeams());
   const isEmptyDraft = () => isEditing() && state.teams.length === 0;
+  const isOverLimit = () => state.teams.length > capacity();
 
   const beginEdit = () => {
     setState((draft) => {
@@ -78,7 +79,7 @@ export function Form(props: {
   const toggle = (team: Subject) => {
     if (state.mode !== "editing") return;
     const isSelected = state.teams.some((picked) => picked.id === team.id);
-    if (!isSelected && state.teams.length >= capacity) {
+    if (!isSelected && state.teams.length >= capacity()) {
       rejection.rejectSelection(team.id);
       return;
     }
@@ -97,6 +98,7 @@ export function Form(props: {
     const [first, ...rest] = subjectIds;
     // Save is disabled for an empty draft; this narrows the tuple.
     if (first === undefined) return;
+    if (isOverLimit()) return;
     const seconds = state.seconds;
     if (!isValidSendTime(seconds)) {
       setState((draft) => {
@@ -161,16 +163,23 @@ export function Form(props: {
         }}
       />
       <p class="visually-hidden" aria-live="polite">
-        {teams().length} of {capacity} teams picked
+        {teams().length} of {capacity()} teams picked
       </p>
       <Roster
         teams={teams()}
-        capacity={capacity}
+        capacity={Math.max(capacity(), teams().length)}
         editing={isEditing()}
         saving={isSaving()}
         onAdd={beginEdit}
         onRemove={toggle}
       />
+      <Show when={savedTeams().length > capacity()}>
+        <p class="form-hint" role="status">
+          Your Pro access has ended. Emails continue for the first two teams
+          shown. Edit your roster to choose your two Free teams, or upgrade to
+          keep all six.
+        </p>
+      </Show>
 
       <Show when={isEditing()}>
         <section class="dashboard-section" aria-labelledby="editor-heading">
@@ -186,7 +195,7 @@ export function Form(props: {
           <fieldset
             class="dashboard-picker"
             disabled={isSaving()}
-            data-full={state.teams.length >= capacity ? "true" : undefined}
+            data-full={state.teams.length >= capacity() ? "true" : undefined}
           >
             <CatalogPicker
               subjects={subjects()}
@@ -203,6 +212,11 @@ export function Form(props: {
             )}
           </Show>
         </section>
+        <Show when={isOverLimit()}>
+          <p class="form-error" role="alert">
+            Choose up to {capacity()} teams to save on Free.
+          </p>
+        </Show>
         <div class="dashboard-actions">
           <div class="dashboard-actions-inner">
             <button
@@ -218,8 +232,10 @@ export function Form(props: {
             <button
               class="btn btn-primary"
               type="submit"
-              disabled={isSaving() || isEmptyDraft()}
-              data-unavailable={isEmptyDraft() ? "true" : undefined}
+              disabled={isSaving() || isEmptyDraft() || isOverLimit()}
+              data-unavailable={
+                isEmptyDraft() || isOverLimit() ? "true" : undefined
+              }
             >
               {isSaving() ? "Saving…" : "Save"}
             </button>

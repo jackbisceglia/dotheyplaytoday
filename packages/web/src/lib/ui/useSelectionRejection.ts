@@ -3,7 +3,7 @@ import { createSignal, onCleanup } from "solid-js";
 const rejectionDurationMs = 280;
 const messageDurationMs = 2400;
 
-export function useSelectionRejection(message: string) {
+export function useSelectionRejection(message: string | (() => string)) {
   const [rejectedSelectionId, setRejectedSelectionId] = createSignal<string>();
   const [rejectionMessage, setRejectionMessage] = createSignal<string>();
 
@@ -26,7 +26,7 @@ export function useSelectionRejection(message: string) {
 
     rejectionFrame = window.requestAnimationFrame(() => {
       setRejectedSelectionId(selectionId);
-      setRejectionMessage(message);
+      setRejectionMessage(typeof message === "function" ? message() : message);
       rejectionTimer = window.setTimeout(() => {
         setRejectedSelectionId(undefined);
       }, rejectionDurationMs);

@@ -1,6 +1,7 @@
 import { and, eq, notInArray } from "drizzle-orm";
 import {
   Array,
+  Clock,
   Context,
   DateTime,
   Effect,
@@ -23,6 +24,8 @@ import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { Subject, SubjectId } from "../subjects/schema.js";
 import { User, usersTable } from "../users/schema.js";
+import { Billing, BillingLayer } from "../billing/service.js";
+import { resolveBillingAccess } from "../billing/policy.js";
 import { InvalidSubjectSelection, SubjectCapacityReached } from "./errors.js";
 import {
   Subscription,
@@ -98,6 +101,7 @@ export const SubscriptionsLayer = Layer.effect(
   Effect.gen(function* () {
     const database = yield* Database;
     const id = yield* Id;
+    const billing = yield* Billing;
     const SubjectPolicy = SubscriptionPolicy.subject;
 
     const assertSubjectsExist = Effect.fn(function* (
@@ -160,14 +164,27 @@ export const SubscriptionsLayer = Layer.effect(
           .findMany({
             where: { user: { emailVerified: true } },
             with: {
-              user: true,
+              user: { with: { billingSubscriptions: true } },
               subject: true,
             },
             orderBy: { id: "asc" },
           })
           .pipe(mapToReadError("Subscriptions.listNotificationRecipients"));
 
-        const shaped = rows.map(({ user, subject, ...subscription }) => ({
+        const now = yield* Clock.currentTimeMillis;
+        const picked = new Map<string, number>();
+        const eligible = rows.filter(({ user }) => {
+          if (!user) return false;
+          const count = picked.get(user.id) ?? 0;
+          const access = resolveBillingAccess(
+            user,
+            user.billingSubscriptions,
+            now,
+          );
+          picked.set(user.id, count + 1);
+          return count < access.teamLimit;
+        });
+        const shaped = eligible.map(({ user, subject, ...subscription }) => ({
           user,
           subscription: {
             ...subscription,
@@ -184,8 +201,6 @@ export const SubscriptionsLayer = Layer.effect(
     const replaceForUser: Subscriptions["Service"]["replaceForUser"] =
       Effect.fn("Subscriptions.replaceForUser")(function* (input) {
         const subjectIds = Array.dedupe(input.subjectIds);
-
-        yield* SubjectPolicy.ensureAllowance(input.user, subjectIds.length);
 
         const insertableSubscriptions = yield* Effect.forEach(
           subjectIds,
@@ -215,14 +230,21 @@ export const SubscriptionsLayer = Layer.effect(
               // Lock the user so concurrent edits cannot merge their team lists,
               // including when the user has no subscriptions yet. Postgres holds
               // the row lock until this transaction commits or rolls back.
-              yield* database
-                .select({ id: usersTable.id })
+              const locked = yield* database
+                .select()
                 .from(usersTable)
                 .where(eq(usersTable.id, input.user.id))
                 .for("update")
                 .pipe(
                   mapToReadError("Subscriptions.replaceForUser.lock", metadata),
                 );
+
+              const user = yield* Schema.decodeUnknownEffect(User)(locked[0]);
+              const access = yield* billing.getAccess(user);
+              yield* SubjectPolicy.ensureAllowance(
+                access.teamLimit,
+                subjectIds.length,
+              );
 
               const subjects = yield* assertSubjectsExist(subjectIds);
 
@@ -301,4 +323,4 @@ export const SubscriptionsLayer = Layer.effect(
       markSent,
     });
   }),
-);
+).pipe(Layer.provide(BillingLayer));
