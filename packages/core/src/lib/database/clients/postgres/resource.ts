@@ -53,9 +53,8 @@ export const Planetscale = Effect.gen(function* () {
           replicas: 0,
           defaultBranch: database.branches.production,
           ...exactOptional(migrationsDirectory, (migrationsDir) => ({
-            migrationsDir,
+            migrations: { dir: migrationsDir, table: database.migrationsTable },
           })),
-          migrationsTable: database.migrationsTable,
         }).pipe(adopt(), retain())
       : yield* AlchemyPlanetscale.PostgresDatabase.ref(database.id, {
           stage: "production",
@@ -68,7 +67,7 @@ export const Planetscale = Effect.gen(function* () {
           database: databaseResource,
           parentBranch: database.branches.production,
           ...exactOptional(migrationsDirectory, (migrationsDir) => ({
-            migrationsDir,
+            migrations: { dir: migrationsDir },
           })),
           replicas: 0,
         });

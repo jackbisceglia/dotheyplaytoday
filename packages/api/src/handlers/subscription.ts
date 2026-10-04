@@ -3,7 +3,7 @@ import { UpdateSubscriptionsRateLimited } from "@dtpt/core/contracts/subscriptio
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect } from "effect";
+import { Effect, SchemaIssue } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -49,6 +49,15 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
 
             return yield* subscriptions.listForUser(user.id);
           },
+          Effect.catchIf(SchemaIssue.isIssue, (issue) =>
+            Effect.logError("user subscription: unexpected failure", {
+              error: issue,
+            }).pipe(
+              Effect.andThen(
+                Effect.fail(new HttpApiError.InternalServerError({})),
+              ),
+            ),
+          ),
           Effect.tapErrorTag(UnexpectedErrorTags, (error) =>
             Effect.logError("user subscription: unexpected failure", { error }),
           ),
@@ -81,6 +90,15 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
 
             return { ok: true as const };
           },
+          Effect.catchIf(SchemaIssue.isIssue, (issue) =>
+            Effect.logError("update subscriptions failed", {
+              error: issue,
+            }).pipe(
+              Effect.andThen(
+                Effect.fail(new HttpApiError.InternalServerError({})),
+              ),
+            ),
+          ),
           Effect.catchTags({
             UserNotFound: () => Effect.fail(new HttpApiError.Unauthorized({})),
             InvalidSubjectSelection: () =>

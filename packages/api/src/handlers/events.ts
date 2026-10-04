@@ -1,7 +1,7 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { Events } from "@dtpt/core/modules/events/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
-import { Effect } from "effect";
+import { Effect, SchemaIssue } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -32,6 +32,15 @@ export const EventsGroupLayer = HttpApiBuilder.group(
           const userId = yield* UserId.makeEffect(session.user.id);
           return yield* events.listForUser(userId);
         },
+        Effect.catchIf(SchemaIssue.isIssue, (issue) =>
+          Effect.logError("user events: unexpected failure", {
+            error: issue,
+          }).pipe(
+            Effect.andThen(
+              Effect.fail(new HttpApiError.InternalServerError({})),
+            ),
+          ),
+        ),
         Effect.tapErrorTag(UnexpectedErrorTags, (error) =>
           Effect.logError("user events: unexpected failure", { error }),
         ),

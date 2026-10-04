@@ -11,6 +11,7 @@ import {
 } from "effect/unstable/sql/SqlError";
 import { vi } from "vitest";
 
+import { makeTestPgClient } from "../../../lib/database/__tests__/fixtures.js";
 import { relations } from "../../../lib/database/definitions/relations.js";
 import { Database } from "../../../lib/database/service.js";
 import { Id } from "../../../lib/id/service.js";
@@ -39,12 +40,7 @@ const makeFixture = () => {
   const database = Layer.effect(
     Database,
     Effect.gen(function* () {
-      const client = yield* PgClient.makeWith({
-        acquirer: Effect.succeed(connection),
-        transactionAcquirer: Effect.succeed(connection),
-        listenAcquirer: Effect.die("Unexpected LISTEN"),
-        config: {},
-      });
+      const client = yield* makeTestPgClient(connection);
       return yield* Drizzle.makeWithDefaults({ relations }).pipe(
         Effect.provideService(PgClient.PgClient, client),
       );

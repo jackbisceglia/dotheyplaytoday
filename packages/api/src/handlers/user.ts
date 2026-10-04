@@ -9,7 +9,7 @@ import { Database } from "@dtpt/core/lib/database/service";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Match, Option } from "effect";
+import { Effect, Match, Option, SchemaIssue } from "effect";
 import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
@@ -129,6 +129,13 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
             return { email: user.email, timezone: user.timezone };
           },
+          Effect.catchIf(SchemaIssue.isIssue, (issue) =>
+            Effect.logError("user: unexpected failure", { error: issue }).pipe(
+              Effect.andThen(
+                Effect.fail(new HttpApiError.InternalServerError({})),
+              ),
+            ),
+          ),
           Effect.tapErrorTag(ReadErrorTags, (error) =>
             Effect.logError("user: unexpected failure", { error }),
           ),

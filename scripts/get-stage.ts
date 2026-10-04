@@ -38,14 +38,14 @@ const StageComponent = Schema.String.pipe(
 
 const decodeStageComponent = Schema.decodeUnknownEffect(StageComponent);
 
-class InvalidWorktree extends Schema.TaggedErrorClass<InvalidWorktree>()(
+class InvalidWorktree extends Schema.TaggedError<InvalidWorktree>()(
   "InvalidWorktree",
   { message: Schema.String },
 ) {}
 
 export const User = Effect.gen(function* () {
-  const user = yield* Config.string("USER").pipe(
-    Config.orElse(() => Config.string("USERNAME")),
+  const user = yield* Config.String("USER").pipe(
+    Config.orElse(() => Config.String("USERNAME")),
   );
 
   return yield* decodeStageComponent(user);

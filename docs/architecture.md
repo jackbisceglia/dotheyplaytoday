@@ -365,3 +365,11 @@ picker with signup. Its edit draft supports save/cancel, team removal, and send
 time changes; account email/timezone editing remains separate work. Existing
 emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
 new endpoint; no legacy API alias is needed.
+
+## Infrastructure dependencies
+
+The infrastructure uses Alchemy beta.78, Effect rc.115,
+and Drizzle rc.5. Platform and SQL packages share the same Effect version.
+Alchemy's PostgreSQL bridge uses the `Drizzle/Postgres` entrypoint; the
+production migration ledger retains its existing table name. Standalone Vite
+uses the matching `@alchemy.run/cloudflare-runtime` package.
