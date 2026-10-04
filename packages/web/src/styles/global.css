@@ -1484,12 +1484,10 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   margin-top: 24px;
 }
 
-/* The roster: capacity-many tiles in a fixed grid, so picks fill slots rather
-   than pushing anything down. The four slots span the content width, two by
-   two on phones. */
+/* Roster tiles keep their positions while editing. */
 .roster {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 24px;
 }
@@ -1848,4 +1846,72 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
     font-size: 0.68rem;
     letter-spacing: 0.1em;
   }
+}
+
+.signup-plan-note {
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  border: 1px solid var(--kelly-border);
+  background: var(--kelly-wash);
+}
+
+.signup-plan-note p {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.billing-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid var(--kelly-border);
+  background: var(--kelly-wash);
+}
+
+.billing-panel > div:first-child {
+  flex: 1 1 280px;
+}
+
+.billing-eyebrow {
+  margin: 0 0 8px;
+  color: var(--kelly-deep);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.billing-title {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+}
+
+.billing-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.billing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.billing-notice {
+  flex-basis: 100%;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.billing-actions button:disabled {
+  opacity: 0.55;
+  cursor: default;
 }

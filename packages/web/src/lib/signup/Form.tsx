@@ -19,7 +19,8 @@ import { useSelectionRejection } from "../ui/useSelectionRejection.js";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = plans.free.teamLimit;
-const capacityHint = `You can select up to ${subjectCapacity.toString()} teams. Remove one before selecting another.`;
+const capacityHint =
+  "Start with two teams for free. After confirming your email, Pro lets you follow six for $1.99/month.";
 type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
@@ -221,6 +222,13 @@ export function Form(props: FormProps) {
           novalidate
           onSubmit={submit}
         >
+          <div class="signup-plan-note">
+            <strong>Two teams. Free.</strong>
+            <p>
+              Want a bigger roster? Confirm your email, then get Pro for six
+              teams at $1.99/month. You can cancel anytime.
+            </p>
+          </div>
           <TeamPicker
             subjects={props.subjects}
             selected={selected()}

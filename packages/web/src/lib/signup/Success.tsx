@@ -21,6 +21,10 @@ export function Success(props: SuccessProps) {
         Follow the confirmation link to verify your email. Your teams and
         schedule are saved.
       </p>
+      <p class="signup-success-copy">
+        You'll start on Free. Once you're signed in, you can upgrade to Pro for
+        six teams at $1.99/month.
+      </p>
     </div>
   );
 }
