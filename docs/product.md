@@ -96,3 +96,8 @@ picker while keeping the heading, send-time sentence, and roster anchored.
 | Notifier            | The notification-specific boundary that renders and sends a `Notification`.                              |
 | Email               | The provider-neutral transport boundary that sends a complete outbound email.                            |
 | Transactional Email | An application workflow that owns its input, rendering, and delivery through `Email`.                    |
+
+The esports landing page uses a decorative sample series card, like the sports
+site's ticker. Its matchup and start time are static, independent of the schedule.
+The headline reads “Never forget when your team loads in.”, with no scrolling
+ticker or match loading states.

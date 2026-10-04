@@ -52,12 +52,12 @@ export function BrandMark(props: BrandMarkProps) {
       </defs>
       <g clip-path={`url(#${frameId})`}>
         <rect width="32" height="32" fill="var(--ink)" />
-        <circle cx="12" cy="27.5" r="19" fill="var(--kelly)" />
+        <circle cx="12" cy="27.5" r="19" fill="var(--accent)" />
         <g clip-path={`url(#${headId})`}>
           <rect x="-8" y="11.6" width="40" height="3.7" fill="var(--paper)" />
         </g>
-        <circle cx="6.1" cy="17.25" r="3.85" fill="var(--kelly-deep)" />
-        <circle cx="17.1" cy="17.25" r="3.85" fill="var(--kelly-deep)" />
+        <circle cx="6.1" cy="17.25" r="3.85" fill="var(--accent-strong)" />
+        <circle cx="17.1" cy="17.25" r="3.85" fill="var(--accent-strong)" />
         <circle cx="6.5" cy="16.8" r="3.7" fill="var(--paper)" />
         <circle cx="17.5" cy="16.8" r="3.7" fill="var(--paper)" />
         <circle

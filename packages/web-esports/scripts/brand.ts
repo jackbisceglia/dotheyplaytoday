@@ -5,16 +5,18 @@ import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const PAPER = "#f8f6f0";
-export const INK = "#131711";
-export const KELLY = "#169b4d";
-export const KELLY_DEEP = "#0c6b34";
-export const KELLY_WASH = "#e2f3e7";
-export const MUTED = "rgba(19, 23, 17, 0.72)";
+export const PAPER = "#0a0a0b";
+export const INK = "#f4f4f5";
+export const ACCENT = "#ff2aa3";
+export const ACCENT_WASH = "#1c1c1f";
+export const MUTED = "rgba(244, 244, 245, 0.6)";
+// The mascot keeps its daylight colors on the dark page.
+const MASCOT_FRAME = "#1c1c1f";
+const MASCOT_SHADE = "#a8106a";
 
-// Satori cannot parse the variable Archivo the site loads, so cache static cuts.
+// Satori cannot parse the variable Saira the site loads, so cache static cuts.
 const UPSTREAM =
-  "https://cdn.jsdelivr.net/gh/Omnibus-Type/Archivo@master/fonts/ttf";
+  "https://cdn.jsdelivr.net/gh/Omnibus-Type/Saira@master/Saira/fonts/ttf";
 
 const fontsDir = fileURLToPath(new URL("../assets/fonts/", import.meta.url));
 
@@ -58,17 +60,17 @@ export function mascot(size: number): Node {
     <clipPath id="head"><circle cx="12" cy="27.5" r="19" /></clipPath>
   </defs>
   <g clip-path="url(#frame)">
-    <rect width="32" height="32" fill="${INK}" />
-    <circle cx="12" cy="27.5" r="19" fill="${KELLY}" />
+    <rect width="32" height="32" fill="${MASCOT_FRAME}" />
+    <circle cx="12" cy="27.5" r="19" fill="${ACCENT}" />
     <g clip-path="url(#head)">
-      <rect x="-8" y="11.6" width="40" height="3.7" fill="${PAPER}" />
+      <rect x="-8" y="11.6" width="40" height="3.7" fill="${INK}" />
     </g>
-    <circle cx="6.1" cy="17.25" r="3.85" fill="${KELLY_DEEP}" />
-    <circle cx="17.1" cy="17.25" r="3.85" fill="${KELLY_DEEP}" />
-    <circle cx="6.5" cy="16.8" r="3.7" fill="${PAPER}" />
-    <circle cx="17.5" cy="16.8" r="3.7" fill="${PAPER}" />
-    <circle cx="7.9" cy="15.7" r="1.7" fill="${INK}" />
-    <circle cx="18.7" cy="15.7" r="1.7" fill="${INK}" />
+    <circle cx="6.1" cy="17.25" r="3.85" fill="${MASCOT_SHADE}" />
+    <circle cx="17.1" cy="17.25" r="3.85" fill="${MASCOT_SHADE}" />
+    <circle cx="6.5" cy="16.8" r="3.7" fill="${INK}" />
+    <circle cx="17.5" cy="16.8" r="3.7" fill="${INK}" />
+    <circle cx="7.9" cy="15.7" r="1.7" fill="${MASCOT_FRAME}" />
+    <circle cx="18.7" cy="15.7" r="1.7" fill="${MASCOT_FRAME}" />
   </g>
 </svg>`;
 

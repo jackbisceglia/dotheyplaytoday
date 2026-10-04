@@ -9,10 +9,10 @@ import { useApplicationPath } from "../lib/paths.js";
 import { getSubjects } from "../lib/subjects.js";
 import { Login } from "../lib/auth/Login.jsx";
 import { Form as SignupForm } from "../lib/signup/Form.jsx";
-import { Ticker as ScoreTicker } from "../lib/ui/Ticker.jsx";
+import { MockSeries } from "../lib/ui/MockSeries.jsx";
 
 const description =
-  "Game-day emails for your teams. Pick your team, pick a time, and get an update on game day.";
+  "Match-day emails for your esports teams. Pick your team, pick a time, and get an update on match day.";
 
 export function preload() {
   return getSubjects();
@@ -50,29 +50,26 @@ export function Landing() {
         <Show when={search.modal === "login"}>
           <Login />
         </Show>
-        <section class="hero">
-          <h1 class="hero-headline">
-            Your team plays
-            <br />
-            <em>tonight.</em>
-            <br />
-            Now you know.
-          </h1>
-          <p class="hero-copy">
-            Pick your team, pick a time, and get an update on game day.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="#signup">
-              Get game-day updates
-            </a>
+        <section class="match-hero">
+          <div class="match-hero-intro">
+            <h1 class="match-hero-headline">
+              Never forget when your team <em>loads in.</em>
+            </h1>
+            <p class="hero-copy">
+              Pick your team, pick a time, and get an update on match day.
+            </p>
+            <div class="match-hero-actions">
+              <a class="btn btn-primary" href="#signup">
+                Lock in your teams
+              </a>
+            </div>
           </div>
+          <MockSeries />
         </section>
-
-        <ScoreTicker />
 
         <section class="signup" id="signup">
           <div class="signup-header">
-            <h2 class="signup-title">Get on the roster</h2>
+            <h2 class="signup-title">Queue up</h2>
           </div>
           <Loading fallback={<p role="status">Loading teams…</p>}>
             {Result.match(result(), {
