@@ -5,6 +5,7 @@ import { Effect, SchemaIssue } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
+import { logSchemaIssue } from "../lib/schema-issue.js";
 import { withNoStoreResponse } from "../lib/no-store.js";
 
 const UnexpectedErrorTags = [
@@ -32,13 +33,7 @@ export const EventsGroupLayer = HttpApiBuilder.group(
           const userId = yield* UserId.makeEffect(session.user.id);
           return yield* events.listForUser(userId);
         },
-        Effect.tapError((error) =>
-          SchemaIssue.isIssue(error)
-            ? Effect.logError("user events: unexpected failure", {
-                error,
-              })
-            : Effect.void,
-        ),
+        Effect.tapError(logSchemaIssue("user events: unexpected failure")),
         Effect.tapErrorTag(UnexpectedErrorTags, (error) =>
           Effect.logError("user events: unexpected failure", { error }),
         ),

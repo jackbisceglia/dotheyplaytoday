@@ -14,6 +14,7 @@ import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
+import { logSchemaIssue } from "../lib/schema-issue.js";
 import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
 import { withNoStoreResponse } from "../lib/no-store.js";
 
@@ -129,11 +130,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
             return { email: user.email, timezone: user.timezone };
           },
-          Effect.tapError((error) =>
-            SchemaIssue.isIssue(error)
-              ? Effect.logError("user: unexpected failure", { error })
-              : Effect.void,
-          ),
+          Effect.tapError(logSchemaIssue("user: unexpected failure")),
           Effect.tapErrorTag(ReadErrorTags, (error) =>
             Effect.logError("user: unexpected failure", { error }),
           ),
