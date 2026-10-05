@@ -26,7 +26,8 @@
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:",
+    "stripe": "22.6.2"
   },
   "devDependencies": {
     "@effect/platform-node": "catalog:",
