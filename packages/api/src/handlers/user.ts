@@ -194,7 +194,9 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
               ),
             );
 
-            yield* Effect.logInfo("unsubscribe: user removed", { removed });
+            yield* Effect.logInfo("unsubscribe: team notifications stopped", {
+              userId: removed,
+            });
 
             return { ok: true as const };
           },

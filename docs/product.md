@@ -6,7 +6,7 @@
 
 **Subject** and **Event** are intentionally reusable domain terms. Sports teams and games are the current production implementation, but the model can support other event-driven subjects without redefining the core behavior.
 
-Registration uses `POST /api/user`. Users can subscribe to up to four teams. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
+Registration uses `POST /api/user`. New users can subscribe to up to two teams for free. Pro allows six teams for $1.99 USD/month. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
 
 ## Dashboard
 
@@ -16,7 +16,7 @@ Signed-in users see their selected teams on `/home` as a fixed set of roster
 tiles, one per allowed pick, under a sentence naming the send time. Edit, or the
 first empty tile, edits in place: the tiles stay put, the send time in the
 sentence becomes a select, and the shared league/team picker opens below. Teams can be removed from their tile or toggled
-in the picker, with one to four picks required to save; a full roster fades the
+in the picker, with one to the account’s allowed number of picks required to save; a full roster fades the
 remaining teams. The send time applies to all selected teams. Cancel discards
 the draft; Save persists the picks and time together. Retained teams keep their
 delivery history. Email and timezone are not shown.
@@ -31,6 +31,14 @@ Both subscribed sides show their emoji and bold nickname within that one row.
 Rematches and doubleheaders at different start times have separate rows.
 Cancelled games are excluded. An empty window reads “No games in the next 14 days.” Editing replaces the list with the
 picker while keeping the heading, send-time sentence, and roster anchored.
+
+## Plans
+
+- Free includes two teams. Pro includes six teams for $1.99 USD/month, with no trial or annual plan. Both use the same game-day emails and send-time settings.
+- Migration 0006 grants permanent, free Pro to every user present when the migration runs, including unverified existing users. The flag defaults to false for later registrations. This entitlement does not verify an email or create a session.
+- Paid Pro requires an active or trialing Stripe subscription for the configured Pro price and a future billing-period end. A scheduled cancellation keeps six picks through that period. Past-due, unpaid, paused, incomplete, canceled, or expired subscriptions fall back to Free.
+- Downgrade preserves the saved roster. Until the member selects their two Free teams, game-day emails continue for the first two teams shown on the dashboard (the stable subscription-ID order). Saving requires reducing the selection to two, or renewing Pro. Retained subscriptions keep delivery history.
+- Stopping game-day emails removes team subscriptions while preserving Stripe customer accounts and grandfathered accounts. Ordinary Free accounts without billing history continue to be deleted. Stopping emails does not cancel a paid membership.
 
 ## Notifications
 

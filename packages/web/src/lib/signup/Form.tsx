@@ -1,5 +1,5 @@
 import { Subject } from "@dtpt/core/modules/subjects/schema";
-import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
+import { plans } from "@dtpt/core/modules/billing/policy";
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
@@ -18,7 +18,7 @@ import { Success } from "./Success.jsx";
 import { useSelectionRejection } from "../ui/useSelectionRejection.js";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
-const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
+const subjectCapacity = plans.free.teamLimit;
 const capacityHint = `You can select up to ${subjectCapacity.toString()} teams. Remove one before selecting another.`;
 type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 

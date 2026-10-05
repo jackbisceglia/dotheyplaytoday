@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { Array, Cause, Context, Effect, Layer, Option, Schema } from "effect";
 import { isSqlError } from "effect/unstable/sql/SqlError";
 
@@ -11,6 +11,7 @@ import {
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
+import { subscriptionsTable } from "../subscriptions/schema.js";
 
 export class UserAlreadyExists extends Schema.TaggedError<UserAlreadyExists>()(
   "UserAlreadyExists",
@@ -205,9 +206,16 @@ export const UsersLayer = Layer.effect(
 
     const remove: Users["Service"]["remove"] = Effect.fn("Users.remove")(
       function* (userId: User["id"]) {
-        yield* database
+        const removed = yield* database
           .delete(usersTable)
-          .where(eq(usersTable.id, userId))
+          .where(
+            and(
+              eq(usersTable.id, userId),
+              isNull(usersTable.stripeCustomerId),
+              eq(usersTable.grandfatheredPro, false),
+            ),
+          )
+          .returning({ id: usersTable.id })
           .pipe(
             Effect.mapError(
               (cause) =>
@@ -218,6 +226,24 @@ export const UsersLayer = Layer.effect(
                 }),
             ),
           );
+
+        if (removed.length === 0) {
+          // Keep billing customers and grandfathered memberships reachable. Stopping team
+          // emails must never leave a recurring charge on an inaccessible account.
+          yield* database
+            .delete(subscriptionsTable)
+            .where(eq(subscriptionsTable.userId, userId))
+            .pipe(
+              Effect.mapError(
+                (cause) =>
+                  new DatabaseDeleteError({
+                    operation: "Users.stopNotifications",
+                    cause,
+                    metadata: { userId },
+                  }),
+              ),
+            );
+        }
       },
     );
 

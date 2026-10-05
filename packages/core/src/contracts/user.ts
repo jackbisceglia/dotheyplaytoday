@@ -7,6 +7,7 @@ import {
 } from "effect/unstable/httpapi";
 
 import { FixedSchedule } from "../modules/subscriptions/schema.js";
+import { plans } from "../modules/billing/policy.js";
 import {
   EmailAddressFromString,
   UnsubscribeToken,
@@ -22,7 +23,7 @@ export const SignupRequest = Schema.Struct({
   email: EmailAddressFromString,
   timezone: Schema.TimeZoneNamedFromString,
   schedule: FixedSchedule,
-  subjectIds: SubjectSelection,
+  subjectIds: SubjectSelection.check(Schema.isMaxLength(plans.free.teamLimit)),
 });
 
 export const SignupResponse = Schema.Struct({
