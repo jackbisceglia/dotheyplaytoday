@@ -32,13 +32,16 @@ Rematches and doubleheaders at different start times have separate rows.
 Cancelled games are excluded. An empty window reads “No games in the next 14 days.” Editing replaces the list with the
 picker while keeping the heading, send-time sentence, and roster anchored.
 
-## Plans
+## Plans and onboarding
 
 - Free includes two teams. Pro includes six teams for $1.99 USD/month, with no trial or annual plan. Both use the same game-day emails and send-time settings.
-- Migration 0006 grants permanent, free Pro to every user present when the migration runs, including unverified existing users. The flag defaults to false for later registrations. This entitlement does not verify an email or create a session.
-- Paid Pro requires an active or trialing Stripe subscription for the configured Pro price and a future billing-period end. A scheduled cancellation keeps six picks through that period. Past-due, unpaid, paused, incomplete, canceled, or expired subscriptions fall back to Free.
+- Signup starts on Free and saves up to two teams. The signup and confirmation screens explain that Pro is available after email confirmation; no payment is taken before the user owns a verified account.
+- The signed-in dashboard shows the current plan and its allowance. Free members can open Stripe Checkout to upgrade. After returning, the dashboard reads server-side billing state before showing Pro and offering six picks. Canceled checkout preserves the current plan and preferences; delayed confirmation shows a status and refresh option.
+- Migration 0006 grants permanent, free Pro to every user present when the migration runs, including unverified existing users. The flag defaults to false for later registrations. Existing members see “Pro · free forever” and are blocked from paid checkout. This entitlement does not verify an email or create a session.
+- Paid Pro requires an active or trialing Stripe subscription for the configured Pro price and a future billing-period end. A scheduled cancellation keeps six picks through that period. Past-due, unpaid, paused, incomplete, canceled, or expired subscriptions fall back to Free. Outstanding subscriptions must be managed through the customer portal before another can be purchased.
 - Downgrade preserves the saved roster. Until the member selects their two Free teams, game-day emails continue for the first two teams shown on the dashboard (the stable subscription-ID order). Saving requires reducing the selection to two, or renewing Pro. Retained subscriptions keep delivery history.
-- Stopping game-day emails removes team subscriptions while preserving Stripe customer accounts and grandfathered accounts. Ordinary Free accounts without billing history continue to be deleted. Stopping emails does not cancel a paid membership.
+- “Manage billing” opens Stripe’s hosted customer portal for payment details, invoices, and cancellation. Stopping game-day emails does not cancel a paid membership. Unsubscribe removes team subscriptions but preserves Stripe customer accounts and grandfathered accounts, so members can still sign in to manage billing or restore their teams. Ordinary Free accounts without billing history continue to be deleted.
+- Without complete Stripe configuration, Free and grandfathered Pro remain usable and the dashboard shows that Pro checkout is coming soon.
 
 ## Notifications
 

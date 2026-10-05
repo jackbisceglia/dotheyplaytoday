@@ -12,6 +12,7 @@ import { Roster } from "./Roster.jsx";
 import { Schedule } from "./Schedule.jsx";
 import type { ScheduleRow } from "./schedule.js";
 import { SendTimeSentence } from "./SendTimeSentence.jsx";
+import { BillingPanel } from "../billing/Panel.jsx";
 
 type FormState = {
   mode: "view" | "editing" | "saving";
@@ -180,6 +181,11 @@ export function Form(props: {
           keep all six.
         </p>
       </Show>
+      <BillingPanel
+        billing={props.preferences.billing}
+        editing={isEditing()}
+        onRefresh={props.onSaved}
+      />
 
       <Show when={!isEditing()}>
         <Schedule rows={props.scheduleRows} />
