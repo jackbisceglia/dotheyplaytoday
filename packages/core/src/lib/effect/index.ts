@@ -1,4 +1,9 @@
-import { Array, pipe, Schema } from "effect";
+import { Array, Effect, pipe, Schema, SchemaIssue } from "effect";
+
+export const whenSchemaIssue =
+  <A, E, R>(callback: (issue: SchemaIssue.Issue) => Effect.Effect<A, E, R>) =>
+  (error: unknown) =>
+    SchemaIssue.isIssue(error) ? callback(error) : Effect.void;
 
 type TaggedMember<TTag extends PropertyKey, TLiteral extends string> =
   Schema.Top & {

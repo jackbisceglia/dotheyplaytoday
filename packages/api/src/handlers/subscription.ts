@@ -1,5 +1,6 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { UpdateSubscriptionsRateLimited } from "@dtpt/core/contracts/subscription";
+import { whenSchemaIssue } from "@dtpt/core/lib/effect/index";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
@@ -7,7 +8,6 @@ import { Effect, SchemaIssue } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
-import { whenSchemaIssue } from "../lib/schema-issue.js";
 import { withNoStoreResponse } from "../lib/no-store.js";
 import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
 

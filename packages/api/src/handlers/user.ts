@@ -6,6 +6,7 @@ import {
 } from "@dtpt/core/contracts/user";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
+import { whenSchemaIssue } from "@dtpt/core/lib/effect/index";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
@@ -14,7 +15,6 @@ import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
-import { whenSchemaIssue } from "../lib/schema-issue.js";
 import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
 import { withNoStoreResponse } from "../lib/no-store.js";
 
