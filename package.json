@@ -47,7 +47,8 @@
   },
   "pnpm": {
     "overrides": {
-      "effect": "4.0.0-rc.115",
+      "effect": "4.0.0-rc.117",
+      "@effect/platform-node-shared": "4.0.0-rc.117",
       "vite": "8.2.1",
       "vitest": "5.0.3"
     },

@@ -368,8 +368,12 @@ new endpoint; no legacy API alias is needed.
 
 ## Infrastructure dependencies
 
-The infrastructure uses Alchemy beta.78, Effect rc.115,
+The infrastructure uses Alchemy beta.78, Effect rc.117,
 and Drizzle rc.5. Platform and SQL packages share the same Effect version.
+Effect rc.118 and stable 4.0 require a newer Drizzle build: the currently
+supported build still references the removed SQL import paths and Schema APIs.
+The Node platform's shared package is pinned to rc.117 because its dependency
+range otherwise accepts the incompatible stable release.
 Alchemy's PostgreSQL bridge uses the `Drizzle/Postgres` entrypoint; the
 production migration ledger retains its existing table name. Standalone Vite
 uses the matching `@alchemy.run/cloudflare-runtime` package. The API uses
