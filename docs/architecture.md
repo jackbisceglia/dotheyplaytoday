@@ -382,50 +382,39 @@ Alchemy's `Http.Platform` layer for its fileless HTTP platform services.
 
 ## Pro billing
 
-Migration 0006 adds `users.grandfathered_pro` and `users.stripe_customer_id`.
-Every user present when the migration runs receives the permanent grandfathered
-flag; later registrations default to false. This flag does not verify an email
-or create a session.
+The app owns billing through a Stripe SDK service; Better Auth supplies only
+identity. Authenticated, origin-checked, uncached `/api/billing/checkout`,
+`/api/billing/portal`, and `/api/billing/sync` routes create checkout, open the
+portal, and refresh subscription state. Signed events go to
+`/api/billing/webhook`. Customers are created lazily at checkout, including for
+accounts registered before billing was introduced.
 
-Billing records live in `billing_subscriptions`, separately from notification
-subscriptions. The app-owned table has a user relationship, a unique Stripe
-subscription ID, one pending checkout per user, and revisions for synchronization.
+`billing_subscriptions` contains app-owned Stripe snapshots and checkout attempts;
+notification subscriptions remain in `subscriptions`. The billing records use a
+`user_id` relationship and do not implement an auth-plugin subscription model.
+Core's Billing service reads these snapshots and the permanent
+`users.grandfathered_pro` flag. Migration 0006 sets that flag once for the accounts
+present when it runs; the column defaults to false for later accounts. No signup
+date, runtime cohort rule, or artificial Stripe subscription grants free Pro.
 
-Core's Billing service resolves Free (two teams), Pro (six teams), and permanent
-free Pro from persisted billing state and the grandfathered flag. Paid access
-requires a Pro subscription with active or trialing status and a future period
-end. `/api/billing` returns the current account's allowance and checkout
-availability through an authenticated, uncached read. Missing Stripe
-configuration reports checkout as unavailable. The dashboard preference loader
-fetches this response alongside the existing user and team subscriptions.
+`GET /api/billing` exposes the allowance and checkout availability. Roster writes
+lock and re-read the user before checking current billing state inside the
+existing transaction. Notification reads join billing records and apply the same
+allowance in stable subscription-ID order, including forced runs.
 
-Signup accepts up to two teams. Roster writes lock and re-read the user before
-checking the current billing allowance inside the transaction. Notification
-reads join billing records and enforce the same allowance in stable
-subscription-ID order, including forced runs. Downgrade preserves saved teams
-and their delivery history but requires reducing the selection before saving.
-Unsubscribe removes teams while preserving accounts with Stripe history or
-permanent free Pro so those users can sign in again.
+The billing service refuses grandfathered checkout and additional purchases while
+a nonterminal Stripe subscription exists. A partial unique index allows one
+pending checkout attempt per user; Stripe calls use that attempt's ID as an
+idempotency key. Open sessions are reused, and expired sessions allow a new
+attempt. Checkout return and webhooks share synchronization: read the local
+revision, retrieve current Stripe state, then write only if the revision is
+unchanged. A concurrent write causes another Stripe read. Failures return a
+retryable HTTP 500; invalid signatures return 400.
 
-The API owns billing through the Stripe SDK; Better Auth supplies identity.
-Authenticated, origin-checked `/api/billing/checkout`, `/api/billing/portal`,
-and `/api/billing/sync` routes create checkout, open the portal, and refresh
-subscription state. Signed events go to `/api/billing/webhook`. Customers
-are created lazily and mapped to the account before checkout.
-
-Checkout requires a verified account, refuses grandfathered accounts, and
-blocks additional purchases while a nonterminal subscription exists. The
-monthly Pro price and quantity are fixed by the server. Open checkout sessions
-are reused; expired sessions create a new attempt with a new idempotency key.
-Return sync and webhooks retrieve current Stripe state through the same
-synchronization function. Revision-checked writes refetch after concurrent
-updates, so an older response cannot overwrite newer state. Invalid signatures
-return 400; provider/storage failures return 500 so Stripe retries.
-
-The dashboard displays the account's current plan, permanent free Pro status,
-and server-side allowance. Verified Free users can upgrade through hosted
-Checkout, and paid members can manage billing through the customer portal.
-The return flow calls `/api/billing/sync` before exposing the larger roster. Signup
-and confirmation explain the two-team Free plan and the upgrade after email
-confirmation. Checkout remains unavailable until all Stripe configuration is
-present.
+Alchemy beta.78 provisions Stripe's Product, $1.99 monthly Price, dedicated Portal
+configuration, and WebhookEndpoint when `BILLING_ENABLED=true`. IDs and the
+redacted signing secret are late-bound into the API Worker. Stripe's provider
+uses `STRIPE_API_KEY` (or an Alchemy profile) during provisioning, and the standard
+Stripe SDK uses `STRIPE_SECRET_KEY` at runtime. Billing stays unavailable without
+complete runtime configuration; Free and grandfathered Pro still work. See the
+[handoff runbook](./runbooks/pro-billing.md).
