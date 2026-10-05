@@ -7,8 +7,8 @@
     "node": ">=24.18.0"
   },
   "scripts": {
-    "dev": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && set -- && if [ -f .env ]; then set -- --env-file \"$PWD/.env\"; fi && alchemy dev alchemy.run.ts \"$@\"",
-    "dev:seed": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && set -- && if [ -f .env ]; then set -- --env-file \"$PWD/.env\"; fi && alchemy destroy alchemy.run.ts --yes \"$@\" && alchemy dev alchemy.run.ts \"$@\"",
+    "dev": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy dev alchemy.run.ts --env-file \"$PWD/.env\"",
+    "dev:seed": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy destroy alchemy.run.ts --yes --env-file \"$PWD/.env\" && alchemy dev alchemy.run.ts --env-file \"$PWD/.env\"",
     "dev:destroy": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy destroy alchemy.run.ts",
     "alchemy:stage": "node scripts/get-stage.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
