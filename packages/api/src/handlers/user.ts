@@ -6,10 +6,11 @@ import {
 } from "@dtpt/core/contracts/user";
 import { mapToTransactionError } from "@dtpt/core/lib/database/errors";
 import { Database } from "@dtpt/core/lib/database/service";
+import { whenSchemaIssue } from "@dtpt/core/lib/effect/index";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Match, Option } from "effect";
+import { Effect, Match, Option, SchemaIssue } from "effect";
 import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
@@ -129,8 +130,16 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
             return { email: user.email, timezone: user.timezone };
           },
+          Effect.tapError(
+            whenSchemaIssue((error) =>
+              Effect.logError("user: unexpected failure", { error }),
+            ),
+          ),
           Effect.tapErrorTag(ReadErrorTags, (error) =>
             Effect.logError("user: unexpected failure", { error }),
+          ),
+          Effect.catchIf(SchemaIssue.isIssue, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
           ),
           Effect.catchTags({
             UserNotFound: () => Effect.fail(new HttpApiError.Unauthorized({})),

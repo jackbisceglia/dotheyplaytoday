@@ -235,7 +235,7 @@ prints the current name, `pnpm dev` starts it, `pnpm dev:destroy` interactively
 destroys it, and `pnpm dev:seed` destroys it with `--yes` before recreating and
 starting it. The resolver is an Effect whose Git process, path, and
 configuration capabilities come from Effect Platform. Package lifecycle
-commands export its result through Alchemy's lowercase `stage` environment
+commands export its result through Alchemy's `ALCHEMY_STAGE` environment
 variable; the lookup is case-sensitive and ignores uppercase `STAGE`.
 `alchemy.run.ts` remains an ordinary stack definition. Generic deployment
 commands are unchanged and do not invoke the development-stage resolver.
@@ -365,3 +365,16 @@ picker with signup. Its edit draft supports save/cancel, team removal, and send
 time changes; account email/timezone editing remains separate work. Existing
 emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
 new endpoint; no legacy API alias is needed.
+
+## Infrastructure dependencies
+
+The infrastructure uses Alchemy beta.78, Effect rc.117,
+and Drizzle rc.5. Platform and SQL packages share the same Effect version.
+Effect rc.118 and stable 4.0 require a newer Drizzle build: the currently
+supported build still references the removed SQL import paths and Schema APIs.
+The Node platform's shared package is pinned to rc.117 because its dependency
+range otherwise accepts the incompatible stable release.
+Alchemy's PostgreSQL bridge uses the `Drizzle/Postgres` entrypoint; the
+production migration ledger retains its existing table name. Standalone Vite
+uses the matching `@alchemy.run/cloudflare-runtime` package. The API uses
+Alchemy's `Http.Platform` layer for its fileless HTTP platform services.

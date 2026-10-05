@@ -20,7 +20,7 @@ import Web, { bindWebUrl } from "./packages/web/resource.ts";
 export default Alchemy.Stack(
   "dotheyplaytoday",
   {
-    providers: Layer.merge(
+    providers: Layer.provideMerge(
       Cloudflare.providers(),
       AlchemyPlanetscale.providers(),
     ),

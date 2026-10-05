@@ -34,7 +34,7 @@ const isTaggedAs =
   ): value is Extract<TValue, { readonly _tag: TTag }> =>
     value._tag === tag;
 
-export class EmailRenderError extends Schema.TaggedErrorClass<EmailRenderError>()(
+export class EmailRenderError extends Schema.TaggedError<EmailRenderError>()(
   "EmailRenderError",
   {
     message: Schema.String,

@@ -46,7 +46,7 @@ const createAuthPool = (connectionString: string) =>
     (pool) => Effect.promise(() => pool.end()),
   );
 
-export class AuthRequestError extends Schema.TaggedErrorClass<AuthRequestError>()(
+export class AuthRequestError extends Schema.TaggedError<AuthRequestError>()(
   "AuthRequestError",
   { cause: Schema.Defect() },
 ) {}

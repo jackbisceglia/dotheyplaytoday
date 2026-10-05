@@ -7,9 +7,9 @@
     "node": ">=24.18.0"
   },
   "scripts": {
-    "dev": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy dev alchemy.run.ts",
-    "dev:seed": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy destroy alchemy.run.ts --yes && alchemy dev alchemy.run.ts",
-    "dev:destroy": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy destroy alchemy.run.ts",
+    "dev": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy dev alchemy.run.ts --env-file .env",
+    "dev:seed": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy destroy alchemy.run.ts --yes --env-file .env && alchemy dev alchemy.run.ts --env-file .env",
+    "dev:destroy": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy destroy alchemy.run.ts",
     "alchemy:stage": "node scripts/get-stage.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
@@ -30,7 +30,6 @@
     "@cloudflare/workers-types": "4.20260626.1",
     "@effect/language-service": "catalog:",
     "@effect/platform-node": "catalog:",
-    "@effect/vitest": "catalog:",
     "@eslint/js": "^9.36.0",
     "@tsconfig/bun": "^1.0.7",
     "@tsconfig/strictest": "^2.0.6",
@@ -42,13 +41,16 @@
     "prettier": "3.6.2",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1",
-    "vite": "8.1.5",
-    "vitest": "^3.2.4",
+    "vite": "8.2.1",
+    "vitest": "5.0.3",
     "ws": "^8.21.0"
   },
   "pnpm": {
     "overrides": {
-      "@distilled.cloud/planetscale@0.29.1": "0.30.1"
+      "effect": "4.0.0-rc.117",
+      "@effect/platform-node-shared": "4.0.0-rc.117",
+      "vite": "8.2.1",
+      "vitest": "5.0.3"
     },
     "onlyBuiltDependencies": [
       "esbuild"

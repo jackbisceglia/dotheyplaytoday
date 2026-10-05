@@ -27,7 +27,10 @@ export const EmailAddress = Schema.String.check(
 
 export const EmailAddressFromString = Schema.String.pipe(
   Schema.decode(
-    SchemaTransformation.trim().compose(SchemaTransformation.toLowerCase()),
+    SchemaTransformation.composeTransformation(
+      SchemaTransformation.trim(),
+      SchemaTransformation.toLowerCase(),
+    ),
   ),
   Schema.decodeTo(EmailAddress),
 );

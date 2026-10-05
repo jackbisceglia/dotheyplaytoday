@@ -5,7 +5,7 @@ import {
   DatabaseReadError,
   DatabaseWriteError,
 } from "@dtpt/core/lib/database/errors";
-import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import { Platform } from "alchemy/Http/Platform";
 import {
   Events,
   EventWithParticipants,
@@ -24,7 +24,7 @@ import {
   UserNotFound,
   Users,
 } from "@dtpt/core/modules/users/service";
-import { Context, Effect, FileSystem, Layer, Path, Schema } from "effect";
+import { Context, Effect, Layer, Schema } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { Pool } from "pg";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
@@ -122,9 +122,7 @@ const makeFixture = async () => {
         mockTransactions(Effect.succeed(pool), (event) =>
           transactions.push(event),
         ),
-        CloudflareHttpApiPlatformLayer,
-        FileSystem.layerNoop({}),
-        Path.layer,
+        Platform,
       ]),
       Layer.provide(fixture.layer),
     ),

@@ -22,6 +22,7 @@ import {
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import type { WithOptionalKeys } from "../../lib/types.js";
+import { exactOptional } from "../../lib/utils.js";
 import { SubjectId } from "../subjects/schema.js";
 import { EventNotFound } from "./errors.js";
 import {
@@ -150,8 +151,10 @@ export const EventsLayer = Layer.effect(
       const rows = yield* database.query.eventsTable
         .findMany({
           where: {
-            availability: availabilityFilter,
-            startsAt,
+            ...exactOptional(availabilityFilter, (availability) => ({
+              availability,
+            })),
+            ...exactOptional(startsAt, (startsAt) => ({ startsAt })),
             subjectEvents: { subjectId },
           },
           with: {

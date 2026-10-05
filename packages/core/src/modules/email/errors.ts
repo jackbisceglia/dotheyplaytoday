@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-export class EmailRequestError extends Schema.TaggedErrorClass<EmailRequestError>()(
+export class EmailRequestError extends Schema.TaggedError<EmailRequestError>()(
   "EmailRequestError",
   {
     message: Schema.String,
@@ -8,7 +8,7 @@ export class EmailRequestError extends Schema.TaggedErrorClass<EmailRequestError
   },
 ) {}
 
-export class EmailResponseError extends Schema.TaggedErrorClass<EmailResponseError>()(
+export class EmailResponseError extends Schema.TaggedError<EmailResponseError>()(
   "EmailResponseError",
   {
     message: Schema.String,

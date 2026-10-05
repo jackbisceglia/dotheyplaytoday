@@ -27,7 +27,7 @@ export const UpdateSubscriptionsResponse = Schema.Struct({
   ok: Schema.Literal(true),
 });
 
-export class UpdateSubscriptionsRateLimited extends Schema.TaggedErrorClass<UpdateSubscriptionsRateLimited>()(
+export class UpdateSubscriptionsRateLimited extends Schema.TaggedError<UpdateSubscriptionsRateLimited>()(
   "UpdateSubscriptionsRateLimited",
   {},
   { httpApiStatus: 429 },
