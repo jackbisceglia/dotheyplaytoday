@@ -86,11 +86,11 @@ environment variable. Older Alchemy versions used lowercase `stage`; the current
 version ignores both that name and uppercase `STAGE`, so using either can select
 the shared `dev_<user>` stage instead of the worktree's stage.
 
-`pnpm dev` and `pnpm dev:seed` pass the workspace `.env` to Alchemy's native
-`--env-file` flag. The absolute path keeps provider credentials available when
-the Web dev server starts in `packages/web`. These commands require `.env` to
-exist. Its values take precedence over exported environment variables, following
-Alchemy's CLI behavior.
+`pnpm dev` and `pnpm dev:seed` pass `--env-file .env` to Alchemy. Its CLI
+resolves the path from the workspace before starting child processes, so the Web
+dev server can load provider credentials from `packages/web`. These commands
+require `.env` to exist. Its values take precedence over exported environment
+variables, following Alchemy's CLI behavior.
 
 The switch is immediate. Existing shared `dev_<user>` resources are not
 migrated or automatically destroyed. A primary checkout continues to use that
