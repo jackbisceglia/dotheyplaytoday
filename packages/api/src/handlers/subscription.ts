@@ -49,17 +49,18 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
 
             return yield* subscriptions.listForUser(user.id);
           },
-          Effect.catchIf(SchemaIssue.isIssue, (issue) =>
-            Effect.logError("user subscription: unexpected failure", {
-              error: issue,
-            }).pipe(
-              Effect.andThen(
-                Effect.fail(new HttpApiError.InternalServerError({})),
-              ),
-            ),
+          Effect.tapError((error) =>
+            SchemaIssue.isIssue(error)
+              ? Effect.logError("user subscription: unexpected failure", {
+                  error,
+                })
+              : Effect.void,
           ),
           Effect.tapErrorTag(UnexpectedErrorTags, (error) =>
             Effect.logError("user subscription: unexpected failure", { error }),
+          ),
+          Effect.catchIf(SchemaIssue.isIssue, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
           ),
           Effect.catchTags({
             UserNotFound: () => Effect.fail(new HttpApiError.Unauthorized({})),
@@ -90,14 +91,12 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
 
             return { ok: true as const };
           },
-          Effect.catchIf(SchemaIssue.isIssue, (issue) =>
-            Effect.logError("update subscriptions failed", {
-              error: issue,
-            }).pipe(
-              Effect.andThen(
-                Effect.fail(new HttpApiError.InternalServerError({})),
-              ),
-            ),
+          Effect.tapError((error) =>
+            SchemaIssue.isIssue(error)
+              ? Effect.logError("update subscriptions failed", {
+                  error,
+                })
+              : Effect.void,
           ),
           Effect.catchTags({
             UserNotFound: () => Effect.fail(new HttpApiError.Unauthorized({})),
@@ -110,6 +109,9 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
           }),
           Effect.tapErrorTag(UnexpectedUpdateErrorTags, (error) =>
             Effect.logError("update subscriptions failed", { error }),
+          ),
+          Effect.catchIf(SchemaIssue.isIssue, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
           ),
           Effect.catchTag(UnexpectedUpdateErrorTags, () =>
             Effect.fail(new HttpApiError.InternalServerError({})),

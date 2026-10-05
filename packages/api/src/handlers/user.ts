@@ -129,15 +129,16 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
             return { email: user.email, timezone: user.timezone };
           },
-          Effect.catchIf(SchemaIssue.isIssue, (issue) =>
-            Effect.logError("user: unexpected failure", { error: issue }).pipe(
-              Effect.andThen(
-                Effect.fail(new HttpApiError.InternalServerError({})),
-              ),
-            ),
+          Effect.tapError((error) =>
+            SchemaIssue.isIssue(error)
+              ? Effect.logError("user: unexpected failure", { error })
+              : Effect.void,
           ),
           Effect.tapErrorTag(ReadErrorTags, (error) =>
             Effect.logError("user: unexpected failure", { error }),
+          ),
+          Effect.catchIf(SchemaIssue.isIssue, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
           ),
           Effect.catchTags({
             UserNotFound: () => Effect.fail(new HttpApiError.Unauthorized({})),

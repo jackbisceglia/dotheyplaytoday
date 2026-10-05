@@ -32,17 +32,18 @@ export const EventsGroupLayer = HttpApiBuilder.group(
           const userId = yield* UserId.makeEffect(session.user.id);
           return yield* events.listForUser(userId);
         },
-        Effect.catchIf(SchemaIssue.isIssue, (issue) =>
-          Effect.logError("user events: unexpected failure", {
-            error: issue,
-          }).pipe(
-            Effect.andThen(
-              Effect.fail(new HttpApiError.InternalServerError({})),
-            ),
-          ),
+        Effect.tapError((error) =>
+          SchemaIssue.isIssue(error)
+            ? Effect.logError("user events: unexpected failure", {
+                error,
+              })
+            : Effect.void,
         ),
         Effect.tapErrorTag(UnexpectedErrorTags, (error) =>
           Effect.logError("user events: unexpected failure", { error }),
+        ),
+        Effect.catchIf(SchemaIssue.isIssue, () =>
+          Effect.fail(new HttpApiError.InternalServerError({})),
         ),
         Effect.catchTag("UserNotFound", () =>
           Effect.fail(new HttpApiError.Unauthorized({})),
