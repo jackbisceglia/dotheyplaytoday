@@ -7,7 +7,7 @@ import { Effect, SchemaIssue } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
-import { logSchemaIssue } from "../lib/schema-issue.js";
+import { whenSchemaIssue } from "../lib/schema-issue.js";
 import { withNoStoreResponse } from "../lib/no-store.js";
 import { getRateLimitKey, RateLimiter } from "../rate-limit/service.js";
 
@@ -51,7 +51,11 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
             return yield* subscriptions.listForUser(user.id);
           },
           Effect.tapError(
-            logSchemaIssue("user subscription: unexpected failure"),
+            whenSchemaIssue((error) =>
+              Effect.logError("user subscription: unexpected failure", {
+                error,
+              }),
+            ),
           ),
           Effect.tapErrorTag(UnexpectedErrorTags, (error) =>
             Effect.logError("user subscription: unexpected failure", { error }),
@@ -88,7 +92,11 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
 
             return { ok: true as const };
           },
-          Effect.tapError(logSchemaIssue("update subscriptions failed")),
+          Effect.tapError(
+            whenSchemaIssue((error) =>
+              Effect.logError("update subscriptions failed", { error }),
+            ),
+          ),
           Effect.catchTags({
             UserNotFound: () => Effect.fail(new HttpApiError.Unauthorized({})),
             InvalidSubjectSelection: () =>
