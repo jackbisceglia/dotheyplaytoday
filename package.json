@@ -7,9 +7,9 @@
     "node": ">=24.18.0"
   },
   "scripts": {
-    "dev": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy dev alchemy.run.ts",
-    "dev:seed": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy destroy alchemy.run.ts --yes && alchemy dev alchemy.run.ts",
-    "dev:destroy": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy destroy alchemy.run.ts",
+    "dev": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && node --env-file-if-exists=.env node_modules/alchemy/bin/cli.js dev alchemy.run.ts",
+    "dev:seed": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && node --env-file-if-exists=.env node_modules/alchemy/bin/cli.js destroy alchemy.run.ts --yes && node --env-file-if-exists=.env node_modules/alchemy/bin/cli.js dev alchemy.run.ts",
+    "dev:destroy": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy destroy alchemy.run.ts",
     "alchemy:stage": "node scripts/get-stage.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",

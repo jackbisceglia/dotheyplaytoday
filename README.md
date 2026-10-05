@@ -81,9 +81,16 @@ directory and user components, then clean it up from another checkout with
 `pnpm destroy --stage <stage>`; inspect the target carefully because the
 generic destroy command is intentionally not worktree-scoped.
 
-Each command exports the computed name through Alchemy's lowercase `stage`
-environment variable. Earlier scripts exported uppercase `STAGE`, which Alchemy ignored,
-so linked worktrees could still have used the shared `dev_<user>` stage.
+Each command exports the computed name through Alchemy's `ALCHEMY_STAGE`
+environment variable. Older Alchemy versions used lowercase `stage`; the current
+version ignores both that name and uppercase `STAGE`, so using either can select
+the shared `dev_<user>` stage instead of the worktree's stage.
+
+`pnpm dev` and `pnpm dev:seed` load the optional workspace `.env` into the
+Alchemy process with Node's `--env-file-if-exists`. Its child processes inherit
+those credentials even when the Web dev server starts in `packages/web`.
+Exported environment variables take precedence; Alchemy profiles still work
+when no `.env` is present.
 
 The switch is immediate. Existing shared `dev_<user>` resources are not
 migrated or automatically destroyed. A primary checkout continues to use that
