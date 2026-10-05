@@ -372,4 +372,5 @@ The infrastructure uses Alchemy beta.78, Effect rc.115,
 and Drizzle rc.5. Platform and SQL packages share the same Effect version.
 Alchemy's PostgreSQL bridge uses the `Drizzle/Postgres` entrypoint; the
 production migration ledger retains its existing table name. Standalone Vite
-uses the matching `@alchemy.run/cloudflare-runtime` package.
+uses the matching `@alchemy.run/cloudflare-runtime` package. The API uses
+Alchemy's `Http.Platform` layer for its fileless HTTP platform services.

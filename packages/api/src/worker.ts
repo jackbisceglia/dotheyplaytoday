@@ -4,7 +4,7 @@ import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
-import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import { Platform } from "alchemy/Http/Platform";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
 import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
@@ -66,7 +66,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     );
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
-      Layer.provide([ApiServicesLayer, CloudflareHttpApiPlatformLayer]),
+      Layer.provide([ApiServicesLayer, Platform]),
     );
 
     const rateLimiter = yield* RateLimiter;
