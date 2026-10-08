@@ -17,9 +17,7 @@ export const mmaTimingText = (
       timeZoneName: "short",
     });
   const segments = [
-    ...(card.timings.early
-      ? ["Early prelims: " + format(card.timings.early)]
-      : []),
+    "Early prelims: " + format(card.timings.early),
     "Prelims: " + format(card.timings.prelims),
     "Main card: " + format(card.timings.main),
   ];

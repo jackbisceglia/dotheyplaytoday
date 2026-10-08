@@ -94,7 +94,6 @@ describe("email rendering", () => {
               ...card,
               details: {
                 ...card.details,
-                timings: { ...card.details.timings, early: null },
                 bouts: card.details.bouts.map((bout) => ({
                   ...bout,
                   fighters: bout.fighters.slice(0, 1),
@@ -106,7 +105,9 @@ describe("email rendering", () => {
         expect(lastPayload().subject).toBe("UFC cards today");
         expect(lastPayload().text).toContain("vs Opponent TBD");
         expect(lastPayload().text).toContain("Main card: Oct 3, 10:00 PM EDT");
-        expect(lastPayload().text).not.toContain("Early prelims:");
+        expect(lastPayload().text).toContain(
+          "Early prelims: Oct 3, 7:00 PM EDT",
+        );
       }),
   );
 

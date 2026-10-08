@@ -29,14 +29,13 @@ export const MmaEvent = Schema.TaggedStruct("mma_card", {
   kind: Schema.Literals(["numbered", "fight_night"]),
   venue: MmaVenue,
   timings: Schema.Struct({
-    early: Schema.NullOr(Schema.DateTimeUtcFromString),
+    early: Schema.DateTimeUtcFromString,
     prelims: Schema.DateTimeUtcFromString,
     main: Schema.DateTimeUtcFromString,
   }).check(
     Schema.makeFilter(function hasOrderedTimings(timings) {
       return (
-        ((timings.early === null ||
-          DateTime.isLessThanOrEqualTo(timings.early, timings.prelims)) &&
+        (DateTime.isLessThanOrEqualTo(timings.early, timings.prelims) &&
           DateTime.isLessThanOrEqualTo(timings.prelims, timings.main)) ||
         "Broadcast timings must be ordered early, prelims, main"
       );

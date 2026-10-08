@@ -453,8 +453,8 @@ bout IDs and fighter subject references embedded in its details; no per-bout
 scheduling or home/away participant rows are created. Every event retains its
 required startsAt instant and the existing NOT NULL database constraint. UFC
 uses the earliest confirmed broadcast start; the variant's timings struct adds
-required early/prelims/main keys for rendering. Early is null only for cards
-without a separate early-prelim segment; prelims and main are required instants.
+required early/prelims/main timestamps for rendering; all three must be
+confirmed before importing a card.
 The existing range queries, local-date handling, and notification scheduler are
 unchanged. No database migration is needed.
 

@@ -77,11 +77,12 @@ describe("MMA selection and timing", () => {
         }),
       ).toThrow();
     }
-    const twoPart = Schema.decodeUnknownSync(MmaEvent)({
-      ...encodedDetails,
-      timings: { ...encodedDetails.timings, early: null },
-    });
-    expect(mmaTimingText(twoPart, ny)).not.toContain("Early prelims:");
+    expect(() =>
+      Schema.decodeUnknownSync(MmaEvent)({
+        ...encodedDetails,
+        timings: { ...encodedDetails.timings, early: null },
+      }),
+    ).toThrow();
   });
   it("requires a structured venue and a known bout placement", () => {
     const encoded = Schema.encodeSync(MmaEvent)(details);
@@ -102,7 +103,7 @@ describe("MMA selection and timing", () => {
       {
         ...details,
         timings: {
-          early: null,
+          early: DateTime.makeUnsafe("2026-11-01T05:00:00Z"),
           prelims: DateTime.makeUnsafe("2026-11-01T05:30:00Z"),
           main: DateTime.makeUnsafe("2026-11-01T06:30:00Z"),
         },

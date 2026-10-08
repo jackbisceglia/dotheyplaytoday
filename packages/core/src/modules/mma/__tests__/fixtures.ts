@@ -49,8 +49,8 @@ export const card = Schema.decodeUnknownSync(EventWithParticipants)({
 
     venue: { title: "Test Arena", location: "Test City" },
     timings: {
-      early: null,
-      prelims: "2026-10-03T23:00:00.000Z",
+      early: "2026-10-03T23:00:00.000Z",
+      prelims: "2026-10-04T00:00:00.000Z",
       main: "2026-10-04T02:00:00.000Z",
     },
     bouts: [
