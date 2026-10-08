@@ -54,8 +54,8 @@ type FormProps = {
 export function Form(props: FormProps) {
   const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set());
   const selectedTeams = createMemo(() => {
-    const teamsById = new Map(
-      props.subjects.map((team) => [team.id as string, team] as const),
+    const teamsById = new Map<string, Subject>(
+      props.subjects.map((team) => [team.id, team] as const),
     );
 
     return [...selected()].flatMap((teamId) => {

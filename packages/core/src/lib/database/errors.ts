@@ -103,6 +103,7 @@ export const mapToTransactionError =
 
     return effect.pipe(
       Effect.mapError(
+        // lint(anti-slop/require-safety-comment-for-type-assertion): isSqlError excludes SQL errors in the false branch; generic E cannot be narrowed by TS.
         (cause): Exclude<E, SqlError.SqlError> | DatabaseTransactionError =>
           SqlError.isSqlError(cause)
             ? makeError(cause)

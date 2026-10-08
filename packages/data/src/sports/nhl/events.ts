@@ -1397,9 +1397,11 @@ export const events: readonly NhlSportEventSeed[] = Schedule.map(
 
 export const getTeamFeedIds = (team: string) =>
   events
+    .values()
     .filter((event) =>
       event.participants.some(
         (participant) => participant.details.title === team,
       ),
     )
-    .map((event) => event.sourceId);
+    .map((event) => event.sourceId)
+    .toArray();

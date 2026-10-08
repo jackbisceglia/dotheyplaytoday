@@ -39,7 +39,6 @@ const getJobsDomain = (stage: string) => getManagedServiceDomain("jobs", stage);
 
 export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>()(
   "NotifyJobWorker",
-  // TODO: Remove this typecast when upgrading Alchemy to beta.72 or later.
   Effect.gen(function* () {
     const stack = yield* Stack;
     const domain = getJobsDomain(stack.stage);
@@ -50,7 +49,7 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
       dev: { port: Trigger.port, strictPort: true },
       ...exactOptional(domain, (domain) => ({ domain })),
     };
-  }) as unknown as Cloudflare.WorkerProps,
+  }),
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;

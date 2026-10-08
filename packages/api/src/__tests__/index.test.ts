@@ -1,3 +1,4 @@
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { EventsResponse } from "@dtpt/core/contracts/events";
 import { makeAuthFixture } from "../auth/__tests__/fixtures.js";
 import { RuntimeContext } from "alchemy/RuntimeContext";
@@ -136,9 +137,11 @@ const makeFixture = async () => {
         headers: {
           "content-type": "application/json",
           origin: "https://www.example.com",
-          ...(cookie ? { cookie } : {}),
+          ...exactOptional(cookie === "" ? undefined : cookie, (cookie) => ({
+            cookie,
+          })),
         },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        ...exactOptional(body, (body) => ({ body: JSON.stringify(body) })),
       }),
       Context.make(RuntimeContext, {
         Type: "test",

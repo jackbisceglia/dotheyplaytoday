@@ -1,3 +1,4 @@
+import { exactOptional } from "@dtpt/core/lib/utils";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Id } from "@dtpt/core/lib/id/service";
 import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
@@ -108,7 +109,7 @@ export const makeAuthFixture = async () => {
         "cf-connecting-ip": ip,
         origin,
       },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      ...exactOptional(body, (body) => ({ body: JSON.stringify(body) })),
     });
 
   return {

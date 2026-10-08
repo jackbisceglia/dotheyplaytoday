@@ -1,5 +1,10 @@
 # Fix inherited-key logo lookups
 
+## Status
+
+Completed during the Oxlint migration. All four league logo helpers now use
+string-keyed Maps, with tests for known, unknown, and inherited-property names.
+
 ## Type
 
 Bug

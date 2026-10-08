@@ -319,6 +319,57 @@ role rather than a Worker or Hyperdrive connection, and catalog versions should
 remain bounded so the transaction does not become an unbounded deployment
 operation.
 
+### Lint policy
+
+Each package's `oxlint.config.ts` imports and extends the root config with
+`extends: [base]`. `pnpm lint` keeps the recursive package workflow. The root
+config enables `options.typeAware` using `oxlint-tsgolint`, so package scripts
+and direct `oxlint` runs need no flag. Build dependent packages before linting,
+as production CI already does. `pnpm typecheck` remains the Effect-patched TypeScript 5 check;
+Oxlint's native checker supplies lint diagnostics, not Effect language-service
+diagnostics. The web config omits the obsolete `baseUrl` option while preserving
+its relative `~/*` mapping.
+
+The root config explicitly preserves the previous ESLint recommended and
+TypeScript strict/stylistic type-checked rule policy, including unused `_`
+exemptions and `type` declarations. `no-unnecessary-condition` and
+`prefer-optional-chain` are explicitly enabled despite their nursery status in
+the migration tool. Strict-mode-only `no-dupe-args` and `no-octal` have no Oxlint
+equivalent. Prettier remains the formatter.
+
+Anti-slop is vendored under `tooling/oxlint/anti-slop`, with revision
+and licenses recorded there. Enabled rules reject chained assertions, unexplained
+assertions, known-value widening, unsafe assertion round trips, broad object
+parameters and unknown return/type-alias contracts, reflective property access
+and calls, conditional empty-object spreads, and repeated eager array passes or
+accumulator copying. `as const` does not require a safety comment.
+
+The conditional-spread rule is locally tailored to require `exactOptional` for
+optional field construction. It preserves property omission and expression-based
+construction. `exactOptional` omits only `undefined`; truthy-only conditions must
+still be represented explicitly, such as passing `enabled ? value : undefined`
+to the helper. The rule provides no automatic rewrite because an
+arbitrary condition may have different omission semantics. Local changes are
+recorded in the vendored provenance file.
+
+The adoption deliberately leaves these upstream policies disabled:
+
+- Unknown input parameters, runtime `typeof`, and broad dictionaries require
+  separate decisions about error/I/O boundaries and diagnostic metadata.
+- Module mocking requires reviewing existing auth and Resend test seams.
+- Shape naming requires reviewing exported configuration aliases.
+- Spacing remains a formatting choice; adopting it would create an unrelated
+  repository-wide whitespace diff.
+- Effect-specific rules remain opt-in: tagged literals are legitimate encoded
+  seed data, and constructor naming also matches plain functions such as
+  `makeTiledHeadline`.
+
+Two existing event-service tests retain narrowly suppressed chained assertions
+for deliberately partial database fixtures. All remaining non-const assertions
+must state their specific invariant in a nearby rule-qualified comment:
+`lint(anti-slop/require-safety-comment-for-type-assertion): reason`. Moving those
+tests to a full driver seam is a separate testing refactor.
+
 ## Follow-up work
 
 Separate follow-ups are:

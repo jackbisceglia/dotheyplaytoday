@@ -12,7 +12,7 @@ import { Notifier } from "../service.js";
 
 const resendMock = vi.hoisted(() => ({
   constructor: vi.fn(),
-  send: vi.fn(),
+  send: vi.fn<(options: CreateEmailOptions) => Promise<CreateEmailResponse>>(),
 }));
 
 vi.mock("resend", () => ({
@@ -56,7 +56,9 @@ const send = (input: Notification) =>
   }).pipe(Effect.provide(NotifierLayerEmailTest));
 
 const lastPayload = () => {
-  const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
+  const payload = resendMock.send.mock.calls[0]?.[0];
+
+  if (!payload) throw new Error("Expected an email send call");
 
   return payload;
 };
@@ -75,7 +77,7 @@ describe("email rendering", () => {
         yield* send(notification);
 
         expect(resendMock.send).toHaveBeenCalledOnce();
-        const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
+        const payload = lastPayload();
 
         // Subject and headline use the bare team name; the body keeps the
         // full participant titles.
@@ -150,7 +152,7 @@ describe("email rendering", () => {
         });
 
         expect(resendMock.send).toHaveBeenCalledOnce();
-        const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
+        const payload = lastPayload();
 
         expect(payload.text).toContain(
           "4:00 PM EDT - Knicks & Nets @ Celtics <Home>",
@@ -271,9 +273,7 @@ describe("nfl season opener header", () => {
       const payload = lastPayload();
 
       expect(payload.subject).toBe("Eagles play today");
-      expect(payload.html).toContain(
-        "/email/headlines/eagles-play-today.png",
-      );
+      expect(payload.html).toContain("/email/headlines/eagles-play-today.png");
       expect(payload.html).not.toContain("football-is-back.png");
       expect(payload.text).not.toContain("Football is back.");
     }),

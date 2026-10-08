@@ -61,9 +61,11 @@ const NotifyCommand = Command.make(
 const NotifyCli = Command.run(NotifyCommand, { version: "0.0.0" });
 
 export async function main() {
-  await JobsCliRuntime.runPromise(NotifyCli).finally(() =>
-    JobsCliRuntime.dispose(),
-  );
+  try {
+    await JobsCliRuntime.runPromise(NotifyCli);
+  } finally {
+    await JobsCliRuntime.dispose();
+  }
 }
 
 if (import.meta.main) {

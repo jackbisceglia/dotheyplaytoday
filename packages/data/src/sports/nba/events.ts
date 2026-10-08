@@ -1252,9 +1252,11 @@ export const events: readonly NbaSportEventSeed[] = Schedule.map(
 
 export const getTeamFeedIds = (team: string) =>
   events
+    .values()
     .filter((event) =>
       event.participants.some(
         (participant) => participant.details.title === team,
       ),
     )
-    .map((event) => event.sourceId);
+    .map((event) => event.sourceId)
+    .toArray();
