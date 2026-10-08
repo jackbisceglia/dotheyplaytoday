@@ -23,7 +23,6 @@ export const SportEventSeed = Schema.Struct({
   ...EventInsert.fields,
   _tag: Schema.Literal("sports_game"),
   details: SportEvent,
-  startsAt: Schema.DateTimeUtcFromString,
   participants: Schema.Array(
     ParticipantInsert.mapFields(
       ({ eventId: _eventId, id: _id, ...fields }) => fields,

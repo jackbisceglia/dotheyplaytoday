@@ -47,11 +47,12 @@ export const card = Schema.decodeUnknownSync(EventWithParticipants)({
     kind: "numbered",
     sourceUrl: "https://www.ufc.com/event/test",
     reviewedAt: "2026-10-01T00:00:00.000Z",
-    date: "2026-10-03",
+
     venue: null,
-    earlyPrelimsAt: null,
-    prelimsAt: "2026-10-03T23:00:00.000Z",
-    mainCardAt: "2026-10-04T02:00:00.000Z",
+    timings: {
+      prelims: "2026-10-03T23:00:00.000Z",
+      mainCard: "2026-10-04T02:00:00.000Z",
+    },
     bouts: [
       {
         id: "bout-1",

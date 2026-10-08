@@ -227,8 +227,10 @@ const shouldIncludeNflKickoffEvent = (
   return hasNflGame() && isNflKickoffDay();
 };
 
-const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
-  if (event.startsAt === null) return "Time TBD";
+const formatStartTime = (
+  event: Pick<EventWithParticipants, "startsAt">,
+  tz: User["timezone"],
+) => {
   const userLocaleDateTime = DateTime.setZone(event.startsAt, tz);
 
   return DateTime.format(userLocaleDateTime, {
@@ -334,7 +336,7 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
                 ),
               }),
               Note.make({
-                value: `${card.venue ?? "Venue TBD"}. ${mmaTimingText(card, timezone)}${event.startsAt === null ? ` Published date: ${card.date ?? "TBD"}; local date is unconfirmed.` : ""}`,
+                value: `${card.venue ?? "Venue TBD"}. Starts: ${formatStartTime(event, timezone)}. ${mmaTimingText(card, timezone)}`,
               }),
             ];
           });

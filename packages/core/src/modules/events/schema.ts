@@ -2,8 +2,7 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { sql } from "drizzle-orm";
-import { check, index, jsonb, text, uniqueIndex } from "drizzle-orm/pg-core";
+import { index, jsonb, text, uniqueIndex } from "drizzle-orm/pg-core";
 import { Schema } from "effect";
 
 import { postgresTable } from "../../lib/database/drizzle/index.js";
@@ -41,7 +40,7 @@ const overrides = {
   id: EventId,
   _tag: Schema.Literals(EventDetails.tags),
   sourceId: EventSourceId,
-  startsAt: Schema.NullOr(Schema.DateTimeUtcFromString),
+  startsAt: Schema.DateTimeUtcFromString,
   availability: EventAvailability,
   details: EventDetails,
 };
@@ -52,7 +51,7 @@ export const eventsTable = postgresTable(
     id: text().primaryKey(),
     _tag: text("_tag", { enum: EventDetails.tags }).notNull(),
     sourceId: text().notNull(),
-    startsAt: text(),
+    startsAt: text().notNull(),
     availability: text({ enum: EventAvailability.literals }).notNull(),
     details: jsonb()
       .notNull()
@@ -61,10 +60,6 @@ export const eventsTable = postgresTable(
   (table) => [
     uniqueIndex("events_tag_source_id_idx").on(table._tag, table.sourceId),
     index("events_starts_at_idx").on(table.startsAt),
-    check(
-      "events_known_sports_start",
-      sql`${table._tag} = 'mma_card' OR ${table.startsAt} IS NOT NULL`,
-    ),
   ],
 );
 
@@ -72,7 +67,4 @@ export type Event = typeof Event.Type;
 export const Event = createSelectSchema(eventsTable, overrides);
 
 export type EventInsert = typeof EventInsert.Type;
-export const EventInsert = createInsertSchema(eventsTable, {
-  ...overrides,
-  startsAt: Schema.optional(overrides.startsAt),
-});
+export const EventInsert = createInsertSchema(eventsTable, overrides);

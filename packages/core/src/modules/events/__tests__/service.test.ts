@@ -110,20 +110,15 @@ describe("user schedule", () => {
                 findMany: (options: {
                   where: {
                     availability: string;
-                    OR: readonly unknown[];
+                    startsAt: { gte: string; lt: string };
                     subjectEvents: { subjectId: string };
                   };
                 }) => {
                   expect(options.where.availability).toBe("active");
-                  expect(options.where.OR).toEqual([
-                    {
-                      startsAt: {
-                        gte: "2026-03-08T05:00:00.000Z",
-                        lt: "2026-03-22T04:00:00.000Z",
-                      },
-                    },
-                    { startsAt: { isNull: true }, _tag: "mma_card" },
-                  ]);
+                  expect(options.where.startsAt).toEqual({
+                    gte: "2026-03-08T05:00:00.000Z",
+                    lt: "2026-03-22T04:00:00.000Z",
+                  });
                   const games =
                     options.where.subjectEvents.subjectId === celtics.id
                       ? [shared, earlier]

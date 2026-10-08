@@ -46,7 +46,7 @@ picked shows the full schedule, and Edit clears the filter.
 
 - Only subscriptions whose user has `emailVerified: true` enter notification processing. Pending users are excluded at the database query, including forced and dry runs.
 - A schedule is a fixed local wall-clock time interpreted in the user's IANA timezone.
-- Known event start times are stored as UTC instants. UFC date-only cards follow the floating-date policy below. An event matches when its instant falls on the current calendar date in the user's timezone.
+- Event start times are required UTC instants for all sports, including UFC. An event matches when its instant falls on the current calendar date in the user's timezone.
 - Normal notification reads exclude cancelled events.
 - Notifications are scoped to one subscription and therefore one subject.
 - Multiple matching events for the same subscribed subject on the same day are combined into one notification.
@@ -112,13 +112,18 @@ share one email. Successful subscriptions are sent at most once per local date
 under ordinary scheduling. Rescheduling to a later local date can send again.
 Post-send correction alerts are outside this version.
 
-Cards expose broadcast segment times, never estimated fighter starts. The earliest
-known segment determines the recipient's local date. Without a confirmed instant,
-the advertised date is used as a floating date, with “Time TBD” and an unconfirmed
-local-date label. Cards without any known date are absent from dated schedules.
+Every card has a required event start instant, chosen as the earliest confirmed
+broadcast start. This is the sole anchor for local dates, schedules, and ordinary
+reminders, exactly as for sports games. The MMA variant adds a timings object
+with a required main-card instant and optional early-prelim/prelim instants.
+Emails and schedules use those fields for enrichment, never individual fight
+start estimates. Unannounced segments are omitted. Do not import a new card
+until its event and main-card starts are confirmed. Incomplete source updates
+retain previously confirmed timings; a confirmed postponement with no replacement
+time must explicitly deactivate the card until a new start is confirmed.
 Cancelled cards and cancelled bouts don't qualify. Partial source data doesn't
 remove omitted bouts. Catalog publication is a separate rollout step; coverage
 choices apply to catalogued UFC events.
 
-Backend and UI reader support and migration 0006 must be released before publishing UFC
+Backend and UI reader support must be released before publishing UFC
 catalog subjects and cards. Existing team subscriptions remain unchanged.

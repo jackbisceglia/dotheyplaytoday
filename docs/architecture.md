@@ -450,15 +450,18 @@ selection API, subscriptions table, shared four-pick policy, and notification
 orchestrator serve both sports and UFC. The subscription service rejects two
 coverage subjects in one selection. `mma_card` is an event variant with stable
 bout IDs and fighter subject references embedded in its details; no per-bout
-scheduling or home/away participant rows are created. Cards have nullable starts
-for date-only or postponed events. The database keeps sports starts mandatory.
+scheduling or home/away participant rows are created. Every event retains its
+required startsAt instant and the existing NOT NULL database constraint. UFC
+uses the earliest confirmed broadcast start; the variant's timings struct adds
+a required mainCard and optional earlyPrelims/prelims instants for rendering.
+The existing range queries, local-date handling, and notification scheduler are
+unchanged. No database migration is needed.
 
 Delivery remains per subscription, including last-send state and provider
 idempotency keys. UFC dashboard rendering follows in the third PR. Until then,
 the web interface narrows the expanded contracts to supported sports teams and
 games.
 
-Migration 0006 allows date-only MMA cards while retaining the database constraint
-that sports games have a known start. Publish UFC catalog data only after these
-backend and UI readers are released. The importer is the second PR and the UI
-is the third; keep UFC catalog publication gated until all three are ready.
+Release all backend and UI readers before UFC catalog publication. The importer
+is the second PR and the UI is the third; keep the seed revision gated until
+the complete stack is ready. No database migration or backfill is required.

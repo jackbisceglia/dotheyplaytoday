@@ -77,6 +77,7 @@ describe("email rendering", () => {
       Effect.gen(function* () {
         yield* send({ ...notification, subject: fighterA, events: [card] });
         expect(lastPayload().subject).toBe("Fighter A fights today");
+        expect(lastPayload().text).toContain("Starts: 7:00 PM EDT");
         expect(lastPayload().text).toContain(
           "Following Fighter A: Fighter A vs Fighter B (main)",
         );
@@ -91,12 +92,9 @@ describe("email rendering", () => {
           events: [
             {
               ...card,
-              startsAt: null,
               details: {
                 ...card.details,
-                earlyPrelimsAt: null,
-                prelimsAt: null,
-                mainCardAt: null,
+                timings: { mainCard: card.details.timings.mainCard },
                 bouts: card.details.bouts.map((bout) => ({
                   ...bout,
                   fighters: bout.fighters.slice(0, 1),
@@ -107,8 +105,8 @@ describe("email rendering", () => {
         });
         expect(lastPayload().subject).toBe("UFC cards today");
         expect(lastPayload().text).toContain("vs Opponent TBD");
-        expect(lastPayload().text).toContain("Main card: TBD");
-        expect(lastPayload().text).toContain("local date is unconfirmed");
+        expect(lastPayload().text).toContain("Main card: Oct 3, 10:00 PM EDT");
+        expect(lastPayload().text).not.toContain("Prelims:");
       }),
   );
 

@@ -1,15 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { DateTime, Schema } from "effect";
 
-import { MmaDate } from "../../events/variants/mma.schema.js";
+import { EventWithParticipants } from "../../events/participants/schema.js";
+import { MmaCard } from "../../events/variants/mma.schema.js";
 import { SubscriptionTiming } from "../../subscriptions/time.js";
 import { hasSingleMmaCoverage, toggleSubject } from "../selection.js";
-import {
-  eventInRange,
-  eventLocalDate,
-  mmaCardStart,
-  mmaTimingText,
-} from "../time.js";
+import { mmaTimingText } from "../time.js";
 import { all, card, fighterA, fighterB, numbered, ny } from "./fixtures.js";
 
 if (card.details._tag !== "mma_card") throw new Error("Expected MMA fixture");
@@ -28,7 +24,6 @@ describe("MMA selection and timing", () => {
     expect(hasSingleMmaCoverage([fighterA, all])).toBe(true);
   });
   it("uses earliest known broadcast start, never an individual fight time", () => {
-    expect(mmaCardStart(details)).toEqual(card.startsAt);
     expect(mmaTimingText(details, ny)).toContain(
       "Main card: Oct 3, 10:00 PM EDT",
     );
@@ -36,63 +31,49 @@ describe("MMA selection and timing", () => {
       "Individual fight times are not scheduled",
     );
     expect(
-      eventLocalDate(card, DateTime.zoneMakeNamedUnsafe("Asia/Tokyo")),
+      SubscriptionTiming.formatLocalDate(
+        card.startsAt,
+        DateTime.zoneMakeNamedUnsafe("Asia/Tokyo"),
+      ),
     ).toBe("2026-10-04");
   });
-  it("handles date-only, dateless and cancelled cards without inventing instants", () => {
-    const range = SubscriptionTiming.localDayUtcRange({
-      nowUtc: DateTime.makeUnsafe("2026-10-03T12:00:00Z"),
-      timezone: ny,
+  it("requires event and main-card starts while allowing unannounced prelims", () => {
+    const encoded = Schema.encodeSync(EventWithParticipants)(card);
+    expect(() =>
+      Schema.decodeUnknownSync(EventWithParticipants)({
+        ...encoded,
+        startsAt: null,
+      }),
+    ).toThrow();
+    const { startsAt: _startsAt, ...missingStart } = encoded;
+    expect(() =>
+      Schema.decodeUnknownSync(EventWithParticipants)(missingStart),
+    ).toThrow();
+    const encodedDetails = Schema.encodeSync(MmaCard)(details);
+    expect(() =>
+      Schema.decodeUnknownSync(MmaCard)({
+        ...encodedDetails,
+        timings: {},
+      }),
+    ).toThrow();
+    const mainOnly = Schema.decodeUnknownSync(MmaCard)({
+      ...encodedDetails,
+      timings: { mainCard: encodedDetails.timings.mainCard },
     });
-    const unknownTime = {
-      ...card,
-      startsAt: null,
-      details: {
+    expect(mmaTimingText(mainOnly, ny)).not.toContain("Prelims:");
+  });
+  it("formats broadcast segments across the DST fallback independently", () => {
+    const text = mmaTimingText(
+      {
         ...details,
-        earlyPrelimsAt: null,
-        prelimsAt: null,
-        mainCardAt: null,
-      },
-    };
-    expect(mmaCardStart(unknownTime.details)).toBeNull();
-    expect(eventLocalDate(unknownTime, ny)).toBe("2026-10-03");
-    expect(eventInRange(unknownTime, range, ny)).toBe(true);
-    expect(
-      eventInRange(
-        { ...unknownTime, details: { ...unknownTime.details, date: null } },
-        range,
-        ny,
-      ),
-    ).toBe(false);
-    expect(
-      eventInRange(
-        {
-          ...unknownTime,
-          details: { ...unknownTime.details, date: "2026-10-04" },
+        timings: {
+          prelims: DateTime.makeUnsafe("2026-11-01T05:30:00Z"),
+          mainCard: DateTime.makeUnsafe("2026-11-01T06:30:00Z"),
         },
-        range,
-        ny,
-      ),
-    ).toBe(false);
-  });
-  it("respects a 25-hour DST day and its exclusive end", () => {
-    const range = SubscriptionTiming.localDayUtcRange({
-      nowUtc: DateTime.makeUnsafe("2026-11-01T12:00:00Z"),
-      timezone: ny,
-    });
-    expect(
-      eventInRange(
-        { ...card, startsAt: DateTime.makeUnsafe("2026-11-02T04:59:00Z") },
-        range,
-        ny,
-      ),
-    ).toBe(true);
-    expect(eventInRange({ ...card, startsAt: range.to }, range, ny)).toBe(
-      false,
+      },
+      ny,
     );
-  });
-  it("rejects impossible calendar dates", () => {
-    expect(() => Schema.decodeUnknownSync(MmaDate)("2026-02-30")).toThrow();
-    expect(Schema.decodeUnknownSync(MmaDate)("2028-02-29")).toBe("2028-02-29");
+    expect(text).toContain("Prelims: Nov 1, 1:30 AM EDT");
+    expect(text).toContain("Main card: Nov 1, 1:30 AM EST");
   });
 });

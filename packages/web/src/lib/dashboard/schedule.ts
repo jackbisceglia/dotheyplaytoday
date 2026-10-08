@@ -46,9 +46,7 @@ export function scheduleRows(
     .flatMap(({ subject: team, events }) =>
       isSportsSubject(team)
         ? events.flatMap((event) =>
-            event.details._tag === "sports_game" && event.startsAt !== null
-              ? [{ team, event: { ...event, startsAt: event.startsAt } }]
-              : [],
+            event.details._tag === "sports_game" ? [{ team, event }] : [],
           )
         : [],
     )

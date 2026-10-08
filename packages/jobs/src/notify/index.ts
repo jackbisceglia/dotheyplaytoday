@@ -105,7 +105,6 @@ const notifyOneRecipient = Effect.fn("Notify.notifyOneRecipient")(
 
     const eventsToday = yield* events.listBySubject(subscription.subject.id, {
       range,
-      timezone: user.timezone,
     });
 
     const eventsToInclude = yield* requireHasEventsToday(eventsToday, ctx);
