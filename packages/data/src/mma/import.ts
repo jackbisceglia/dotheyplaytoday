@@ -56,7 +56,7 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
     });
   }
   for (const card of data.cards) {
-    if (!card.details.sourceUrl.startsWith("https://www.ufc.com/")) {
+    if (!card.sourceUrl.startsWith("https://www.ufc.com/")) {
       return yield* new InvalidMmaImport({
         message: "Cards require an official UFC source",
       });

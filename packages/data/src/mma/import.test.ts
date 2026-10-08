@@ -15,7 +15,7 @@ import {
 import { createDatabaseLayer } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { EventId, EventSourceId } from "@dtpt/core/modules/events/schema";
-import { MmaCard } from "@dtpt/core/modules/events/variants/mma.schema";
+import { MmaEvent } from "@dtpt/core/modules/events/variants/mma.schema";
 import { SubjectId } from "@dtpt/core/modules/subjects/schema";
 import {
   EmailAddressFromString,
@@ -66,7 +66,7 @@ describe("MMA import boundaries", () => {
   it("decodes repeatable curated seeds and rejects unsupported event categories", () => {
     expect(Schema.encodeSync(MmaImport)(decoded)).toEqual(ufcCatalog);
     expect(() =>
-      Schema.decodeUnknownSync(MmaCard)({
+      Schema.decodeUnknownSync(MmaEvent)({
         ...ufcCatalog.cards[0]?.details,
         kind: "contender_series",
       }),
@@ -268,7 +268,7 @@ describe("UFC PostgreSQL integration", () => {
                       startsAt,
                       availability,
                       boutsComplete: complete,
-                      details: Schema.encodeSync(MmaCard)(details),
+                      details: Schema.encodeSync(MmaEvent)(details),
                     },
                   ],
                 });
@@ -276,7 +276,7 @@ describe("UFC PostgreSQL integration", () => {
               const renamed = {
                 ...first.details,
                 title: "UFC 332: Updated headliner",
-                venue: "New venue",
+                venue: { title: "New venue", location: "New city" },
                 reviewedAt: DateTime.makeUnsafe("2026-10-04T12:00:00Z"),
                 bouts: [],
               };
@@ -322,7 +322,9 @@ describe("UFC PostgreSQL integration", () => {
                 {
                   ...replacement,
                   timings: {
-                    mainCard: DateTime.makeUnsafe("2026-10-05T22:00:00Z"),
+                    early: null,
+                    prelims: DateTime.makeUnsafe("2026-10-05T20:00:00Z"),
+                    main: DateTime.makeUnsafe("2026-10-05T22:00:00Z"),
                   },
                 },
                 false,

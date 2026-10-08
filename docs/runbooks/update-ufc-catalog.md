@@ -33,7 +33,8 @@ only cards in the existing two-day seed window.
 Use [UFC's event listings](https://www.ufc.com/events), each official UFC event
 page, official event-update announcements, and
 [UFC athlete profiles](https://www.ufc.com/athletes/all). Store the consulted
-UFC URL and review timestamp on every card. Never infer a cancellation from a
+UFC URL on each import record and review timestamp in the event details.
+The URL is import provenance; the stored revision prevents stale reimports. Never infer a cancellation from a
 missing search result, a failed scrape, or a shortened broadcast listing.
 
 The initial catalog contains the confirmed headliners of
@@ -56,13 +57,14 @@ complete cards. Adding other supported fighters does not require an upcoming bou
    fighter subjects just because they withdrew or have no upcoming card.
 4. Card metadata is a full, reviewed snapshot, even when the bout list is partial.
    Missing source fields are **not** permission to clear known metadata: retain
-   prior confirmed values. Use null only for confirmed unknown/unannounced data.
+   prior confirmed values. Venue and all timing keys are required. Use early: null
+   only when the card has no separate early-prelim segment.
    Advance `reviewedAt` for each update. Older card snapshots are ignored. Reuse
    the same revision and payload for retries.
 5. Mark a cancelled card `availability: "cancelled"`; do not delete it. For a
-   postponement without a confirmed replacement date, clear the published date
-   and all broadcast times. The card stays catalogued but is absent from dated
-   schedules/reminders. Preserve IDs when the new date arrives.
+   postponement without a confirmed replacement time, mark it cancelled while
+   retaining the last confirmed start and timings. It remains absent from dated
+   schedules/reminders until reactivated with confirmed times and the same ID.
 6. Imports rebuild UFC feed edges for each included card only, inside the same
    transaction as the card update. They never remove omitted cards, unrelated
    league edges, users, or subscriptions. Numbered cards match both coverage
@@ -78,8 +80,10 @@ against the source's published offset. Never estimate individual bout times.
 Every imported card must supply a confirmed event-level startsAt instant, chosen
 as the earliest confirmed broadcast start. It is the single scheduling anchor,
 using the same local-day and DST behavior as sports games. The MMA details.timings
-object supplies mainCard (required), prelims and earlyPrelims (optional) for email
-and schedule enrichment. Omit unannounced segments; never fabricate an instant.
+object supplies required early/prelims/main keys for email and schedule
+enrichment. Early is null only when there is no separate early-prelim segment.
+Prelims and main must be confirmed instants, ordered after any early-prelim start.
+Never fabricate an instant. The venue is a required title/location struct.
 
 Hold new cards without confirmed event/main-card times out of the import. Missing
 timings in a partial source update do not erase the last confirmed values: carry
@@ -107,7 +111,7 @@ explicit operational step.
 No new database migration or subscription backfill is required. The event table
 and required startsAt field retain their current shape. Release all API/jobs/web
 readers with support for the new variants before enabling catalog revision
-2026-10-07.1. The importer is PR 2 and UI is PR 3: keep catalog publication gated
+2026-10-08.1. The importer is PR 2 and UI is PR 3: keep catalog publication gated
 until the complete stack is ready. The standard Alchemy action seeds during
 deployment, so coordinate that action with the reader rollout. Rolling readers
 back after publishing UFC data requires removing/archiving that data and its
