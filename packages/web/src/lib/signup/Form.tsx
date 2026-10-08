@@ -1,3 +1,4 @@
+import { toggleSubject } from "@dtpt/core/modules/mma/selection";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
@@ -5,11 +6,7 @@ import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { withApiClient } from "../api.js";
-import {
-  getSportsLogo,
-  isSportsSubject,
-  type SportsSubject,
-} from "../catalog/sports/index.js";
+import { getSportsLogo, subjectAbbreviation } from "../catalog/sports/index.js";
 import {
   defaultTimezone,
   detectTimezone,
@@ -23,19 +20,19 @@ import { useSelectionRejection } from "../ui/useSelectionRejection.js";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
-const capacityHint = `You can select up to ${subjectCapacity.toString()} teams. Remove one before selecting another.`;
+const capacityHint = `You can select up to ${subjectCapacity.toString()} picks. Remove one before selecting another.`;
 type InvalidControl = "teams" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
   Match.value(error).pipe(
     Match.when(
       { _tag: "BadRequest" },
-      () => "Check your email, timezone, send time, and teams, then try again.",
+      () => "Check your email, timezone, send time, and picks, then try again.",
     ),
     Match.when(
       { _tag: "DuplicateSignup" },
       () =>
-        "You already have an account. We’ve emailed you a link to sign in. Your existing teams and schedule haven’t changed.",
+        "You already have an account. We’ve emailed you a link to sign in. Your existing picks and schedule haven’t changed.",
     ),
     Match.when(
       { _tag: "SignupRateLimited" },
@@ -58,10 +55,8 @@ type FormProps = {
 export function Form(props: FormProps) {
   const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set());
   const selectedTeams = createMemo(() => {
-    const teamsById = new Map<string, SportsSubject>(
-      props.subjects
-        .filter(isSportsSubject)
-        .map((team) => [team.id, team] as const),
+    const teamsById = new Map<string, Subject>(
+      props.subjects.map((team) => [team.id, team] as const),
     );
 
     return [...selected()].flatMap((teamId) => {
@@ -91,18 +86,14 @@ export function Form(props: FormProps) {
   let successTitle: HTMLHeadingElement | undefined;
 
   const toggleTeam = (teamId: string) => {
-    const current = selected();
-
-    if (!current.has(teamId) && current.size >= subjectCapacity) {
+    const subject = props.subjects.find((pick) => pick.id === teamId);
+    if (!subject) return;
+    const next = toggleSubject(selectedTeams(), subject);
+    if (next.length > subjectCapacity) {
       rejectSelection(teamId);
       return;
     }
-
-    const next = new Set(current);
-    if (next.has(teamId)) next.delete(teamId);
-    else next.add(teamId);
-
-    setSelected(next);
+    setSelected(new Set(next.map((pick) => pick.id)));
     setTeamError(undefined);
     clearRejection();
   };
@@ -118,7 +109,7 @@ export function Form(props: FormProps) {
     }
 
     if (teamsInvalid) {
-      setTeamError("Pick at least one team.");
+      setTeamError("Make at least one pick.");
     }
 
     if (sendTimeInvalid) {
@@ -254,7 +245,7 @@ export function Form(props: FormProps) {
                           {getSportsLogo(team.details)}
                         </span>
                         <strong aria-hidden="true">
-                          {team.details.abbreviation}
+                          {subjectAbbreviation(team.details)}
                         </strong>
                         <span class="visually-hidden">
                           {team.details.display}
@@ -267,7 +258,7 @@ export function Form(props: FormProps) {
               <span
                 class="form-label selection-summary-count"
                 aria-live="polite"
-                aria-label={`${selected().size.toString()} of ${subjectCapacity.toString()} teams selected`}
+                aria-label={`${selected().size.toString()} of ${subjectCapacity.toString()} picks selected`}
               >
                 {selected().size}/{subjectCapacity}
               </span>

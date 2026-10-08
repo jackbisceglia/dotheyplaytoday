@@ -1969,3 +1969,10 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
     letter-spacing: 0.1em;
   }
 }
+
+.ufc-card-detail {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+}

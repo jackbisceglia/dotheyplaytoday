@@ -3,8 +3,8 @@ import { For, Match, Show, Switch } from "solid-js";
 
 import {
   getSportsLogo,
-  isSportsSubject,
-  type SportsSubject,
+  subjectAbbreviation,
+  subjectName,
 } from "../catalog/sports/index.js";
 
 // The same tiles in view and edit mode, so editing only adds controls around
@@ -28,7 +28,7 @@ export function Roster(props: {
 
   return (
     <div class="roster">
-      <For each={props.teams.filter(isSportsSubject)}>
+      <For each={props.teams}>
         {(team) => (
           <Show
             when={props.editing}
@@ -75,12 +75,12 @@ export function Roster(props: {
           <Switch fallback={<div class="roster-slot" aria-hidden="true" />}>
             <Match when={index() === 0 && !props.editing}>
               <button class="roster-slot" type="button" onClick={props.onAdd}>
-                + Add team
+                + Add pick
               </button>
             </Match>
             <Match when={index() === 0 && props.teams.length === 0}>
               <p class="roster-slot roster-slot-error" role="alert">
-                Pick a team to save
+                Make a pick to save
               </p>
             </Match>
           </Switch>
@@ -90,17 +90,19 @@ export function Roster(props: {
   );
 }
 
-function RosterTeamLabel(props: { readonly team: SportsSubject }) {
+function RosterTeamLabel(props: { readonly team: Subject }) {
   return (
     <>
       <span class="team-glyph" aria-hidden="true">
         {getSportsLogo(props.team.details)}
       </span>
       <span class="roster-team-text">
-        <span class="team-abbr">{props.team.details.abbreviation}</span>
+        <span class="team-abbr">{subjectAbbreviation(props.team.details)}</span>
         <span class="team-name">
-          {props.team.details.name}
-          <span aria-hidden="true"> · </span>
+          <Show when={props.team.details._tag === "sports_team"}>
+            {subjectName(props.team.details)}
+            <span aria-hidden="true"> · </span>
+          </Show>
           {props.team.details.leagueId.toUpperCase()}
         </span>
       </span>

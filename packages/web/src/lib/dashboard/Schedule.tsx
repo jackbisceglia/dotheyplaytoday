@@ -152,7 +152,51 @@ export function Schedule(props: {
                         {getSportsLogo(row.team.details)}
                       </span>
                       <span class="dashboard-schedule-matchup">
-                        <strong>{row.teamName}</strong>
+                        <Show
+                          when={row.mma}
+                          fallback={<strong>{row.teamName}</strong>}
+                        >
+                          {(mma) => (
+                            <>
+                              <strong>{mma().title}</strong>
+                              <span class="ufc-card-detail">
+                                Matched:{" "}
+                                {mma()
+                                  .reasons.map(
+                                    (reason) => reason.details.display,
+                                  )
+                                  .join(", ")}
+                              </span>
+                              <For each={mma().bouts}>
+                                {(bout) => (
+                                  <span class="ufc-card-detail">
+                                    <For each={bout.fighters}>
+                                      {(fighter, index) => (
+                                        <>
+                                          {index() > 0 ? " vs " : ""}
+                                          <Show
+                                            when={mma().followedFighterIds.has(
+                                              fighter.subjectId,
+                                            )}
+                                            fallback={fighter.title}
+                                          >
+                                            <strong>{fighter.title}</strong>
+                                          </Show>
+                                        </>
+                                      )}
+                                    </For>
+                                    {bout.fighters.length === 1
+                                      ? " vs Opponent TBD"
+                                      : ""}
+                                  </span>
+                                )}
+                              </For>
+                              <span class="ufc-card-detail">
+                                {mma().timing}
+                              </span>
+                            </>
+                          )}
+                        </Show>
                         <Show when={row.opponent}>
                           {" "}
                           <span>{row.matchup}</span>{" "}

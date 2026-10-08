@@ -481,8 +481,7 @@ imported card. Sports feed writes retain their existing additive behavior. Check
 through the ordinary event upsert. Omitted cards remain untouched; source review
 preserves known information when upstream listings are incomplete. Delivery
 remains per subscription, including last-send state and provider idempotency keys.
-UFC dashboard rendering follows in the third PR. Until then, the web interface
-narrows the expanded contracts to sports teams and games.
+Dashboard cards deduplicate by event ID and collect all matching subjects.
 
 See [UFC catalog updates](./runbooks/update-ufc-catalog.md) for source authority,
 broadcast timing, rollout ordering, and the local PostgreSQL integration test.

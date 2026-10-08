@@ -1,11 +1,12 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import type { ParentProps } from "solid-js";
-import { createMemo, createSignal, For } from "solid-js";
+import { createMemo, createSignal, For, Show } from "solid-js";
 import {
   getTeams,
   getSportsLogo,
   leagues as sportsLeagues,
 } from "../catalog/sports/index.js";
+import { UfcPicker } from "./UfcPicker.jsx";
 import { ComingSoon } from "./ComingSoon.jsx";
 
 const comingSoonLeagues = ["EPL"] as const;
@@ -38,10 +39,12 @@ export function TeamPicker(props: {
     const selected = selectedLeague();
     const available = leagues();
 
-    return available.some((league) => league.id === selected)
+    return selected === "ufc" ||
+      available.some((league) => league.id === selected)
       ? selected
-      : (available[0]?.id ?? "");
+      : (available[0]?.id ?? "ufc");
   });
+
   return (
     <>
       <fieldset class="form-section">
@@ -59,6 +62,20 @@ export function TeamPicker(props: {
               </button>
             )}
           </For>
+          <Show
+            when={props.subjects.some(
+              (subject) => subject.details.leagueId === "ufc",
+            )}
+          >
+            <button
+              class="league-pill"
+              type="button"
+              aria-pressed={activeLeague() === "ufc" ? "true" : "false"}
+              onClick={() => setSelectedLeague("ufc")}
+            >
+              UFC
+            </button>
+          </Show>
           <For each={comingSoonLeagues}>
             {(league) => <ComingSoon class="league-pill">{league}</ComingSoon>}
           </For>
@@ -70,7 +87,15 @@ export function TeamPicker(props: {
         class="form-section team-grids"
         aria-describedby={props.errorId}
       >
-        <legend class="visually-hidden">Teams</legend>
+        <legend class="visually-hidden">Picks</legend>
+        <Show when={activeLeague() === "ufc"}>
+          <UfcPicker
+            subjects={props.subjects}
+            selected={props.selected}
+            rejectedSelectionId={props.rejectedSelectionId}
+            onToggle={props.onToggle}
+          />
+        </Show>
         <For each={leagues()}>
           {(league) => (
             <div class="team-grid" hidden={activeLeague() !== league.id}>

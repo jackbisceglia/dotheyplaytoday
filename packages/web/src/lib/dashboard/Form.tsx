@@ -1,3 +1,4 @@
+import { toggleSubject } from "@dtpt/core/modules/mma/selection";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { useSearchParams } from "@solidjs/router";
@@ -55,7 +56,7 @@ export function Form(props: {
     message: undefined,
   });
   const rejection = useSelectionRejection(
-    `You can pick up to ${capacity.toString()} teams. Remove one to make room.`,
+    `You can pick up to ${capacity.toString()} picks. Remove one to make room.`,
   );
   let editButton: HTMLButtonElement | undefined;
   let editorTitle: HTMLHeadingElement | undefined;
@@ -98,15 +99,13 @@ export function Form(props: {
   };
   const toggle = (team: Subject) => {
     if (state.mode !== "editing") return;
-    const isSelected = state.teams.some((picked) => picked.id === team.id);
-    if (!isSelected && state.teams.length >= capacity) {
+    const next = toggleSubject(state.teams, team);
+    if (next.length > capacity) {
       rejection.rejectSelection(team.id);
       return;
     }
     setState((draft) => {
-      draft.teams = isSelected
-        ? draft.teams.filter((picked) => picked.id !== team.id)
-        : [...draft.teams, team];
+      draft.teams = next;
       draft.error = undefined;
     });
     rejection.clearRejection();
@@ -182,7 +181,7 @@ export function Form(props: {
         }}
       />
       <p class="visually-hidden" aria-live="polite">
-        {teams().length} of {capacity} teams picked
+        {teams().length} of {capacity} picks selected
       </p>
       <Roster
         teams={teams()}
