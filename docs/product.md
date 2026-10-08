@@ -115,9 +115,10 @@ Post-send correction alerts are outside this version.
 Every card has a required event start instant, chosen as the earliest confirmed
 broadcast start. This is the sole anchor for local dates, schedules, and ordinary
 reminders, exactly as for sports games. The MMA variant adds a timings object
-with a required main-card instant and optional early-prelim/prelim instants.
+with required early, prelims, and main keys. Early is null only when there is
+no separate early-prelim segment; prelims and main are confirmed instants.
 Emails and schedules use those fields for enrichment, never individual fight
-start estimates. Unannounced segments are omitted. Do not import a new card
+start estimates. Do not invent missing segment times. Do not import a new card
 until its event and main-card starts are confirmed. Incomplete source updates
 retain previously confirmed timings; a confirmed postponement with no replacement
 time must explicitly deactivate the card until a new start is confirmed.

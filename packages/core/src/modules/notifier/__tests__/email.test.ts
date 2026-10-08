@@ -81,7 +81,7 @@ describe("email rendering", () => {
         expect(lastPayload().text).toContain(
           "Following Fighter A: Fighter A vs Fighter B (main)",
         );
-        expect(lastPayload().text).toContain(
+        expect(lastPayload().text).not.toContain(
           "Individual fight times are not scheduled",
         );
         resendMock.send.mockClear();
@@ -94,7 +94,7 @@ describe("email rendering", () => {
               ...card,
               details: {
                 ...card.details,
-                timings: { mainCard: card.details.timings.mainCard },
+                timings: { ...card.details.timings, early: null },
                 bouts: card.details.bouts.map((bout) => ({
                   ...bout,
                   fighters: bout.fighters.slice(0, 1),
@@ -106,8 +106,22 @@ describe("email rendering", () => {
         expect(lastPayload().subject).toBe("UFC cards today");
         expect(lastPayload().text).toContain("vs Opponent TBD");
         expect(lastPayload().text).toContain("Main card: Oct 3, 10:00 PM EDT");
-        expect(lastPayload().text).not.toContain("Prelims:");
+        expect(lastPayload().text).not.toContain("Early prelims:");
       }),
+  );
+
+  it.effect("rejects a mixed sports/MMA feed before sending", () =>
+    Effect.gen(function* () {
+      const result = yield* Effect.exit(
+        send({
+          ...notification,
+          subject: all,
+          events: [card, ...notification.events],
+        }),
+      );
+      expect(Exit.isFailure(result)).toBe(true);
+      expect(resendMock.send).not.toHaveBeenCalled();
+    }),
   );
 
   it.effect(

@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 import { DateTime, Schema } from "effect";
 
 import { EventWithParticipants } from "../../events/participants/schema.js";
-import { MmaCard } from "../../events/variants/mma.schema.js";
+import { MmaEvent } from "../../events/variants/mma.schema.js";
 import { SubscriptionTiming } from "../../subscriptions/time.js";
-import { hasSingleMmaCoverage, toggleSubject } from "../selection.js";
+import {
+  hasConflictingSelections,
+  toggleSubscriptionSelection,
+} from "../../subscriptions/selection.js";
 import { mmaTimingText } from "../time.js";
 import { all, card, fighterA, fighterB, numbered, ny } from "./fixtures.js";
 
@@ -13,21 +16,24 @@ const details = card.details;
 
 describe("MMA selection and timing", () => {
   it("replaces coverage while preserving fighters, and counts it as one pick", () => {
-    expect(toggleSubject([fighterA, fighterB, numbered], all)).toEqual([
+    expect(
+      toggleSubscriptionSelection([fighterA, fighterB, numbered], all),
+    ).toEqual([fighterA, fighterB, all]);
+    expect(toggleSubscriptionSelection([fighterA, all], all)).toEqual([
       fighterA,
-      fighterB,
-      all,
     ]);
-    expect(toggleSubject([fighterA, all], all)).toEqual([fighterA]);
-    expect(toggleSubject([all], fighterA)).toEqual([all, fighterA]);
-    expect(hasSingleMmaCoverage([numbered, all])).toBe(false);
-    expect(hasSingleMmaCoverage([fighterA, all])).toBe(true);
+    expect(toggleSubscriptionSelection([all], fighterA)).toEqual([
+      all,
+      fighterA,
+    ]);
+    expect(hasConflictingSelections([numbered, all])).toBe(true);
+    expect(hasConflictingSelections([fighterA, all])).toBe(false);
   });
   it("uses earliest known broadcast start, never an individual fight time", () => {
     expect(mmaTimingText(details, ny)).toContain(
       "Main card: Oct 3, 10:00 PM EDT",
     );
-    expect(mmaTimingText(details, ny)).toContain(
+    expect(mmaTimingText(details, ny)).not.toContain(
       "Individual fight times are not scheduled",
     );
     expect(
@@ -37,7 +43,7 @@ describe("MMA selection and timing", () => {
       ),
     ).toBe("2026-10-04");
   });
-  it("requires event and main-card starts while allowing unannounced prelims", () => {
+  it("requires event starts and complete, ordered broadcast timing keys", () => {
     const encoded = Schema.encodeSync(EventWithParticipants)(card);
     expect(() =>
       Schema.decodeUnknownSync(EventWithParticipants)({
@@ -49,26 +55,56 @@ describe("MMA selection and timing", () => {
     expect(() =>
       Schema.decodeUnknownSync(EventWithParticipants)(missingStart),
     ).toThrow();
-    const encodedDetails = Schema.encodeSync(MmaCard)(details);
+    const encodedDetails = Schema.encodeSync(MmaEvent)(details);
     expect(() =>
-      Schema.decodeUnknownSync(MmaCard)({
+      Schema.decodeUnknownSync(MmaEvent)({
         ...encodedDetails,
         timings: {},
       }),
     ).toThrow();
-    const mainOnly = Schema.decodeUnknownSync(MmaCard)({
+    for (const invalid of [
+      { main: encodedDetails.timings.main },
+      {
+        early: null,
+        prelims: encodedDetails.timings.main,
+        main: encodedDetails.timings.prelims,
+      },
+    ]) {
+      expect(() =>
+        Schema.decodeUnknownSync(MmaEvent)({
+          ...encodedDetails,
+          timings: invalid,
+        }),
+      ).toThrow();
+    }
+    const twoPart = Schema.decodeUnknownSync(MmaEvent)({
       ...encodedDetails,
-      timings: { mainCard: encodedDetails.timings.mainCard },
+      timings: { ...encodedDetails.timings, early: null },
     });
-    expect(mmaTimingText(mainOnly, ny)).not.toContain("Prelims:");
+    expect(mmaTimingText(twoPart, ny)).not.toContain("Early prelims:");
+  });
+  it("requires a structured venue and a known bout placement", () => {
+    const encoded = Schema.encodeSync(MmaEvent)(details);
+    for (const venue of [null, "Test arena", { title: "Test arena" }]) {
+      expect(() =>
+        Schema.decodeUnknownSync(MmaEvent)({ ...encoded, venue }),
+      ).toThrow();
+    }
+    expect(() =>
+      Schema.decodeUnknownSync(MmaEvent)({
+        ...encoded,
+        bouts: encoded.bouts.map((bout) => ({ ...bout, placement: "unknown" })),
+      }),
+    ).toThrow();
   });
   it("formats broadcast segments across the DST fallback independently", () => {
     const text = mmaTimingText(
       {
         ...details,
         timings: {
+          early: null,
           prelims: DateTime.makeUnsafe("2026-11-01T05:30:00Z"),
-          mainCard: DateTime.makeUnsafe("2026-11-01T06:30:00Z"),
+          main: DateTime.makeUnsafe("2026-11-01T06:30:00Z"),
         },
       },
       ny,

@@ -9,7 +9,7 @@ import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
-import { MmaCard } from "./variants/mma.schema.js";
+import { MmaEvent } from "./variants/mma.schema.js";
 import { SportEvent } from "./variants/sport.schema.js";
 
 export type EventSchemasMatchTable = Check<
@@ -31,7 +31,7 @@ export const EventSourceId = Schema.String.check(
 ).pipe(Schema.brand("EventSourceId"));
 
 export type EventDetails = typeof EventDetails.Type;
-export const EventDetails = TaggedUnion([SportEvent, MmaCard]);
+export const EventDetails = TaggedUnion([SportEvent, MmaEvent]);
 
 export type EventAvailability = typeof EventAvailability.Type;
 export const EventAvailability = Schema.Literals(["active", "cancelled"]);

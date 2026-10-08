@@ -1,9 +1,9 @@
 import { DateTime } from "effect";
 
-import type { MmaCard } from "../events/variants/mma.schema.js";
+import type { MmaEvent } from "../events/variants/mma.schema.js";
 
 export const mmaTimingText = (
-  card: MmaCard,
+  card: MmaEvent,
   timezone: DateTime.TimeZone.Named,
 ): string => {
   const format = (value: DateTime.Utc) =>
@@ -17,14 +17,12 @@ export const mmaTimingText = (
       timeZoneName: "short",
     });
   const segments = [
-    ...(card.timings.earlyPrelims
-      ? ["Early prelims: " + format(card.timings.earlyPrelims)]
+    ...(card.timings.early
+      ? ["Early prelims: " + format(card.timings.early)]
       : []),
-    ...(card.timings.prelims
-      ? ["Prelims: " + format(card.timings.prelims)]
-      : []),
-    "Main card: " + format(card.timings.mainCard),
+    "Prelims: " + format(card.timings.prelims),
+    "Main card: " + format(card.timings.main),
   ];
 
-  return segments.join(" · ") + ". Individual fight times are not scheduled.";
+  return segments.join(" · ");
 };
