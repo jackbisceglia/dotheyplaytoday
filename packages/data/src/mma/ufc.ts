@@ -42,14 +42,11 @@ export const ufcCatalog = {
       availability: "active",
       sourceUrl: "https://www.ufc.com/event/ufc-332",
       startsAt: "2026-10-03T20:00:00.000Z",
-      boutsComplete: false,
       details: {
         _tag: "mma_card",
         leagueId: "ufc",
         title: "UFC 332: Silva vs Wang",
         kind: "numbered",
-        reviewedAt: "2026-10-03T12:00:00.000Z",
-
         venue: { title: "Delta Center", location: "Salt Lake City" },
         timings: {
           early: "2026-10-03T20:00:00.000Z",
@@ -58,8 +55,6 @@ export const ufcCatalog = {
         },
         bouts: [
           {
-            id: "94f93873-805a-44e0-a08d-000000000001",
-            status: "scheduled",
             placement: "main",
             fighters: fighters.slice(0, 2).map((fighter) => ({
               subjectId: fighter.id,
@@ -70,6 +65,6 @@ export const ufcCatalog = {
       },
     },
     // Allen–Duncan remains pending until all three broadcast times are confirmed.
-    // Its allocated card/bout IDs are reserved in the catalog runbook.
+    // Its allocated card ID is reserved in the catalog runbook.
   ],
 } satisfies MmaImportInput;

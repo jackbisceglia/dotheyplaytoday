@@ -24,8 +24,6 @@ export const MmaImport = Schema.Struct({
       availability: EventAvailability,
       sourceUrl: Schema.NonEmptyString,
       startsAt: EventInsert.fields.startsAt,
-      // Completeness applies ONLY to this card's bout list. Absent cards are untouched.
-      boutsComplete: Schema.Boolean,
       details: MmaEvent,
     }),
   ),

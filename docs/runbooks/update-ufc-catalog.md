@@ -33,35 +33,35 @@ only cards in the existing two-day seed window.
 Use [UFC's event listings](https://www.ufc.com/events), each official UFC event
 page, official event-update announcements, and
 [UFC athlete profiles](https://www.ufc.com/athletes/all). Store the consulted
-UFC URL on each import record and review timestamp in the event details.
-The URL is import provenance; the stored revision prevents stale reimports. Never infer a cancellation from a
+UFC URL on each import record. Git history and the catalog seed version track
+updates; there is no separate per-card revision or stale-snapshot check. Never infer a cancellation from a
 missing search result, a failed scrape, or a shortened broadcast listing.
 
 The initial published card is [UFC 332](https://www.ufc.com/event/ufc-332),
 reviewed October 3, 2026. Allen–Duncan is held out because its reviewed source
 does not confirm all three required broadcast timestamps. Its fighters remain
 followable. Reserve card/source UUID b51165b6-7428-4620-a02e-000000000002
-and bout UUID 94f93873-805a-44e0-a08d-000000000002 for a later confirmed import. Their lists are partial, not the complete UFC roster or
-complete cards. Adding other supported fighters does not require an upcoming bout.
+for a later confirmed import. The initial catalog lists supported headliners,
+not the complete UFC roster or full lineups. Adding other supported fighters does not require an upcoming bout.
 
-1. Allocate a UUID once for each new fighter, card, and bout. Keep a card's
+1. Allocate a UUID once for each new fighter and card. Keep a card's
    `sourceId` (`mma_card:ufc:<allocated UUID>`) and `id` forever. Do not derive IDs
    from a title, headliner, URL, venue, scheduled date, or opponent names. Search
    the checked-in catalog before allocating; fighter profile slugs can change.
-2. Rename fighters or cards in place. Keep a bout ID when its opponent changes;
-   replace its entire fighter list. A known fighter with an unknown opponent has
+2. Rename fighters or cards in place. When an opponent changes,
+   replace the bout's fighter list. A known fighter with an unknown opponent has
    a one-element fighter list. Do not invent an opponent subject.
-3. Set `boutsComplete: false` unless the reviewed source is explicitly complete
-   for that specific card. Partial lists merge by bout ID; omitted bouts remain.
-   Complete lists replace only that card's bouts. An explicit cancelled bout
-   removes its active fighter associations even in a partial import. Don't delete
-   fighter subjects just because they withdrew or have no upcoming card.
-4. Card metadata is a full, reviewed snapshot, even when the bout list is partial.
-   Missing source fields are **not** permission to clear known metadata: retain
-   prior confirmed values. Venue and all three timing instants are required.
-   Do not publish a card while any broadcast time is missing.
-   Advance `reviewedAt` for each update. Older card snapshots are ignored. Reuse
-   the same revision and payload for retries.
+3. Treat the checked-in card JSON as the authoritative current snapshot of our
+   catalogued lineup. Reseeding replaces that JSON; remove withdrawn bouts or
+   update their fighter lists. Don't delete fighter subjects when they withdraw.
+   This is a manual catalog, not a raw scraper payload: a missing bout on an
+   incomplete source page is not evidence of withdrawal. Carry forward known
+   bouts until a removal or replacement is confirmed.
+4. Retain confirmed metadata when a source omits fields. Venue and all three
+   timing instants are required. Hold new cards with missing times out of the
+   catalog. Review the diff and bump the catalog seed version for updates;
+   reseeding the same snapshot is repeatable. Replaying an older catalog will
+   restore its old values, exactly as for sports, so use the current checkout.
 5. Mark a cancelled card `availability: "cancelled"`; do not delete it. For a
    postponement without a confirmed replacement time, mark it cancelled while
    retaining the last confirmed start and timings. It remains absent from dated
@@ -69,7 +69,7 @@ complete cards. Adding other supported fighters does not require an upcoming bou
 6. Imports rebuild UFC feed edges for each included card only, inside the same
    transaction as the card update. They never remove omitted cards, unrelated
    league edges, users, or subscriptions. Numbered cards match both coverage
-   subjects. Only fighters in scheduled bouts match fighter follows.
+   subjects. Only fighters in the current bout list match fighter follows.
 
 ## Time policy
 
@@ -111,7 +111,7 @@ explicit operational step.
 No new database migration or subscription backfill is required. The event table
 and required startsAt field retain their current shape. Release all API/jobs/web
 readers with support for the new variants before enabling catalog revision
-2026-10-08.1. The importer is PR 2 and UI is PR 3: keep catalog publication gated
+2026-10-08.2. The importer is PR 2 and UI is PR 3: keep catalog publication gated
 until the complete stack is ready. The standard Alchemy action seeds during
 deployment, so coordinate that action with the reader rollout. Rolling readers
 back after publishing UFC data requires removing/archiving that data and its

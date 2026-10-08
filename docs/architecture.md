@@ -474,8 +474,9 @@ unchanged. No database migration is needed.
 
 The UFC catalog importer uses existing Subjects/Events services in a transaction,
 serializes imports through its fixed coverage rows, and reconciles only MMA feed
-edges for each imported card. Partial bout lists merge by bout ID, complete lists
-replace that card's bouts, and older reviewed card revisions are ignored. Delivery
+edges for each imported card. Checked-in card snapshots replace the event JSON
+through the ordinary event upsert. Omitted cards remain untouched; source review
+preserves known information when upstream listings are incomplete. Delivery
 remains per subscription, including last-send state and provider idempotency keys.
 UFC dashboard rendering follows in the third PR. Until then, the web interface
 narrows the expanded contracts to sports teams and games.

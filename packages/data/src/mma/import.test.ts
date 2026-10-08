@@ -25,7 +25,7 @@ import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
 import { DateTime, Effect, Layer, Redacted, Schema } from "effect";
 import { eq, sql } from "drizzle-orm";
 
-import { reconcileBouts, seedMmaCatalog } from "./import.js";
+import { seedMmaCatalog } from "./import.js";
 import { MmaImport } from "./schema.js";
 import { ufcCatalog } from "./ufc.js";
 import { UfcCoverageIds } from "./catalog.js";
@@ -33,7 +33,6 @@ import { UfcCoverageIds } from "./catalog.js";
 const decoded = Schema.decodeUnknownSync(MmaImport)(ufcCatalog);
 const first = decoded.cards[0];
 if (!first) throw new Error("Expected seed card");
-const bouts = first.details.bouts;
 
 describe("MMA import boundaries", () => {
   it("rejects missing or null event starts and missing main-card times", () => {
@@ -54,15 +53,6 @@ describe("MMA import boundaries", () => {
     }
   });
 
-  it("retains omitted bouts in partial input and removes them only in a complete snapshot", () => {
-    expect(reconcileBouts(bouts, [], false)).toEqual(bouts);
-    expect(reconcileBouts(bouts, [], true)).toEqual([]);
-    const cancelled = bouts.map((bout) => ({
-      ...bout,
-      status: "cancelled" as const,
-    }));
-    expect(reconcileBouts(bouts, cancelled, false)).toEqual(cancelled);
-  });
   it("decodes repeatable curated seeds and rejects unsupported event categories", () => {
     expect(Schema.encodeSync(MmaImport)(decoded)).toEqual(ufcCatalog);
     expect(() =>
@@ -277,7 +267,6 @@ describe("UFC PostgreSQL integration", () => {
               if (!encodedFirst) throw new Error("Missing encoded card");
               const importCard = (
                 details: typeof first.details,
-                complete = false,
                 availability: "active" | "cancelled" = "active",
                 startsAt = encodedFirst.startsAt,
               ) =>
@@ -288,21 +277,59 @@ describe("UFC PostgreSQL integration", () => {
                       ...encodedFirst,
                       startsAt,
                       availability,
-                      boutsComplete: complete,
                       details: Schema.encodeSync(MmaEvent)(details),
                     },
                   ],
                 });
-              // A renamed headliner, moved venue and partial empty list retain IDs and follows.
+              // Metadata updates retain the card identity and current fighter follows.
               const renamed = {
                 ...first.details,
                 title: "UFC 332: Updated headliner",
                 venue: { title: "New venue", location: "New city" },
-                reviewedAt: DateTime.makeUnsafe("2026-10-04T12:00:00Z"),
-                bouts: [],
               };
               yield* importCard(renamed);
               expect((yield* events.listBySubject(a.id))[0]?.id).toBe(first.id);
+              // A bad later card rolls back an earlier card's JSON and feed changes.
+              const invalidBatch = {
+                fighters: [],
+                cards: [
+                  {
+                    ...encodedFirst,
+                    details: { ...encodedFirst.details, bouts: [] },
+                  },
+                  {
+                    ...encodedFirst,
+                    id: "b51165b6-7428-4620-a02e-000000000098",
+                    sourceId:
+                      "mma_card:ufc:b51165b6-7428-4620-a02e-000000000098",
+                    details: {
+                      ...encodedFirst.details,
+                      bouts: encodedFirst.details.bouts.map((bout) => ({
+                        ...bout,
+                        fighters: [
+                          { subjectId: teamId, title: "Not a fighter" },
+                        ],
+                      })),
+                    },
+                  },
+                ],
+              };
+              expect(
+                (yield* seedMmaCatalog(invalidBatch).pipe(Effect.flip))._tag,
+              ).toBe("InvalidMmaImport");
+              expect((yield* events.listBySubject(a.id))[0]?.details).toEqual(
+                renamed,
+              );
+              // An unknown opponent keeps the known fighter eligible without a fake subject.
+              yield* importCard({
+                ...renamed,
+                bouts: renamed.bouts.map((bout) => ({
+                  ...bout,
+                  fighters: bout.fighters.slice(0, 1),
+                })),
+              });
+              expect(yield* events.listBySubject(a.id)).toHaveLength(1);
+              expect(yield* events.listBySubject(b.id)).toEqual([]);
               // Explicit opponent replacement in the same bout removes the old fighter edge.
               const replacement = {
                 ...renamed,
@@ -325,18 +352,15 @@ describe("UFC PostgreSQL integration", () => {
               ).toHaveLength(1);
               yield* importCard({
                 ...replacement,
-                bouts: replacement.bouts.map((bout) => ({
-                  ...bout,
-                  status: "cancelled",
-                })),
+                bouts: [],
               });
               expect(yield* events.listBySubject(a.id)).toEqual([]);
               expect(
                 yield* events.listBySubject(UfcCoverageIds.numbered),
               ).toHaveLength(1);
               yield* importCard(replacement);
-              // Older sources cannot resurrect removed opponents.
-              yield* seedMmaCatalog(integrationCatalog);
+              // Reseeding the same snapshot is repeatable.
+              yield* importCard(replacement);
               expect(yield* events.listBySubject(b.id)).toEqual([]);
               // Rescheduling changes the ordinary event instant without changing identity.
               yield* importCard(
@@ -348,7 +372,6 @@ describe("UFC PostgreSQL integration", () => {
                     main: DateTime.makeUnsafe("2026-10-05T22:00:00Z"),
                   },
                 },
-                false,
                 "active",
                 "2026-10-05T20:00:00.000Z",
               );
@@ -359,13 +382,22 @@ describe("UFC PostgreSQL integration", () => {
               expect(DateTime.formatIso(rescheduled.startsAt)).toBe(
                 "2026-10-05T20:00:00.000Z",
               );
-              // Complete bout snapshots and explicit cancellations have card-local scope.
-              yield* importCard({ ...replacement, bouts: [] }, true);
+              // Changing category removes only numbered coverage; All and fighter follows remain.
+              yield* importCard({ ...replacement, kind: "fight_night" });
+              expect(
+                yield* events.listBySubject(UfcCoverageIds.numbered),
+              ).toEqual([]);
+              expect(
+                yield* events.listBySubject(UfcCoverageIds.all),
+              ).toHaveLength(2);
+              expect(yield* events.listBySubject(a.id)).toHaveLength(1);
+              // Snapshot replacement and cancellations have card-local scope.
+              yield* importCard({ ...replacement, bouts: [] });
               expect(yield* events.listBySubject(a.id)).toEqual([]);
               expect(
                 yield* events.listBySubject(UfcCoverageIds.numbered),
               ).toHaveLength(1);
-              yield* importCard(replacement, true, "cancelled");
+              yield* importCard(replacement, "cancelled");
               expect(
                 yield* events.listBySubject(UfcCoverageIds.numbered),
               ).toEqual([]);
