@@ -7,8 +7,9 @@ type Store<T> = {
 
 // Temporary bridge until better-auth ships Solid 2 bindings.
 export function useStore<T>(store: Store<T>): () => T {
-  // oxlint-disable-next-line eslint/no-empty-function
-  const deactivate = store.listen(() => {});
+  const deactivate = store.listen(() => {
+    // lint(eslint/no-empty-function): Activate the lazy store before reading its initial state; this temporary listener does not consume updates.
+  });
 
   const [state, setState] = createSignal({ value: store.get() });
   const unsubscribe = store.listen((value) => {

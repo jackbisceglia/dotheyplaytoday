@@ -2,8 +2,9 @@
 
 ## Status
 
-Completed during the Oxlint migration. Both retained assertions now document
-their invariants, and the lint policy enforces safety comments for future assertions.
+Completed during the Oxlint migration. The tagged-union assertion documents its
+invariant; the serializer now validates its output with Schema.String instead
+of asserting it. The lint policy enforces explanations for future assertions.
 
 ## Type
 
