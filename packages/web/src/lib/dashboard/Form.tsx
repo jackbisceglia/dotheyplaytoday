@@ -1,4 +1,4 @@
-import { toggleSubject } from "@dtpt/core/modules/mma/selection";
+import { toggleSubscriptionSelection } from "@dtpt/core/modules/subscriptions/selection";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { useSearchParams } from "@solidjs/router";
@@ -99,7 +99,7 @@ export function Form(props: {
   };
   const toggle = (team: Subject) => {
     if (state.mode !== "editing") return;
-    const next = toggleSubject(state.teams, team);
+    const next = toggleSubscriptionSelection(state.teams, team);
     if (next.length > capacity) {
       rejection.rejectSelection(team.id);
       return;

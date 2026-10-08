@@ -1,4 +1,4 @@
-import { toggleSubject } from "@dtpt/core/modules/mma/selection";
+import { toggleSubscriptionSelection } from "@dtpt/core/modules/subscriptions/selection";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
@@ -88,7 +88,7 @@ export function Form(props: FormProps) {
   const toggleTeam = (teamId: string) => {
     const subject = props.subjects.find((pick) => pick.id === teamId);
     if (!subject) return;
-    const next = toggleSubject(selectedTeams(), subject);
+    const next = toggleSubscriptionSelection(selectedTeams(), subject);
     if (next.length > subjectCapacity) {
       rejectSelection(teamId);
       return;
