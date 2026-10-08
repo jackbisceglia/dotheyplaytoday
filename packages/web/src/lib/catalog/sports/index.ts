@@ -28,7 +28,12 @@ export const getSportsLogo = (details: SportTeamSubject) =>
     Match.exhaustive,
   );
 
+export type SportsSubject = Subject & { readonly details: SportTeamSubject };
+
+export const isSportsSubject = (subject: Subject): subject is SportsSubject =>
+  subject.details._tag === "sports_team";
+
 export const getTeams = (subjects: readonly Subject[]) =>
-  subjects.toSorted((a, b) =>
-    a.details.display.localeCompare(b.details.display),
-  );
+  subjects
+    .filter(isSportsSubject)
+    .toSorted((a, b) => a.details.display.localeCompare(b.details.display));

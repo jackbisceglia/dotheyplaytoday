@@ -31,6 +31,7 @@ import {
   SubscriptionWithSubject,
   subscriptionsTable,
 } from "./schema.js";
+import { hasSingleMmaCoverage } from "../mma/selection.js";
 import { SubscriptionPolicy } from "./policy.js";
 
 export type NotificationRecipient = typeof NotificationRecipient.Type;
@@ -225,6 +226,12 @@ export const SubscriptionsLayer = Layer.effect(
                 );
 
               const subjects = yield* assertSubjectsExist(subjectIds);
+
+              if (!hasSingleMmaCoverage(subjects)) {
+                return yield* new InvalidSubjectSelection({
+                  invalidIds: subjectIds,
+                });
+              }
 
               // Remove dropped teams; retained rows keep their ID and last send.
               yield* database

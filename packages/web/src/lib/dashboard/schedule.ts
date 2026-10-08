@@ -3,15 +3,20 @@ import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
 import { DateTime } from "effect";
 
+import {
+  isSportsSubject,
+  type SportsSubject,
+} from "../catalog/sports/index.js";
+
 export type ScheduleRow = {
-  readonly team: Subject;
+  readonly team: SportsSubject;
   readonly teamName: string;
   readonly eventId: string;
   readonly startsAt: string;
   readonly day: string;
   readonly time: string;
   readonly opponent: string;
-  readonly opponentTeam: Subject | undefined;
+  readonly opponentTeam: SportsSubject | undefined;
   readonly matchup: "at" | "vs";
 };
 
@@ -39,7 +44,13 @@ export function scheduleRows(
   const seen = new Set<string>();
   return schedule
     .flatMap(({ subject: team, events }) =>
-      events.map((event) => ({ team, event })),
+      isSportsSubject(team)
+        ? events.flatMap((event) =>
+            event.details._tag === "sports_game" && event.startsAt !== null
+              ? [{ team, event: { ...event, startsAt: event.startsAt } }]
+              : [],
+          )
+        : [],
     )
     .filter(({ event }) => {
       const participants = [
@@ -70,11 +81,13 @@ export function scheduleRows(
       const day = today ? "Today" : dayFormat.format(date);
 
       const participantName = (title: string) =>
-        catalog.find(
-          (subject) =>
-            subject.details.leagueId === event.details.leagueId &&
-            normalizeName(subject.details.display) === normalizeName(title),
-        )?.details.name ?? title.trim();
+        catalog
+          .filter(isSportsSubject)
+          .find(
+            (subject) =>
+              subject.details.leagueId === event.details.leagueId &&
+              normalizeName(subject.details.display) === normalizeName(title),
+          )?.details.name ?? title.trim();
       const own = event.participants.find(
         (participant) =>
           normalizeName(participant.details.title) ===
@@ -96,12 +109,15 @@ export function scheduleRows(
           (participant) => participant.details.role !== leading.details.role,
         );
       const opponentTeam = opponent
-        ? schedule.find(
-            ({ subject }) =>
-              subject.details.leagueId === event.details.leagueId &&
-              normalizeName(subject.details.display) ===
-                normalizeName(opponent.details.title),
-          )?.subject
+        ? schedule
+            .map(({ subject }) => subject)
+            .filter(isSportsSubject)
+            .find(
+              (subject) =>
+                subject.details.leagueId === event.details.leagueId &&
+                normalizeName(subject.details.display) ===
+                  normalizeName(opponent.details.title),
+            )
         : undefined;
       return {
         team,

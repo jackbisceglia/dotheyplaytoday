@@ -2,13 +2,15 @@ import {
   createInsertSchema,
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
-import { index, jsonb, text, uniqueIndex } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { check, index, jsonb, text, uniqueIndex } from "drizzle-orm/pg-core";
 import { Schema } from "effect";
 
 import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
+import { MmaCard } from "./variants/mma.schema.js";
 import { SportEvent } from "./variants/sport.schema.js";
 
 export type EventSchemasMatchTable = Check<
@@ -30,7 +32,7 @@ export const EventSourceId = Schema.String.check(
 ).pipe(Schema.brand("EventSourceId"));
 
 export type EventDetails = typeof EventDetails.Type;
-export const EventDetails = TaggedUnion([SportEvent]);
+export const EventDetails = TaggedUnion([SportEvent, MmaCard]);
 
 export type EventAvailability = typeof EventAvailability.Type;
 export const EventAvailability = Schema.Literals(["active", "cancelled"]);
@@ -39,7 +41,7 @@ const overrides = {
   id: EventId,
   _tag: Schema.Literals(EventDetails.tags),
   sourceId: EventSourceId,
-  startsAt: Schema.DateTimeUtcFromString,
+  startsAt: Schema.NullOr(Schema.DateTimeUtcFromString),
   availability: EventAvailability,
   details: EventDetails,
 };
@@ -50,7 +52,7 @@ export const eventsTable = postgresTable(
     id: text().primaryKey(),
     _tag: text("_tag", { enum: EventDetails.tags }).notNull(),
     sourceId: text().notNull(),
-    startsAt: text().notNull(),
+    startsAt: text(),
     availability: text({ enum: EventAvailability.literals }).notNull(),
     details: jsonb()
       .notNull()
@@ -59,6 +61,10 @@ export const eventsTable = postgresTable(
   (table) => [
     uniqueIndex("events_tag_source_id_idx").on(table._tag, table.sourceId),
     index("events_starts_at_idx").on(table.startsAt),
+    check(
+      "events_known_sports_start",
+      sql`${table._tag} = 'mma_card' OR ${table.startsAt} IS NOT NULL`,
+    ),
   ],
 );
 
@@ -66,4 +72,7 @@ export type Event = typeof Event.Type;
 export const Event = createSelectSchema(eventsTable, overrides);
 
 export type EventInsert = typeof EventInsert.Type;
-export const EventInsert = createInsertSchema(eventsTable, overrides);
+export const EventInsert = createInsertSchema(eventsTable, {
+  ...overrides,
+  startsAt: Schema.optional(overrides.startsAt),
+});

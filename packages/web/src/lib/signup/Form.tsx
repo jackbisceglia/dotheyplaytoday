@@ -5,7 +5,7 @@ import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { withApiClient } from "../api.js";
-import { getSportsLogo } from "../catalog/sports/index.js";
+import { getSportsLogo, isSportsSubject, type SportsSubject } from "../catalog/sports/index.js";
 import {
   defaultTimezone,
   detectTimezone,
@@ -54,8 +54,8 @@ type FormProps = {
 export function Form(props: FormProps) {
   const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set());
   const selectedTeams = createMemo(() => {
-    const teamsById = new Map<string, Subject>(
-      props.subjects.map((team) => [team.id, team] as const),
+    const teamsById = new Map<string, SportsSubject>(
+      props.subjects.filter(isSportsSubject).map((team) => [team.id, team] as const),
     );
 
     return [...selected()].flatMap((teamId) => {

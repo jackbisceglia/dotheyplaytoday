@@ -5,15 +5,24 @@ import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
 import type { ExtractFromTag } from "../../lib/types.js";
 import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
-import { type Lines, makeTiledHeadline } from "../email/headline.js";
+import {
+  type Lines,
+  makeTiledHeadline,
+  TextHeadline,
+} from "../email/headline.js";
 import {
   EmailView,
+  Text,
+  Note,
+  List,
   Link,
   Matchups,
   type EmailMatchup,
   type EmailRendered,
   type EmailViewProps,
 } from "../email/render.js";
+import { mmaTimingText } from "../mma/time.js";
+import type { SportEvent } from "../events/variants/sport.schema.js";
 import { EventId } from "../events/schema.js";
 import type { EventWithParticipants } from "../events/service.js";
 import type { Subject } from "../subjects/schema.js";
@@ -44,7 +53,10 @@ export class EmailRenderError extends Schema.TaggedError<EmailRenderError>()(
 ) {}
 
 type SportsGameEvents = Array.NonEmptyReadonlyArray<SportsGameEvent>;
-type SportsGameEvent = ExtractFromTag<EventWithParticipants, "sports_game">;
+type SportsGameEvent = EventWithParticipants & {
+  readonly _tag: "sports_game";
+  readonly details: SportEvent;
+};
 type SportsGameParticipant = SportsGameEvent["participants"][number];
 
 type SportsTeamSubject = Subject & {
@@ -61,12 +73,21 @@ function createFeedCases() {
   const areSportsGames = (
     events: Notification["events"],
   ): events is SportsGameEvents =>
-    events.length > 0 && events.every(isTaggedAs("sports_game"));
+    events.length > 0 &&
+    events.every(
+      (event) =>
+        event._tag === "sports_game" && event.details._tag === "sports_game",
+    );
 
   return {
     sportsTeamFeed: {
       subject: isSportsTeam,
       events: areSportsGames,
+    },
+    mmaFeed: {
+      subject: {
+        details: { _tag: Match.is("mma_fighter", "mma_coverage") },
+      },
     },
   };
 }
@@ -207,6 +228,7 @@ const shouldIncludeNflKickoffEvent = (
 };
 
 const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
+  if (event.startsAt === null) return "Time TBD";
   const userLocaleDateTime = DateTime.setZone(event.startsAt, tz);
 
   return DateTime.format(userLocaleDateTime, {
@@ -281,7 +303,53 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
           } satisfies EmailViewProps;
         }),
       ),
-      Match.exhaustive,
+      Match.when(cases.mmaFeed, (notification) =>
+        Effect.sync(() => {
+          const subject = notification.subject;
+          const title =
+            subject.details._tag === "mma_fighter"
+              ? `${subject.details.display} fights today`
+              : "UFC cards today";
+          const blocks = notification.events.flatMap((event) => {
+            if (event.details._tag !== "mma_card") return [];
+            const card = event.details;
+            const bouts = card.bouts.filter(
+              (bout) => bout.status === "scheduled",
+            );
+            const relevant = bouts.filter((bout) =>
+              bout.fighters.some((fighter) => fighter.subjectId === subject.id),
+            );
+            return [
+              Text.make({ value: card.title }),
+              ...relevant.map((bout) =>
+                Text.make({
+                  value: `Following ${subject.details.display}: ${bout.fighters.map((fighter) => fighter.title).join(" vs ")}${bout.fighters.length === 1 ? " vs Opponent TBD" : ""} (${bout.segment.replaceAll("_", " ")})`,
+                }),
+              ),
+              List.make({
+                items: bouts.map(
+                  (bout) =>
+                    bout.fighters.map((fighter) => fighter.title).join(" vs ") +
+                    (bout.fighters.length === 1 ? " vs Opponent TBD" : ""),
+                ),
+              }),
+              Note.make({
+                value: `${card.venue ?? "Venue TBD"}. ${mmaTimingText(card, timezone)}${event.startsAt === null ? ` Published date: ${card.date ?? "TBD"}; local date is unconfirmed.` : ""}`,
+              }),
+            ];
+          });
+          return {
+            subject: title,
+            headline: TextHeadline.make({ lines: [title] }),
+            blocks: [
+              ...blocks,
+              Link.make({ href: unsubscribeUrl, text: "Unsubscribe" }),
+            ],
+            metadata: { unsubscribe: unsubscribeUrl },
+          } satisfies EmailViewProps;
+        }),
+      ),
+      Match.orElse(() => Effect.die("Unsupported subject/event combination")),
     );
   },
 );

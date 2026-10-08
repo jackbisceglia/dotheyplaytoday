@@ -1,7 +1,7 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { For, Match, Show, Switch } from "solid-js";
 
-import { getSportsLogo } from "../catalog/sports/index.js";
+import { getSportsLogo, isSportsSubject } from "../catalog/sports/index.js";
 
 // The same tiles in view and edit mode, so editing only adds controls around
 // what's already on screen. Unfilled capacity reads as quiet empty slots; the
@@ -24,7 +24,7 @@ export function Roster(props: {
 
   return (
     <div class="roster">
-      <For each={props.teams}>
+      <For each={props.teams.filter(isSportsSubject)}>
         {(team) => (
           <Show
             when={props.editing}

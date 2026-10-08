@@ -54,7 +54,6 @@ describe("Subject model", () => {
 
     expect(insert).toEqual(subjectInput);
     expect(selected._tag).toBe(subject._tag);
-    expect(selected.details.name).toBe(subject.details.name);
-    expect(selected.details.slug).toBe(subject.details.slug);
+    expect(selected.details).toEqual(subject.details);
   });
 });

@@ -8,6 +8,7 @@ import { NotifierLayerEmail, EmailRenderError } from "../email.js";
 import { NotifierError } from "../errors.js";
 import { nflNotification, notification } from "./fixtures.js";
 import type { Notification } from "../notification.js";
+import { card, fighterA, all } from "../../mma/__tests__/fixtures.js";
 import { Notifier } from "../service.js";
 
 const resendMock = vi.hoisted(() => ({
@@ -69,6 +70,47 @@ describe("email rendering", () => {
     resendMock.send.mockReset();
     resendMock.send.mockResolvedValue(successResponse);
   });
+
+  it.effect(
+    "renders fighter and coverage cards with explicit segment times and unknown opponents",
+    () =>
+      Effect.gen(function* () {
+        yield* send({ ...notification, subject: fighterA, events: [card] });
+        expect(lastPayload().subject).toBe("Fighter A fights today");
+        expect(lastPayload().text).toContain(
+          "Following Fighter A: Fighter A vs Fighter B (main)",
+        );
+        expect(lastPayload().text).toContain(
+          "Individual fight times are not scheduled",
+        );
+        resendMock.send.mockClear();
+        if (card.details._tag !== "mma_card") throw new Error("Expected card");
+        yield* send({
+          ...notification,
+          subject: all,
+          events: [
+            {
+              ...card,
+              startsAt: null,
+              details: {
+                ...card.details,
+                earlyPrelimsAt: null,
+                prelimsAt: null,
+                mainCardAt: null,
+                bouts: card.details.bouts.map((bout) => ({
+                  ...bout,
+                  fighters: bout.fighters.slice(0, 1),
+                })),
+              },
+            },
+          ],
+        });
+        expect(lastPayload().subject).toBe("UFC cards today");
+        expect(lastPayload().text).toContain("vs Opponent TBD");
+        expect(lastPayload().text).toContain("Main card: TBD");
+        expect(lastPayload().text).toContain("local date is unconfirmed");
+      }),
+  );
 
   it.effect(
     "renders subject-scoped email content with event-centric sections",

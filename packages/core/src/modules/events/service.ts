@@ -24,6 +24,7 @@ import { Id } from "../../lib/id/service.js";
 import type { WithOptionalKeys } from "../../lib/types.js";
 import { exactOptional } from "../../lib/utils.js";
 import { SubjectId } from "../subjects/schema.js";
+import { eventInRange } from "../mma/time.js";
 import { EventNotFound } from "./errors.js";
 import {
   EventWithParticipants,
@@ -50,6 +51,7 @@ export type DateRangeUtc = Range<DateTime.Utc>;
 
 export type ListBySubjectOptions = {
   readonly range?: Range<DateTime.Utc>;
+  readonly timezone?: DateTime.TimeZone.Named;
   readonly availability?: EventAvailability | "all";
 };
 
@@ -154,7 +156,15 @@ export const EventsLayer = Layer.effect(
             ...exactOptional(availabilityFilter, (availability) => ({
               availability,
             })),
-            ...exactOptional(startsAt, (startsAt) => ({ startsAt })),
+            ...exactOptional(startsAt, (startsAt) => ({
+              OR: [
+                { startsAt },
+                {
+                  startsAt: { isNull: true as const },
+                  _tag: "mma_card" as const,
+                },
+              ],
+            })),
             subjectEvents: { subjectId },
           },
           with: {
@@ -168,7 +178,12 @@ export const EventsLayer = Layer.effect(
 
       const eventsWithParticipants = yield* decodeEventWithParticipants(rows);
 
-      return eventsWithParticipants;
+      const range = opts?.range;
+      return range
+        ? eventsWithParticipants.filter((event) =>
+            eventInRange(event, range, opts.timezone),
+          )
+        : eventsWithParticipants;
     });
 
     const listForUser: Events["Service"]["listForUser"] = Effect.fn(
@@ -189,7 +204,10 @@ export const EventsLayer = Layer.effect(
         Effect.fn(function* (pick) {
           return {
             ...pick,
-            events: yield* listBySubject(pick.subjectId, { range }),
+            events: yield* listBySubject(pick.subjectId, {
+              range,
+              timezone: user.timezone,
+            }),
           };
         }),
         { concurrency: 4 },
