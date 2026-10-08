@@ -133,6 +133,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           sendMagicLink: (options, endpoint) => {
             if (!endpoint) return;
 
+            // SAFETY: The before hook above attaches this context; other callers may omit user.
             const context = endpoint.context as Partial<MagicLinkContext>;
             const user = context.user;
 

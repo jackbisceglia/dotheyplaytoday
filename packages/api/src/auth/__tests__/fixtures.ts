@@ -100,16 +100,20 @@ export const makeAuthFixture = async () => {
     path: string,
     body?: unknown,
     origin = "https://www.example.com",
-  ) =>
-    new Request(`https://api.example.com/api/auth${path}`, {
+  ) => {
+    const options: RequestInit = {
       method: body === undefined ? "GET" : "POST",
       headers: {
         "content-type": "application/json",
         "cf-connecting-ip": ip,
         origin,
       },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    });
+    };
+
+    if (body !== undefined) options.body = JSON.stringify(body);
+
+    return new Request(`https://api.example.com/api/auth${path}`, options);
+  };
 
   return {
     layer,

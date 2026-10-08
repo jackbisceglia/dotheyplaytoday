@@ -129,17 +129,21 @@ const makeFixture = async () => {
   );
   onTestFinished(web.dispose);
 
-  const request = (path: string, body?: unknown, cookie?: string) =>
-    web.handler(
-      new Request(`https://api.example.com/api${path}`, {
-        method: body === undefined ? "GET" : "POST",
-        headers: {
-          "content-type": "application/json",
-          origin: "https://www.example.com",
-          ...(cookie ? { cookie } : {}),
-        },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      }),
+  const request = (path: string, body?: unknown, cookie?: string) => {
+    const headers = new Headers({
+      "content-type": "application/json",
+      origin: "https://www.example.com",
+    });
+    const options: RequestInit = {
+      method: body === undefined ? "GET" : "POST",
+      headers,
+    };
+
+    if (cookie) headers.set("cookie", cookie);
+    if (body !== undefined) options.body = JSON.stringify(body);
+
+    return web.handler(
+      new Request(`https://api.example.com/api${path}`, options),
       Context.make(RuntimeContext, {
         Type: "test",
         id: "test",
@@ -148,6 +152,7 @@ const makeFixture = async () => {
         set: () => Effect.die("Unexpected binding write"),
       }),
     );
+  };
   const signIn = async () => {
     await fixture.auth.client.handler(
       fixture.request("/sign-in/magic-link", { email: user.email }),

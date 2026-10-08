@@ -8,7 +8,7 @@
     "build": "vite build",
     "assets:generate": "node scripts/og.ts && node scripts/email-headlines.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "oxlint --type-aware .",
     "format": "prettier --write ."
   },
   "dependencies": {
@@ -26,6 +26,7 @@
     "@dtpt/data": "workspace:*",
     "@resvg/resvg-js": "^2.6.2",
     "@solidjs/vite-plugin": "3.0.0-next.28",
+    "@types/react": "19.3.0",
     "satori": "^0.26.0",
     "typescript": "^5.9.2",
     "vite": "8.2.1"

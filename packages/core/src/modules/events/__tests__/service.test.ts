@@ -102,6 +102,8 @@ describe("user schedule", () => {
             },
           }),
           Layer.mock(Id, {}),
+          // SAFETY: This test only invokes query.eventsTable.findMany; other database members are never accessed.
+          // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- This fixture intentionally omits unused Drizzle methods.
           Layer.succeed(Database, {
             query: {
               eventsTable: {
@@ -156,6 +158,8 @@ describe("user schedule", () => {
           }),
           Layer.mock(Subscriptions, { listForUser: () => Effect.succeed([]) }),
           Layer.mock(Id, {}),
+          // SAFETY: This test only invokes query.eventsTable.findMany; other database members are never accessed.
+          // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- This fixture intentionally omits unused Drizzle methods.
           Layer.succeed(Database, {
             query: {
               eventsTable: {

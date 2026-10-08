@@ -7,7 +7,7 @@ type Store<T> = {
 
 // Temporary bridge until better-auth ships Solid 2 bindings.
 export function useStore<T>(store: Store<T>): () => T {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // oxlint-disable-next-line eslint/no-empty-function
   const deactivate = store.listen(() => {});
 
   const [state, setState] = createSignal({ value: store.get() });

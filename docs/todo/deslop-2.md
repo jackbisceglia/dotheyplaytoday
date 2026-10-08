@@ -1,5 +1,10 @@
 # Document necessary type assertions
 
+## Status
+
+Completed during the Oxlint migration. Both retained assertions now document
+their invariants, and the lint policy enforces safety comments for future assertions.
+
 ## Type
 
 Maintenance
