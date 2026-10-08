@@ -183,6 +183,15 @@ importers:
         specifier: 'catalog:'
         version: 4.0.0-rc.117(effect@4.0.0-rc.117)(vitest@5.0.3(@types/node@20.19.27)(vite@8.2.1(@types/node@20.19.27)(esbuild@0.27.7)(yaml@2.9.0)))
 
+  packages/ios:
+    devDependencies:
+      '@dtpt/core':
+        specifier: workspace:*
+        version: link:../core
+      effect:
+        specifier: 4.0.0-rc.117
+        version: 4.0.0-rc.117
+
   packages/jobs:
     dependencies:
       '@dtpt/core':

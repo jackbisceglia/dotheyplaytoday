@@ -1,0 +1,5 @@
+// Override locally with Config.local.xcconfig. Do not commit credentials.
+API_BASE_URL = https:/$()/api.dotheyplay.today
+PRODUCT_BUNDLE_IDENTIFIER = today.dotheyplay.ios
+DEVELOPMENT_TEAM =
+#include? "Config.local.xcconfig"
