@@ -4,14 +4,13 @@ import {
   mapToWriteError,
 } from "@dtpt/core/lib/database/errors";
 import { Event } from "@dtpt/core/modules/events/schema";
-import {
-  mmaCardStart,
-  type MmaBout,
-} from "@dtpt/core/modules/events/variants/mma.schema";
+import type { MmaBout } from "@dtpt/core/modules/events/variants/mma.schema";
+import { mmaCardStart } from "@dtpt/core/modules/mma/time";
 import { subjectEventsTable } from "@dtpt/core/modules/subjects/feed/schema";
 import { SubjectId } from "@dtpt/core/modules/subjects/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { DateTime, Effect, Schema } from "effect";
+
 import { ufcCoverageSubjects, UfcCoverageIds } from "./catalog.js";
 import { MmaImport, type MmaImportInput } from "./schema.js";
 
@@ -20,14 +19,21 @@ export class InvalidMmaImport extends Schema.TaggedError<InvalidMmaImport>()(
   { message: Schema.String },
 ) {}
 
+const hasUniqueIds = (ids: readonly string[]) =>
+  new Set(ids).size === ids.length;
+
 export const reconcileBouts = (
   previous: readonly MmaBout[],
   incoming: readonly MmaBout[],
   complete: boolean,
 ): readonly MmaBout[] => {
   if (complete) return incoming;
+
   const merged = new Map(previous.map((bout) => [bout.id, bout]));
-  for (const bout of incoming) merged.set(bout.id, bout);
+  for (const bout of incoming) {
+    merged.set(bout.id, bout);
+  }
+
   return [...merged.values()];
 };
 
@@ -38,14 +44,12 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
   const database = yield* Database;
   const subjects = yield* Subjects;
   const events = yield* Events;
-  const unique = (values: readonly string[]) =>
-    new Set(values).size === values.length;
   if (
-    !unique(data.fighters.map((fighter) => fighter.id)) ||
-    !unique(data.cards.map((card) => card.id)) ||
-    !unique(data.cards.map((card) => card.sourceId)) ||
+    !hasUniqueIds(data.fighters.map((fighter) => fighter.id)) ||
+    !hasUniqueIds(data.cards.map((card) => card.id)) ||
+    !hasUniqueIds(data.cards.map((card) => card.sourceId)) ||
     data.cards.some(
-      (card) => !unique(card.details.bouts.map((bout) => bout.id)),
+      (card) => !hasUniqueIds(card.details.bouts.map((bout) => bout.id)),
     )
   ) {
     return yield* new InvalidMmaImport({
@@ -53,10 +57,11 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
     });
   }
   for (const card of data.cards) {
-    if (!card.details.sourceUrl.startsWith("https://www.ufc.com/"))
+    if (!card.details.sourceUrl.startsWith("https://www.ufc.com/")) {
       return yield* new InvalidMmaImport({
         message: "Cards require an official UFC source",
       });
+    }
   }
 
   yield* database
@@ -67,20 +72,22 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
           const existing = yield* database.query.subjectsTable
             .findFirst({ where: { id: coverage.id } })
             .pipe(mapToReadError("Mma.coverage"));
-          if (existing && existing._tag !== "mma_coverage")
+          if (existing && existing._tag !== "mma_coverage") {
             return yield* new InvalidMmaImport({
               message: "Coverage ID belongs to another subject",
             });
+          }
           yield* subjects.upsert(coverage);
         }
         for (const fighter of data.fighters) {
           const existing = yield* database.query.subjectsTable
             .findFirst({ where: { id: fighter.id } })
             .pipe(mapToReadError("Mma.fighter"));
-          if (existing && existing._tag !== "mma_fighter")
+          if (existing && existing._tag !== "mma_fighter") {
             return yield* new InvalidMmaImport({
               message: "Fighter ID belongs to another subject",
             });
+          }
           yield* subjects.upsert({ ...fighter, _tag: "mma_fighter" });
         }
         for (const card of data.cards) {
@@ -90,18 +97,20 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
           const previous = existing
             ? yield* Schema.decodeUnknownEffect(Event)(existing)
             : undefined;
-          if (previous && previous.id !== card.id)
+          if (previous && previous.id !== card.id) {
             return yield* new InvalidMmaImport({
               message: "Source identity must retain its allocated card ID",
             });
+          }
           if (
             previous?.details._tag === "mma_card" &&
             DateTime.isGreaterThan(
               previous.details.reviewedAt,
               card.details.reviewedAt,
             )
-          )
+          ) {
             continue;
+          }
           const bouts = reconcileBouts(
             previous?.details._tag === "mma_card" ? previous.details.bouts : [],
             card.details.bouts,
@@ -110,19 +119,23 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
           const activeFighters = bouts
             .filter((bout) => bout.status === "scheduled")
             .flatMap((bout) => bout.fighters);
-          if (!unique(activeFighters.map((fighter) => fighter.subjectId)))
+          if (
+            !hasUniqueIds(activeFighters.map((fighter) => fighter.subjectId))
+          ) {
             return yield* new InvalidMmaImport({
               message:
                 "A fighter cannot occupy multiple active slots on a card",
             });
+          }
           for (const fighter of bouts.flatMap((bout) => bout.fighters)) {
             const subject = yield* database.query.subjectsTable
               .findFirst({ where: { id: fighter.subjectId } })
               .pipe(mapToReadError("Mma.boutFighter"));
-            if (subject?._tag !== "mma_fighter")
+            if (subject?._tag !== "mma_fighter") {
               return yield* new InvalidMmaImport({
                 message: "Bout references an unknown fighter",
               });
+            }
           }
           const details = { ...card.details, bouts };
           const event = yield* events.upsert({
@@ -156,8 +169,9 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
           );
           matched.add(UfcCoverageIds.all);
           if (details.kind === "numbered") matched.add(UfcCoverageIds.numbered);
-          for (const subjectId of matched)
+          for (const subjectId of matched) {
             yield* subjects.addEventToFeed({ eventId: event.id, subjectId });
+          }
         }
       }),
     )

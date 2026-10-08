@@ -8,6 +8,7 @@ import { SubjectId } from "@dtpt/core/modules/subjects/schema";
 import { MmaFighterSubject } from "@dtpt/core/modules/subjects/variants/mma.schema";
 import { Schema } from "effect";
 
+export type MmaImport = typeof MmaImport.Type;
 export const MmaImport = Schema.Struct({
   fighters: Schema.Array(
     Schema.Struct({
@@ -26,5 +27,4 @@ export const MmaImport = Schema.Struct({
     }),
   ),
 });
-export type MmaImport = typeof MmaImport.Type;
-export type MmaImportInput = typeof MmaImport.Encoded;
+export type MmaImportInput = Schema.Codec.Encoded<typeof MmaImport>;
