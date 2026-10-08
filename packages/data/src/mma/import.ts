@@ -5,7 +5,6 @@ import {
 } from "@dtpt/core/lib/database/errors";
 import { Event } from "@dtpt/core/modules/events/schema";
 import type { MmaBout } from "@dtpt/core/modules/events/variants/mma.schema";
-import { mmaCardStart } from "@dtpt/core/modules/mma/time";
 import { subjectEventsTable } from "@dtpt/core/modules/subjects/feed/schema";
 import { SubjectId } from "@dtpt/core/modules/subjects/schema";
 import { and, eq, inArray } from "drizzle-orm";
@@ -142,7 +141,7 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
             id: card.id,
             sourceId: card.sourceId,
             _tag: "mma_card",
-            startsAt: mmaCardStart(details),
+            startsAt: card.startsAt,
             availability: card.availability,
             details,
           });

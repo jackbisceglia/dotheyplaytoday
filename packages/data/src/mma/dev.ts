@@ -1,4 +1,3 @@
-import { mmaCardStart } from "@dtpt/core/modules/mma/time";
 import { DateTime, Schema } from "effect";
 
 import { devSeedWindow } from "../seed/dev.js";
@@ -10,19 +9,10 @@ export const buildDevMmaSeed = (now: Date = new Date()): MmaImportInput => {
   const catalog = Schema.decodeUnknownSync(MmaImport)(ufcCatalog);
   return Schema.encodeSync(MmaImport)({
     ...catalog,
-    cards: catalog.cards.filter((card) => {
-      const start = mmaCardStart(card.details);
-      if (start) {
-        return (
-          DateTime.isGreaterThanOrEqualTo(start, window.from) &&
-          DateTime.isLessThan(start, window.to)
-        );
-      }
-      return (
-        card.details.date !== null &&
-        card.details.date >= DateTime.formatIsoDate(window.from) &&
-        card.details.date < DateTime.formatIsoDate(window.to)
-      );
-    }),
+    cards: catalog.cards.filter(
+      (card) =>
+        DateTime.isGreaterThanOrEqualTo(card.startsAt, window.from) &&
+        DateTime.isLessThan(card.startsAt, window.to),
+    ),
   });
 };

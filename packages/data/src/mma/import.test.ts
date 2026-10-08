@@ -36,6 +36,24 @@ if (!first) throw new Error("Expected seed card");
 const bouts = first.details.bouts;
 
 describe("MMA import boundaries", () => {
+  it("rejects missing or null event starts and missing main-card times", () => {
+    const firstCard = ufcCatalog.cards[0];
+    if (!firstCard) throw new Error("Expected card");
+    const { startsAt: _startsAt, ...missingStart } = firstCard;
+    for (const invalid of [
+      missingStart,
+      { ...firstCard, startsAt: null },
+      { ...firstCard, details: { ...firstCard.details, timings: {} } },
+    ]) {
+      expect(() =>
+        Schema.decodeUnknownSync(MmaImport)({
+          fighters: ufcCatalog.fighters,
+          cards: [invalid],
+        }),
+      ).toThrow();
+    }
+  });
+
   it("retains omitted bouts in partial input and removes them only in a complete snapshot", () => {
     expect(reconcileBouts(bouts, [], false)).toEqual(bouts);
     expect(reconcileBouts(bouts, [], true)).toEqual([]);
@@ -240,12 +258,14 @@ describe("UFC PostgreSQL integration", () => {
                 details: typeof first.details,
                 complete = false,
                 availability: "active" | "cancelled" = "active",
+                startsAt = encodedFirst.startsAt,
               ) =>
                 seedMmaCatalog({
                   fighters: [],
                   cards: [
                     {
                       ...encodedFirst,
+                      startsAt,
                       availability,
                       boutsComplete: complete,
                       details: Schema.encodeSync(MmaCard)(details),
@@ -297,27 +317,25 @@ describe("UFC PostgreSQL integration", () => {
               // Older sources cannot resurrect removed opponents.
               yield* seedMmaCatalog(ufcCatalog);
               expect(yield* events.listBySubject(b.id)).toEqual([]);
-              const unknown = {
-                ...replacement,
-                date: "2026-10-03",
-                earlyPrelimsAt: null,
-                prelimsAt: null,
-                mainCardAt: null,
-              };
-              yield* importCard(unknown);
-              expect(
-                (yield* events.listBySubject(a.id, { range, timezone }))[0]
-                  ?.startsAt,
-              ).toBeNull();
-              yield* importCard({ ...unknown, date: null });
-              expect(
-                yield* events.listBySubject(a.id, { range, timezone }),
-              ).toEqual([]);
-              yield* importCard({ ...unknown, date: "2026-10-05" });
-              expect(
-                yield* events.listBySubject(a.id, { range, timezone }),
-              ).toEqual([]);
+              // Rescheduling changes the ordinary event instant without changing identity.
+              yield* importCard(
+                {
+                  ...replacement,
+                  timings: {
+                    mainCard: DateTime.makeUnsafe("2026-10-05T22:00:00Z"),
+                  },
+                },
+                false,
+                "active",
+                "2026-10-05T20:00:00.000Z",
+              );
+              expect(yield* events.listBySubject(a.id, { range })).toEqual([]);
               expect((yield* events.listBySubject(a.id))[0]?.id).toBe(first.id);
+              const rescheduled = (yield* events.listBySubject(a.id))[0];
+              if (!rescheduled) throw new Error("Expected rescheduled card");
+              expect(DateTime.formatIso(rescheduled.startsAt)).toBe(
+                "2026-10-05T20:00:00.000Z",
+              );
               // Complete bout snapshots and explicit cancellations have card-local scope.
               yield* importCard({ ...replacement, bouts: [] }, true);
               expect(yield* events.listBySubject(a.id)).toEqual([]);

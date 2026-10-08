@@ -40,6 +40,7 @@ export const ufcCatalog = {
       id: "b51165b6-7428-4620-a02e-000000000001",
       sourceId: "mma_card:ufc:b51165b6-7428-4620-a02e-000000000001",
       availability: "active",
+      startsAt: "2026-10-03T20:00:00.000Z",
       boutsComplete: false,
       details: {
         _tag: "mma_card",
@@ -48,11 +49,13 @@ export const ufcCatalog = {
         kind: "numbered",
         sourceUrl: "https://www.ufc.com/event/ufc-332",
         reviewedAt: "2026-10-03T12:00:00.000Z",
-        date: "2026-10-03",
+
         venue: "Delta Center, Salt Lake City",
-        earlyPrelimsAt: "2026-10-03T20:00:00.000Z",
-        prelimsAt: "2026-10-03T22:00:00.000Z",
-        mainCardAt: "2026-10-04T00:00:00.000Z",
+        timings: {
+          earlyPrelims: "2026-10-03T20:00:00.000Z",
+          prelims: "2026-10-03T22:00:00.000Z",
+          mainCard: "2026-10-04T00:00:00.000Z",
+        },
         bouts: [
           {
             id: "94f93873-805a-44e0-a08d-000000000001",
@@ -70,6 +73,7 @@ export const ufcCatalog = {
       id: "b51165b6-7428-4620-a02e-000000000002",
       sourceId: "mma_card:ufc:b51165b6-7428-4620-a02e-000000000002",
       availability: "active",
+      startsAt: "2026-10-10T21:00:00.000Z",
       boutsComplete: false,
       details: {
         _tag: "mma_card",
@@ -79,11 +83,12 @@ export const ufcCatalog = {
         sourceUrl:
           "https://www.ufc.com/news/tickets-sale-october-10-october-31-and-november-7-ufc-fight-night-events-meta-apex",
         reviewedAt: "2026-10-03T12:00:00.000Z",
-        date: "2026-10-10",
+
         venue: "Meta APEX, Las Vegas",
-        earlyPrelimsAt: null,
-        prelimsAt: "2026-10-10T21:00:00.000Z",
-        mainCardAt: "2026-10-11T00:00:00.000Z",
+        timings: {
+          prelims: "2026-10-10T21:00:00.000Z",
+          mainCard: "2026-10-11T00:00:00.000Z",
+        },
         bouts: [
           {
             id: "94f93873-805a-44e0-a08d-000000000002",

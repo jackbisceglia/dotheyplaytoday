@@ -75,17 +75,19 @@ Resolve the source's local time using the named IANA zone and the date (includin
 DST); don't apply a fixed UTC offset year-round. Verify unusual DST ambiguity
 against the source's published offset. Never estimate individual bout times.
 
-The earliest **known** broadcast segment anchors the card's local date. The
-schedule and email show all segment dates/times in the recipient's timezone,
-including a main card that crosses midnight. If earlier segments are unannounced,
-a later confirmed segment is the anchor until a source update supplies more data.
-Unknown segment times render as TBD (including segments not announced separately).
+Every imported card must supply a confirmed event-level startsAt instant, chosen
+as the earliest confirmed broadcast start. It is the single scheduling anchor,
+using the same local-day and DST behavior as sports games. The MMA details.timings
+object supplies mainCard (required), prelims and earlyPrelims (optional) for email
+and schedule enrichment. Omit unannounced segments; never fabricate an instant.
 
-If no broadcast instant is known, `startsAt` is null and the advertised `date`
-is a floating calendar date. Display “Time TBD” and explain that the recipient's
-local date is unconfirmed. Remind on that advertised date in each user's timezone;
-do not fabricate a midnight UTC start. A card with neither a date nor a known
-instant is excluded from dated reads. Rescheduling updates these fields in place.
+Hold new cards without confirmed event/main-card times out of the import. Missing
+timings in a partial source update do not erase the last confirmed values: carry
+those values forward in the reviewed import. If the source confirms a postponement
+without a replacement time, explicitly mark the card cancelled/inactive while
+retaining its last confirmed instants. Reactivate the same ID with its revised
+startsAt and timings once confirmed. Absence from a partial source alone never
+cancels a card.
 
 ## Validation and rollout
 
@@ -102,16 +104,14 @@ The test rejects remote hosts/other database names and rolls back its migrations
 and writes. The cloud infrastructure test requires deployment and is a separate,
 explicit operational step.
 
-Apply migration `0006_mma_card_times.sql` before importing UFC. It permits null
-card starts while keeping non-null starts mandatory for sports games. Release
-all API/jobs/web readers with support for the new variants **before** enabling
-the catalog revision `2026-10-03.1`; old readers cannot decode UFC subjects/cards.
-The standard Alchemy action seeds during a deployment, so coordinate that action
-with the reader rollout (or temporarily hold the seed revision until all readers
-are ready). No existing subscription needs backfilling. The migration alone is
-compatible with existing rows; rolling readers back after UFC data is present
-requires removing/archiving UFC data and its subscriptions first. Do not blindly
-reapply NOT NULL while date-only cards exist.
+No new database migration or subscription backfill is required. The event table
+and required startsAt field retain their current shape. Release all API/jobs/web
+readers with support for the new variants before enabling catalog revision
+2026-10-07.1. The importer is PR 2 and UI is PR 3: keep catalog publication gated
+until the complete stack is ready. The standard Alchemy action seeds during
+deployment, so coordinate that action with the reader rollout. Rolling readers
+back after publishing UFC data requires removing/archiving that data and its
+subscriptions first.
 
 Before a production rollout, refresh the small initial catalog and expand the
 supported fighter/card horizon as needed. This version uses reviewed, checked-in
