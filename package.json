@@ -18,6 +18,7 @@
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
     "test": "pnpm @core build && vitest run",
+    "test:oxlint": "node --test 'tooling/oxlint/anti-slop/**/*.test.ts'",
     "test:watch": "vitest",
     "@core": "pnpm -F @dtpt/core",
     "@data": "pnpm -F @dtpt/data",

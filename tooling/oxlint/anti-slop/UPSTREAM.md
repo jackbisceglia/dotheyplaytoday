@@ -10,9 +10,11 @@ implementation retains its own license and provenance under `vendor/eslint-styli
 Repository policy lives in the root `oxlint.config.ts`; it is intentionally a
 subset of upstream's opinionated rules. Keep `oxlint` and `@oxlint/plugins` at
 the same exact version. When updating, compare against this upstream revision,
-preserve local policy, and rerun lint, typecheck, tests, and build. Vendored
-RuleTester suites are upstream reference material, outside the application
-Vitest suite.
+preserve local policy, and rerun lint, typecheck, tests, and build. Run
+`pnpm test:oxlint` when changing or updating the vendored rules. It runs all
+vendored rule suites, including the local customization, separately from the
+application Vitest suite. This command is opt-in and is not part of `pnpm test`
+or CI.
 
 ## Local customization
 
