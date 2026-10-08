@@ -12,9 +12,9 @@ subset of upstream's opinionated rules. Keep `oxlint` and `@oxlint/plugins` at
 the same exact version. When updating, compare against this upstream revision,
 preserve local policy, and rerun lint, typecheck, tests, and build. Run
 `pnpm test:oxlint` when changing or updating the vendored rules. It runs all
-vendored rule suites, including the local customization, separately from the
-application Vitest suite. This command is opt-in and is not part of `pnpm test`
-or CI.
+vendored rule suites through Vitest, including the local customization,
+separately from the application suite. This command is opt-in and is not part
+of `pnpm test` or CI.
 
 ## Local customization
 
@@ -23,3 +23,7 @@ or CI.
 parenthesized empty branches. Its tests cover the helper and preserve the absence
 of an autofix: the helper omits only `undefined`, so arbitrary conditions need
 manual review. Keep this behavior when updating upstream source.
+
+`rules/require-readable-spacing-cli.test.ts` wraps the upstream CLI checks in a
+Vitest test. The shared setup outside this directory connects RuleTester to
+Vitest so each rule example is collected as a test.
