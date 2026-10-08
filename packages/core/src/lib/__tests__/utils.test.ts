@@ -33,10 +33,17 @@ describe("serialize", () => {
 });
 
 describe("exactOptional", () => {
+  it.each([null, false, 0, ""])("preserves the defined value %s", (value) => {
+    expect(exactOptional(value, (value) => ({ key: value }))).toStrictEqual({
+      key: value,
+    });
+  });
+
   it("constructs an object only for a defined value", () => {
     expect(exactOptional("value", (value) => ({ key: value }))).toEqual({
       key: "value",
     });
-    expect(exactOptional(undefined, (value) => ({ key: value }))).toEqual({});
+    const omitted = exactOptional(undefined, (value) => ({ key: value }));
+    expect(Object.hasOwn(omitted, "key")).toBe(false);
   });
 });

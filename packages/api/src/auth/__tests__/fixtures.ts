@@ -1,3 +1,4 @@
+import { exactOptional } from "@dtpt/core/lib/utils";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Id } from "@dtpt/core/lib/id/service";
 import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
@@ -100,20 +101,16 @@ export const makeAuthFixture = async () => {
     path: string,
     body?: unknown,
     origin = "https://www.example.com",
-  ) => {
-    const options: RequestInit = {
+  ) =>
+    new Request(`https://api.example.com/api/auth${path}`, {
       method: body === undefined ? "GET" : "POST",
       headers: {
         "content-type": "application/json",
         "cf-connecting-ip": ip,
         origin,
       },
-    };
-
-    if (body !== undefined) options.body = JSON.stringify(body);
-
-    return new Request(`https://api.example.com/api/auth${path}`, options);
-  };
+      ...exactOptional(body, (body) => ({ body: JSON.stringify(body) })),
+    });
 
   return {
     layer,

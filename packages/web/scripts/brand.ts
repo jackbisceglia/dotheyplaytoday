@@ -2,6 +2,7 @@
 // Colors mirror `src/styles/global.css`; the mascot mirrors `favicon.svg`.
 
 import type { ReactElement, ReactNode } from "react";
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -51,13 +52,11 @@ export const el = (
   type: string,
   style: Style,
   children?: Node,
-): ReactElement<ElementProps> => {
-  const props: ElementProps = { style };
-
-  if (children !== undefined) props.children = children;
-
-  return { type, key: null, props };
-};
+): ReactElement<ElementProps> => ({
+  type,
+  key: null,
+  props: { style, ...exactOptional(children, (children) => ({ children })) },
+});
 
 export function mascot(size: number): Node {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="${size.toString()}" height="${size.toString()}">

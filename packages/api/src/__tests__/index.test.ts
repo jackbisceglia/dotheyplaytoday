@@ -1,3 +1,4 @@
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { EventsResponse } from "@dtpt/core/contracts/events";
 import { makeAuthFixture } from "../auth/__tests__/fixtures.js";
 import { RuntimeContext } from "alchemy/RuntimeContext";
@@ -129,21 +130,19 @@ const makeFixture = async () => {
   );
   onTestFinished(web.dispose);
 
-  const request = (path: string, body?: unknown, cookie?: string) => {
-    const headers = new Headers({
-      "content-type": "application/json",
-      origin: "https://www.example.com",
-    });
-    const options: RequestInit = {
-      method: body === undefined ? "GET" : "POST",
-      headers,
-    };
-
-    if (cookie) headers.set("cookie", cookie);
-    if (body !== undefined) options.body = JSON.stringify(body);
-
-    return web.handler(
-      new Request(`https://api.example.com/api${path}`, options),
+  const request = (path: string, body?: unknown, cookie?: string) =>
+    web.handler(
+      new Request(`https://api.example.com/api${path}`, {
+        method: body === undefined ? "GET" : "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: "https://www.example.com",
+          ...exactOptional(cookie === "" ? undefined : cookie, (cookie) => ({
+            cookie,
+          })),
+        },
+        ...exactOptional(body, (body) => ({ body: JSON.stringify(body) })),
+      }),
       Context.make(RuntimeContext, {
         Type: "test",
         id: "test",
@@ -152,7 +151,6 @@ const makeFixture = async () => {
         set: () => Effect.die("Unexpected binding write"),
       }),
     );
-  };
   const signIn = async () => {
     await fixture.auth.client.handler(
       fixture.request("/sign-in/magic-link", { email: user.email }),

@@ -10,7 +10,8 @@ function unwrapParentheses(node: ESTree.Expression): ESTree.Expression {
 }
 
 function isEmptyObjectExpression(node: ESTree.Expression): boolean {
-  return node.type === "ObjectExpression" && node.properties.length === 0;
+  const expression = unwrapParentheses(node);
+  return expression.type === "ObjectExpression" && expression.properties.length === 0;
 }
 
 function isConditionalEmptyObjectSpread(node: ESTree.Expression): boolean {
@@ -22,17 +23,17 @@ function isConditionalEmptyObjectSpread(node: ESTree.Expression): boolean {
   );
 }
 
-/** Ban conditional empty-object spreads without changing their omission semantics. */
+/** Require exactOptional instead of conditional empty-object spreads. */
 export const noConditionalEmptyObjectSpreadRule = defineRule({
   meta: {
     type: "suggestion",
     docs: {
       description:
-        "Disallow object spreads that conditionally spread an empty object to omit fields.",
+        "Require exactOptional for object spreads that conditionally omit fields with an empty object.",
     },
     messages: {
       avoid:
-        "This conditional spread hides property omission behind an empty object. Build the object in separate statements and add the property only when present.",
+        "Use exactOptional(value, value => ({ field: value })) instead of a conditional empty-object spread. Preserve the original omission condition: exactOptional omits only undefined values.",
     },
   },
   createOnce(context) {
