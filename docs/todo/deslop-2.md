@@ -27,7 +27,8 @@ conventional `_tag` case.
 
 ## Suggested Direction
 
-Add concise `SAFETY:` comments immediately before the assertions. Each comment
+Add concise `lint(anti-slop/require-safety-comment-for-type-assertion): reason`
+comments immediately before the assertions. Each comment
 should state the checked invariant rather than restating the syntax.
 
 Before adding a comment, confirm that removing the assertion or expressing the
@@ -35,7 +36,7 @@ invariant without one would not be simpler.
 
 ## Acceptance Criteria
 
-- Each remaining non-const assertion has an adjacent `SAFETY:` comment.
+- Each remaining non-const assertion has an adjacent `lint(anti-slop/require-safety-comment-for-type-assertion):` comment.
 - The `JSON.stringify` comment explains the mismatch between TypeScript's
   declaration and runtime `undefined` results.
 - The tagged-union comment explains how the public overloads constrain the

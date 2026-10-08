@@ -8,7 +8,7 @@
     "build": "vite build",
     "assets:generate": "node scripts/og.ts && node scripts/email-headlines.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint --type-aware .",
+    "lint": "oxlint .",
     "format": "prettier --write ."
   },
   "dependencies": {

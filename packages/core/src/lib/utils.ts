@@ -7,7 +7,7 @@ export const serialize = (value: unknown, fallback?: string): string => {
   const fallbackValue = fallback ?? "<unserializable>";
 
   try {
-    // SAFETY: JSON.stringify can return undefined for unsupported values despite its string declaration.
+    // lint(anti-slop/require-safety-comment-for-type-assertion): JSON.stringify can return undefined for unsupported values despite its string declaration.
     const serialized = JSON.stringify(value) as string | undefined;
 
     return serialized ?? fallbackValue;

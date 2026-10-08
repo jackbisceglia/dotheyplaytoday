@@ -4,6 +4,7 @@ import { defineConfig } from "oxlint";
 // Converted from ESLint recommended + typescript-eslint strict/stylisticTypeChecked.
 // Keep rules explicit so tool upgrades do not silently change repository policy.
 export default defineConfig({
+  options: { typeAware: true },
   plugins: ["typescript", "oxc"],
   categories: {
     correctness: "off",
@@ -17,7 +18,7 @@ export default defineConfig({
     "**/dist/**",
     "**/.output/**",
     "**/.alchemy/**",
-    "tools/oxlint/anti-slop/**",
+    "tooling/oxlint/anti-slop/**",
   ],
   rules: {
     "constructor-super": "error",
@@ -207,7 +208,12 @@ export default defineConfig({
     "anti-slop/no-unknown-returns": "error",
     "anti-slop/no-unknown-type-aliases": "error",
     "anti-slop/no-widen-then-assert": "error",
-    "anti-slop/require-safety-comment-for-type-assertion": "error",
+    "anti-slop/require-safety-comment-for-type-assertion": [
+      "error",
+      {
+        markers: ["lint(anti-slop/require-safety-comment-for-type-assertion)"],
+      },
+    ],
   },
   overrides: [
     {
@@ -241,7 +247,7 @@ export default defineConfig({
     {
       name: "anti-slop",
       specifier: fileURLToPath(
-        new URL("./tools/oxlint/anti-slop/index.ts", import.meta.url),
+        new URL("./tooling/oxlint/anti-slop/index.ts", import.meta.url),
       ),
     },
   ],

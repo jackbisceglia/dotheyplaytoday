@@ -63,7 +63,7 @@ export function tagsFromTaggedUnion<
   >,
 >(
   union: Schema.Union<TMembers>,
-  // SAFETY: Only the overload for _tag permits callers to omit this argument.
+  // lint(anti-slop/require-safety-comment-for-type-assertion): Only the overload for _tag permits callers to omit this argument.
   tag: TTag = "_tag" as TTag,
 ): Array.NonEmptyArray<TMembers[number]["fields"][TTag]["schema"]["literal"]> {
   return pipe(

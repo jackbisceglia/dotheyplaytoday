@@ -321,10 +321,11 @@ operation.
 
 ### Lint policy
 
-Each package's `oxlint.config.ts` imports the root config. `pnpm lint` keeps the
-recursive package workflow; package lint scripts enable `--type-aware` using
-`oxlint-tsgolint`. Build dependent packages before linting, as production CI
-already does. `pnpm typecheck` remains the Effect-patched TypeScript 5 check;
+Each package's `oxlint.config.ts` imports and extends the root config with
+`extends: [base]`. `pnpm lint` keeps the recursive package workflow. The root
+config enables `options.typeAware` using `oxlint-tsgolint`, so package scripts
+and direct `oxlint` runs need no flag. Build dependent packages before linting,
+as production CI already does. `pnpm typecheck` remains the Effect-patched TypeScript 5 check;
 Oxlint's native checker supplies lint diagnostics, not Effect language-service
 diagnostics. The web config omits the obsolete `baseUrl` option while preserving
 its relative `~/*` mapping.
@@ -336,7 +337,7 @@ exemptions and `type` declarations. `no-unnecessary-condition` and
 the migration tool. Strict-mode-only `no-dupe-args` and `no-octal` have no Oxlint
 equivalent. Prettier remains the formatter.
 
-Anti-slop is vendored unchanged under `tools/oxlint/anti-slop`, with revision
+Anti-slop is vendored unchanged under `tooling/oxlint/anti-slop`, with revision
 and licenses recorded there. Enabled rules reject chained assertions, unexplained
 assertions, known-value widening, unsafe assertion round trips, broad object
 parameters and unknown return/type-alias contracts, reflective property access
@@ -357,7 +358,8 @@ The adoption deliberately leaves these upstream policies disabled:
 
 Two existing event-service tests retain narrowly suppressed chained assertions
 for deliberately partial database fixtures. All remaining non-const assertions
-must state their specific invariant in a nearby `SAFETY:` comment. Moving those
+must state their specific invariant in a nearby rule-qualified comment:
+`lint(anti-slop/require-safety-comment-for-type-assertion): reason`. Moving those
 tests to a full driver seam is a separate testing refactor.
 
 ## Follow-up work
