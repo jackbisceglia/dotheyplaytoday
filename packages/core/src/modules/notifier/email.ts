@@ -339,9 +339,7 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
             : "UFC cards today";
         const blocks = notification.events.flatMap((event) => {
           const card = event.details;
-          const bouts = card.bouts.filter(
-            (bout) => bout.status === "scheduled",
-          );
+          const bouts = card.bouts;
           const relevant = bouts.filter((bout) =>
             bout.fighters.some((fighter) => fighter.subjectId === subject.id),
           );
@@ -349,7 +347,7 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
             Text.make({ value: card.title }),
             ...relevant.map((bout) =>
               Text.make({
-                value: `Following ${subject.details.display}: ${bout.fighters.map((fighter) => fighter.title).join(" vs ")}${bout.fighters.length === 1 ? " vs Opponent TBD" : ""} (${bout.placement.replaceAll("_", " ")})`,
+                value: `Following ${subject.details.display}: ${bout.fighters.map((fighter) => fighter.title).join(" vs ")}${bout.fighters.length === 1 ? " vs Opponent TBD" : ""} (${bout.placement})`,
               }),
             ),
             List.make({

@@ -65,7 +65,7 @@ describe("MMA selection and timing", () => {
     for (const invalid of [
       { main: encodedDetails.timings.main },
       {
-        early: null,
+        early: encodedDetails.timings.early,
         prelims: encodedDetails.timings.main,
         main: encodedDetails.timings.prelims,
       },

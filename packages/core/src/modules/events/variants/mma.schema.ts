@@ -4,8 +4,6 @@ import { SubjectId } from "../../subjects/schema.js";
 
 export type MmaBout = typeof MmaBout.Type;
 export const MmaBout = Schema.Struct({
-  id: Schema.NonEmptyString,
-  status: Schema.Literals(["scheduled", "cancelled"]),
   placement: Schema.Literals(["early", "prelims", "main"]),
   fighters: Schema.Array(
     Schema.Struct({
@@ -25,7 +23,6 @@ export type MmaEvent = typeof MmaEvent.Type;
 export const MmaEvent = Schema.TaggedStruct("mma_card", {
   leagueId: Schema.Literal("ufc"),
   title: Schema.NonEmptyString,
-  reviewedAt: Schema.DateTimeUtcFromString,
   kind: Schema.Literals(["numbered", "fight_night"]),
   venue: MmaVenue,
   timings: Schema.Struct({

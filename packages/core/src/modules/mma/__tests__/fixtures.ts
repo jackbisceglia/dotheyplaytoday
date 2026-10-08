@@ -45,8 +45,6 @@ export const card = Schema.decodeUnknownSync(EventWithParticipants)({
     leagueId: "ufc",
     title: "UFC test",
     kind: "numbered",
-    reviewedAt: "2026-10-01T00:00:00.000Z",
-
     venue: { title: "Test Arena", location: "Test City" },
     timings: {
       early: "2026-10-03T23:00:00.000Z",
@@ -55,8 +53,6 @@ export const card = Schema.decodeUnknownSync(EventWithParticipants)({
     },
     bouts: [
       {
-        id: "bout-1",
-        status: "scheduled",
         placement: "main",
         fighters: [fighterA, fighterB].map((subject) => ({
           subjectId: subject.id,

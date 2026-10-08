@@ -103,7 +103,7 @@ All UFC events choice; All includes numbered events and Fight Nights, excluding
 Contender Series and standalone Ultimate Fighter events/exhibitions. Each fighter
 and each enabled coverage choice uses one pick. Coverage changes preserve fighters.
 
-Cards match coverage or scheduled participating fighters. UFC selection and
+Cards match coverage or participating fighters. UFC selection and
 dashboard rendering are introduced in the third PR of the stack; this backend
 stage keeps the existing web interface limited to teams.
 Emails retain subject-scoped sports behavior: following both opponents and card
@@ -122,8 +122,10 @@ start estimates. Do not invent missing segment times. Do not import a new card
 until its event and main-card starts are confirmed. Incomplete source updates
 retain previously confirmed timings; a confirmed postponement with no replacement
 time must explicitly deactivate the card until a new start is confirmed.
-Cancelled cards and cancelled bouts don't qualify. Partial source data doesn't
-remove omitted bouts. Catalog publication is a separate rollout step; coverage
+Cancelled cards don't qualify. A card's bouts describe its current lineup;
+withdrawals remove the bout or update its fighters. Checked-in card JSON is
+authoritative. When reviewing incomplete source data, retain known bouts and
+metadata unless a change is confirmed. Catalog publication is a separate rollout step; coverage
 choices apply to catalogued UFC events.
 
 Backend and UI reader support must be released before publishing UFC
