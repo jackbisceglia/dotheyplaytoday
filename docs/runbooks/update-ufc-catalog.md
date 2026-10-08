@@ -37,10 +37,11 @@ UFC URL on each import record and review timestamp in the event details.
 The URL is import provenance; the stored revision prevents stale reimports. Never infer a cancellation from a
 missing search result, a failed scrape, or a shortened broadcast listing.
 
-The initial catalog contains the confirmed headliners of
-[UFC 332](https://www.ufc.com/event/ufc-332) and
-[Allen–Duncan](https://www.ufc.com/news/tickets-sale-october-10-october-31-and-november-7-ufc-fight-night-events-meta-apex),
-reviewed October 3, 2026. Their lists are partial, not the complete UFC roster or
+The initial published card is [UFC 332](https://www.ufc.com/event/ufc-332),
+reviewed October 3, 2026. Allen–Duncan is held out because its reviewed source
+does not confirm all three required broadcast timestamps. Its fighters remain
+followable. Reserve card/source UUID b51165b6-7428-4620-a02e-000000000002
+and bout UUID 94f93873-805a-44e0-a08d-000000000002 for a later confirmed import. Their lists are partial, not the complete UFC roster or
 complete cards. Adding other supported fighters does not require an upcoming bout.
 
 1. Allocate a UUID once for each new fighter, card, and bout. Keep a card's
@@ -57,8 +58,8 @@ complete cards. Adding other supported fighters does not require an upcoming bou
    fighter subjects just because they withdrew or have no upcoming card.
 4. Card metadata is a full, reviewed snapshot, even when the bout list is partial.
    Missing source fields are **not** permission to clear known metadata: retain
-   prior confirmed values. Venue and all timing keys are required. Use early: null
-   only when the card has no separate early-prelim segment.
+   prior confirmed values. Venue and all three timing instants are required.
+   Do not publish a card while any broadcast time is missing.
    Advance `reviewedAt` for each update. Older card snapshots are ignored. Reuse
    the same revision and payload for retries.
 5. Mark a cancelled card `availability: "cancelled"`; do not delete it. For a
@@ -80,9 +81,8 @@ against the source's published offset. Never estimate individual bout times.
 Every imported card must supply a confirmed event-level startsAt instant, chosen
 as the earliest confirmed broadcast start. It is the single scheduling anchor,
 using the same local-day and DST behavior as sports games. The MMA details.timings
-object supplies required early/prelims/main keys for email and schedule
-enrichment. Early is null only when there is no separate early-prelim segment.
-Prelims and main must be confirmed instants, ordered after any early-prelim start.
+object supplies required early/prelims/main timestamps for email and schedule
+enrichment. All three must be confirmed, non-null instants ordered early <= prelims <= main.
 Never fabricate an instant. The venue is a required title/location struct.
 
 Hold new cards without confirmed event/main-card times out of the import. Missing

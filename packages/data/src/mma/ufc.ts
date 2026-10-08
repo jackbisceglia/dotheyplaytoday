@@ -69,39 +69,7 @@ export const ufcCatalog = {
         ],
       },
     },
-    {
-      id: "b51165b6-7428-4620-a02e-000000000002",
-      sourceId: "mma_card:ufc:b51165b6-7428-4620-a02e-000000000002",
-      availability: "active",
-      sourceUrl:
-        "https://www.ufc.com/news/tickets-sale-october-10-october-31-and-november-7-ufc-fight-night-events-meta-apex",
-      startsAt: "2026-10-10T21:00:00.000Z",
-      boutsComplete: false,
-      details: {
-        _tag: "mma_card",
-        leagueId: "ufc",
-        title: "UFC Fight Night: Allen vs Duncan",
-        kind: "fight_night",
-        reviewedAt: "2026-10-03T12:00:00.000Z",
-
-        venue: { title: "Meta APEX", location: "Las Vegas" },
-        timings: {
-          early: null,
-          prelims: "2026-10-10T21:00:00.000Z",
-          main: "2026-10-11T00:00:00.000Z",
-        },
-        bouts: [
-          {
-            id: "94f93873-805a-44e0-a08d-000000000002",
-            status: "scheduled",
-            placement: "main",
-            fighters: fighters.slice(2, 4).map((fighter) => ({
-              subjectId: fighter.id,
-              title: fighter.name,
-            })),
-          },
-        ],
-      },
-    },
+    // Allen–Duncan remains pending until all three broadcast times are confirmed.
+    // Its allocated card/bout IDs are reserved in the catalog runbook.
   ],
 } satisfies MmaImportInput;

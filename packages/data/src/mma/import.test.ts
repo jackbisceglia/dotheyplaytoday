@@ -76,6 +76,27 @@ describe("MMA import boundaries", () => {
 
 // Use only an explicitly supplied local scratch DB. All changes, including DDL,
 // are rolled back. This does not deploy infrastructure or contact email services.
+const testCard = ufcCatalog.cards[0];
+if (!testCard) throw new Error("Expected seed card");
+const integrationCatalog = {
+  ...ufcCatalog,
+  cards: [
+    testCard,
+    {
+      ...testCard,
+      id: "b51165b6-7428-4620-a02e-000000000099",
+      sourceId: "mma_card:ufc:b51165b6-7428-4620-a02e-000000000099",
+      sourceUrl: "https://www.ufc.com/event/test-fight-night",
+      details: {
+        ...testCard.details,
+        title: "Test Fight Night",
+        kind: "fight_night" as const,
+        bouts: [],
+      },
+    },
+  ],
+};
+
 const databaseUrl = process.env.UFC_TEST_DATABASE_URL;
 if (databaseUrl) {
   const url = new URL(databaseUrl);
@@ -133,8 +154,8 @@ describe("UFC PostgreSQL integration", () => {
                   }
                 }
               }
-              yield* seedMmaCatalog(ufcCatalog);
-              yield* seedMmaCatalog(ufcCatalog);
+              yield* seedMmaCatalog(integrationCatalog);
+              yield* seedMmaCatalog(integrationCatalog);
               expect(yield* subjects.list()).toHaveLength(6);
               expect(
                 yield* events.listBySubject(UfcCoverageIds.numbered),
@@ -315,15 +336,15 @@ describe("UFC PostgreSQL integration", () => {
               ).toHaveLength(1);
               yield* importCard(replacement);
               // Older sources cannot resurrect removed opponents.
-              yield* seedMmaCatalog(ufcCatalog);
+              yield* seedMmaCatalog(integrationCatalog);
               expect(yield* events.listBySubject(b.id)).toEqual([]);
               // Rescheduling changes the ordinary event instant without changing identity.
               yield* importCard(
                 {
                   ...replacement,
                   timings: {
-                    early: null,
-                    prelims: DateTime.makeUnsafe("2026-10-05T20:00:00Z"),
+                    early: DateTime.makeUnsafe("2026-10-05T20:00:00Z"),
+                    prelims: DateTime.makeUnsafe("2026-10-05T21:00:00Z"),
                     main: DateTime.makeUnsafe("2026-10-05T22:00:00Z"),
                   },
                 },
