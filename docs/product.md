@@ -125,8 +125,8 @@ time must explicitly deactivate the card until a new start is confirmed.
 Cancelled cards don't qualify. A card's bouts describe its current lineup;
 withdrawals remove the bout or update its fighters. Checked-in card JSON is
 authoritative. When reviewing incomplete source data, retain known bouts and
-metadata unless a change is confirmed. Catalog publication is a separate rollout step; coverage
-choices apply to catalogued UFC events.
+metadata unless a change is confirmed. Catalog publication is a separate rollout
+step; coverage choices apply to catalogued UFC events.
 
 Backend and UI reader support must be released before publishing UFC
 catalog subjects and cards. Existing team subscriptions remain unchanged.
