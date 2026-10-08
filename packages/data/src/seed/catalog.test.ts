@@ -28,62 +28,68 @@ const input = [
   },
 ];
 
+const seedServices = () => {
+  const upsert = vi.fn<Events["Service"]["upsert"]>((event) => {
+    if (!event.id) return Effect.die("Missing fixture event ID");
+    return Effect.succeed({ ...event, id: event.id });
+  });
+  const participants = vi.fn<Events["Service"]["setParticipants"]>(
+    () => Effect.void,
+  );
+  const addFeed = vi.fn<Subjects["Service"]["addEventToFeed"]>(
+    () => Effect.void,
+  );
+  const transaction = vi.fn((body: () => Effect.Effect<void>) => body());
+
+  const layer = Layer.mergeAll(
+    // The importer only calls transaction; domain writes use the service fakes.
+    Layer.succeed(Database, { transaction } as unknown as Database),
+    Layer.mock(Events, { upsert, setParticipants: participants }),
+    Layer.mock(Subjects, {
+      upsert: (subject) => Effect.succeed(subject),
+      addEventToFeed: addFeed,
+    }),
+  );
+
+  return { upsert, participants, addFeed, transaction, layer };
+};
+
 describe("catalog seed cutoff", () => {
-  for (const { includeHistorical, now, skip, name } of [
+  for (const { strategy, now, skip, name } of [
     {
-      includeHistorical: false,
+      strategy: "recent",
       now: "2026-10-08T00:30:00Z",
       skip: 1,
       name: "keeps the inclusive yesterday UTC boundary",
     },
     {
-      includeHistorical: true,
+      strategy: "all",
       now: "2026-10-08T00:30:00Z",
       skip: 0,
       name: "imports historical corrections explicitly",
     },
     {
-      includeHistorical: false,
+      strategy: "recent",
       now: "2026-10-11T23:30:00Z",
       skip: 4,
       name: "skips all historical events and feed references without reconciliation errors",
     },
-  ]) {
+  ] as const) {
     it.effect(name, () =>
       Effect.gen(function* () {
-        // This instant is still October 7 in New York; the cutoff must use UTC.
+        // The boundary case is still October 7 in New York; use UTC.
         yield* TestClock.setTime(Date.parse(now));
         const decoded = yield* decodeSportsSeedCollections(input);
         const collection = decoded[0];
         if (!collection) throw new Error("Missing decoded fixture");
         const expected = collection.events.slice(skip);
-        const upsert = vi.fn<Events["Service"]["upsert"]>((event) => {
-          if (!event.id) return Effect.die("Missing fixture event ID");
-          return Effect.succeed({ ...event, id: event.id });
-        });
-        const participants = vi.fn<Events["Service"]["setParticipants"]>(
-          () => Effect.void,
-        );
-        const addFeed = vi.fn<Subjects["Service"]["addEventToFeed"]>(
-          () => Effect.void,
-        );
-        const transaction = vi
-          .fn()
-          .mockImplementation((body: () => Effect.Effect<void>) => {
-            expect(upsert).not.toHaveBeenCalled();
-            return body();
-          });
+        const { upsert, participants, addFeed, transaction, layer } =
+          seedServices();
 
-        const result = yield* seedCatalog(input, { includeHistorical }).pipe(
-          Effect.provide([
-            Layer.succeed(Database, { transaction } as unknown as Database),
-            Layer.mock(Events, { upsert, setParticipants: participants }),
-            Layer.mock(Subjects, {
-              upsert: (subject) => Effect.succeed(subject),
-              addEventToFeed: addFeed,
-            }),
-          ]),
-        );
+        const result = yield* seedCatalog({
+          collections: input,
+          strategy,
+        }).pipe(Effect.provide(layer));
 
         const imported = result[0];
         if (!imported) throw new Error("Missing imported fixture");

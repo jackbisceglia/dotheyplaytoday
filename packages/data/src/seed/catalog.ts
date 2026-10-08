@@ -131,44 +131,62 @@ const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
   yield* validateSubjectFeedIds(eventIdsBySourceId);
 });
 
+export type CatalogSeedOptions = {
+  readonly collections?: readonly SportsSeedInput[];
+  readonly strategy?: "recent" | "all";
+};
+
+const selectCatalogEvents = Effect.fn("DataSeed.selectCatalogEvents")(
+  function* (
+    collections: readonly SportsSeedCollection[],
+    strategy: "recent" | "all",
+  ) {
+    if (strategy === "all") return collections;
+
+    const now = yield* DateTime.now;
+    const today = DateTime.startOf(now, "day");
+    const cutoff = DateTime.subtract(today, { days: 1 });
+    const skippedSourceIds = new Set<EventSourceId>();
+
+    const selected = collections.map((collection) => {
+      const events = collection.events.filter((event) => {
+        if (DateTime.isGreaterThanOrEqualTo(event.startsAt, cutoff))
+          return true;
+
+        skippedSourceIds.add(event.sourceId);
+        return false;
+      });
+
+      return { ...collection, events };
+    });
+
+    return selected.map((collection) => {
+      const subjects = collection.subjects.map((subject) => {
+        const feedIds = subject.feedIds.filter(
+          (sourceId) => !skippedSourceIds.has(sourceId),
+        );
+
+        return { ...subject, feedIds };
+      });
+
+      return { ...collection, subjects };
+    });
+  },
+);
+
 export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
-  input?: readonly SportsSeedInput[],
-  options: { readonly includeHistorical?: boolean } = {},
+  options?: CatalogSeedOptions,
 ) {
-  const decodedCollections = yield* decodeSportsSeedCollections(
-    input ?? SeedCollections,
+  const decoded = yield* decodeSportsSeedCollections(
+    options?.collections ?? SeedCollections,
   );
 
-  yield* validateFeedIds(decodedCollections);
+  yield* validateFeedIds(decoded);
 
-  const cutoff = DateTime.subtract(
-    DateTime.startOf(yield* DateTime.now, "day"),
-    {
-      days: 1,
-    },
+  const collections = yield* selectCatalogEvents(
+    decoded,
+    options?.strategy ?? "recent",
   );
-  const retainedEvents = decodedCollections.flatMap((collection) =>
-    collection.events.filter(
-      (event) =>
-        options.includeHistorical === true ||
-        DateTime.isGreaterThanOrEqualTo(event.startsAt, cutoff),
-    ),
-  );
-  const retainedSourceIds = new Set(
-    retainedEvents.map((event) => event.sourceId),
-  );
-  const collections = decodedCollections.map((collection) => ({
-    ...collection,
-    events: collection.events.filter((event) =>
-      retainedSourceIds.has(event.sourceId),
-    ),
-    subjects: collection.subjects.map((subject) => ({
-      ...subject,
-      feedIds: subject.feedIds.filter((sourceId) =>
-        retainedSourceIds.has(sourceId),
-      ),
-    })),
-  }));
 
   const subjects = yield* Subjects;
   const events = yield* Events;
