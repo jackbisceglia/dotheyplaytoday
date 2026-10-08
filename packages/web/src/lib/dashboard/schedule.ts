@@ -13,13 +13,11 @@ export type ScheduleRow = {
   readonly eventId: string;
   readonly startsAt: string;
   readonly day: string;
-  readonly localDate: string;
   readonly time: string;
   readonly opponent: string;
   readonly opponentTeam: Subject | undefined;
   readonly matchup: "at" | "vs";
   readonly mma?: {
-    readonly title: string;
     readonly reasons: readonly Subject[];
     readonly bouts: readonly MmaBout[];
     readonly followedFighterIds: ReadonlySet<string>;
@@ -75,40 +73,33 @@ export function scheduleRows(
       return true;
     })
     .map(({ team, event }): ScheduleRow => {
+      const startsAt = DateTime.formatIso(event.startsAt);
+      const date = new Date(startsAt);
+      const today =
+        SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
+        todayDate;
+      const day = today ? "Today" : dayFormat.format(date);
+
       if (event.details._tag === "mma_card") {
         const card = event.details;
-        const localDate = SubscriptionTiming.formatLocalDate(
-          event.startsAt,
-          timezone,
-        );
         const reasons = schedule
           .filter((pick) =>
             pick.events.some((matched) => matched.id === event.id),
           )
           .map((pick) => pick.subject);
-        const day =
-          localDate === todayDate
-            ? "Today"
-            : dayFormat.format(
-                new Date(DateTime.toEpochMillis(event.startsAt)),
-              );
         return {
           team,
           teamName: card.title,
           eventId: event.id,
-          startsAt: DateTime.formatIso(event.startsAt),
+          startsAt,
           day,
-          localDate,
-          time: timeFormat.format(
-            new Date(DateTime.toEpochMillis(event.startsAt)),
-          ),
+          time: timeFormat.format(date),
           opponent: "",
           opponentTeam: undefined,
           matchup: "vs",
           mma: {
-            title: card.title,
             reasons,
-            bouts: card.bouts.filter((bout) => bout.status === "scheduled"),
+            bouts: card.bouts,
             followedFighterIds: new Set(
               reasons
                 .filter((reason) => reason.details._tag === "mma_fighter")
@@ -118,13 +109,6 @@ export function scheduleRows(
           },
         };
       }
-      const startsAt = DateTime.formatIso(event.startsAt);
-      const date = new Date(startsAt);
-      const today =
-        SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
-        todayDate;
-      const day = today ? "Today" : dayFormat.format(date);
-
       const participantName = (title: string) => {
         const subject = catalog.find(
           (subject) =>
@@ -170,7 +154,6 @@ export function scheduleRows(
         eventId: event.id,
         startsAt,
         day,
-        localDate: SubscriptionTiming.formatLocalDate(event.startsAt, timezone),
         time: timeFormat.format(date),
         opponent: opponent ? participantName(opponent.details.title) : "",
         opponentTeam,
@@ -179,7 +162,6 @@ export function scheduleRows(
     })
     .sort(
       (a, b) =>
-        a.localDate.localeCompare(b.localDate) ||
         a.startsAt.localeCompare(b.startsAt) ||
         a.eventId.localeCompare(b.eventId),
     );

@@ -158,7 +158,7 @@ export function Schedule(props: {
                         >
                           {(mma) => (
                             <>
-                              <strong>{mma().title}</strong>
+                              <strong>{row.teamName}</strong>
                               <span class="ufc-card-detail">
                                 Matched:{" "}
                                 {mma()
