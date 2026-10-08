@@ -7,7 +7,7 @@ import {
   StringParts,
   Subjects,
 } from "@dtpt/core";
-import { Effect, HashMap, Option, Schema } from "effect";
+import { DateTime, Effect, HashMap, Option, Schema } from "effect";
 
 import { SportsSeed } from "../schema/sports.js";
 import { SeedCollections } from "./index.js";
@@ -133,12 +133,42 @@ const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
 
 export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
   input?: readonly SportsSeedInput[],
+  options: { readonly includeHistorical?: boolean } = {},
 ) {
-  const collections = yield* decodeSportsSeedCollections(
+  const decodedCollections = yield* decodeSportsSeedCollections(
     input ?? SeedCollections,
   );
 
-  yield* validateFeedIds(collections);
+  yield* validateFeedIds(decodedCollections);
+
+  const cutoff = DateTime.subtract(
+    DateTime.startOf(yield* DateTime.now, "day"),
+    {
+      days: 1,
+    },
+  );
+  const retainedEvents = decodedCollections.flatMap((collection) =>
+    collection.events.filter(
+      (event) =>
+        options.includeHistorical === true ||
+        DateTime.isGreaterThanOrEqualTo(event.startsAt, cutoff),
+    ),
+  );
+  const retainedSourceIds = new Set(
+    retainedEvents.map((event) => event.sourceId),
+  );
+  const collections = decodedCollections.map((collection) => ({
+    ...collection,
+    events: collection.events.filter((event) =>
+      retainedSourceIds.has(event.sourceId),
+    ),
+    subjects: collection.subjects.map((subject) => ({
+      ...subject,
+      feedIds: subject.feedIds.filter((sourceId) =>
+        retainedSourceIds.has(sourceId),
+      ),
+    })),
+  }));
 
   const subjects = yield* Subjects;
   const events = yield* Events;

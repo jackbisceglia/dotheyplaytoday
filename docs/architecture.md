@@ -311,7 +311,14 @@ Alchemy-managed PlanetScale branches. They remain opt-in because local database
 substitutes are not representative of the production transaction path.
 
 Catalog imports decode the checked-in data and validate feed references before
-opening one transaction. Event source IDs are resolved into feed edges while
+opening one transaction. By default, seeding skips events whose `startsAt` is
+before yesterday at 00:00 UTC, using one cutoff for the import. Events exactly
+at the cutoff are included. Filtering happens before database calls and also
+removes feed references to skipped events from the import; existing historical
+events, participants, and feed rows remain untouched. Correction imports can
+explicitly use `seedCatalog(input, { includeHistorical: true })` (pass `undefined`
+for the checked-in catalog). This cutoff applies only to seeding; shared
+`Events.upsert` remains unrestricted. Event source IDs are resolved into feed edges while
 that transaction serializes writes on its reserved PostgreSQL connection. This
 deliberately trades import speed for full-catalog rollback and avoids concurrent
 operations on one transaction connection. Seed Actions use the direct stage
