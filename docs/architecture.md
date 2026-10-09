@@ -284,7 +284,9 @@ times from that data and initializes a separate draft when editing begins. Succe
 revalidate preferences and events; cancelled or failed writes never replace it.
 The pinned schedule filter is a `team` search param, replaced rather than
 pushed and matched against the saved roster; changing it reuses the cached
-queries.
+queries. `Schedule` animates a pin change as a FLIP: other rows and days leave
+the flow at once, and only transforms and opacity animate the rest into place,
+since layout transitions stutter in WebKit.
 
 Signup and the dashboard editor share the `getSubjects` router query and the
 presentational `ui/TeamPicker`. The `/home` route preloads the public catalog,
