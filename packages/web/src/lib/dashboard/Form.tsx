@@ -61,9 +61,9 @@ export function Form(props: {
   const isSaving = () => state.mode === "saving";
   const teams = () => (isEditing() ? state.teams : savedTeams());
   const isEmptyDraft = () => isEditing() && state.teams.length === 0;
-  // A mouse hover previews a team's games; a click or tap pins them, which is
-  // how touch screens get the same view. The pin lives in the URL, and one
-  // for a team that's no longer picked is ignored.
+  // A mouse hover previews a team's games; a click or tap pins them, filtering
+  // out the rest, which is how touch screens get them. The pin lives in the
+  // URL, outranks a hover, and is ignored for a team that's no longer picked.
   const [search, setSearch] = useSearchParams();
   const [hoveredId, setHoveredId] = createSignal<string>();
   const pinnedTeam = () =>
@@ -72,7 +72,6 @@ export function Form(props: {
   const setPinnedTeam = (team: Subject | undefined) => {
     setSearch({ team: team && teamKey(team) }, { replace: true });
   };
-  const focusedId = () => hoveredId() ?? pinnedId();
 
   const beginEdit = () => {
     setHoveredId(undefined);
@@ -190,7 +189,7 @@ export function Form(props: {
         saving={isSaving()}
         onAdd={beginEdit}
         onRemove={toggle}
-        focusedId={focusedId()}
+        focusedId={pinnedId() ?? hoveredId()}
         pinnedId={pinnedId()}
         onPreview={setHoveredId}
         onPin={(team) => {
@@ -199,7 +198,11 @@ export function Form(props: {
       />
 
       <Show when={!isEditing()}>
-        <Schedule rows={props.scheduleRows} focusedId={focusedId()} />
+        <Schedule
+          rows={props.scheduleRows}
+          previewId={hoveredId()}
+          pinnedTeam={pinnedTeam()}
+        />
       </Show>
 
       <Show when={isEditing()}>

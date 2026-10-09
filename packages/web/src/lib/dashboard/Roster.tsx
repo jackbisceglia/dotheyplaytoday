@@ -6,7 +6,7 @@ import { getSportsLogo } from "../catalog/sports/index.js";
 // The same tiles in view and edit mode, so editing only adds controls around
 // what's already on screen. Unfilled capacity reads as quiet empty slots; the
 // first opens the editor, or says why Save is off when the draft is empty.
-// Outside editing, each tile highlights its games in the schedule below.
+// Outside editing, each tile filters the schedule below to its games.
 export function Roster(props: {
   readonly teams: readonly Subject[];
   readonly capacity: number;
@@ -34,7 +34,7 @@ export function Roster(props: {
                 type="button"
                 data-focused={props.focusedId === team.id ? "true" : undefined}
                 aria-pressed={props.pinnedId === team.id ? "true" : "false"}
-                aria-label={`Highlight ${team.details.display} games`}
+                aria-label={`Show only ${team.details.display} games`}
                 onClick={() => {
                   props.onPin(team);
                 }}

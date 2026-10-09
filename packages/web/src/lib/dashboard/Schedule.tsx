@@ -1,11 +1,15 @@
+import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { createMemo, For, Show } from "solid-js";
 
 import { getSportsLogo } from "../catalog/sports/index.js";
 import type { ScheduleRow } from "./schedule.js";
 
+// A previewed team fades everyone else's games; a pinned team collapses them,
+// so its own slide up together.
 export function Schedule(props: {
   readonly rows: readonly ScheduleRow[];
-  readonly focusedId: string | undefined;
+  readonly previewId: string | undefined;
+  readonly pinnedTeam: Subject | undefined;
 }) {
   const days = createMemo(() => {
     const groups = new Map<string, { row: ScheduleRow; index: number }[]>();
@@ -16,23 +20,30 @@ export function Schedule(props: {
     });
     return [...groups].map(([day, rows]) => ({ day, rows }));
   });
+  const focusedId = () => props.pinnedTeam?.id ?? props.previewId;
   const isFocused = (row: ScheduleRow) =>
-    row.team.id === props.focusedId || row.opponentTeam?.id === props.focusedId;
+    row.team.id === focusedId() || row.opponentTeam?.id === focusedId();
+  const emptyMessage = () => {
+    const team = props.pinnedTeam?.details.name;
+    return team
+      ? `No ${team} games in the next 14 days.`
+      : "No games in the next 14 days.";
+  };
 
   return (
     <section
       class="dashboard-schedule"
       aria-labelledby="schedule-heading"
-      data-focusing={props.focusedId ? "true" : undefined}
+      data-focus={
+        props.pinnedTeam ? "pin" : props.previewId ? "preview" : undefined
+      }
     >
       <h2 id="schedule-heading" class="visually-hidden">
         Coming Up
       </h2>
       <Show
         when={props.rows.length > 0}
-        fallback={
-          <p class="dashboard-schedule-empty">No games in the next 14 days.</p>
-        }
+        fallback={<p class="dashboard-schedule-empty">{emptyMessage()}</p>}
       >
         <For each={days()}>
           {(group) => (
@@ -92,6 +103,9 @@ export function Schedule(props: {
             </div>
           )}
         </For>
+        <Show when={props.pinnedTeam && !props.rows.some(isFocused)}>
+          <p class="dashboard-schedule-empty">{emptyMessage()}</p>
+        </Show>
       </Show>
     </section>
   );
