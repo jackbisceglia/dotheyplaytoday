@@ -11,7 +11,7 @@ import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
 import {
   MmaFighterSubject,
-  MmaCoverageSubject,
+  MmaTrackingSubject,
 } from "./variants/mma.schema.js";
 import { SportTeamSubject } from "./variants/sport.schema.js";
 
@@ -26,7 +26,7 @@ export type SubjectDetails = typeof SubjectDetails.Type;
 export const SubjectDetails = TaggedUnion([
   SportTeamSubject,
   MmaFighterSubject,
-  MmaCoverageSubject,
+  MmaTrackingSubject,
 ]);
 
 const overrides = {

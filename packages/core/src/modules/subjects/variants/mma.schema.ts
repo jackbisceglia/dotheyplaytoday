@@ -7,8 +7,8 @@ export const MmaFighterSubject = Schema.TaggedStruct("mma_fighter", {
   profileUrl: Schema.NonEmptyString,
 });
 
-export type MmaCoverageSubject = typeof MmaCoverageSubject.Type;
-export const MmaCoverageSubject = Schema.TaggedStruct("mma_coverage", {
+export type MmaTrackingSubject = typeof MmaTrackingSubject.Type;
+export const MmaTrackingSubject = Schema.TaggedStruct("mma_tracking", {
   leagueId: Schema.Literal("ufc"),
   display: Schema.NonEmptyString,
   coverage: Schema.Literals(["numbered", "all"]),

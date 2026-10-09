@@ -445,7 +445,7 @@ Alchemy's `Http.Platform` layer for its fileless HTTP platform services.
 
 ### UFC variants and catalog reconciliation
 
-`SubjectDetails` includes `mma_fighter` and `mma_coverage`; the existing subject
+`SubjectDetails` includes `mma_fighter` and `mma_tracking`; the existing subject
 selection API, subscriptions table, shared four-pick policy, and notification
 orchestrator serve both sports and UFC. The subscription service rejects two
 coverage subjects in one selection. `mma_card` is an event variant with

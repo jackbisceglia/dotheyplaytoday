@@ -20,9 +20,9 @@ export const fighterB = Schema.decodeUnknownSync(Subject)({
 });
 export const numbered = Schema.decodeUnknownSync(Subject)({
   id: "10000000-0000-4000-8000-000000000003",
-  _tag: "mma_coverage",
+  _tag: "mma_tracking",
   details: {
-    _tag: "mma_coverage",
+    _tag: "mma_tracking",
     leagueId: "ufc",
     display: "Numbered UFC events",
     coverage: "numbered",
@@ -44,7 +44,7 @@ export const card = Schema.decodeUnknownSync(EventWithParticipants)({
     _tag: "mma_card",
     leagueId: "ufc",
     title: "UFC test",
-    kind: "numbered",
+    category: "numbered",
     venue: { title: "Test Arena", location: "Test City" },
     timings: {
       early: "2026-10-03T23:00:00.000Z",

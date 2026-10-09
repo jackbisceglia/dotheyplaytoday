@@ -97,7 +97,7 @@ function createFeedCases() {
     },
     mmaFeed: {
       subject: {
-        details: SubjectDetails.isAnyOf(["mma_fighter", "mma_coverage"]),
+        details: SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"]),
       },
       events: areMmaEvents,
     },
