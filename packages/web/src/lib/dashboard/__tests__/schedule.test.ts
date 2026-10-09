@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DateTime, Schema } from "effect";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
-import { EventWithParticipants } from "@dtpt/core/modules/events/participants/schema";
+import { EventWithParticipants } from "@dtpt/core/modules/events/with-participants";
 import { SubscriptionWithSubject } from "@dtpt/core/modules/subscriptions/schema";
 
 import { scheduleRows } from "../schedule.js";

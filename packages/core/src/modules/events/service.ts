@@ -25,8 +25,8 @@ import type { WithOptionalKeys } from "../../lib/types.js";
 import { exactOptional } from "../../lib/utils.js";
 import { SubjectId } from "../subjects/schema.js";
 import { EventNotFound } from "./errors.js";
+import { EventWithParticipants } from "./with-participants.js";
 import {
-  EventWithParticipants,
   Participant,
   ParticipantInsert,
   participantsTable,
@@ -44,7 +44,7 @@ import { Subscriptions } from "../subscriptions/service.js";
 import type { UserId } from "../users/schema.js";
 import { Users, type UserNotFound } from "../users/service.js";
 
-export { EventWithParticipants } from "./participants/schema.js";
+export { EventWithParticipants } from "./with-participants.js";
 
 export type DateRangeUtc = Range<DateTime.Utc>;
 

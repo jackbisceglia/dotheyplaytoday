@@ -7,10 +7,9 @@ import { Schema } from "effect";
 
 import { postgresTable } from "../../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../../lib/database/utils.js";
-import type { ExtractFromTag } from "../../../lib/types.js";
 import { Id } from "../../../lib/id/service.js";
 import { TaggedUnion } from "../../../lib/effect/index.js";
-import { Event, EventId, eventsTable } from "../schema.js";
+import { EventId, eventsTable } from "../schema.js";
 import { MmaParticipant } from "./variants/mma.schema.js";
 import { SportParticipant } from "./variants/sport.schema.js";
 
@@ -61,18 +60,3 @@ export const ParticipantInsert = createInsertSchema(
   participantsTable,
   overrides,
 );
-
-export type EventWithParticipants = typeof EventWithParticipants.Type;
-export const EventWithParticipants = Schema.Struct({
-  ...Event.fields,
-  participants: Schema.Array(Participant),
-});
-
-export type NarrowedEventWithParticipants<
-  Tag extends EventWithParticipants["_tag"],
-> = Omit<EventWithParticipants, "details" | "participants"> & {
-  readonly details: ExtractFromTag<EventWithParticipants["details"], Tag>;
-  readonly participants: readonly (Omit<Participant, "details"> & {
-    readonly details: ExtractFromTag<ParticipantDetails, Tag>;
-  })[];
-};

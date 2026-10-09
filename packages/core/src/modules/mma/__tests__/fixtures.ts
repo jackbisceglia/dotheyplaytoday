@@ -1,6 +1,6 @@
 import { DateTime, Schema } from "effect";
 
-import { EventWithParticipants } from "../../events/participants/schema.js";
+import { EventWithParticipants } from "../../events/with-participants.js";
 import { Subject } from "../../subjects/schema.js";
 
 export const fighterA = Schema.decodeUnknownSync(Subject)({

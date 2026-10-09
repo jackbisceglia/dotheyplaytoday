@@ -30,8 +30,11 @@ import {
 } from "../email/render.js";
 import { mmaFights } from "../mma/fights.js";
 import { mmaTimingText } from "../mma/time.js";
-import { EventId, type EventDetails } from "../events/schema.js";
-import type { NarrowedEventWithParticipants } from "../events/participants/schema.js";
+import { EventId } from "../events/schema.js";
+import {
+  isEventWithParticipants,
+  type NarrowedEventWithParticipants,
+} from "../events/with-participants.js";
 import { SportParticipant } from "../events/participants/variants/sport.schema.js";
 import { SubjectDetails } from "../subjects/schema.js";
 import type { SportTeamSubject } from "../subjects/variants/sport.schema.js";
@@ -58,36 +61,25 @@ type SportsGameEvents = Array.NonEmptyReadonlyArray<SportsGameEvent>;
 type SportsGameEvent = NarrowedEventWithParticipants<"sports_game">;
 type SportsGameParticipant = SportsGameEvent["participants"][number];
 
-function createFeedCases() {
-  const areEventsWithParticipants =
-    <Tag extends EventDetails["_tag"]>(tag: Tag) =>
-    (
-      events: Notification["events"],
-    ): events is Array.NonEmptyReadonlyArray<
-      NarrowedEventWithParticipants<Tag>
-    > =>
-      Array.isReadonlyArrayNonEmpty(events) &&
-      events.every(
-        (event) =>
-          event._tag === event.details._tag &&
-          Predicate.isTagged(event.details, tag) &&
-          event.participants.every(
-            (participant) =>
-              participant._tag === participant.details._tag &&
-              Predicate.isTagged(participant.details, tag),
-          ),
-      );
+type MmaEvents = Array.NonEmptyReadonlyArray<
+  NarrowedEventWithParticipants<"mma_card">
+>;
 
+function createFeedCases() {
   return {
     sportsTeamFeed: {
       subject: { details: Predicate.isTagged("sports_team") },
-      events: areEventsWithParticipants("sports_game"),
+      events: (events: Notification["events"]): events is SportsGameEvents =>
+        Array.isReadonlyArrayNonEmpty(events) &&
+        events.every(isEventWithParticipants("sports_game")),
     },
     mmaFeed: {
       subject: {
         details: SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"]),
       },
-      events: areEventsWithParticipants("mma_card"),
+      events: (events: Notification["events"]): events is MmaEvents =>
+        Array.isReadonlyArrayNonEmpty(events) &&
+        events.every(isEventWithParticipants("mma_card")),
     },
   };
 }
