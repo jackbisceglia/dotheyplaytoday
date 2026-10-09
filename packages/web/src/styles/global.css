@@ -1951,6 +1951,12 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-schedule[data-focus="pin"] .dashboard-schedule-empty {
+    animation: none;
+  }
+}
+
 @media (max-width: 560px) {
   .dashboard-schedule-row {
     padding: 8px 0;

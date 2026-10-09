@@ -23,6 +23,12 @@ export function Schedule(props: {
   const focusedId = () => props.pinnedTeam?.id ?? props.previewId;
   const isFocused = (row: ScheduleRow) =>
     row.team.id === focusedId() || row.opponentTeam?.id === focusedId();
+  const emptyMessage = () => {
+    const team = props.pinnedTeam?.details.name;
+    return team
+      ? `No ${team} games in the next 14 days.`
+      : "No games in the next 14 days.";
+  };
 
   return (
     <section
@@ -37,9 +43,7 @@ export function Schedule(props: {
       </h2>
       <Show
         when={props.rows.length > 0}
-        fallback={
-          <p class="dashboard-schedule-empty">No games in the next 14 days.</p>
-        }
+        fallback={<p class="dashboard-schedule-empty">{emptyMessage()}</p>}
       >
         <For each={days()}>
           {(group) => (
@@ -99,12 +103,8 @@ export function Schedule(props: {
             </div>
           )}
         </For>
-        <Show when={!props.rows.some(isFocused) && props.pinnedTeam}>
-          {(team) => (
-            <p class="dashboard-schedule-empty">
-              No {team().details.name} games in the next 14 days.
-            </p>
-          )}
+        <Show when={props.pinnedTeam && !props.rows.some(isFocused)}>
+          <p class="dashboard-schedule-empty">{emptyMessage()}</p>
         </Show>
       </Show>
     </section>
