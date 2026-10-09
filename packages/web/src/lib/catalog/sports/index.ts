@@ -1,9 +1,6 @@
-import {
-  SubjectDetails,
-  type Subject,
-} from "@dtpt/core/modules/subjects/schema";
+import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import type { SportTeamSubject } from "@dtpt/core/modules/subjects/variants/sport.schema";
-import { Match } from "effect";
+import { Match, Predicate } from "effect";
 
 import { getMlbLogo } from "./mlb.js";
 import { getNbaLogo } from "./nba.js";
@@ -36,7 +33,7 @@ export const getSportsLogo = (details: Subject["details"]) =>
 export const getTeams = (subjects: readonly Subject[]) =>
   subjects
     .filter((subject): subject is Subject & { details: SportTeamSubject } =>
-      SubjectDetails.guards.sports_team(subject.details),
+      Predicate.isTagged(subject.details, "sports_team"),
     )
     .toSorted((a, b) => a.details.display.localeCompare(b.details.display));
 
