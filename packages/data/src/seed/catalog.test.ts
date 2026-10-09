@@ -42,7 +42,8 @@ const seedServices = () => {
   const transaction = vi.fn((body: () => Effect.Effect<void>) => body());
 
   const layer = Layer.mergeAll(
-    // The importer only calls transaction; domain writes use the service fakes.
+    // lint(anti-slop/require-safety-comment-for-type-assertion): The importer only invokes transaction; all domain writes use the service fakes.
+    // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- This fixture intentionally omits unused Drizzle methods.
     Layer.succeed(Database, { transaction } as unknown as Database),
     Layer.mock(Events, { upsert, setParticipants: participants }),
     Layer.mock(Subjects, {
