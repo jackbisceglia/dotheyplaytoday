@@ -55,21 +55,21 @@ const seedServices = () => {
 };
 
 describe("catalog seed cutoff", () => {
-  for (const { strategy, now, skip, name } of [
+  for (const { options, now, skip, name } of [
     {
-      strategy: "recent",
+      options: {},
       now: "2026-10-08T00:30:00Z",
       skip: 1,
       name: "keeps the inclusive yesterday UTC boundary",
     },
     {
-      strategy: "all",
+      options: { strategy: "all" },
       now: "2026-10-08T00:30:00Z",
       skip: 0,
       name: "imports historical corrections explicitly",
     },
     {
-      strategy: "recent",
+      options: { strategy: "future" },
       now: "2026-10-11T23:30:00Z",
       skip: 4,
       name: "skips all historical events and feed references without reconciliation errors",
@@ -87,8 +87,8 @@ describe("catalog seed cutoff", () => {
           seedServices();
 
         const result = yield* seedCatalog({
+          ...options,
           collections: input,
-          strategy,
         }).pipe(Effect.provide(layer));
 
         const imported = result[0];

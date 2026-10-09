@@ -133,46 +133,38 @@ const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
 
 export type CatalogSeedOptions = {
   readonly collections?: readonly SportsSeedInput[];
-  readonly strategy?: "recent" | "all";
+  readonly strategy?: "future" | "all";
 };
 
-const selectCatalogEvents = Effect.fn("DataSeed.selectCatalogEvents")(
-  function* (
-    collections: readonly SportsSeedCollection[],
-    strategy: "recent" | "all",
-  ) {
-    if (strategy === "all") return collections;
+const selectFutureEvents = (
+  collections: readonly SportsSeedCollection[],
+  cutoff: DateTime.Utc,
+) => {
+  const skippedSourceIds = new Set<EventSourceId>();
 
-    const now = yield* DateTime.now;
-    const today = DateTime.startOf(now, "day");
-    const cutoff = DateTime.subtract(today, { days: 1 });
-    const skippedSourceIds = new Set<EventSourceId>();
+  const selected = collections.map((collection) => {
+    const events = collection.events.filter((event) => {
+      if (DateTime.isGreaterThanOrEqualTo(event.startsAt, cutoff)) return true;
 
-    const selected = collections.map((collection) => {
-      const events = collection.events.filter((event) => {
-        if (DateTime.isGreaterThanOrEqualTo(event.startsAt, cutoff))
-          return true;
-
-        skippedSourceIds.add(event.sourceId);
-        return false;
-      });
-
-      return { ...collection, events };
+      skippedSourceIds.add(event.sourceId);
+      return false;
     });
 
-    return selected.map((collection) => {
-      const subjects = collection.subjects.map((subject) => {
-        const feedIds = subject.feedIds.filter(
-          (sourceId) => !skippedSourceIds.has(sourceId),
-        );
+    return { ...collection, events };
+  });
 
-        return { ...subject, feedIds };
-      });
+  return selected.map((collection) => {
+    const subjects = collection.subjects.map((subject) => {
+      const feedIds = subject.feedIds.filter(
+        (sourceId) => !skippedSourceIds.has(sourceId),
+      );
 
-      return { ...collection, subjects };
+      return { ...subject, feedIds };
     });
-  },
-);
+
+    return { ...collection, subjects };
+  });
+};
 
 export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
   options?: CatalogSeedOptions,
@@ -183,10 +175,16 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 
   yield* validateFeedIds(decoded);
 
-  const collections = yield* selectCatalogEvents(
-    decoded,
-    options?.strategy ?? "recent",
-  );
+  const strategy = options?.strategy ?? "future";
+  let collections = decoded;
+
+  if (strategy === "future") {
+    const now = yield* DateTime.now;
+    const today = DateTime.startOf(now, "day");
+    const cutoff = DateTime.subtract(today, { days: 1 });
+
+    collections = selectFutureEvents(decoded, cutoff);
+  }
 
   const subjects = yield* Subjects;
   const events = yield* Events;

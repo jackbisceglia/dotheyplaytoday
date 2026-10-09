@@ -318,7 +318,7 @@ removes feed references to skipped events from the import; existing historical
 events, participants, and feed rows remain untouched. Correction imports can
 explicitly use `seedCatalog({ strategy: "all" })` for the checked-in catalog, or
 `seedCatalog({ collections, strategy: "all" })` for supplied data. The default
-strategy is `"recent"`. This cutoff applies only to seeding; shared
+strategy is `"future"`. This cutoff applies only to seeding; shared
 `Events.upsert` remains unrestricted. Event source IDs are resolved into feed edges while
 that transaction serializes writes on its reserved PostgreSQL connection. This
 deliberately trades import speed for full-catalog rollback and avoids concurrent
