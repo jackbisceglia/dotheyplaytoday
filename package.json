@@ -25,22 +25,23 @@
     "@web": "pnpm -F @dtpt/web",
     "@api": "pnpm -F @dtpt/api",
     "@jobs": "pnpm -F @dtpt/jobs",
-    "prepare": "pnpm exec effect-language-service patch"
+    "prepare": "pnpm exec effect-tsgo patch --typescript"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "4.20260626.1",
-    "@effect/language-service": "catalog:",
     "@effect/platform-node": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@oxlint/plugins": "1.87.0",
     "@tsconfig/bun": "^1.0.7",
     "@tsconfig/strictest": "^2.0.6",
     "@types/bun": "^1.2.16",
+    "@types/node": "^24.19.1",
     "alchemy": "catalog:",
     "effect": "catalog:",
     "oxlint": "1.87.0",
     "oxlint-tsgolint": "7.0.2003",
     "prettier": "3.6.2",
-    "typescript": "^5.9.2",
+    "typescript": "7.0.2",
     "vite": "8.2.1",
     "vitest": "5.0.3",
     "ws": "^8.21.0"
