@@ -117,7 +117,7 @@ export function scheduleRows(
       }
       const participants = event.participants.flatMap((participant) =>
         Predicate.isTagged(participant.details, "sports_game")
-          ? [{ ...participant, details: participant.details }]
+          ? [participant.details]
           : [],
       );
       const participantName = (title: string) => {
@@ -130,28 +130,24 @@ export function scheduleRows(
       };
       const own = participants.find(
         (participant) =>
-          normalizeName(participant.details.title) ===
+          normalizeName(participant.title) ===
           normalizeName(team.details.display),
       );
       // Like the notifier, keep both sides in away-at-home order when the
       // subscribed team's display name cannot identify its participant.
       const leading =
         own ??
-        participants.find(
-          (participant) => participant.details.role === "away",
-        ) ??
-        participants.find((participant) => participant.details.role === "home");
+        participants.find((participant) => participant.role === "away") ??
+        participants.find((participant) => participant.role === "home");
       const opponent =
         leading &&
-        participants.find(
-          (participant) => participant.details.role !== leading.details.role,
-        );
+        participants.find((participant) => participant.role !== leading.role);
       const opponentTeam = opponent
         ? schedule.find(
             ({ subject }) =>
               subject.details.leagueId === event.details.leagueId &&
               normalizeName(subject.details.display) ===
-                normalizeName(opponent.details.title),
+                normalizeName(opponent.title),
           )?.subject
         : undefined;
       return {
@@ -159,14 +155,14 @@ export function scheduleRows(
         teamName:
           own || !leading
             ? subjectName(team.details)
-            : participantName(leading.details.title),
+            : participantName(leading.title),
         eventId: event.id,
         startsAt,
         day,
         time: timeFormat.format(date),
-        opponent: opponent ? participantName(opponent.details.title) : "",
+        opponent: opponent ? participantName(opponent.title) : "",
         opponentTeam,
-        matchup: leading?.details.role === "away" ? "at" : "vs",
+        matchup: leading?.role === "away" ? "at" : "vs",
       };
     })
     .sort(
