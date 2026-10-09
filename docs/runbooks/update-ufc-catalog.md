@@ -57,15 +57,18 @@ UFC 333's 10 AM EDT early prelims become its prelims start. For Edmonton,
 lists early prelims at 5 PM Eastern, also folded into prelims. The current
 UFC 333 event page lists Pico–Keita; it supersedes the older opponent announcement.
 
-There are 58 announced fights, 116 participating fighters, and two retained
-fighters from the previous catalog (118 fighter subjects total). Existing IDs
+There are 36 fights with confirmed placement and 72 participating fighters.
+The 118 fighter subjects remain independently followable, including fighters
+whose announced bouts are withheld pending placement. Existing IDs
 remain unchanged, including Allen–Duncan's reserved card ID ending in 000002.
 The historical UFC 332 card leaves the active checked-in window; omitting it
 does not delete its stored event or associations. Keep its original UUID ending
 in 000001 reserved if a historical correction is needed.
 
 October 31 and November 7 have published headliners but no confirmed segment
-assignment for their other announced bouts: omit placement for those fights.
+assignment for their other announced bouts: withhold those 22 fights from the
+catalog until UFC confirms prelims/main placement. Keep their fighter subjects;
+without a published participant row, those follows do not match these cards.
 Lucia Szabova has an announced bout but no verified athlete profile URL; omit
 that optional display link until UFC publishes one. José Souza's official
 profile uses the slug [jose-henrique](https://www.ufc.com/athlete/jose-henrique).
@@ -78,8 +81,10 @@ already included. Adding supported fighters does not require an upcoming fight.
    the checked-in catalog before allocating; fighter profile slugs can change.
 2. Rename fighters or cards in place. When an opponent changes,
    replace the corresponding participant row. Opponents share a `details.fightId`
-   within the card and the same `details.placement` (prelims or main), when published.
-   Omit placement for both opponents until a segment is confirmed.
+   within the card and the same required `details.placement` (prelims or main).
+   Never publish new fight participants without confirmed segment placement;
+   hold the fight out until UFC publishes it. Early-prelim fights use prelims.
+   A partial source that omits an existing confirmed placement does not erase it.
    A known fighter with an unknown opponent has one participant in that group.
    Do not invent an opponent subject. Fight IDs are display grouping keys, not
    subscription identities; use ordered keys such as `fight-1`, `fight-2` to
@@ -151,7 +156,7 @@ testing the current mma_tracking/scope/category and participant schemas. The eve
 and participant tables retain their current columns, including required startsAt
 on events. Release all API/jobs/web
 readers with support for the new variants before enabling catalog revision
-2026-10-09.3. The importer is PR 2 and UI is PR 3: keep catalog publication gated
+2026-10-09.4. The importer is PR 2 and UI is PR 3: keep catalog publication gated
 until the complete stack is ready. The standard Alchemy action seeds during
 deployment, so coordinate that action with the reader rollout. Rolling readers
 back after publishing UFC data requires removing/archiving that data and its

@@ -63,7 +63,9 @@ describe("MMA import boundaries", () => {
     )[2];
     if (!card || !participant || !thirdFighter)
       throw new Error("Expected catalog fixtures");
+    const { placement: _placement, ...unassigned } = participant.details;
     for (const participants of [
+      [{ ...participant, details: unassigned }],
       [
         ...card.participants,
         {

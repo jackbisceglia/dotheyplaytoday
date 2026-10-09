@@ -9,6 +9,9 @@ const catalog = Schema.decodeUnknownSync(MmaSeed)(ufcCollection);
 describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(5);
+    expect(catalog.events.map((event) => event.participants.length)).toEqual([
+      24, 26, 18, 2, 2,
+    ]);
     expect(catalog.subjects).toHaveLength(120);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
       120,
