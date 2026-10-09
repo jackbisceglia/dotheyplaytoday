@@ -3,7 +3,7 @@ import {
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
 import { index, jsonb, text, uniqueIndex } from "drizzle-orm/pg-core";
-import { Schema } from "effect";
+import { DateTime, Predicate, Schema } from "effect";
 
 import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
@@ -63,8 +63,23 @@ export const eventsTable = postgresTable(
   ],
 );
 
+export const hasMatchingStart = Schema.makeFilter(
+  (event: {
+    readonly startsAt: DateTime.Utc;
+    readonly details: EventDetails;
+  }) =>
+    !Predicate.isTagged(event.details, "mma_card") ||
+    DateTime.toEpochMillis(event.startsAt) ===
+      DateTime.toEpochMillis(event.details.timings.early) ||
+    "Event start must match the earliest broadcast timing",
+);
+
 export type Event = typeof Event.Type;
-export const Event = createSelectSchema(eventsTable, overrides);
+export const Event = createSelectSchema(eventsTable, overrides).check(
+  hasMatchingStart,
+);
 
 export type EventInsert = typeof EventInsert.Type;
-export const EventInsert = createInsertSchema(eventsTable, overrides);
+export const EventInsert = createInsertSchema(eventsTable, overrides).check(
+  hasMatchingStart,
+);

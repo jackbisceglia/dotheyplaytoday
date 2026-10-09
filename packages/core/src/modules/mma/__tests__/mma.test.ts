@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DateTime, Schema } from "effect";
 
+import { Event, EventInsert } from "../../events/schema.js";
 import { EventWithParticipants } from "../../events/joined.js";
 import { MmaParticipant } from "../../events/participants/variants/mma.schema.js";
 import { MmaEvent } from "../../events/variants/mma.schema.js";
@@ -84,6 +85,27 @@ describe("MMA selection and timing", () => {
         timings: { ...encodedDetails.timings, early: null },
       }),
     ).toThrow();
+  });
+  it("requires the event start to match the earliest broadcast instant", () => {
+    const encoded = Schema.encodeSync(EventWithParticipants)(card);
+    for (const schema of [Event, EventInsert, EventWithParticipants]) {
+      const decode = Schema.decodeUnknownSync(schema);
+      expect(() => decode(encoded)).not.toThrow();
+      expect(() =>
+        decode({ ...encoded, startsAt: "2026-10-03T19:00:00-04:00" }),
+      ).not.toThrow();
+      expect(() =>
+        decode({ ...encoded, startsAt: "2026-10-04T00:00:00Z" }),
+      ).toThrow("Event start must match the earliest broadcast timing");
+      expect(() =>
+        decode({
+          ...encoded,
+          _tag: "sports_game",
+          details: { _tag: "sports_game", leagueId: "nba" },
+          participants: [],
+        }),
+      ).not.toThrow();
+    }
   });
   it("requires a structured venue and a known fight placement", () => {
     const encoded = Schema.encodeSync(MmaEvent)(details);

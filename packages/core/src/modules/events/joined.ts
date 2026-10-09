@@ -2,13 +2,13 @@ import { Predicate, Schema } from "effect";
 
 import type { ExtractFromTag } from "../../lib/types.js";
 import { Participant, type ParticipantDetails } from "./participants/schema.js";
-import { Event } from "./schema.js";
+import { Event, hasMatchingStart } from "./schema.js";
 
 export type EventWithParticipants = typeof EventWithParticipants.Type;
 export const EventWithParticipants = Schema.Struct({
   ...Event.fields,
   participants: Schema.Array(Participant),
-});
+}).check(hasMatchingStart);
 
 export type NarrowedEventWithParticipants<
   Tag extends EventWithParticipants["_tag"],
