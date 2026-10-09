@@ -35,6 +35,7 @@
     "@tsconfig/bun": "^1.0.7",
     "@tsconfig/strictest": "^2.0.6",
     "@types/bun": "^1.2.16",
+    "@types/node": "^24.19.1",
     "alchemy": "catalog:",
     "effect": "catalog:",
     "oxlint": "1.87.0",
