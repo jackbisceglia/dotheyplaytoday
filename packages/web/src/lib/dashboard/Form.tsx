@@ -1,6 +1,7 @@
 import { toggleSubscriptionSelection } from "@dtpt/core/modules/subscriptions/selection";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
+import { Match } from "effect";
 import { useSearchParams } from "@solidjs/router";
 import { createSignal, createStore, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
@@ -18,16 +19,19 @@ import { SendTimeSentence } from "./SendTimeSentence.jsx";
 
 const capacity = SubscriptionPolicy.subject.constraints.max;
 
-// A short, readable URL key, like "mlb-mil"; abbreviations are unique within
-// a league.
-const teamKey = (team: Subject) =>
-  team.details._tag === "sports_team"
-    ? `${team.details.leagueId}-${team.details.abbreviation.toLowerCase()}`
-    : team.id;
+const subjectKey = (subject: Subject) =>
+  Match.value(subject.details).pipe(
+    Match.tag(
+      "sports_team",
+      (team) => `${team.leagueId}-${team.abbreviation.toLowerCase()}`,
+    ),
+    Match.tag("mma_fighter", "mma_tracking", () => subject.id),
+    Match.exhaustive,
+  );
 
 type FormState = {
   mode: "view" | "editing" | "saving";
-  teams: readonly Subject[];
+  picks: readonly Subject[];
   seconds: number;
   error: string | undefined;
   message: string | undefined;
@@ -39,7 +43,7 @@ export function Form(props: {
   readonly scheduleRows: readonly ScheduleRow[];
   readonly onSaved: () => void;
 }) {
-  const savedTeams = () =>
+  const savedSubjects = () =>
     props.preferences.subscriptions.map((subscription) => subscription.subject);
   const savedTimes = () => [
     ...new Set(
@@ -50,38 +54,37 @@ export function Form(props: {
   ];
   const [state, setState] = createStore<FormState>({
     mode: "view",
-    teams: [],
+    picks: [],
     seconds: sendTime.default,
     error: undefined,
     message: undefined,
   });
   const rejection = useSelectionRejection(
-    `You can pick up to ${capacity.toString()} picks. Remove one to make room.`,
+    `You can make up to ${capacity.toString()} picks. Remove one to make room.`,
   );
   let editButton: HTMLButtonElement | undefined;
   let editorTitle: HTMLHeadingElement | undefined;
   const isEditing = () => state.mode !== "view";
   const isSaving = () => state.mode === "saving";
-  const teams = () => (isEditing() ? state.teams : savedTeams());
-  const isEmptyDraft = () => isEditing() && state.teams.length === 0;
-  // A mouse hover previews a team's games; a click or tap pins them, filtering
-  // out the rest, which is how touch screens get them. The pin lives in the
-  // URL, outranks a hover, and is ignored for a team that's no longer picked.
+  const picks = () => (isEditing() ? state.picks : savedSubjects());
+  const isEmptyDraft = () => isEditing() && state.picks.length === 0;
+  // Hover previews matching events; a pin filters to them and takes precedence.
+  // Ignore a URL pin when that subject is no longer selected.
   const [search, setSearch] = useSearchParams();
   const [hoveredId, setHoveredId] = createSignal<string>();
-  const pinnedTeam = () =>
-    savedTeams().find((team) => teamKey(team) === search.team);
-  const pinnedId = () => pinnedTeam()?.id;
-  const setPinnedTeam = (team: Subject | undefined) => {
-    setSearch({ team: team && teamKey(team) }, { replace: true });
+  const pinnedSubject = () =>
+    savedSubjects().find((subject) => subjectKey(subject) === search.team);
+  const pinnedId = () => pinnedSubject()?.id;
+  const setPinnedSubject = (subject: Subject | undefined) => {
+    setSearch({ team: subject && subjectKey(subject) }, { replace: true });
   };
 
   const beginEdit = () => {
     setHoveredId(undefined);
-    setPinnedTeam(undefined);
+    setPinnedSubject(undefined);
     setState((draft) => {
       draft.mode = "editing";
-      draft.teams = savedTeams();
+      draft.picks = savedSubjects();
       draft.seconds = savedTimes()[0] ?? sendTime.default;
       draft.error = undefined;
       draft.message = undefined;
@@ -97,15 +100,15 @@ export function Form(props: {
     rejection.clearRejection();
     queueMicrotask(() => editButton?.focus());
   };
-  const toggle = (team: Subject) => {
+  const toggle = (subject: Subject) => {
     if (state.mode !== "editing") return;
-    const next = toggleSubscriptionSelection(state.teams, team);
+    const next = toggleSubscriptionSelection(state.picks, subject);
     if (next.length > capacity) {
-      rejection.rejectSelection(team.id);
+      rejection.rejectSelection(subject.id);
       return;
     }
     setState((draft) => {
-      draft.teams = next;
+      draft.picks = next;
       draft.error = undefined;
     });
     rejection.clearRejection();
@@ -113,7 +116,7 @@ export function Form(props: {
   const save = async (event: SubmitEvent) => {
     event.preventDefault();
     if (state.mode !== "editing") return;
-    const subjectIds = state.teams.map((team) => team.id);
+    const subjectIds = state.picks.map((subject) => subject.id);
     const [first, ...rest] = subjectIds;
     // Save is disabled for an empty draft; this narrows the tuple.
     if (first === undefined) return;
@@ -181,10 +184,10 @@ export function Form(props: {
         }}
       />
       <p class="visually-hidden" aria-live="polite">
-        {teams().length} of {capacity} picks selected
+        {picks().length} of {capacity} picks selected
       </p>
       <Roster
-        teams={teams()}
+        subjects={picks()}
         capacity={capacity}
         editing={isEditing()}
         saving={isSaving()}
@@ -193,8 +196,8 @@ export function Form(props: {
         focusedId={pinnedId() ?? hoveredId()}
         pinnedId={pinnedId()}
         onPreview={setHoveredId}
-        onPin={(team) => {
-          setPinnedTeam(pinnedId() === team.id ? undefined : team);
+        onPin={(subject) => {
+          setPinnedSubject(pinnedId() === subject.id ? undefined : subject);
         }}
       />
 
@@ -202,7 +205,7 @@ export function Form(props: {
         <Schedule
           rows={props.scheduleRows}
           previewId={hoveredId()}
-          pinnedTeam={pinnedTeam()}
+          pinnedSubject={pinnedSubject()}
         />
       </Show>
 
@@ -220,11 +223,11 @@ export function Form(props: {
           <fieldset
             class="dashboard-picker"
             disabled={isSaving()}
-            data-full={state.teams.length >= capacity ? "true" : undefined}
+            data-full={state.picks.length >= capacity ? "true" : undefined}
           >
             <CatalogPicker
               subjects={props.subjects}
-              selected={new Set(state.teams.map((team) => team.id))}
+              selected={new Set(state.picks.map((subject) => subject.id))}
               rejectedSelectionId={rejection.rejectedSelectionId()}
               onToggle={toggle}
             />

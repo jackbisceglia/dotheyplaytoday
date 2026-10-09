@@ -1,12 +1,12 @@
 import { toggleSubscriptionSelection } from "@dtpt/core/modules/subscriptions/selection";
-import { Subject } from "@dtpt/core/modules/subjects/schema";
+import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
 import { EmailAddressFromString } from "@dtpt/core/modules/users/schema";
 import { DateTime, Match, Option, Result, Schema } from "effect";
 import { For, Show, createMemo, createSignal } from "solid-js";
 
 import { withApiClient } from "../api.js";
-import { getSportsLogo, subjectAbbreviation } from "../catalog/sports/index.js";
+import { getSubjectLogo, getSubjectAbbreviation } from "../catalog/index.js";
 import {
   defaultTimezone,
   detectTimezone,
@@ -14,14 +14,14 @@ import {
   sendTime,
   sendTimeIntervals,
 } from "../time.js";
-import { TeamPicker } from "../ui/TeamPicker.jsx";
+import { SubjectPicker } from "../ui/SubjectPicker.jsx";
 import { Success } from "./Success.jsx";
 import { useSelectionRejection } from "../ui/useSelectionRejection.js";
 
 const decodeEmailAddress = Schema.decodeUnknownResult(EmailAddressFromString);
 const subjectCapacity = SubscriptionPolicy.subject.constraints.max;
 const capacityHint = `You can select up to ${subjectCapacity.toString()} picks. Remove one before selecting another.`;
-type InvalidControl = "teams" | "email" | "sendTime" | undefined;
+type InvalidControl = "picks" | "email" | "sendTime" | undefined;
 
 const getSubmitErrorMessage = (error: unknown) =>
   Match.value(error).pipe(
@@ -53,23 +53,18 @@ type FormProps = {
 };
 
 export function Form(props: FormProps) {
-  const [selected, setSelected] = createSignal<ReadonlySet<string>>(new Set());
-  const selectedTeams = createMemo(() => {
-    const teamsById = new Map<string, Subject>(
-      props.subjects.map((team) => [team.id, team] as const),
-    );
-
-    return [...selected()].flatMap((teamId) => {
-      const team = teamsById.get(teamId);
-      return team === undefined ? [] : [team];
-    });
-  });
+  const [selectedSubjects, setSelectedSubjects] = createSignal<
+    readonly Subject[]
+  >([]);
+  const selected = createMemo(
+    () => new Set(selectedSubjects().map((subject) => subject.id)),
+  );
   const [email, setEmail] = createSignal("");
   const [sendTimeSeconds, setSendTimeSeconds] = createSignal(sendTime.default);
   const [emailError, setEmailError] = createSignal<string>();
   const [sendTimeError, setSendTimeError] = createSignal<string>();
   const [timezoneError, setTimezoneError] = createSignal<string>();
-  const [teamError, setTeamError] = createSignal<string>();
+  const [pickError, setPickError] = createSignal<string>();
   const {
     rejectedSelectionId,
     rejectionMessage,
@@ -85,22 +80,22 @@ export function Form(props: FormProps) {
   let sendTimeInput: HTMLSelectElement | undefined;
   let successTitle: HTMLHeadingElement | undefined;
 
-  const toggleTeam = (teamId: string) => {
-    const subject = props.subjects.find((pick) => pick.id === teamId);
-    if (!subject) return;
-    const next = toggleSubscriptionSelection(selectedTeams(), subject);
+  const toggleSubject = (subject: Subject) => {
+    const next = toggleSubscriptionSelection(selectedSubjects(), subject);
+
     if (next.length > subjectCapacity) {
-      rejectSelection(teamId);
+      rejectSelection(subject.id);
       return;
     }
-    setSelected(new Set(next.map((pick) => pick.id)));
-    setTeamError(undefined);
+
+    setSelectedSubjects(next);
+    setPickError(undefined);
     clearRejection();
   };
 
   const validate = () => {
     const emailResult = decodeEmailAddress(email());
-    const teamsInvalid = selected().size === 0;
+    const picksInvalid = selected().size === 0;
     const emailInvalid = Result.isFailure(emailResult);
     const sendTimeInvalid = !isValidSendTime(sendTimeSeconds());
 
@@ -108,8 +103,8 @@ export function Form(props: FormProps) {
       setEmailError("Enter a valid email address.");
     }
 
-    if (teamsInvalid) {
-      setTeamError("Make at least one pick.");
+    if (picksInvalid) {
+      setPickError("Make at least one pick.");
     }
 
     if (sendTimeInvalid) {
@@ -117,7 +112,7 @@ export function Form(props: FormProps) {
     }
 
     let firstInvalid: InvalidControl;
-    if (teamsInvalid) firstInvalid = "teams";
+    if (picksInvalid) firstInvalid = "picks";
     else if (emailInvalid) firstInvalid = "email";
     else if (sendTimeInvalid) firstInvalid = "sendTime";
 
@@ -128,12 +123,8 @@ export function Form(props: FormProps) {
   };
 
   const focusFirstInvalidControl = (invalid: InvalidControl) => {
-    if (invalid === "teams") {
-      root
-        ?.querySelector<HTMLButtonElement>(
-          ".team-grid:not([hidden]) .team-card",
-        )
-        ?.focus();
+    if (invalid === "picks") {
+      root?.querySelector<HTMLButtonElement>(".team-grids button")?.focus();
       return;
     }
 
@@ -157,9 +148,7 @@ export function Form(props: FormProps) {
       return;
     }
 
-    const subjectIds = [...selected()].map((subjectId) =>
-      Subject.fields.id.make(subjectId),
-    );
+    const subjectIds = selectedSubjects().map((subject) => subject.id);
     if (!hasSelectedSubjects(subjectIds)) return;
 
     const timezone = detectTimezone() ?? defaultTimezone;
@@ -208,7 +197,7 @@ export function Form(props: FormProps) {
         when={props.subjects.length > 0}
         fallback={
           <p class="form-error form-error-banner" role="status">
-            Team signup is temporarily unavailable. Check back soon.
+            Signup is temporarily unavailable. Check back soon.
           </p>
         }
       >
@@ -218,37 +207,35 @@ export function Form(props: FormProps) {
           novalidate
           onSubmit={submit}
         >
-          <TeamPicker
+          <SubjectPicker
             subjects={props.subjects}
             selected={selected()}
             rejectedSelectionId={rejectedSelectionId()}
-            errorId="team-error"
-            onToggle={(team) => {
-              toggleTeam(team.id);
-            }}
+            errorId="pick-error"
+            onToggle={toggleSubject}
           >
             <div class="selection-summary" role="group" aria-label="Your picks">
               <div class="selection-summary-list">
                 <Show
-                  when={selectedTeams().length > 0}
+                  when={selectedSubjects().length > 0}
                   fallback={
                     <span class="selection-summary-empty">No picks yet</span>
                   }
                 >
-                  <For each={selectedTeams()}>
-                    {(team) => (
+                  <For each={selectedSubjects()}>
+                    {(subject) => (
                       <span
                         class="selection-summary-pick"
-                        title={team.details.display}
+                        title={subject.details.display}
                       >
                         <span class="selection-summary-logo" aria-hidden="true">
-                          {getSportsLogo(team.details)}
+                          {getSubjectLogo(subject.details)}
                         </span>
                         <strong aria-hidden="true">
-                          {subjectAbbreviation(team.details)}
+                          {getSubjectAbbreviation(subject.details)}
                         </strong>
                         <span class="visually-hidden">
-                          {team.details.display}
+                          {subject.details.display}
                         </span>
                       </span>
                     )}
@@ -263,14 +250,14 @@ export function Form(props: FormProps) {
                 {selected().size}/{subjectCapacity}
               </span>
             </div>
-          </TeamPicker>
+          </SubjectPicker>
           <p
-            id="team-error"
+            id="pick-error"
             class="form-error"
             role="alert"
-            hidden={teamError() === undefined}
+            hidden={pickError() === undefined}
           >
-            {teamError() ?? ""}
+            {pickError() ?? ""}
           </p>
 
           <fieldset class="form-section">

@@ -482,6 +482,9 @@ through the ordinary event upsert and participant rows through setParticipants. 
 preserves known information when upstream listings are incomplete. Delivery
 remains per subscription, including last-send state and provider idempotency keys.
 Dashboard cards deduplicate by event ID and collect all matching subjects.
+Schedule rows share that subject list for focus and match reasons, with separate
+sports-game and MMA-card variants for display. Subject presentation matches on
+the details tag; sports-specific catalog helpers remain sports-only.
 
 See [UFC catalog updates](./runbooks/update-ufc-catalog.md) for source authority,
 broadcast timing, rollout ordering, and the local PostgreSQL integration test.

@@ -19,25 +19,21 @@ export const leagues = [
   { id: "nhl", label: "NHL" },
 ] as const satisfies readonly League[];
 
-export const getSportsLogo = (details: Subject["details"]) =>
-  details._tag !== "sports_team"
-    ? "🥊"
-    : Match.value(details.leagueId).pipe(
-        Match.when("nba", () => getNbaLogo(details.abbreviation)),
-        Match.when("nfl", () => getNflLogo(details.abbreviation)),
-        Match.when("mlb", () => getMlbLogo(details.abbreviation)),
-        Match.when("nhl", () => getNhlLogo(details.abbreviation)),
-        Match.exhaustive,
-      );
+export const getSportsLogo = (details: SportTeamSubject) =>
+  Match.value(details.leagueId).pipe(
+    Match.when("nba", () => getNbaLogo(details.abbreviation)),
+    Match.when("nfl", () => getNflLogo(details.abbreviation)),
+    Match.when("mlb", () => getMlbLogo(details.abbreviation)),
+    Match.when("nhl", () => getNhlLogo(details.abbreviation)),
+    Match.exhaustive,
+  );
+
+export type SportsSubject = Subject & { readonly details: SportTeamSubject };
+
+export const isSportsSubject = (subject: Subject): subject is SportsSubject =>
+  Predicate.isTagged(subject.details, "sports_team");
 
 export const getTeams = (subjects: readonly Subject[]) =>
   subjects
-    .filter((subject): subject is Subject & { details: SportTeamSubject } =>
-      Predicate.isTagged(subject.details, "sports_team"),
-    )
+    .filter(isSportsSubject)
     .toSorted((a, b) => a.details.display.localeCompare(b.details.display));
-
-export const subjectName = (details: Subject["details"]) =>
-  details._tag === "sports_team" ? details.name : details.display;
-export const subjectAbbreviation = (details: Subject["details"]) =>
-  details._tag === "sports_team" ? details.abbreviation : details.display;

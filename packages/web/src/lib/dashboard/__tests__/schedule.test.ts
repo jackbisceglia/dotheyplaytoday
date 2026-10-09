@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DateTime, Schema } from "effect";
+import { DateTime, Predicate, Schema } from "effect";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { EventWithParticipants } from "@dtpt/core/modules/events/joined";
 import { SubscriptionWithSubject } from "@dtpt/core/modules/subscriptions/schema";
@@ -80,7 +80,10 @@ const schedule = [
 const rows = (
   value: typeof schedule,
   catalog: readonly Subject[] = [celtics, knicks],
-) => scheduleRows(value, timezone, catalog, now);
+) =>
+  scheduleRows(value, timezone, catalog, now).filter((row) =>
+    Predicate.isTagged(row, "sports_game"),
+  );
 
 describe("dashboard schedule", () => {
   it("sorts subscription batches by start and uses the user's calendar and local time", () => {
@@ -114,7 +117,7 @@ describe("dashboard schedule", () => {
     expect(rows(formatted)[0]?.opponentTeam).toEqual(knicks);
     expect(
       rows(formatted).map((row) => [
-        row.teamName,
+        row.title,
         `${row.matchup} ${row.opponent}`,
       ]),
     ).toEqual([
@@ -130,11 +133,16 @@ describe("dashboard schedule", () => {
     };
     const schedule = [subscription(renamed, [todayGame])];
     expect(rows(schedule)).toMatchObject([
-      { team: renamed, teamName: "Knicks", matchup: "at", opponent: "Celtics" },
+      {
+        subjects: [renamed],
+        title: "Knicks",
+        matchup: "at",
+        opponent: "Celtics",
+      },
     ]);
     expect(rows(schedule, [])).toMatchObject([
       {
-        teamName: "New York Knicks",
+        title: "New York Knicks",
         matchup: "at",
         opponent: "Boston Celtics",
       },
@@ -165,21 +173,21 @@ describe("dashboard schedule", () => {
       rows([subscription(celtics, [todayGame, tomorrowGame])]),
     ).toHaveLength(2);
     expect(rows([subscription(knicks, [todayGame])])).toMatchObject([
-      { team: knicks, matchup: "at", opponent: "Celtics" },
+      { subjects: [knicks], matchup: "at", opponent: "Celtics" },
     ]);
   });
 
   it("retains both subscribed teams on a single matchup, in either subscription order", () => {
     expect(rows(schedule)).toMatchObject([
-      { team: celtics, opponentTeam: knicks },
-      { team: celtics, opponentTeam: knicks },
+      { subjects: [celtics, knicks], opponentTeam: knicks },
+      { subjects: [celtics, knicks], opponentTeam: knicks },
     ]);
     expect(rows([...schedule].reverse())).toMatchObject([
-      { team: knicks, opponentTeam: celtics },
-      { team: knicks, opponentTeam: celtics },
+      { subjects: [knicks, celtics], opponentTeam: celtics },
+      { subjects: [knicks, celtics], opponentTeam: celtics },
     ]);
     expect(rows([subscription(celtics, [todayGame])])).toMatchObject([
-      { team: celtics, opponentTeam: undefined },
+      { subjects: [celtics], opponentTeam: undefined },
     ]);
   });
 
