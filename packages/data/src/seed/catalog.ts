@@ -7,7 +7,7 @@ import {
   StringParts,
   Subjects,
 } from "@dtpt/core";
-import { Effect, HashMap, Option, Schema } from "effect";
+import { DateTime, Effect, HashMap, Option, Schema } from "effect";
 
 import { SportsSeed } from "../schema/sports.js";
 import { SeedCollections } from "./index.js";
@@ -131,14 +131,62 @@ const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
   yield* validateSubjectFeedIds(eventIdsBySourceId);
 });
 
+const selectFutureEvents = (
+  collections: readonly SportsSeedCollection[],
+  cutoff: DateTime.Utc,
+) => {
+  const skippedSourceIds = new Set<EventSourceId>();
+
+  // If catalogs guarantee startsAt ordering, find the cutoff with an O(log n)
+  // binary search. Filtering feed references would still require a linear scan.
+  const selected = collections.map((collection) => {
+    const events = collection.events.filter((event) => {
+      if (DateTime.isGreaterThanOrEqualTo(event.startsAt, cutoff)) return true;
+
+      skippedSourceIds.add(event.sourceId);
+      return false;
+    });
+
+    return { ...collection, events };
+  });
+
+  return selected.map((collection) => {
+    const subjects = collection.subjects.map((subject) => {
+      const feedIds = subject.feedIds.filter(
+        (sourceId) => !skippedSourceIds.has(sourceId),
+      );
+
+      return { ...subject, feedIds };
+    });
+
+    return { ...collection, subjects };
+  });
+};
+
+export type CatalogSeedOptions = {
+  readonly collections?: readonly SportsSeedInput[];
+  readonly strategy?: "future" | "all";
+};
+
 export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
-  input?: readonly SportsSeedInput[],
+  options?: CatalogSeedOptions,
 ) {
-  const collections = yield* decodeSportsSeedCollections(
-    input ?? SeedCollections,
+  const decoded = yield* decodeSportsSeedCollections(
+    options?.collections ?? SeedCollections,
   );
 
-  yield* validateFeedIds(collections);
+  yield* validateFeedIds(decoded);
+
+  const strategy = options?.strategy ?? "future";
+  let collections = decoded;
+
+  if (strategy === "future") {
+    const now = yield* DateTime.now;
+    const today = DateTime.startOf(now, "day");
+    const cutoff = DateTime.subtract(today, { days: 1 });
+
+    collections = selectFutureEvents(decoded, cutoff);
+  }
 
   const subjects = yield* Subjects;
   const events = yield* Events;

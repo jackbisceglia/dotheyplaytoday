@@ -52,7 +52,7 @@ export const SeedDev = Action(
       yield* Effect.gen(function* () {
         yield* reset();
 
-        const collections = yield* seedCatalog(buildDevSeed());
+        const collections = yield* seedCatalog({ collections: buildDevSeed() });
         yield* Effect.log(summarizeCatalog(collections));
 
         const users = yield* seedUsers();
