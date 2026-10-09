@@ -1505,6 +1505,9 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   padding: 0 12px;
   border: 2px solid var(--rule);
   background: #fff;
+  transition:
+    border-color 0.16s,
+    background 0.16s;
 }
 
 .roster-team-text {
@@ -1524,6 +1527,22 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   font-size: 0.74rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* The picker's selected state, minus the green shadow. */
+.roster-team[data-focused="true"] {
+  border-color: var(--ink);
+  background: var(--kelly-wash);
+}
+
+/* Outside editing, the tile is the button that highlights its games. */
+button.roster-team {
+  text-align: left;
+}
+
+button.roster-team:focus-visible {
+  outline: 3px solid var(--kelly);
+  outline-offset: 2px;
 }
 
 /* Unfilled capacity. */
@@ -1780,6 +1799,24 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   gap: 8px;
   padding: 16px 0;
   border-bottom: 1px solid rgba(19, 23, 17, 0.12);
+}
+
+/* Focusing a team fades everything else, rippling down the list. */
+.dashboard-schedule-row,
+.dashboard-schedule-day {
+  transition: opacity 0.2s ease-out;
+}
+
+.dashboard-schedule-row {
+  transition-delay: calc(min(var(--row-index), 12) * 14ms);
+}
+
+.dashboard-schedule[data-focusing="true"]
+  .dashboard-schedule-row:not([data-focused="true"]),
+.dashboard-schedule[data-focusing="true"]
+  .dashboard-schedule-group:not([data-focused="true"])
+  .dashboard-schedule-day {
+  opacity: 0.45;
 }
 
 .dashboard-schedule-time {
