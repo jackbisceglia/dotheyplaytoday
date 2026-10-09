@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Schema, DateTime } from "effect";
-import { EventWithParticipants } from "@dtpt/core/modules/events/participants/schema";
+import { EventWithParticipants } from "@dtpt/core/modules/events/with-participants";
 import { EventId } from "@dtpt/core/modules/events/schema";
 import { SubscriptionWithEvents } from "@dtpt/core/modules/subscriptions/schema";
 import {
