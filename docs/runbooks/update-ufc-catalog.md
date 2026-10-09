@@ -108,10 +108,13 @@ The test rejects remote hosts/other database names and rolls back its migrations
 and writes. The cloud infrastructure test requires deployment and is a separate,
 explicit operational step.
 
-No new database migration or subscription backfill is required. The event table
+No new database migration or subscription backfill is required for production,
+where these variants have not been published. Recreate any disposable development
+seed using the former mma_coverage tag or kind field before testing the renamed
+mma_tracking/category schemas. The event table
 and required startsAt field retain their current shape. Release all API/jobs/web
 readers with support for the new variants before enabling catalog revision
-2026-10-08.2. The importer is PR 2 and UI is PR 3: keep catalog publication gated
+2026-10-08.3. The importer is PR 2 and UI is PR 3: keep catalog publication gated
 until the complete stack is ready. The standard Alchemy action seeds during
 deployment, so coordinate that action with the reader rollout. Rolling readers
 back after publishing UFC data requires removing/archiving that data and its

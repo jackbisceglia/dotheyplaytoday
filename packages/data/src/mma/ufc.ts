@@ -46,7 +46,7 @@ export const ufcCatalog = {
         _tag: "mma_card",
         leagueId: "ufc",
         title: "UFC 332: Silva vs Wang",
-        kind: "numbered",
+        category: "numbered",
         venue: { title: "Delta Center", location: "Salt Lake City" },
         timings: {
           early: "2026-10-03T20:00:00.000Z",

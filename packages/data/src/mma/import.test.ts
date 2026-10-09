@@ -58,7 +58,7 @@ describe("MMA import boundaries", () => {
     expect(() =>
       Schema.decodeUnknownSync(MmaEvent)({
         ...ufcCatalog.cards[0]?.details,
-        kind: "contender_series",
+        category: "contender_series",
       }),
     ).toThrow();
   });
@@ -80,7 +80,7 @@ const integrationCatalog = {
       details: {
         ...testCard.details,
         title: "Test Fight Night",
-        kind: "fight_night" as const,
+        category: "fight_night" as const,
         bouts: [],
       },
     },
@@ -383,7 +383,7 @@ describe("UFC PostgreSQL integration", () => {
                 "2026-10-05T20:00:00.000Z",
               );
               // Changing category removes only numbered coverage; All and fighter follows remain.
-              yield* importCard({ ...replacement, kind: "fight_night" });
+              yield* importCard({ ...replacement, category: "fight_night" });
               expect(
                 yield* events.listBySubject(UfcCoverageIds.numbered),
               ).toEqual([]);

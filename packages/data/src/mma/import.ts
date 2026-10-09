@@ -50,7 +50,7 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
           const existing = yield* database.query.subjectsTable
             .findFirst({ where: { id: coverage.id } })
             .pipe(mapToReadError("Mma.coverage"));
-          if (existing && existing._tag !== "mma_coverage") {
+          if (existing && existing._tag !== "mma_tracking") {
             return yield* new InvalidMmaImport({
               message: "Coverage ID belongs to another subject",
             });
@@ -70,7 +70,7 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
         }
         const mmaSubjects = yield* database.query.subjectsTable
           .findMany({
-            where: { _tag: { in: ["mma_fighter", "mma_coverage"] } },
+            where: { _tag: { in: ["mma_fighter", "mma_tracking"] } },
           })
           .pipe(mapToReadError("Mma.subjects"));
         const fighterIds = new Set(
@@ -123,7 +123,7 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
             UfcCoverageIds.all,
             ...fighters.map((fighter) => fighter.subjectId),
           ];
-          if (card.details.kind === "numbered")
+          if (card.details.category === "numbered")
             matched.push(UfcCoverageIds.numbered);
           for (const subjectId of matched) {
             yield* subjects.addEventToFeed({ eventId: event.id, subjectId });

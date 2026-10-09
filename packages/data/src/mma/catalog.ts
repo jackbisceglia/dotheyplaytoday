@@ -9,9 +9,9 @@ export const UfcCoverageIds = {
 export const ufcCoverageSubjects = [
   {
     id: UfcCoverageIds.numbered,
-    _tag: "mma_coverage",
+    _tag: "mma_tracking",
     details: {
-      _tag: "mma_coverage",
+      _tag: "mma_tracking",
       leagueId: "ufc",
       display: "Numbered UFC events",
       coverage: "numbered",
@@ -19,9 +19,9 @@ export const ufcCoverageSubjects = [
   },
   {
     id: UfcCoverageIds.all,
-    _tag: "mma_coverage",
+    _tag: "mma_tracking",
     details: {
-      _tag: "mma_coverage",
+      _tag: "mma_tracking",
       leagueId: "ufc",
       display: "All UFC events",
       coverage: "all",
