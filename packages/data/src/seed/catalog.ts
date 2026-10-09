@@ -238,7 +238,7 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
           ),
         ).pipe(Effect.map((edges) => edges.flat(2)));
 
-        if (input === undefined) yield* seedMmaCatalog(ufcCatalog);
+        if (options?.collections === undefined) yield* seedMmaCatalog(ufcCatalog);
 
         yield* Effect.forEach(feedEdges, subjects.addEventToFeed, {
           discard: true,
