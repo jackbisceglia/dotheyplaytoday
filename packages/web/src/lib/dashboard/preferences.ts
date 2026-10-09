@@ -3,11 +3,12 @@ import { query } from "@solidjs/router";
 import { withApiClient } from "../api.js";
 
 const loadPreferences = async () => {
-  const [user, subscriptions] = await Promise.all([
+  const [user, subscriptions, billing] = await Promise.all([
     withApiClient((api) => api.user.get()),
     withApiClient((api) => api.subscription.list()),
+    withApiClient((api) => api.billing.get()),
   ]);
-  return { user, subscriptions };
+  return { user, subscriptions, billing };
 };
 
 // The API cookie lives in the browser, so only the client calls this. The

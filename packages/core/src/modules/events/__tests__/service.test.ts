@@ -17,6 +17,8 @@ const user = Schema.decodeUnknownSync(User)({
   timezone: "America/New_York",
   name: null,
   emailVerified: true,
+  grandfatheredPro: false,
+  stripeCustomerId: null,
   unsubscribeToken: "00000000-0000-4000-8000-000000000002",
   createdAt: new Date("2026-01-01"),
   updatedAt: new Date("2026-01-01"),

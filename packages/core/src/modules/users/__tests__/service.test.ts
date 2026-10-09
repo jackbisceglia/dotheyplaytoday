@@ -27,7 +27,9 @@ const now = new Date("2026-01-01T00:00:00Z");
 // and row decoding. The driver boundary is fake: this is not a persistence test.
 const makeFixture = () => {
   const execute = vi.fn<Connection["executeValues"]>(() =>
-    Effect.succeed([[id, email, timezone.id, id, null, false, now, now]]),
+    Effect.succeed([
+      [id, email, timezone.id, id, null, false, false, null, now, now],
+    ]),
   );
   const connection: Connection = {
     executeValues: execute,

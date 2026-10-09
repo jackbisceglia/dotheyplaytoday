@@ -52,6 +52,15 @@ export const makeAuthFixture = async () => {
     ),
   );
   storage.current = database;
+  await database.exec(
+    await readFile(
+      new URL(
+        "../../../../data/migrations/postgres/0006_pro_billing.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
   const rows = async (
     table: "users" | "auth_sessions" | "auth_verifications",
   ) =>

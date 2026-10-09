@@ -18,6 +18,8 @@ const userInput = {
   name: "test@example.com",
   email: "test@example.com",
   emailVerified: false,
+  grandfatheredPro: false,
+  stripeCustomerId: null,
   timezone: "America/New_York",
   unsubscribeToken: "00000000-0000-4000-8000-000000000201",
   createdAt: new Date("2026-01-01T00:00:00.000Z"),
