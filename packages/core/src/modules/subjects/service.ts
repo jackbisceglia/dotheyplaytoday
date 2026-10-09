@@ -1,3 +1,4 @@
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { Array, Context, Effect, Layer, Option, Schema } from "effect";
 
 import {
@@ -33,6 +34,11 @@ export class Subjects extends Context.Service<
       readonly Subject[],
       DatabaseReadError | Schema.SchemaError
     >;
+
+    readonly removeEventFromFeeds: (
+      eventId: EventId,
+      subjectTags: readonly Subject["_tag"][],
+    ) => Effect.Effect<void, DatabaseWriteError>;
 
     readonly addEventToFeed: (input: {
       readonly subjectId: Subject["id"];
@@ -127,11 +133,33 @@ export const SubjectsLayer = Layer.effect(
         .pipe(mapToWriteError("Subjects.addEventToFeed", input));
     });
 
+    const removeEventFromFeeds: Subjects["Service"]["removeEventFromFeeds"] =
+      Effect.fn("Subjects.removeEventFromFeeds")(
+        function* (eventId, subjectTags) {
+          yield* database
+            .delete(subjectEventsTable)
+            .where(
+              and(
+                eq(subjectEventsTable.eventId, eventId),
+                inArray(
+                  subjectEventsTable.subjectId,
+                  sql`(select ${subjectsTable.id} from ${subjectsTable}
+                where ${inArray(subjectsTable._tag, subjectTags)})`,
+                ),
+              ),
+            )
+            .pipe(
+              mapToWriteError("Subjects.removeEventFromFeeds", { eventId }),
+            );
+        },
+      );
+
     return Subjects.of({
       upsert,
       get,
       list,
       addEventToFeed,
+      removeEventFromFeeds,
     });
   }),
 );
