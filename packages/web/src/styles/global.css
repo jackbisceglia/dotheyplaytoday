@@ -1290,10 +1290,7 @@ select.form-input {
   .header-cta,
   .skip-link,
   .team-card,
-  .coming-soon-tooltip,
-  .dashboard-schedule-row,
-  .dashboard-schedule-group,
-  .dashboard-schedule-day {
+  .coming-soon-tooltip {
     transition: none;
   }
 
@@ -1951,7 +1948,15 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   }
 }
 
+/* After the schedule's own transitions, so these win. */
 @media (prefers-reduced-motion: reduce) {
+  .dashboard-schedule-row,
+  .dashboard-schedule-group,
+  .dashboard-schedule-day,
+  .dashboard-schedule-league {
+    transition: none;
+  }
+
   .dashboard-schedule[data-focus="pin"] .dashboard-schedule-empty {
     animation: none;
   }
