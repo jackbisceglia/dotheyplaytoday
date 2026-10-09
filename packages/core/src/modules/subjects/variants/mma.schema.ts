@@ -9,7 +9,7 @@ export type MmaFighterSubject = typeof MmaFighterSubject.Type;
 export const MmaFighterSubject = Schema.TaggedStruct("mma_fighter", {
   leagueId: MmaLeagueId,
   display: Schema.NonEmptyString,
-  profileUrl: Schema.NonEmptyString,
+  profileUrl: Schema.optionalKey(Schema.NonEmptyString),
 });
 
 export type MmaTrackingSubject = typeof MmaTrackingSubject.Type;

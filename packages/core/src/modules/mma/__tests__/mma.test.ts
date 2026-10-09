@@ -67,7 +67,6 @@ describe("MMA selection and timing", () => {
     for (const invalid of [
       { main: encodedDetails.timings.main },
       {
-        early: encodedDetails.timings.early,
         prelims: encodedDetails.timings.main,
         main: encodedDetails.timings.prelims,
       },
@@ -82,7 +81,7 @@ describe("MMA selection and timing", () => {
     expect(() =>
       Schema.decodeUnknownSync(MmaEvent)({
         ...encodedDetails,
-        timings: { ...encodedDetails.timings, early: null },
+        timings: { ...encodedDetails.timings, prelims: null },
       }),
     ).toThrow();
   });
@@ -107,7 +106,7 @@ describe("MMA selection and timing", () => {
       ).not.toThrow();
     }
   });
-  it("requires a structured venue and a known fight placement", () => {
+  it("requires a structured venue and validates published fight placement", () => {
     const encoded = Schema.encodeSync(MmaEvent)(details);
     for (const venue of [null, "Test arena", { title: "Test arena" }]) {
       expect(() =>
@@ -115,8 +114,14 @@ describe("MMA selection and timing", () => {
       ).toThrow();
     }
     const participant = card.participants[0];
-    if (!participant) throw new Error("Expected fighter participant");
+    if (!participant || participant.details._tag !== "mma_card")
+      throw new Error("Expected fighter participant");
+    const { placement: _placement, ...unassigned } = participant.details;
+    expect(() =>
+      Schema.decodeUnknownSync(MmaParticipant)(unassigned),
+    ).not.toThrow();
     for (const invalid of [
+      { ...participant.details, placement: "early" },
       { ...participant.details, placement: "unknown" },
       { ...participant.details, fightId: "" },
     ]) {
@@ -128,7 +133,6 @@ describe("MMA selection and timing", () => {
       {
         ...details,
         timings: {
-          early: DateTime.makeUnsafe("2026-11-01T05:00:00Z"),
           prelims: DateTime.makeUnsafe("2026-11-01T05:30:00Z"),
           main: DateTime.makeUnsafe("2026-11-01T06:30:00Z"),
         },

@@ -100,7 +100,7 @@ describe("email rendering", () => {
         expect(lastPayload().text).toContain("vs Opponent TBD");
         expect(lastPayload().text).toContain("Main card: Oct 3, 10:00 PM EDT");
         expect(lastPayload().text).toContain(
-          "Early prelims: Oct 3, 7:00 PM EDT",
+          "Prelims: Oct 3, 7:00 PM EDT",
         );
       }),
   );

@@ -321,7 +321,7 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
 
             ...relevant.map((fight) =>
               Text.make({
-                value: `Following ${subject.details.display}: ${fight.fighters.map((fighter) => fighter.title).join(" vs ")}${fight.fighters.length === 1 ? " vs Opponent TBD" : ""} (${fight.placement})`,
+                value: `Following ${subject.details.display}: ${fight.fighters.map((fighter) => fighter.title).join(" vs ")}${fight.fighters.length === 1 ? " vs Opponent TBD" : ""}${fight.placement ? ` (${fight.placement})` : ""}`,
               }),
             ),
 

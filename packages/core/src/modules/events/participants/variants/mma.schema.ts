@@ -7,5 +7,5 @@ export const MmaParticipant = Schema.TaggedStruct("mma_card", {
   subjectId: SubjectId,
   title: Schema.NonEmptyString,
   fightId: Schema.NonEmptyString,
-  placement: Schema.Literals(["early", "prelims", "main"]),
+  placement: Schema.optionalKey(Schema.Literals(["prelims", "main"])),
 });

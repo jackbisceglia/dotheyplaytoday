@@ -18,7 +18,6 @@ export const mmaTimingText = (
     });
 
   return [
-    "Early prelims: " + format(card.timings.early),
     "Prelims: " + format(card.timings.prelims),
     "Main card: " + format(card.timings.main),
   ].join(" · ");

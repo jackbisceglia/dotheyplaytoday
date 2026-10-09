@@ -70,7 +70,7 @@ export const hasMatchingStart = Schema.makeFilter(
   }) =>
     !Predicate.isTagged(event.details, "mma_card") ||
     DateTime.toEpochMillis(event.startsAt) ===
-      DateTime.toEpochMillis(event.details.timings.early) ||
+      DateTime.toEpochMillis(event.details.timings.prelims) ||
     "Event start must match the earliest broadcast timing",
 );
 
