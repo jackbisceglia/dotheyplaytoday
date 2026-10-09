@@ -11,7 +11,7 @@ export function UfcPicker(props: {
   const [search, setSearch] = createSignal("");
   const coverage = createMemo(() =>
     props.subjects.filter((subject) =>
-      Predicate.isTagged(subject.details, "mma_coverage"),
+      Predicate.isTagged(subject.details, "mma_tracking"),
     ),
   );
   const currentCoverage = () =>
