@@ -167,10 +167,10 @@ export function Schedule(props: {
                                   )
                                   .join(", ")}
                               </span>
-                              <For each={mma().bouts}>
-                                {(bout) => (
+                              <For each={mma().fights}>
+                                {(fight) => (
                                   <span class="ufc-card-detail">
-                                    <For each={bout.fighters}>
+                                    <For each={fight.fighters}>
                                       {(fighter, index) => (
                                         <>
                                           {index() > 0 ? " vs " : ""}
@@ -185,7 +185,7 @@ export function Schedule(props: {
                                         </>
                                       )}
                                     </For>
-                                    {bout.fighters.length === 1
+                                    {fight.fighters.length === 1
                                       ? " vs Opponent TBD"
                                       : ""}
                                   </span>

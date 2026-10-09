@@ -40,6 +40,30 @@ describe("UFC schedule", () => {
       new Set([fighterA.id, fighterB.id]),
     );
   });
+  it("groups participant JSON by fightId, independent of row order", () => {
+    const grouped = {
+      ...card,
+      participants: card.participants
+        .map((participant, index) => ({
+          ...participant,
+          details: { ...participant.details, fightId: `fight-${String(index + 1)}` },
+        }))
+        .toReversed(),
+    };
+    const [row] = scheduleRows([pick(all, [grouped])], ny, [all], now);
+    expect(
+      row?.mma?.fights.map((fight) => ({
+        id: fight.id,
+        fighters: fight.fighters.map((fighter) => fighter.subjectId),
+      })),
+    ).toEqual([
+      { id: "fight-1", fighters: [fighterA.id] },
+      { id: "fight-2", fighters: [fighterB.id] },
+    ]);
+    expect(
+      scheduleRows([pick(all)], ny, [all], now)[0]?.mma?.fights[0]?.fighters,
+    ).toHaveLength(2);
+  });
   it("keeps distinct same-time cards separate and eligibility through remaining reasons", () => {
     const second = {
       ...card,

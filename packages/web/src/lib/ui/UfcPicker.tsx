@@ -71,7 +71,7 @@ export function UfcPicker(props: {
         onInput={(event) => setSearch(event.currentTarget.value)}
       />
       <p class="form-hint">
-        Choose from our supported fighters. More fighters and confirmed bouts
+        Choose from our supported fighters. More fighters and confirmed fights
         are added as the catalog is updated.
       </p>
       <div class="team-grid">
