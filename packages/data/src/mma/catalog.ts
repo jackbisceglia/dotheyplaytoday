@@ -14,7 +14,7 @@ export const ufcCoverageSubjects = [
       _tag: "mma_tracking",
       leagueId: "ufc",
       display: "Numbered UFC events",
-      coverage: "numbered",
+      scope: "numbered",
     },
   },
   {
@@ -24,7 +24,7 @@ export const ufcCoverageSubjects = [
       _tag: "mma_tracking",
       leagueId: "ufc",
       display: "All UFC events",
-      coverage: "all",
+      scope: "all",
     },
   },
 ] as const;
