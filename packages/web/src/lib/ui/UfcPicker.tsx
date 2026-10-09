@@ -1,4 +1,7 @@
-import type { Subject } from "@dtpt/core/modules/subjects/schema";
+import {
+  SubjectDetails,
+  type Subject,
+} from "@dtpt/core/modules/subjects/schema";
 import { createMemo, createSignal, For } from "solid-js";
 
 export function UfcPicker(props: {
@@ -9,7 +12,9 @@ export function UfcPicker(props: {
 }) {
   const [search, setSearch] = createSignal("");
   const coverage = createMemo(() =>
-    props.subjects.filter((subject) => subject.details._tag === "mma_coverage"),
+    props.subjects.filter((subject) =>
+      SubjectDetails.guards.mma_coverage(subject.details),
+    ),
   );
   const currentCoverage = () =>
     coverage().find((subject) => props.selected.has(subject.id));
@@ -17,7 +22,7 @@ export function UfcPicker(props: {
     props.subjects
       .filter(
         (subject) =>
-          subject.details._tag === "mma_fighter" &&
+          SubjectDetails.guards.mma_fighter(subject.details) &&
           subject.details.display
             .toLowerCase()
             .includes(search().trim().toLowerCase()),
