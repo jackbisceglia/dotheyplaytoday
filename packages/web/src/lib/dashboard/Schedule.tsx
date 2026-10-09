@@ -99,7 +99,8 @@ export function Schedule(props: {
 
   const focusedId = () => pinnedTeam()?.id ?? props.previewId;
   const isFocused = (row: ScheduleRow) =>
-    row.team.id === focusedId() || row.opponentTeam?.id === focusedId();
+    row.team.id === focusedId() || row.opponentTeam?.id === focusedId() ||
+    row.mma?.reasons.some((reason) => reason.id === focusedId());
   const emptyMessage = () => {
     const team = pinnedTeam()?.details.name;
     return team
