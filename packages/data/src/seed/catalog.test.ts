@@ -9,7 +9,7 @@ import {
   seedCatalog,
   summarizeCatalog,
 } from "./catalog.js";
-import { ufcCollection } from "../mma/ufc/index.js";
+import { ufcCollection } from "./mma.fixture.js";
 import { SeedCollections } from "./index.js";
 
 const template = SeedCollections[0];

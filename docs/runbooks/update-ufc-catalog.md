@@ -39,12 +39,38 @@ UFC URL on each import record. Git history and the catalog seed version track
 updates; there is no separate per-card revision or stale-snapshot check. Never infer a cancellation from a
 missing search result, a failed scrape, or a shortened broadcast listing.
 
-The initial published card is [UFC 332](https://www.ufc.com/event/ufc-332),
-reviewed October 3, 2026. Allen–Duncan is held out because its reviewed source
-does not confirm all three required broadcast timestamps. Its fighters remain
-followable. Reserve card/source UUID b51165b6-7428-4620-a02e-000000000002
-for a later confirmed import. The initial catalog lists supported headliners,
-not the complete UFC roster or full lineups. Adding other supported fighters does not require an upcoming fight.
+The October 9, 2026 snapshot covers the rolling month through November 9:
+
+| Card | Official source | Prelims (UTC) | Main (UTC) |
+| --- | --- | --- | --- |
+| Allen vs Duncan | [October 10](https://www.ufc.com/event/ufc-fight-night-october-10-2026) | Oct 10 21:00 | Oct 11 00:00 |
+| Buckley vs Malott | [October 17](https://www.ufc.com/event/ufc-fight-night-october-17-2026) | Oct 17 21:00 | Oct 18 00:00 |
+| UFC 333: Volkanovski vs Evloev | [October 24](https://www.ufc.com/event/ufc-333) | Oct 24 14:00 | Oct 24 18:00 |
+| Moicano vs Nolan | [October 31](https://www.ufc.com/event/ufc-fight-night-october-31-2026) | Oct 31 21:00 | Nov 1 00:00 |
+| Bonfim vs Brady | [November 7](https://www.ufc.com/event/ufc-fight-night-november-7-2026) | Nov 7 22:00 | Nov 8 01:00 |
+
+The [September 29 UFC announcement](https://www.ufc.com/news/tickets-sale-october-10-october-31-and-november-7-ufc-fight-night-events-meta-apex)
+confirms the APEX lineups and 5 PM / 8 PM Eastern broadcasts. November 7 uses
+EST, after the November 1 DST transition; October's APEX cards use EDT.
+UFC 333's 10 AM EDT early prelims become its prelims start. For Edmonton,
+[UFC's Canadian announcement](https://www.ufc.com/news/pivotal-welterweight-bout-between-joaquin-buckley-and-mike-malott-headlines-ufc-return)
+lists early prelims at 5 PM Eastern, also folded into prelims. The current
+UFC 333 event page lists Pico–Keita; it supersedes the older opponent announcement.
+
+There are 58 announced fights, 116 participating fighters, and two retained
+fighters from the previous catalog (118 fighter subjects total). Existing IDs
+remain unchanged, including Allen–Duncan's reserved card ID ending in 000002.
+The historical UFC 332 card leaves the active checked-in window; omitting it
+does not delete its stored event or associations. Keep its original UUID ending
+in 000001 reserved if a historical correction is needed.
+
+October 31 and November 7 have published headliners but no confirmed segment
+assignment for their other announced bouts: omit placement for those fights.
+Lucia Szabova has an announced bout but no verified athlete profile URL; omit
+that optional display link until UFC publishes one. José Souza's official
+profile uses the slug [jose-henrique](https://www.ufc.com/athlete/jose-henrique).
+This is a reviewed snapshot, not a guarantee that every future announcement is
+already included. Adding supported fighters does not require an upcoming fight.
 
 1. Allocate a UUID once for each new fighter and card. Keep a card's
    `sourceId` (`mma_card:ufc:<allocated UUID>`) and `id` forever. Do not derive IDs
@@ -52,7 +78,8 @@ not the complete UFC roster or full lineups. Adding other supported fighters doe
    the checked-in catalog before allocating; fighter profile slugs can change.
 2. Rename fighters or cards in place. When an opponent changes,
    replace the corresponding participant row. Opponents share a `details.fightId`
-   within the card and the same `details.placement` (early, prelims, or main).
+   within the card and the same `details.placement` (prelims or main), when published.
+   Omit placement for both opponents until a segment is confirmed.
    A known fighter with an unknown opponent has one participant in that group.
    Do not invent an opponent subject. Fight IDs are display grouping keys, not
    subscription identities; use ordered keys such as `fight-1`, `fight-2` to
@@ -64,7 +91,7 @@ not the complete UFC roster or full lineups. Adding other supported fighters doe
    This is a manual catalog, not a raw scraper payload: a missing fight on an
    incomplete source page is not evidence of withdrawal. Carry forward known
    fights until a removal or replacement is confirmed.
-4. Retain confirmed metadata when a source omits fields. Venue and all three
+4. Retain confirmed metadata when a source omits fields. Venue and both
    timing instants are required. Hold new cards with missing times out of the
    catalog. Review the diff and bump the catalog seed version for updates;
    reseeding the same snapshot is repeatable. Replaying an older catalog will
@@ -80,7 +107,8 @@ not the complete UFC roster or full lineups. Adding other supported fighters doe
 
 ## Time policy
 
-Store confirmed early-prelim, prelim, and main-card broadcast instants in UTC.
+Store confirmed prelim and main-card broadcast instants in UTC. If early prelims
+exist, use that earliest preliminary start for prelims.
 Resolve the source's local time using the named IANA zone and the date (including
 DST); don't apply a fixed UTC offset year-round. Verify unusual DST ambiguity
 against the source's published offset. Never estimate individual fight times.
@@ -88,8 +116,9 @@ against the source's published offset. Never estimate individual fight times.
 Every imported card must supply a confirmed event-level startsAt instant, chosen
 as the earliest confirmed broadcast start. It is the single scheduling anchor,
 using the same local-day and DST behavior as sports games. The MMA details.timings
-object supplies required early/prelims/main timestamps for email and schedule
-enrichment. All three must be confirmed, non-null instants ordered early <= prelims <= main.
+object supplies required prelims/main timestamps for email and schedule
+enrichment. Both must be confirmed, non-null instants ordered prelims <= main.
+The event startsAt must equal timings.prelims.
 Never fabricate an instant. The venue is a required title/location struct.
 
 Hold new cards without confirmed event/main-card times out of the import. Missing
@@ -117,17 +146,17 @@ explicit operational step.
 
 No new database migration or subscription backfill is required for production,
 where these variants have not been published. Recreate any disposable development
-seed using the former mma_coverage tag, coverage/kind fields, or nested event lineup before
+seed using the former three-segment timings, mma_coverage tag, coverage/kind fields, or nested event lineup before
 testing the current mma_tracking/scope/category and participant schemas. The event
 and participant tables retain their current columns, including required startsAt
 on events. Release all API/jobs/web
 readers with support for the new variants before enabling catalog revision
-2026-10-09.2. The importer is PR 2 and UI is PR 3: keep catalog publication gated
+2026-10-09.3. The importer is PR 2 and UI is PR 3: keep catalog publication gated
 until the complete stack is ready. The standard Alchemy action seeds during
 deployment, so coordinate that action with the reader rollout. Rolling readers
 back after publishing UFC data requires removing/archiving that data and its
 subscriptions first.
 
-Before a production rollout, refresh the small initial catalog and expand the
+Before a production rollout, refresh the catalog and expand the
 supported fighter/card horizon as needed. This version uses reviewed, checked-in
 updates; it does not poll UFC or guarantee a complete roster/schedule.

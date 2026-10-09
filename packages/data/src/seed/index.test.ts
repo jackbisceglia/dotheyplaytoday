@@ -74,16 +74,18 @@ describe("development seed collections", () => {
   });
 
   it("includes UFC through the same development window and feed filtering", () => {
-    const collections = buildDevSeed(new Date("2026-10-03T12:00:00Z"));
+    const collections = buildDevSeed(new Date("2026-10-10T12:00:00Z"));
     const ufc = collections.find((collection) => collection.id === "mma.ufc");
     expect(ufc?.events).toHaveLength(1);
-    expect(ufc?.subjects).toHaveLength(6);
-    expect(ufc?.subjects.flatMap((subject) => subject.feedIds)).toHaveLength(4);
+    expect(ufc?.subjects).toHaveLength(120);
+    expect(ufc?.subjects.flatMap((subject) => subject.feedIds)).toHaveLength(
+      25,
+    );
 
-    const later = buildDevSeed(new Date("2026-10-05T12:00:00Z"));
+    const later = buildDevSeed(new Date("2026-10-12T12:00:00Z"));
     const past = later.find((collection) => collection.id === "mma.ufc");
     expect(past?.events).toEqual([]);
-    expect(past?.subjects).toHaveLength(6);
+    expect(past?.subjects).toHaveLength(120);
     expect(past?.subjects.flatMap((subject) => subject.feedIds)).toEqual([]);
   });
 

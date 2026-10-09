@@ -27,7 +27,7 @@ import { eq, sql } from "drizzle-orm";
 
 import { seedCatalog } from "./catalog.js";
 import { MmaSeed } from "../schema/mma.js";
-import { ufcCollection } from "../mma/ufc/index.js";
+import { ufcCollection } from "./mma.fixture.js";
 import { UfcCoverageIds } from "../mma/ufc/subjects.js";
 
 const decoded = Schema.decodeUnknownSync(MmaSeed)(ufcCollection);
@@ -457,8 +457,7 @@ describe("UFC PostgreSQL integration", () => {
                 details: {
                   ...replacement.details,
                   timings: {
-                    early: DateTime.makeUnsafe("2026-10-05T20:00:00Z"),
-                    prelims: DateTime.makeUnsafe("2026-10-05T21:00:00Z"),
+                    prelims: DateTime.makeUnsafe("2026-10-05T20:00:00Z"),
                     main: DateTime.makeUnsafe("2026-10-05T22:00:00Z"),
                   },
                 },
