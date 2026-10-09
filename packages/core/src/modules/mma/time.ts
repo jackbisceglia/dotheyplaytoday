@@ -16,11 +16,10 @@ export const mmaTimingText = (
       hour12: true,
       timeZoneName: "short",
     });
-  const segments = [
+
+  return [
     "Early prelims: " + format(card.timings.early),
     "Prelims: " + format(card.timings.prelims),
     "Main card: " + format(card.timings.main),
-  ];
-
-  return segments.join(" · ");
+  ].join(" · ");
 };
