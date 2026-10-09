@@ -153,6 +153,26 @@ describe("email rendering", () => {
             ...notification,
             events: [{ ...notification.events[0], _tag: "mma_card" }],
           },
+          {
+            ...notification,
+            subject: all,
+            events: [
+              { ...card, participants: notification.events[0].participants },
+            ],
+          },
+          {
+            ...notification,
+            subject: all,
+            events: [
+              {
+                ...card,
+                participants: card.participants.map((participant) => ({
+                  ...participant,
+                  _tag: "sports_game",
+                })),
+              },
+            ],
+          },
         ] satisfies Notification[];
         for (const input of invalidFeeds) {
           expect(Exit.isFailure(yield* Effect.exit(send(input)))).toBe(true);

@@ -1,5 +1,7 @@
 import { DateTime, Schema } from "effect";
 
+import { MmaLeagueId } from "../../subjects/variants/mma.schema.js";
+
 export type MmaVenue = typeof MmaVenue.Type;
 export const MmaVenue = Schema.Struct({
   title: Schema.NonEmptyString,
@@ -19,7 +21,7 @@ const hasOrderedTimings = Schema.makeFilter(
 
 export type MmaEvent = typeof MmaEvent.Type;
 export const MmaEvent = Schema.TaggedStruct("mma_card", {
-  leagueId: Schema.Literal("ufc"),
+  leagueId: MmaLeagueId,
   title: Schema.NonEmptyString,
   category: Schema.Literals(["numbered", "fight_night"]),
   venue: MmaVenue,
