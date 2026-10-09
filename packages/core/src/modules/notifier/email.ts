@@ -1,4 +1,12 @@
-import { Array, DateTime, Effect, Layer, Match, Schema } from "effect";
+import {
+  Array,
+  DateTime,
+  Effect,
+  Layer,
+  Match,
+  Predicate,
+  Schema,
+} from "effect";
 
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
@@ -22,7 +30,7 @@ import {
   type EmailViewProps,
 } from "../email/render.js";
 import { mmaTimingText } from "../mma/time.js";
-import { EventDetails, EventId } from "../events/schema.js";
+import { EventId } from "../events/schema.js";
 import type { EventWithParticipants } from "../events/service.js";
 import { SubjectDetails } from "../subjects/schema.js";
 import type { SportTeamSubject } from "../subjects/variants/sport.schema.js";
@@ -71,7 +79,7 @@ function createFeedCases() {
     events.every(
       (event) =>
         event._tag === event.details._tag &&
-        EventDetails.guards.sports_game(event.details),
+        Predicate.isTagged(event.details, "sports_game"),
     );
 
   const areMmaEvents = (events: Notification["events"]): events is MmaEvents =>
@@ -79,12 +87,12 @@ function createFeedCases() {
     events.every(
       (event) =>
         event._tag === event.details._tag &&
-        EventDetails.guards.mma_card(event.details),
+        Predicate.isTagged(event.details, "mma_card"),
     );
 
   return {
     sportsTeamFeed: {
-      subject: { details: SubjectDetails.guards.sports_team },
+      subject: { details: Predicate.isTagged("sports_team") },
       events: areSportsGames,
     },
     mmaFeed: {
