@@ -23,12 +23,47 @@ import {
 } from "@dtpt/core/modules/users/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
 import { DateTime, Effect, Layer, Predicate, Redacted, Schema } from "effect";
-import { eq, sql } from "drizzle-orm";
 
 import { seedCatalog } from "./catalog.js";
 import { MmaSeed } from "../schema/mma.js";
-import { ufcCollection } from "./mma.fixture.js";
+import { ufcCollection as catalog } from "../mma/ufc/index.js";
 import { UfcCoverageIds } from "../mma/ufc/subjects.js";
+
+// Fix the date and use one fight to isolate reconciliation from live lineup size.
+const sourceCard = catalog.events[0];
+if (!sourceCard) throw new Error("Expected catalog card");
+const participants = sourceCard.participants.slice(0, 2);
+const fighterIds = new Set(participants.map((p) => p.details.subjectId));
+const fighters = catalog.subjects.filter(Predicate.isTagged("mma_fighter"));
+const ufcCollection = {
+  ...catalog,
+  events: [
+    {
+      ...sourceCard,
+      startsAt: "2026-10-03T20:00:00.000Z",
+      details: {
+        ...sourceCard.details,
+        category: "numbered" as const,
+        timings: {
+          prelims: "2026-10-03T20:00:00.000Z",
+          main: "2026-10-04T00:00:00.000Z",
+        },
+      },
+      participants,
+    },
+  ],
+  subjects: [
+    ...fighters.filter((fighter) => fighterIds.has(fighter.id)),
+    ...fighters.filter((fighter) => !fighterIds.has(fighter.id)).slice(0, 2),
+    ...catalog.subjects.filter(Predicate.isTagged("mma_tracking")),
+  ].map((subject) => ({
+    ...subject,
+    feedIds:
+      subject._tag === "mma_tracking" || fighterIds.has(subject.id)
+        ? [sourceCard.sourceId]
+        : [],
+  })),
+};
 
 const decoded = Schema.decodeUnknownSync(MmaSeed)(ufcCollection);
 const first = decoded.events[0];
@@ -208,7 +243,7 @@ describe("UFC PostgreSQL integration", () => {
                   .split(";");
                 for (const statement of statements) {
                   if (statement.trim()) {
-                    yield* database.execute(sql.raw(statement));
+                    yield* database.execute(statement);
                   }
                 }
               }
@@ -282,10 +317,7 @@ describe("UFC PostgreSQL integration", () => {
               expect(yield* subscriptions.listNotificationRecipients()).toEqual(
                 [],
               );
-              yield* database
-                .update(usersTable)
-                .set({ emailVerified: true })
-                .where(eq(usersTable.id, user.id));
+              yield* database.update(usersTable).set({ emailVerified: true });
               expect(
                 yield* subscriptions.listNotificationRecipients(),
               ).toHaveLength(4);
@@ -360,6 +392,14 @@ describe("UFC PostgreSQL integration", () => {
               };
               yield* importCard(renamed);
               expect((yield* cardFor(a.id))[0]?.id).toBe(first.id);
+              expect(
+                (yield* importCard({
+                  ...renamed,
+                  id: EventId.make("b51165b6-7428-4620-a02e-000000000098"),
+                }).pipe(Effect.flip))._tag,
+              ).toBe("InvalidMmaSeed");
+              expect((yield* cardFor(a.id))[0]?.id).toBe(first.id);
+
               expect((yield* cardFor(a.id))[0]?.participants).toHaveLength(2);
               // A bad later card rolls back the first card's metadata, participants and matches.
               const cleared = {

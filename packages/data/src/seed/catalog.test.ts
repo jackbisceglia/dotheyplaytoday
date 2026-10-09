@@ -1,6 +1,12 @@
-import { Database, Events, Subjects } from "@dtpt/core";
+import {
+  Database,
+  Events,
+  Subjects,
+  Subject,
+  SubjectNotFound,
+} from "@dtpt/core";
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer, Predicate } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { TestClock } from "effect/testing";
 import { vi } from "vitest";
 
@@ -9,7 +15,7 @@ import {
   seedCatalog,
   summarizeCatalog,
 } from "./catalog.js";
-import { ufcCollection } from "./mma.fixture.js";
+import { ufcCollection } from "../mma/ufc/index.js";
 import { SeedCollections } from "./index.js";
 
 const template = SeedCollections[0];
@@ -46,29 +52,26 @@ const seedServices = () => {
   );
   const transaction = vi.fn((body: () => Effect.Effect<void>) => body());
 
-  const query = {
-    subjectsTable: {
-      findFirst: () => Effect.succeed(undefined),
-      findMany: () =>
-        Effect.succeed(
-          ufcCollection.subjects.filter(Predicate.isTagged("mma_fighter")),
-        ),
-    },
-    eventsTable: { findFirst: () => Effect.succeed(undefined) },
-  };
   const reconcile = vi.fn(() => Effect.void);
   const layer = Layer.mergeAll(
     // lint(anti-slop/require-safety-comment-for-type-assertion): Only the database methods used by catalog seeding are supplied; domain writes use service fakes.
     // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- This fixture intentionally omits unused Drizzle methods.
     Layer.succeed(Database, {
       transaction,
-      query,
-      delete: () => ({ where: reconcile }),
     } as unknown as Database),
     Layer.mock(Events, { upsert, setParticipants: participants }),
     Layer.mock(Subjects, {
       upsert: (subject) => Effect.succeed(subject),
       addEventToFeed: addFeed,
+      removeEventFromFeeds: reconcile,
+      get: (id) => {
+        const subject = ufcCollection.subjects.find(
+          (subject) => subject.id === id,
+        );
+        return subject
+          ? Schema.decodeUnknownEffect(Subject)(subject)
+          : Effect.fail(new SubjectNotFound({ key: "id", value: id }));
+      },
     }),
   );
 
@@ -142,7 +145,12 @@ describe("UFC uses the shared catalog workflow", () => {
   for (const strategy of ["future", "all"] as const) {
     it.effect(`applies the ${strategy} strategy to UFC events and feeds`, () =>
       Effect.gen(function* () {
-        yield* TestClock.setTime(Date.parse("2026-10-09T12:00:00Z"));
+        yield* TestClock.setTime(
+          Math.max(
+            ...ufcCollection.events.map((event) => Date.parse(event.startsAt)),
+          ) +
+            3 * 24 * 60 * 60 * 1000,
+        );
         const { upsert, reconcile, addFeed, layer } = seedServices();
         const collections = yield* seedCatalog({
           collections: [ufcCollection],
@@ -152,7 +160,12 @@ describe("UFC uses the shared catalog workflow", () => {
           strategy === "all" ? ufcCollection.events.length : 0;
         expect(upsert).toHaveBeenCalledTimes(expectedCount);
         expect(reconcile).toHaveBeenCalledTimes(expectedCount);
-        expect(addFeed).toHaveBeenCalledTimes(strategy === "all" ? 4 : 0);
+        expect(addFeed).toHaveBeenCalledTimes(
+          strategy === "all"
+            ? ufcCollection.subjects.flatMap((subject) => subject.feedIds)
+                .length
+            : 0,
+        );
         expect(summarizeCatalog(collections)).toContain(
           `events=${expectedCount.toString()}`,
         );

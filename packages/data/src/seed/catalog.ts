@@ -10,11 +10,7 @@ import {
 import { DateTime, Effect, HashMap, Option, Predicate, Schema } from "effect";
 
 import { SeedCollection, type SeedCollectionInput } from "../schema/catalog.js";
-import {
-  validateMmaSubject,
-  validateMmaEvent,
-  reconcileMmaFeed,
-} from "./mma.js";
+import { validateMmaSubject, validateMmaEvent } from "./mma.js";
 import { SeedCollections } from "./index.js";
 
 export class SeedEventResolutionError extends Schema.TaggedError<SeedEventResolutionError>()(
@@ -215,17 +211,17 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
           collections.flatMap((collection) => collection.events),
           (eventSeed) =>
             Effect.gen(function* () {
-              if (Predicate.isTagged(eventSeed, "mma_card")) {
-                yield* validateMmaEvent(eventSeed);
-              }
-
               const { participants, ...eventInput } = eventSeed;
               const event = yield* events.upsert(eventInput);
 
               yield* events.setParticipants(event.id, participants);
 
               if (Predicate.isTagged(eventSeed, "mma_card")) {
-                yield* reconcileMmaFeed(event.id);
+                yield* validateMmaEvent(eventSeed, event.id);
+                yield* subjects.removeEventFromFeeds(event.id, [
+                  "mma_fighter",
+                  "mma_tracking",
+                ]);
               }
 
               return [event.sourceId, event.id] as const;

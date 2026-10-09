@@ -105,7 +105,9 @@ already included. Adding supported fighters does not require an upcoming fight.
    postponement without a confirmed replacement time, mark it cancelled while
    retaining the last confirmed start and timings. It remains absent from dated
    schedules/reminders until reactivated with confirmed times and the same ID.
-6. Imports rebuild UFC feed edges for each included card only, inside the same
+6. Imports use the core Subjects service to clear MMA feed edges, then rebuild
+   them through the same addEventToFeed path as sports. This applies to each
+   included card only, inside the same
    transaction as the card update. They never remove omitted cards, unrelated
    league edges, users, or subscriptions. Numbered cards match both coverage
    subjects. Only fighters in the current participant list match fighter follows.
