@@ -53,6 +53,45 @@ describe("MMA import boundaries", () => {
     }
   });
 
+  it("rejects duplicate fighters, oversized fights, and conflicting placement at the seed boundary", () => {
+    const card = ufcCatalog.cards[0];
+    const participant = card?.participants[0];
+    const thirdFighter = ufcCatalog.fighters[2];
+    if (!card || !participant || !thirdFighter)
+      throw new Error("Expected catalog fixtures");
+    for (const participants of [
+      [
+        ...card.participants,
+        {
+          ...participant,
+          details: {
+            ...participant.details,
+            subjectId: thirdFighter.id,
+            title: thirdFighter.details.display,
+          },
+        },
+      ],
+      card.participants.map((p, index) => ({
+        ...p,
+        details: { ...p.details, placement: index === 0 ? "main" : "prelims" },
+      })),
+      [
+        ...card.participants,
+        {
+          ...participant,
+          details: { ...participant.details, fightId: "another-fight" },
+        },
+      ],
+    ]) {
+      expect(() =>
+        Schema.decodeUnknownSync(MmaImport)({
+          fighters: ufcCatalog.fighters,
+          cards: [{ ...card, participants }],
+        }),
+      ).toThrow();
+    }
+  });
+
   it("decodes repeatable curated seeds and rejects unsupported event categories", () => {
     expect(Schema.encodeSync(MmaImport)(decoded)).toEqual(ufcCatalog);
     expect(() =>
@@ -348,44 +387,13 @@ describe("UFC PostgreSQL integration", () => {
               );
               expect((yield* cardFor(a.id))[0]?.participants).toHaveLength(2);
               expect(yield* cardFor(UfcCoverageIds.numbered)).toHaveLength(1);
-              // Invalid grouping cannot damage the existing participant snapshot.
-              const thirdFighter = decoded.fighters[3];
-              const participant = replacement.participants[0];
-              if (!thirdFighter || !participant)
-                throw new Error("Expected fighter");
-              for (const participants of [
-                [
-                  ...replacement.participants,
-                  {
-                    ...participant,
-                    details: {
-                      ...participant.details,
-                      subjectId: thirdFighter.id,
-                      title: thirdFighter.details.display,
-                    },
-                  },
-                ],
-                replacement.participants.map((p, index) => ({
-                  ...p,
-                  details: {
-                    ...p.details,
-                    placement:
-                      index === 0 ? ("main" as const) : ("prelims" as const),
-                  },
-                })),
-                [...replacement.participants, participant],
-              ]) {
-                expect(
-                  (yield* importCard({ ...replacement, participants }).pipe(
-                    Effect.flip,
-                  ))._tag,
-                ).toBe("InvalidMmaImport");
-                expect((yield* cardFor(a.id))[0]?.participants).toHaveLength(2);
-              }
               // Grouping changes affect display, not card or fighter identity/matching.
               const regrouped = replacement.participants.map((p, index) => ({
                 ...p,
-                details: { ...p.details, fightId: `fight-${String(index + 1)}` },
+                details: {
+                  ...p.details,
+                  fightId: `fight-${String(index + 1)}`,
+                },
               }));
               yield* importCard({ ...replacement, participants: regrouped });
               expect((yield* cardFor(a.id))[0]?.id).toBe(first.id);

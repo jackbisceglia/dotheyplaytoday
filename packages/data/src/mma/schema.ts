@@ -9,7 +9,7 @@ import { MmaParticipant } from "@dtpt/core/modules/events/participants/variants/
 import { MmaEvent } from "@dtpt/core/modules/events/variants/mma.schema";
 import { SubjectId } from "@dtpt/core/modules/subjects/schema";
 import { MmaFighterSubject } from "@dtpt/core/modules/subjects/variants/mma.schema";
-import { Schema } from "effect";
+import { Array, Schema } from "effect";
 
 export type MmaImport = typeof MmaImport.Type;
 export const MmaImport = Schema.Struct({
@@ -35,6 +35,31 @@ export const MmaImport = Schema.Struct({
             details: MmaParticipant,
           }),
         ),
+      ).check(
+        Schema.makeFilter(function hasValidFights(participants) {
+          const fighters = participants.map(
+            (participant) => participant.details,
+          );
+          if (
+            new Set(fighters.map((fighter) => fighter.subjectId)).size !==
+            fighters.length
+          ) {
+            return "A fighter cannot occupy multiple slots on a card";
+          }
+          const fights = Array.groupBy(fighters, (fighter) => fighter.fightId);
+          if (
+            Object.values(fights).some(
+              (fight) =>
+                fight.length > 2 ||
+                fight.some(
+                  (fighter) => fighter.placement !== fight[0].placement,
+                ),
+            )
+          ) {
+            return "Each fight requires one or two participants with matching placement";
+          }
+          return undefined;
+        }),
       ),
     }),
   ),

@@ -5,7 +5,7 @@ import {
 } from "@dtpt/core/lib/database/errors";
 import { subjectEventsTable } from "@dtpt/core/modules/subjects/feed/schema";
 import { and, eq, inArray } from "drizzle-orm";
-import { Array, Effect, Schema } from "effect";
+import { Effect, Schema } from "effect";
 
 import { ufcCoverageSubjects, UfcCoverageIds } from "./catalog.js";
 import { MmaImport, type MmaImportInput } from "./schema.js";
@@ -90,30 +90,9 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
           const fighters = card.participants.map(
             (participant) => participant.details,
           );
-          if (!hasUniqueIds(fighters.map((fighter) => fighter.subjectId))) {
-            return yield* new InvalidMmaImport({
-              message: "A fighter cannot occupy multiple slots on a card",
-            });
-          }
           if (fighters.some((fighter) => !fighterIds.has(fighter.subjectId))) {
             return yield* new InvalidMmaImport({
               message: "Fight references an unknown fighter",
-            });
-          }
-          if (
-            Object.values(
-              Array.groupBy(fighters, (fighter) => fighter.fightId),
-            ).some(
-              (fight) =>
-                fight.length > 2 ||
-                fight.some(
-                  (fighter) => fighter.placement !== fight[0].placement,
-                ),
-            )
-          ) {
-            return yield* new InvalidMmaImport({
-              message:
-                "Each fight requires one or two participants with matching placement",
             });
           }
           const event = yield* events.upsert({
