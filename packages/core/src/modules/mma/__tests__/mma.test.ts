@@ -119,7 +119,7 @@ describe("MMA selection and timing", () => {
     const { placement: _placement, ...unassigned } = participant.details;
     expect(() =>
       Schema.decodeUnknownSync(MmaParticipant)(unassigned),
-    ).not.toThrow();
+    ).toThrow();
     for (const invalid of [
       { ...participant.details, placement: "early" },
       { ...participant.details, placement: "unknown" },
