@@ -42,6 +42,7 @@ describe("MMA import boundaries", () => {
     for (const invalid of [
       missingStart,
       { ...firstCard, startsAt: null },
+      { ...firstCard, startsAt: "2026-10-04T20:00:00.000Z" },
       { ...firstCard, details: { ...firstCard.details, timings: {} } },
     ]) {
       expect(() =>

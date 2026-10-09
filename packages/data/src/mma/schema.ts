@@ -1,4 +1,5 @@
 import {
+  hasMatchingStart,
   EventId,
   EventInsert,
   EventSourceId,
@@ -61,7 +62,7 @@ export const MmaImport = Schema.Struct({
           return undefined;
         }),
       ),
-    }),
+    }).check(hasMatchingStart),
   ),
 });
 export type MmaImportInput = Schema.Codec.Encoded<typeof MmaImport>;
