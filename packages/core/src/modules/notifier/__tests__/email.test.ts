@@ -92,13 +92,7 @@ describe("email rendering", () => {
           events: [
             {
               ...card,
-              details: {
-                ...card.details,
-                bouts: card.details.bouts.map((bout) => ({
-                  ...bout,
-                  fighters: bout.fighters.slice(0, 1),
-                })),
-              },
+              participants: card.participants.slice(0, 1),
             },
           ],
         });
@@ -108,6 +102,35 @@ describe("email rendering", () => {
         expect(lastPayload().text).toContain(
           "Early prelims: Oct 3, 7:00 PM EDT",
         );
+      }),
+  );
+
+  it.effect(
+    "groups UFC participant rows by fight, independent of query order",
+    () =>
+      Effect.gen(function* () {
+        if (card.details._tag !== "mma_card") throw new Error("Expected card");
+        yield* send({
+          ...notification,
+          subject: all,
+          events: [
+            {
+              ...card,
+              participants: card.participants
+                .map((participant, fightIndex) => ({
+                  ...participant,
+                  details: {
+                    ...participant.details,
+                    fightId: `fight-${String(fightIndex + 1)}`,
+                  },
+                }))
+                .toReversed(),
+            },
+          ],
+        });
+        expect(lastPayload().text).toContain("Fighter A vs Opponent TBD");
+        expect(lastPayload().text).toContain("Fighter B vs Opponent TBD");
+        expect(lastPayload().text).not.toContain("Fighter A vs Fighter B");
       }),
   );
 

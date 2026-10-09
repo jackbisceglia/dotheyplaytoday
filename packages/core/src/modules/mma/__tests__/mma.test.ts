@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DateTime, Schema } from "effect";
 
 import { EventWithParticipants } from "../../events/participants/schema.js";
+import { MmaParticipant } from "../../events/participants/variants/mma.schema.js";
 import { MmaEvent } from "../../events/variants/mma.schema.js";
 import { SubscriptionTiming } from "../../subscriptions/time.js";
 import {
@@ -84,19 +85,21 @@ describe("MMA selection and timing", () => {
       }),
     ).toThrow();
   });
-  it("requires a structured venue and a known bout placement", () => {
+  it("requires a structured venue and a known fight placement", () => {
     const encoded = Schema.encodeSync(MmaEvent)(details);
     for (const venue of [null, "Test arena", { title: "Test arena" }]) {
       expect(() =>
         Schema.decodeUnknownSync(MmaEvent)({ ...encoded, venue }),
       ).toThrow();
     }
-    expect(() =>
-      Schema.decodeUnknownSync(MmaEvent)({
-        ...encoded,
-        bouts: encoded.bouts.map((bout) => ({ ...bout, placement: "unknown" })),
-      }),
-    ).toThrow();
+    const participant = card.participants[0];
+    if (!participant) throw new Error("Expected fighter participant");
+    for (const invalid of [
+      { ...participant.details, placement: "unknown" },
+      { ...participant.details, fightId: "" },
+    ]) {
+      expect(() => Schema.decodeUnknownSync(MmaParticipant)(invalid)).toThrow();
+    }
   });
   it("formats broadcast segments across the DST fallback independently", () => {
     const text = mmaTimingText(

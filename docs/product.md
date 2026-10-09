@@ -122,9 +122,9 @@ start estimates. Do not invent missing segment times. Do not import a new card
 until its event and main-card starts are confirmed. Incomplete source updates
 retain previously confirmed timings; a confirmed postponement with no replacement
 time must explicitly deactivate the card until a new start is confirmed.
-Cancelled cards don't qualify. A card's bouts describe its current lineup;
-withdrawals remove the bout or update its fighters. Checked-in card JSON is
-authoritative. When reviewing incomplete source data, retain known bouts and
+Cancelled cards don't qualify. A card's fights and participant rows describe its current
+lineup; withdrawals remove a fight or update its participants. The checked-in
+card and participant snapshot is authoritative. When reviewing incomplete source data, retain known fights and
 metadata unless a change is confirmed. Catalog publication is a separate rollout
 step; coverage choices apply to catalogued UFC events.
 

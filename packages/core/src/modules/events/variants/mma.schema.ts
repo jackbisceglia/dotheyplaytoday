@@ -1,18 +1,5 @@
 import { DateTime, Schema } from "effect";
 
-import { SubjectId } from "../../subjects/schema.js";
-
-export type MmaBout = typeof MmaBout.Type;
-export const MmaBout = Schema.Struct({
-  placement: Schema.Literals(["early", "prelims", "main"]),
-  fighters: Schema.Array(
-    Schema.Struct({
-      subjectId: SubjectId,
-      title: Schema.NonEmptyString,
-    }),
-  ).check(Schema.isLengthBetween(1, 2)),
-});
-
 export type MmaVenue = typeof MmaVenue.Type;
 export const MmaVenue = Schema.Struct({
   title: Schema.NonEmptyString,
@@ -41,5 +28,4 @@ export const MmaEvent = Schema.TaggedStruct("mma_card", {
     prelims: Schema.DateTimeUtcFromString,
     main: Schema.DateTimeUtcFromString,
   }).check(hasOrderedTimings),
-  bouts: Schema.Array(MmaBout),
 });

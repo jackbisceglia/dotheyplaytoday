@@ -448,9 +448,18 @@ Alchemy's `Http.Platform` layer for its fileless HTTP platform services.
 `SubjectDetails` includes `mma_fighter` and `mma_tracking`; the existing subject
 selection API, subscriptions table, shared four-pick policy, and notification
 orchestrator serve both sports and UFC. The subscription service rejects two
-coverage subjects in one selection. `mma_card` is an event variant with
-fighter subject references embedded in its current bout details; no per-bout
-scheduling or home/away participant rows are created. Every event retains its
+coverage subjects in one selection. Each fighter appearance is a `mma_card`
+variant row in the existing participants table, linked to its card by eventId.
+Participant details contain subjectId, display title, fightId, and placement.
+Within a card, opponents share a fightId; renderers group those rows for display.
+There is no fights table or event-level fights array. The importer validates
+one or two fighters per group and consistent placement. Fight IDs are grouping
+keys within the card; subscription matching uses the existing SQL subject_events
+relationships, independently of these display groups.
+Sports participants retain their home/away roles. Both variants use the existing
+Events.setParticipants replacement and event query relation. Participant row IDs
+are regenerated on replacement; event and fighter subject IDs remain stable.
+There is no per-fight scheduling. Every event retains its
 required startsAt instant and the existing NOT NULL database constraint. UFC
 uses the earliest confirmed broadcast start; the variant's timings struct adds
 required early/prelims/main timestamps for rendering; all three must be

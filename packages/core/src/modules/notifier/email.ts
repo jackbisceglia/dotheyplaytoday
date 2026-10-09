@@ -10,7 +10,6 @@ import {
 
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
-import type { ExtractFromTag } from "../../lib/types.js";
 import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
 import {
@@ -29,9 +28,10 @@ import {
   type EmailRendered,
   type EmailViewProps,
 } from "../email/render.js";
+import { mmaFights } from "../mma/fights.js";
 import { mmaTimingText } from "../mma/time.js";
 import { EventId } from "../events/schema.js";
-import type { EventWithParticipants } from "../events/service.js";
+import type { NarrowedEventWithParticipants } from "../events/participants/schema.js";
 import { SubjectDetails } from "../subjects/schema.js";
 import type { SportTeamSubject } from "../subjects/variants/sport.schema.js";
 import type { User } from "../users/schema.js";
@@ -54,20 +54,10 @@ export class EmailRenderError extends Schema.TaggedError<EmailRenderError>()(
 ) {}
 
 type SportsGameEvents = Array.NonEmptyReadonlyArray<SportsGameEvent>;
-type SportsGameEvent = EventWithParticipants & {
-  readonly details: ExtractFromTag<
-    EventWithParticipants["details"],
-    "sports_game"
-  >;
-};
+type SportsGameEvent = NarrowedEventWithParticipants<"sports_game">;
 type SportsGameParticipant = SportsGameEvent["participants"][number];
 
-type MmaEvent = EventWithParticipants & {
-  readonly details: ExtractFromTag<
-    EventWithParticipants["details"],
-    "mma_card"
-  >;
-};
+type MmaEvent = NarrowedEventWithParticipants<"mma_card">;
 type MmaEvents = Array.NonEmptyReadonlyArray<MmaEvent>;
 
 function createFeedCases() {
@@ -79,7 +69,12 @@ function createFeedCases() {
     events.every(
       (event) =>
         event._tag === event.details._tag &&
-        Predicate.isTagged(event.details, "sports_game"),
+        Predicate.isTagged(event.details, "sports_game") &&
+        event.participants.every(
+          (participant) =>
+            participant._tag === participant.details._tag &&
+            Predicate.isTagged(participant.details, "sports_game"),
+        ),
     );
 
   const areMmaEvents = (events: Notification["events"]): events is MmaEvents =>
@@ -87,7 +82,12 @@ function createFeedCases() {
     events.every(
       (event) =>
         event._tag === event.details._tag &&
-        Predicate.isTagged(event.details, "mma_card"),
+        Predicate.isTagged(event.details, "mma_card") &&
+        event.participants.every(
+          (participant) =>
+            participant._tag === participant.details._tag &&
+            Predicate.isTagged(participant.details, "mma_card"),
+        ),
     );
 
   return {
@@ -322,22 +322,24 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
             : "UFC cards today";
         const blocks = notification.events.flatMap((event) => {
           const card = event.details;
-          const bouts = card.bouts;
-          const relevant = bouts.filter((bout) =>
-            bout.fighters.some((fighter) => fighter.subjectId === subject.id),
+          const fights = mmaFights(
+            event.participants.map((participant) => participant.details),
+          );
+          const relevant = fights.filter((fight) =>
+            fight.fighters.some((fighter) => fighter.subjectId === subject.id),
           );
           return [
             Text.make({ value: card.title }),
-            ...relevant.map((bout) =>
+            ...relevant.map((fight) =>
               Text.make({
-                value: `Following ${subject.details.display}: ${bout.fighters.map((fighter) => fighter.title).join(" vs ")}${bout.fighters.length === 1 ? " vs Opponent TBD" : ""} (${bout.placement})`,
+                value: `Following ${subject.details.display}: ${fight.fighters.map((fighter) => fighter.title).join(" vs ")}${fight.fighters.length === 1 ? " vs Opponent TBD" : ""} (${fight.placement})`,
               }),
             ),
             List.make({
-              items: bouts.map(
-                (bout) =>
-                  bout.fighters.map((fighter) => fighter.title).join(" vs ") +
-                  (bout.fighters.length === 1 ? " vs Opponent TBD" : ""),
+              items: fights.map(
+                (fight) =>
+                  fight.fighters.map((fighter) => fighter.title).join(" vs ") +
+                  (fight.fighters.length === 1 ? " vs Opponent TBD" : ""),
               ),
             }),
             Note.make({

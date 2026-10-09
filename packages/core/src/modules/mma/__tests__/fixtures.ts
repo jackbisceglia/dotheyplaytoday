@@ -39,7 +39,18 @@ export const card = Schema.decodeUnknownSync(EventWithParticipants)({
   _tag: "mma_card",
   startsAt: "2026-10-03T23:00:00.000Z",
   availability: "active",
-  participants: [],
+  participants: [fighterA, fighterB].map((subject) => ({
+    id: subject.id,
+    eventId: "20000000-0000-4000-8000-000000000001",
+    _tag: "mma_card",
+    details: {
+      _tag: "mma_card",
+      subjectId: subject.id,
+      title: subject.details.display,
+      fightId: "fight-1",
+      placement: "main",
+    },
+  })),
   details: {
     _tag: "mma_card",
     leagueId: "ufc",
@@ -51,15 +62,6 @@ export const card = Schema.decodeUnknownSync(EventWithParticipants)({
       prelims: "2026-10-04T00:00:00.000Z",
       main: "2026-10-04T02:00:00.000Z",
     },
-    bouts: [
-      {
-        placement: "main",
-        fighters: [fighterA, fighterB].map((subject) => ({
-          subjectId: subject.id,
-          title: subject.details.display,
-        })),
-      },
-    ],
   },
 });
 export const ny = DateTime.zoneMakeNamedUnsafe("America/New_York");

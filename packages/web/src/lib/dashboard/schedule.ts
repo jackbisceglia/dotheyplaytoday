@@ -1,7 +1,7 @@
 import type { EventsResponse } from "@dtpt/core/contracts/events";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
-import { DateTime } from "effect";
+import { DateTime, Predicate } from "effect";
 
 import {
   isSportsSubject,
@@ -78,6 +78,11 @@ export function scheduleRows(
         todayDate;
       const day = today ? "Today" : dayFormat.format(date);
 
+      const participants = event.participants.flatMap((participant) =>
+        Predicate.isTagged(participant.details, "sports_game")
+          ? [{ ...participant, details: participant.details }]
+          : [],
+      );
       const participantName = (title: string) =>
         catalog
           .filter(isSportsSubject)
@@ -86,7 +91,7 @@ export function scheduleRows(
               subject.details.leagueId === event.details.leagueId &&
               normalizeName(subject.details.display) === normalizeName(title),
           )?.details.name ?? title.trim();
-      const own = event.participants.find(
+      const own = participants.find(
         (participant) =>
           normalizeName(participant.details.title) ===
           normalizeName(team.details.display),
@@ -95,15 +100,13 @@ export function scheduleRows(
       // subscribed team's display name cannot identify its participant.
       const leading =
         own ??
-        event.participants.find(
+        participants.find(
           (participant) => participant.details.role === "away",
         ) ??
-        event.participants.find(
-          (participant) => participant.details.role === "home",
-        );
+        participants.find((participant) => participant.details.role === "home");
       const opponent =
         leading &&
-        event.participants.find(
+        participants.find(
           (participant) => participant.details.role !== leading.details.role,
         );
       const opponentTeam = opponent
