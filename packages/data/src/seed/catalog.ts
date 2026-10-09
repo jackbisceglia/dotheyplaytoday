@@ -137,6 +137,8 @@ const selectFutureEvents = (
 ) => {
   const skippedSourceIds = new Set<EventSourceId>();
 
+  // If catalogs guarantee startsAt ordering, find the cutoff with an O(log n)
+  // binary search. Filtering feed references would still require a linear scan.
   const selected = collections.map((collection) => {
     const events = collection.events.filter((event) => {
       if (DateTime.isGreaterThanOrEqualTo(event.startsAt, cutoff)) return true;
