@@ -69,14 +69,17 @@ function createFeedCases() {
   return {
     sportsTeamFeed: {
       subject: { details: Predicate.isTagged("sports_team") },
+
       events: (events: Notification["events"]): events is SportsGameEvents =>
         Array.isReadonlyArrayNonEmpty(events) &&
         events.every(isEventWithParticipants("sports_game")),
     },
+
     mmaFeed: {
       subject: {
         details: SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"]),
       },
+
       events: (events: Notification["events"]): events is MmaEvents =>
         Array.isReadonlyArrayNonEmpty(events) &&
         events.every(isEventWithParticipants("mma_card")),
@@ -296,25 +299,32 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
       ),
       Match.when(cases.mmaFeed, (notification) => {
         const subject = notification.subject;
+
         const title =
           subject.details._tag === "mma_fighter"
             ? `${subject.details.display} fights today`
             : "UFC cards today";
+
         const blocks = notification.events.flatMap((event) => {
           const card = event.details;
+
           const fights = mmaFights(
             event.participants.map((participant) => participant.details),
           );
+
           const relevant = fights.filter((fight) =>
             fight.fighters.some((fighter) => fighter.subjectId === subject.id),
           );
+
           return [
             Text.make({ value: card.title }),
+
             ...relevant.map((fight) =>
               Text.make({
                 value: `Following ${subject.details.display}: ${fight.fighters.map((fighter) => fighter.title).join(" vs ")}${fight.fighters.length === 1 ? " vs Opponent TBD" : ""} (${fight.placement})`,
               }),
             ),
+
             List.make({
               items: fights.map(
                 (fight) =>
@@ -322,11 +332,13 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
                   (fight.fighters.length === 1 ? " vs Opponent TBD" : ""),
               ),
             }),
+
             Note.make({
               value: `${card.venue.title}, ${card.venue.location}. Starts: ${formatStartTime(event.startsAt, timezone)}. ${mmaTimingText(card, timezone)}`,
             }),
           ];
         });
+
         return Effect.succeed({
           subject: title,
           headline: TextHeadline.make({ lines: [title] }),
