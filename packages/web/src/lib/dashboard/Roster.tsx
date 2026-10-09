@@ -1,7 +1,11 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { For, Match, Show, Switch } from "solid-js";
 
-import { getSportsLogo, isSportsSubject } from "../catalog/sports/index.js";
+import {
+  getSportsLogo,
+  isSportsSubject,
+  type SportsSubject,
+} from "../catalog/sports/index.js";
 
 // The same tiles in view and edit mode, so editing only adds controls around
 // what's already on screen. Unfilled capacity reads as quiet empty slots; the
@@ -86,7 +90,7 @@ export function Roster(props: {
   );
 }
 
-function RosterTeamLabel(props: { readonly team: Subject }) {
+function RosterTeamLabel(props: { readonly team: SportsSubject }) {
   return (
     <>
       <span class="team-glyph" aria-hidden="true">
