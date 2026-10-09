@@ -1,6 +1,7 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
-import { createStore, Show } from "solid-js";
+import { useSearchParams } from "@solidjs/router";
+import { createSignal, createStore, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 
 import type { SubjectsResult } from "../subjects.js";
@@ -15,6 +16,11 @@ import type { ScheduleRow } from "./schedule.js";
 import { SendTimeSentence } from "./SendTimeSentence.jsx";
 
 const capacity = SubscriptionPolicy.subject.constraints.max;
+
+// A short, readable URL key, like "mlb-mil"; abbreviations are unique within
+// a league.
+const teamKey = (team: Subject) =>
+  `${team.details.leagueId}-${team.details.abbreviation.toLowerCase()}`;
 
 type FormState = {
   mode: "view" | "editing" | "saving";
@@ -55,8 +61,22 @@ export function Form(props: {
   const isSaving = () => state.mode === "saving";
   const teams = () => (isEditing() ? state.teams : savedTeams());
   const isEmptyDraft = () => isEditing() && state.teams.length === 0;
+  // A mouse hover previews a team's games; a click or tap pins them, which is
+  // how touch screens get the same view. The pin lives in the URL, and one
+  // for a team that's no longer picked is ignored.
+  const [search, setSearch] = useSearchParams();
+  const [hoveredId, setHoveredId] = createSignal<string>();
+  const pinnedTeam = () =>
+    savedTeams().find((team) => teamKey(team) === search.team);
+  const pinnedId = () => pinnedTeam()?.id;
+  const setPinnedTeam = (team: Subject | undefined) => {
+    setSearch({ team: team && teamKey(team) }, { replace: true });
+  };
+  const focusedId = () => hoveredId() ?? pinnedId();
 
   const beginEdit = () => {
+    setHoveredId(undefined);
+    setPinnedTeam(undefined);
     setState((draft) => {
       draft.mode = "editing";
       draft.teams = savedTeams();
@@ -170,10 +190,16 @@ export function Form(props: {
         saving={isSaving()}
         onAdd={beginEdit}
         onRemove={toggle}
+        focusedId={focusedId()}
+        pinnedId={pinnedId()}
+        onPreview={setHoveredId}
+        onPin={(team) => {
+          setPinnedTeam(pinnedId() === team.id ? undefined : team);
+        }}
       />
 
       <Show when={!isEditing()}>
-        <Schedule rows={props.scheduleRows} />
+        <Schedule rows={props.scheduleRows} focusedId={focusedId()} />
       </Show>
 
       <Show when={isEditing()}>

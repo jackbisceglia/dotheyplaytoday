@@ -32,6 +32,13 @@ Rematches and doubleheaders at different start times have separate rows.
 Cancelled games are excluded. An empty window reads “No games in the next 14 days.” Editing replaces the list with the
 picker while keeping the heading, send-time sentence, and roster anchored.
 
+Hovering a roster tile with a mouse highlights that team's games: the tile
+takes the picker's selected fill and every other row, and any day heading
+without one of its games, fades. Clicking or tapping a tile keeps the highlight
+until the same tile is pressed again, which is how touch screens get it, and
+records it in the URL as `?team=mlb-mil` (league and abbreviation). A link for a
+team that isn't picked shows the full schedule, and Edit clears the highlight.
+
 ## Notifications
 
 - Only subscriptions whose user has `emailVerified: true` enter notification processing. Pending users are excluded at the database query, including forced and dry runs.

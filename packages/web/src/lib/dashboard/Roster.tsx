@@ -6,6 +6,7 @@ import { getSportsLogo } from "../catalog/sports/index.js";
 // The same tiles in view and edit mode, so editing only adds controls around
 // what's already on screen. Unfilled capacity reads as quiet empty slots; the
 // first opens the editor, or says why Save is off when the draft is empty.
+// Outside editing, each tile highlights its games in the schedule below.
 export function Roster(props: {
   readonly teams: readonly Subject[];
   readonly capacity: number;
@@ -13,6 +14,10 @@ export function Roster(props: {
   readonly saving: boolean;
   readonly onAdd: () => void;
   readonly onRemove: (team: Subject) => void;
+  readonly focusedId: string | undefined;
+  readonly pinnedId: string | undefined;
+  readonly onPreview: (id: string | undefined) => void;
+  readonly onPin: (team: Subject) => void;
 }) {
   const openSlots = () =>
     Array.from({ length: props.capacity - props.teams.length });
@@ -21,7 +26,10 @@ export function Roster(props: {
     <div class="roster">
       <For each={props.teams}>
         {(team) => (
-          <div class="roster-team">
+          <div
+            class="roster-team"
+            data-focused={props.focusedId === team.id ? "true" : undefined}
+          >
             <span class="team-glyph" aria-hidden="true">
               {getSportsLogo(team.details)}
             </span>
@@ -33,6 +41,23 @@ export function Roster(props: {
                 {team.details.leagueId.toUpperCase()}
               </span>
             </span>
+            <Show when={!props.editing}>
+              <button
+                class="roster-team-focus"
+                type="button"
+                aria-pressed={props.pinnedId === team.id ? "true" : "false"}
+                aria-label={`Highlight ${team.details.display} games`}
+                onClick={() => {
+                  props.onPin(team);
+                }}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") props.onPreview(team.id);
+                }}
+                onPointerLeave={(event) => {
+                  if (event.pointerType === "mouse") props.onPreview(undefined);
+                }}
+              />
+            </Show>
             <Show when={props.editing}>
               <button
                 class="roster-remove"
