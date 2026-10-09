@@ -1290,7 +1290,10 @@ select.form-input {
   .header-cta,
   .skip-link,
   .team-card,
-  .coming-soon-tooltip {
+  .coming-soon-tooltip,
+  .dashboard-schedule-row,
+  .dashboard-schedule-group,
+  .dashboard-schedule-day {
     transition: none;
   }
 
@@ -1774,16 +1777,15 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   }
 }
 
-/* The schedule ahead shares the dashboard's type and rules. */
+/* The schedule ahead shares the dashboard's type and rules. Every day spaces
+   itself from what's above, so collapsed days take their gap with them; the
+   flow root keeps those gaps from merging with the schedule's own. */
 .dashboard-schedule {
-  margin-top: 32px;
+  display: flow-root;
+  margin-top: 8px;
 }
 
 .dashboard-schedule-group {
-  margin-top: 16px;
-}
-
-.dashboard-schedule-group + .dashboard-schedule-group {
   margin-top: 24px;
 }
 
@@ -1795,28 +1797,88 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   display: grid;
   /* Fits the widest time, "10:00 AM", with a little room to spare. */
   grid-template-columns: 64px 24px minmax(0, 1fr) auto;
+  /* A single track that can shrink to nothing when the row collapses. */
+  grid-template-rows: minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   padding: 16px 0;
+  overflow: hidden;
   border-bottom: 1px solid rgba(19, 23, 17, 0.12);
 }
 
-/* Focusing a team fades everything else, rippling down the list. */
-.dashboard-schedule-row,
-.dashboard-schedule-day {
-  transition: opacity 0.2s ease-out;
-}
-
+/* Previewing a team fades everything else, rippling down the list; pinning
+   one collapses the rest so its games slide up together. */
 .dashboard-schedule-row {
-  transition-delay: calc(min(var(--row-index), 12) * 14ms);
+  --ripple: calc(min(var(--row-index), 12) * 14ms);
+  transition:
+    opacity 0.2s ease-out var(--ripple),
+    filter 0.2s ease-out var(--ripple),
+    border-color 0.2s ease-out,
+    grid-template-rows 0.27s ease-out,
+    padding 0.27s ease-out,
+    border-bottom-width 0.27s ease-out,
+    visibility 0.27s;
 }
 
-.dashboard-schedule[data-focusing="true"]
-  .dashboard-schedule-row:not([data-focused="true"]),
-.dashboard-schedule[data-focusing="true"]
-  .dashboard-schedule-group:not([data-focused="true"])
+.dashboard-schedule-group {
+  transition: margin-top 0.27s ease-out;
+}
+
+.dashboard-schedule-day {
+  height: 24px;
+  overflow: hidden;
+  transition:
+    opacity 0.2s ease-out,
+    height 0.27s ease-out,
+    visibility 0.27s;
+}
+
+.dashboard-schedule[data-focus] .dashboard-schedule-row:not([data-focused]) {
+  filter: grayscale(1);
+}
+
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-row:not([data-focused]),
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-group:not([data-focused])
   .dashboard-schedule-day {
   opacity: 0.45;
+}
+
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-row[data-focused] {
+  border-bottom-color: rgba(19, 23, 17, 0.28);
+}
+
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-row[data-focused]
+  .dashboard-schedule-league {
+  background: rgba(19, 23, 17, 0.14);
+  color: var(--ink);
+}
+
+.dashboard-schedule[data-focus="pin"]
+  .dashboard-schedule-row:not([data-focused]) {
+  grid-template-rows: minmax(0, 0fr);
+  padding-block: 0;
+  border-bottom-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  /* Leaving rows go together; a ripple would trail the collapse. */
+  transition-delay: 0s;
+}
+
+.dashboard-schedule[data-focus="pin"]
+  .dashboard-schedule-group:not([data-focused]) {
+  margin-top: 0;
+}
+
+.dashboard-schedule[data-focus="pin"]
+  .dashboard-schedule-group:not([data-focused])
+  .dashboard-schedule-day {
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .dashboard-schedule-time {
@@ -1853,6 +1915,9 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   letter-spacing: 0.14em;
   line-height: 1;
   text-align: center;
+  transition:
+    background 0.2s ease-out,
+    color 0.2s ease-out;
 }
 
 .dashboard-schedule-matchup > span,
@@ -1868,10 +1933,22 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 }
 
 .dashboard-schedule-empty {
+  margin-top: 24px;
   padding: 16px 0;
   border-bottom: 1px solid rgba(19, 23, 17, 0.12);
   font-size: 0.9rem;
   line-height: 24px;
+}
+
+/* A pinned team without games says so, rising as the rows collapse above. */
+.dashboard-schedule[data-focus="pin"] .dashboard-schedule-empty {
+  animation: schedule-empty-in 0.27s ease-out;
+}
+
+@keyframes schedule-empty-in {
+  from {
+    opacity: 0;
+  }
 }
 
 @media (max-width: 560px) {

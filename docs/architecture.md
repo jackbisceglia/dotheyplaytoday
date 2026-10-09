@@ -282,7 +282,7 @@ while something reads it, or for a few seconds after, so private data doesn't
 outlive the signed-in page. The form derives its saved roster and delivery
 times from that data and initializes a separate draft when editing begins. Successful writes
 revalidate preferences and events; cancelled or failed writes never replace it.
-The pinned schedule highlight is a `team` search param, replaced rather than
+The pinned schedule filter is a `team` search param, replaced rather than
 pushed and matched against the saved roster; changing it reuses the cached
 queries.
 
