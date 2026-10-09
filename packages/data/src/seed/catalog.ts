@@ -131,11 +131,6 @@ const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
   yield* validateSubjectFeedIds(eventIdsBySourceId);
 });
 
-export type CatalogSeedOptions = {
-  readonly collections?: readonly SportsSeedInput[];
-  readonly strategy?: "future" | "all";
-};
-
 const selectFutureEvents = (
   collections: readonly SportsSeedCollection[],
   cutoff: DateTime.Utc,
@@ -164,6 +159,11 @@ const selectFutureEvents = (
 
     return { ...collection, subjects };
   });
+};
+
+export type CatalogSeedOptions = {
+  readonly collections?: readonly SportsSeedInput[];
+  readonly strategy?: "future" | "all";
 };
 
 export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
