@@ -1535,16 +1535,12 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   background: var(--kelly-wash);
 }
 
-/* Covers the whole tile, border included, so any part of it is the target. */
-.roster-team-focus {
-  position: absolute;
-  inset: -2px;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
+/* Outside editing, the tile is the button that highlights its games. */
+button.roster-team {
+  text-align: left;
 }
 
-.roster-team-focus:focus-visible {
+button.roster-team:focus-visible {
   outline: 3px solid var(--kelly);
   outline-offset: 2px;
 }

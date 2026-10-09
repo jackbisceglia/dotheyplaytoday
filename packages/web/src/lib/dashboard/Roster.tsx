@@ -26,25 +26,13 @@ export function Roster(props: {
     <div class="roster">
       <For each={props.teams}>
         {(team) => (
-          <div
-            class="roster-team"
-            data-focused={props.focusedId === team.id ? "true" : undefined}
-          >
-            <span class="team-glyph" aria-hidden="true">
-              {getSportsLogo(team.details)}
-            </span>
-            <span class="roster-team-text">
-              <span class="team-abbr">{team.details.abbreviation}</span>
-              <span class="team-name">
-                {team.details.name}
-                <span aria-hidden="true"> · </span>
-                {team.details.leagueId.toUpperCase()}
-              </span>
-            </span>
-            <Show when={!props.editing}>
+          <Show
+            when={props.editing}
+            fallback={
               <button
-                class="roster-team-focus"
+                class="roster-team"
                 type="button"
+                data-focused={props.focusedId === team.id ? "true" : undefined}
                 aria-pressed={props.pinnedId === team.id ? "true" : "false"}
                 aria-label={`Highlight ${team.details.display} games`}
                 onClick={() => {
@@ -56,9 +44,13 @@ export function Roster(props: {
                 onPointerLeave={(event) => {
                   if (event.pointerType === "mouse") props.onPreview(undefined);
                 }}
-              />
-            </Show>
-            <Show when={props.editing}>
+              >
+                <RosterTeamLabel team={team} />
+              </button>
+            }
+          >
+            <div class="roster-team">
+              <RosterTeamLabel team={team} />
               <button
                 class="roster-remove"
                 type="button"
@@ -70,8 +62,8 @@ export function Roster(props: {
               >
                 ×
               </button>
-            </Show>
-          </div>
+            </div>
+          </Show>
         )}
       </For>
       <For each={openSlots()}>
@@ -91,5 +83,23 @@ export function Roster(props: {
         )}
       </For>
     </div>
+  );
+}
+
+function RosterTeamLabel(props: { readonly team: Subject }) {
+  return (
+    <>
+      <span class="team-glyph" aria-hidden="true">
+        {getSportsLogo(props.team.details)}
+      </span>
+      <span class="roster-team-text">
+        <span class="team-abbr">{props.team.details.abbreviation}</span>
+        <span class="team-name">
+          {props.team.details.name}
+          <span aria-hidden="true"> · </span>
+          {props.team.details.leagueId.toUpperCase()}
+        </span>
+      </span>
+    </>
   );
 }
