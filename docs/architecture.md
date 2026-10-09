@@ -472,9 +472,12 @@ match timings.prelims.
 The existing range queries, local-date handling, and notification scheduler are
 unchanged. No database migration is needed.
 
-The UFC catalog importer uses existing Subjects/Events services in a transaction,
-serializes imports through its fixed coverage rows, and reconciles only MMA feed
-edges for each imported card. Checked-in card snapshots replace the event JSON
+UFC follows the sports catalog layout: `mma/ufc/{subjects,events,index}.ts` exports
+a collection registered in `SeedCollections`. The shared catalog importer,
+development subset, summaries, and historical cutoff apply to both families.
+The importer uses existing Subjects/Events services in one transaction, with
+MMA-specific identity validation and reconciliation of MMA feed edges for each
+imported card. Sports feed writes retain their existing additive behavior. Checked-in card snapshots replace the event JSON
 through the ordinary event upsert. Omitted cards remain untouched; source review
 preserves known information when upstream listings are incomplete. Delivery
 remains per subscription, including last-send state and provider idempotency keys.

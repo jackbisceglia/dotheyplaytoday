@@ -11,8 +11,6 @@ import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
 import { Action } from "alchemy";
 import { Effect, Layer, pipe } from "effect";
 
-import { seedMmaCatalog } from "../mma/import.js";
-import { buildDevMmaSeed } from "../mma/dev.js";
 import { seedCatalog, summarizeCatalog } from "./catalog.js";
 import { buildDevSeed } from "./dev.js";
 import { reset } from "./reset.js";
@@ -55,7 +53,6 @@ export const SeedDev = Action(
         yield* reset();
 
         const collections = yield* seedCatalog({ collections: buildDevSeed() });
-        yield* seedMmaCatalog(buildDevMmaSeed());
         yield* Effect.log(summarizeCatalog(collections));
 
         const users = yield* seedUsers();

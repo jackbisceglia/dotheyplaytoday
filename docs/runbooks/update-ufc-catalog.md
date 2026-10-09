@@ -1,10 +1,12 @@
 # Update the UFC catalog
 
 UFC uses the versioned catalog action, alongside the existing team collections.
-Edit `packages/data/src/mma/ufc.ts`, validate, and bump `CatalogSeedVersion` in
-`packages/data/src/seed/config.ts`. The default production catalog action imports
-UFC transactionally; passing explicit sports collections only imports those
-collections. Development includes all supported fighters/coverage subjects and
+Edit `packages/data/src/mma/ufc/events.ts` and `subjects.ts`, validate, and bump
+`CatalogSeedVersion` in `packages/data/src/seed/config.ts`. Like each sports league,
+UFC exports a collection from `index.ts` registered in `SeedCollections`. The shared
+`seedCatalog` transaction imports whichever collections are supplied. Its default
+`future` strategy skips events before yesterday at 00:00 UTC; use `strategy: "all"`
+for explicit historical corrections. Skipped cards and their existing feeds remain untouched. Development includes all supported fighters/coverage subjects and
 only cards in the existing two-day seed window.
 
 ## Product rules
@@ -106,7 +108,7 @@ PostgreSQL import/selection test, create an empty local database named
 
 ```sh
 UFC_TEST_DATABASE_URL=postgresql://USER@127.0.0.1:5432/dtpt_ufc_test \
-  pnpm exec vitest run packages/data/src/mma/import.test.ts
+  pnpm exec vitest run packages/data/src/seed/mma.test.ts
 ```
 
 The test rejects remote hosts/other database names and rolls back its migrations
@@ -120,7 +122,7 @@ testing the current mma_tracking/scope/category and participant schemas. The eve
 and participant tables retain their current columns, including required startsAt
 on events. Release all API/jobs/web
 readers with support for the new variants before enabling catalog revision
-2026-10-09.1. The importer is PR 2 and UI is PR 3: keep catalog publication gated
+2026-10-09.2. The importer is PR 2 and UI is PR 3: keep catalog publication gated
 until the complete stack is ready. The standard Alchemy action seeds during
 deployment, so coordinate that action with the reader rollout. Rolling readers
 back after publishing UFC data requires removing/archiving that data and its

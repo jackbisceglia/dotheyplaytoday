@@ -22,21 +22,21 @@ import {
   usersTable,
 } from "@dtpt/core/modules/users/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
-import { DateTime, Effect, Layer, Redacted, Schema } from "effect";
+import { DateTime, Effect, Layer, Predicate, Redacted, Schema } from "effect";
 import { eq, sql } from "drizzle-orm";
 
-import { seedMmaCatalog } from "./import.js";
-import { MmaImport } from "./schema.js";
-import { ufcCatalog } from "./ufc.js";
-import { UfcCoverageIds } from "./catalog.js";
+import { seedCatalog } from "./catalog.js";
+import { MmaSeed } from "../schema/mma.js";
+import { ufcCollection } from "../mma/ufc/index.js";
+import { UfcCoverageIds } from "../mma/ufc/subjects.js";
 
-const decoded = Schema.decodeUnknownSync(MmaImport)(ufcCatalog);
-const first = decoded.cards[0];
+const decoded = Schema.decodeUnknownSync(MmaSeed)(ufcCollection);
+const first = decoded.events[0];
 if (!first) throw new Error("Expected seed card");
 
 describe("MMA import boundaries", () => {
   it("rejects missing or null event starts and missing main-card times", () => {
-    const firstCard = ufcCatalog.cards[0];
+    const firstCard = ufcCollection.events[0];
     if (!firstCard) throw new Error("Expected card");
     const { startsAt: _startsAt, ...missingStart } = firstCard;
     for (const invalid of [
@@ -46,18 +46,21 @@ describe("MMA import boundaries", () => {
       { ...firstCard, details: { ...firstCard.details, timings: {} } },
     ]) {
       expect(() =>
-        Schema.decodeUnknownSync(MmaImport)({
-          fighters: ufcCatalog.fighters,
-          cards: [invalid],
+        Schema.decodeUnknownSync(MmaSeed)({
+          id: ufcCollection.id,
+          subjects: ufcCollection.subjects,
+          events: [invalid],
         }),
       ).toThrow();
     }
   });
 
   it("rejects duplicate fighters, oversized fights, and conflicting placement at the seed boundary", () => {
-    const card = ufcCatalog.cards[0];
+    const card = ufcCollection.events[0];
     const participant = card?.participants[0];
-    const thirdFighter = ufcCatalog.fighters[2];
+    const thirdFighter = ufcCollection.subjects.filter(
+      Predicate.isTagged("mma_fighter"),
+    )[2];
     if (!card || !participant || !thirdFighter)
       throw new Error("Expected catalog fixtures");
     for (const participants of [
@@ -85,19 +88,20 @@ describe("MMA import boundaries", () => {
       ],
     ]) {
       expect(() =>
-        Schema.decodeUnknownSync(MmaImport)({
-          fighters: ufcCatalog.fighters,
-          cards: [{ ...card, participants }],
+        Schema.decodeUnknownSync(MmaSeed)({
+          id: ufcCollection.id,
+          subjects: ufcCollection.subjects,
+          events: [{ ...card, participants }],
         }),
       ).toThrow();
     }
   });
 
   it("decodes repeatable curated seeds and rejects unsupported event categories", () => {
-    expect(Schema.encodeSync(MmaImport)(decoded)).toEqual(ufcCatalog);
+    expect(Schema.encodeSync(MmaSeed)(decoded)).toEqual(ufcCollection);
     expect(() =>
       Schema.decodeUnknownSync(MmaEvent)({
-        ...ufcCatalog.cards[0]?.details,
+        ...ufcCollection.events[0]?.details,
         category: "contender_series",
       }),
     ).toThrow();
@@ -106,26 +110,48 @@ describe("MMA import boundaries", () => {
 
 // Use only an explicitly supplied local scratch DB. All changes, including DDL,
 // are rolled back. This does not deploy infrastructure or contact email services.
-const testCard = ufcCatalog.cards[0];
+const testCard = ufcCollection.events[0];
 if (!testCard) throw new Error("Expected seed card");
-const integrationCatalog = {
-  ...ufcCatalog,
-  cards: [
-    testCard,
-    {
-      ...testCard,
-      id: "b51165b6-7428-4620-a02e-000000000099",
-      sourceId: "mma_card:ufc:b51165b6-7428-4620-a02e-000000000099",
-      sourceUrl: "https://www.ufc.com/event/test-fight-night",
-      participants: [],
-      details: {
-        ...testCard.details,
-        title: "Test Fight Night",
-        category: "fight_night" as const,
-      },
+const integrationEvents = [
+  testCard,
+  {
+    ...testCard,
+    id: "b51165b6-7428-4620-a02e-000000000099",
+    sourceId: "mma_card:ufc:b51165b6-7428-4620-a02e-000000000099",
+    sourceUrl: "https://www.ufc.com/event/test-fight-night",
+    participants: [],
+    details: {
+      ...testCard.details,
+      title: "Test Fight Night",
+      category: "fight_night" as const,
     },
-  ],
-};
+  },
+];
+const collectionWithEvents = (events: MmaSeed["events"]): MmaSeed => ({
+  ...decoded,
+  events,
+  subjects: decoded.subjects.map((subject) => ({
+    ...subject,
+    feedIds: events
+      .filter((event) =>
+        Predicate.isTagged(subject, "mma_tracking")
+          ? subject.details.scope === "all" ||
+            event.details.category === "numbered"
+          : event.participants.some(
+              (participant) => participant.details.subjectId === subject.id,
+            ),
+      )
+      .map((event) => event.sourceId),
+  })),
+});
+const integrationCatalog = Schema.encodeSync(MmaSeed)(
+  collectionWithEvents(
+    Schema.decodeUnknownSync(MmaSeed)({
+      ...ufcCollection,
+      events: integrationEvents,
+    }).events,
+  ),
+);
 
 const databaseUrl = process.env.UFC_TEST_DATABASE_URL;
 if (databaseUrl) {
@@ -184,8 +210,14 @@ describe("UFC PostgreSQL integration", () => {
                   }
                 }
               }
-              yield* seedMmaCatalog(integrationCatalog);
-              yield* seedMmaCatalog(integrationCatalog);
+              yield* seedCatalog({
+                collections: [integrationCatalog],
+                strategy: "all",
+              });
+              yield* seedCatalog({
+                collections: [integrationCatalog],
+                strategy: "all",
+              });
               expect(yield* subjects.list()).toHaveLength(6);
               expect(
                 yield* events.listBySubject(UfcCoverageIds.numbered),
@@ -193,7 +225,9 @@ describe("UFC PostgreSQL integration", () => {
               expect(
                 yield* events.listBySubject(UfcCoverageIds.all),
               ).toHaveLength(2);
-              const [a, b] = decoded.fighters;
+              const [a, b] = decoded.subjects.filter(
+                Predicate.isTagged("mma_fighter"),
+              );
               if (!a || !b) throw new Error("Expected fighters and card");
               expect(yield* events.listBySubject(a.id)).toHaveLength(1);
 
@@ -281,7 +315,9 @@ describe("UFC PostgreSQL integration", () => {
                   })
                   .pipe(Effect.flip))._tag,
               ).toBe("InvalidSubjectSelection");
-              const otherFighter = decoded.fighters[2];
+              const otherFighter = decoded.subjects.filter(
+                Predicate.isTagged("mma_fighter"),
+              )[2];
               if (!otherFighter) throw new Error("Missing fighter");
               expect(
                 (yield* subscriptions
@@ -304,9 +340,12 @@ describe("UFC PostgreSQL integration", () => {
                 timezone,
               });
               const importCard = (card: typeof first) =>
-                seedMmaCatalog(
-                  Schema.encodeSync(MmaImport)({ fighters: [], cards: [card] }),
-                );
+                seedCatalog({
+                  collections: [
+                    Schema.encodeSync(MmaSeed)(collectionWithEvents([card])),
+                  ],
+                  strategy: "all",
+                });
               const cardFor = (subjectId: typeof a.id) =>
                 events.listBySubject(subjectId);
               const renamed = {
@@ -343,13 +382,15 @@ describe("UFC PostgreSQL integration", () => {
                   })),
               };
               expect(
-                (yield* seedMmaCatalog(
-                  Schema.encodeSync(MmaImport)({
-                    fighters: [],
-                    cards: [cleared, invalid],
-                  }),
-                ).pipe(Effect.flip))._tag,
-              ).toBe("InvalidMmaImport");
+                (yield* seedCatalog({
+                  collections: [
+                    Schema.encodeSync(MmaSeed)(
+                      collectionWithEvents([cleared, invalid]),
+                    ),
+                  ],
+                  strategy: "all",
+                }).pipe(Effect.flip))._tag,
+              ).toBe("InvalidMmaSeed");
               expect((yield* cardFor(a.id))[0]?.details).toEqual(
                 renamed.details,
               );

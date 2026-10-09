@@ -49,10 +49,12 @@ describe("development seed collections", () => {
     for (const collection of collections) {
       for (const event of collection.events) {
         expect(productionSourceIds.has(event.sourceId)).toBe(true);
-        expect(DateTime.toEpochMillis(DateTime.makeUnsafe(event.startsAt)))
-          .toBeGreaterThanOrEqual(DateTime.toEpochMillis(window.from));
-        expect(DateTime.toEpochMillis(DateTime.makeUnsafe(event.startsAt)))
-          .toBeLessThan(DateTime.toEpochMillis(window.to));
+        expect(
+          DateTime.toEpochMillis(DateTime.makeUnsafe(event.startsAt)),
+        ).toBeGreaterThanOrEqual(DateTime.toEpochMillis(window.from));
+        expect(
+          DateTime.toEpochMillis(DateTime.makeUnsafe(event.startsAt)),
+        ).toBeLessThan(DateTime.toEpochMillis(window.to));
       }
     }
   });
@@ -69,6 +71,20 @@ describe("development seed collections", () => {
         }
       }
     }
+  });
+
+  it("includes UFC through the same development window and feed filtering", () => {
+    const collections = buildDevSeed(new Date("2026-10-03T12:00:00Z"));
+    const ufc = collections.find((collection) => collection.id === "mma.ufc");
+    expect(ufc?.events).toHaveLength(1);
+    expect(ufc?.subjects).toHaveLength(6);
+    expect(ufc?.subjects.flatMap((subject) => subject.feedIds)).toHaveLength(4);
+
+    const later = buildDevSeed(new Date("2026-10-05T12:00:00Z"));
+    const past = later.find((collection) => collection.id === "mma.ufc");
+    expect(past?.events).toEqual([]);
+    expect(past?.subjects).toHaveLength(6);
+    expect(past?.subjects.flatMap((subject) => subject.feedIds)).toEqual([]);
   });
 
   it("derives the window from the provided instant", () => {

@@ -7,11 +7,14 @@ import {
   StringParts,
   Subjects,
 } from "@dtpt/core";
-import { DateTime, Effect, HashMap, Option, Schema } from "effect";
+import { DateTime, Effect, HashMap, Option, Predicate, Schema } from "effect";
 
-import { seedMmaCatalog } from "../mma/import.js";
-import { ufcCatalog } from "../mma/ufc.js";
-import { SportsSeed } from "../schema/sports.js";
+import { SeedCollection, type SeedCollectionInput } from "../schema/catalog.js";
+import {
+  validateMmaSubject,
+  validateMmaEvent,
+  reconcileMmaFeed,
+} from "./mma.js";
 import { SeedCollections } from "./index.js";
 
 export class SeedEventResolutionError extends Schema.TaggedError<SeedEventResolutionError>()(
@@ -32,18 +35,14 @@ export class SeedDuplicateEventSourceIdError extends Schema.TaggedError<SeedDupl
   },
 ) {}
 
-export type SportsSeedInput = Schema.Codec.Encoded<typeof SportsSeed>;
-export type SportsSeedCollection = SportsSeed;
-type SportsSeedSubject = SportsSeed["subjects"][number];
-type SportsEventIndex = HashMap.HashMap<EventSourceId, EventId>;
+type SeedSubject = SeedCollection["subjects"][number];
+type EventIndex = HashMap.HashMap<EventSourceId, EventId>;
 
-export const decodeSportsSeedCollections = Schema.decodeUnknownEffect(
-  Schema.Array(SportsSeed),
+export const decodeSeedCollections = Schema.decodeUnknownEffect(
+  Schema.Array(SeedCollection),
 );
 
-export const summarizeCatalog = (
-  collections: readonly SportsSeedCollection[],
-) => {
+export const summarizeCatalog = (collections: readonly SeedCollection[]) => {
   const summary = {
     collections: collections.length,
     subjects: collections.reduce(
@@ -85,7 +84,7 @@ export const summarizeCatalog = (
 };
 
 const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
-  collections: readonly SportsSeedCollection[],
+  collections: readonly SeedCollection[],
 ) {
   const buildEventIdsBySourceId = Effect.fn(function* () {
     const eventIdsBySourceId = new Map<EventSourceId, EventId>();
@@ -134,7 +133,7 @@ const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
 });
 
 const selectFutureEvents = (
-  collections: readonly SportsSeedCollection[],
+  collections: readonly SeedCollection[],
   cutoff: DateTime.Utc,
 ) => {
   const skippedSourceIds = new Set<EventSourceId>();
@@ -166,14 +165,14 @@ const selectFutureEvents = (
 };
 
 export type CatalogSeedOptions = {
-  readonly collections?: readonly SportsSeedInput[];
+  readonly collections?: readonly SeedCollectionInput[];
   readonly strategy?: "future" | "all";
 };
 
 export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
   options?: CatalogSeedOptions,
 ) {
-  const decoded = yield* decodeSportsSeedCollections(
+  const decoded = yield* decodeSeedCollections(
     options?.collections ?? SeedCollections,
   );
 
@@ -199,11 +198,16 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
       Effect.gen(function* () {
         yield* Effect.forEach(
           collections.flatMap((collection) => collection.subjects),
-          (subjectSeed) => {
-            const { feedIds: _feedIds, ...subject } = subjectSeed;
+          (subjectSeed) =>
+            Effect.gen(function* () {
+              if (!Predicate.isTagged(subjectSeed, "sports_team")) {
+                yield* validateMmaSubject(subjectSeed);
+              }
 
-            return subjects.upsert(subject);
-          },
+              const { feedIds: _feedIds, ...subject } = subjectSeed;
+
+              yield* subjects.upsert(subject);
+            }),
           { discard: true },
         );
 
@@ -211,10 +215,18 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
           collections.flatMap((collection) => collection.events),
           (eventSeed) =>
             Effect.gen(function* () {
+              if (Predicate.isTagged(eventSeed, "mma_card")) {
+                yield* validateMmaEvent(eventSeed);
+              }
+
               const { participants, ...eventInput } = eventSeed;
               const event = yield* events.upsert(eventInput);
 
               yield* events.setParticipants(event.id, participants);
+
+              if (Predicate.isTagged(eventSeed, "mma_card")) {
+                yield* reconcileMmaFeed(event.id);
+              }
 
               return [event.sourceId, event.id] as const;
             }),
@@ -238,8 +250,6 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
           ),
         ).pipe(Effect.map((edges) => edges.flat(2)));
 
-        if (options?.collections === undefined) yield* seedMmaCatalog(ufcCatalog);
-
         yield* Effect.forEach(feedEdges, subjects.addEventToFeed, {
           discard: true,
         });
@@ -257,9 +267,9 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 const resolveEventSource = Effect.fn("DataSeed.resolveEventSource")(
   function* (input: {
     readonly collectionId: string;
-    readonly eventIndex: SportsEventIndex;
+    readonly eventIndex: EventIndex;
     readonly sourceId: EventSourceId;
-    readonly subjectId: SportsSeedSubject["id"];
+    readonly subjectId: SeedSubject["id"];
   }) {
     const eventId = HashMap.get(input.eventIndex, input.sourceId);
 
