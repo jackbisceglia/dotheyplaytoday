@@ -114,7 +114,7 @@ describe("MMA selection and timing", () => {
       ).toThrow();
     }
     const participant = card.participants[0];
-    if (!participant || participant.details._tag !== "mma_card")
+    if (participant?.details._tag !== "mma_card")
       throw new Error("Expected fighter participant");
     const { placement: _placement, ...unassigned } = participant.details;
     expect(() =>
