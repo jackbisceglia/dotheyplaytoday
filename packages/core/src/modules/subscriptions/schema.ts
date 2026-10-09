@@ -9,7 +9,7 @@ import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
 import { TaggedUnion } from "../../lib/effect/index.js";
-import { EventWithParticipants } from "../events/with-participants.js";
+import { EventWithParticipants } from "../events/joined.js";
 import { Subject, SubjectId, subjectsTable } from "../subjects/schema.js";
 import { UserId, usersTable } from "../users/schema.js";
 import { FixedSchedule as FixedScheduleSchema } from "./schedules/fixed.schema.js";

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DateTime, Schema } from "effect";
 
-import { EventWithParticipants } from "../../events/with-participants.js";
+import { EventWithParticipants } from "../../events/joined.js";
 import { MmaParticipant } from "../../events/participants/variants/mma.schema.js";
 import { MmaEvent } from "../../events/variants/mma.schema.js";
 import { SubscriptionTiming } from "../../subscriptions/time.js";

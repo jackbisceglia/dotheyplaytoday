@@ -16,5 +16,5 @@ export type MmaTrackingSubject = typeof MmaTrackingSubject.Type;
 export const MmaTrackingSubject = Schema.TaggedStruct("mma_tracking", {
   leagueId: MmaLeagueId,
   display: Schema.NonEmptyString,
-  coverage: Schema.Literals(["numbered", "all"]),
+  scope: Schema.Literals(["numbered", "all"]),
 });

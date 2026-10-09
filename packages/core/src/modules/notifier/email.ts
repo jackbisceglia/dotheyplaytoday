@@ -34,7 +34,7 @@ import { EventId } from "../events/schema.js";
 import {
   isEventWithParticipants,
   type NarrowedEventWithParticipants,
-} from "../events/with-participants.js";
+} from "../events/joined.js";
 import { SportParticipant } from "../events/participants/variants/sport.schema.js";
 import { SubjectDetails } from "../subjects/schema.js";
 import type { SportTeamSubject } from "../subjects/variants/sport.schema.js";

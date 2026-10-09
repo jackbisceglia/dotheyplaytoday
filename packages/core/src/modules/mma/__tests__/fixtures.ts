@@ -1,6 +1,6 @@
 import { DateTime, Schema } from "effect";
 
-import { EventWithParticipants } from "../../events/with-participants.js";
+import { EventWithParticipants } from "../../events/joined.js";
 import { Subject } from "../../subjects/schema.js";
 
 export const fighterA = Schema.decodeUnknownSync(Subject)({
@@ -25,13 +25,13 @@ export const numbered = Schema.decodeUnknownSync(Subject)({
     _tag: "mma_tracking",
     leagueId: "ufc",
     display: "Numbered UFC events",
-    coverage: "numbered",
+    scope: "numbered",
   },
 });
 export const all = Schema.decodeUnknownSync(Subject)({
   ...numbered,
   id: "10000000-0000-4000-8000-000000000004",
-  details: { ...numbered.details, display: "All UFC events", coverage: "all" },
+  details: { ...numbered.details, display: "All UFC events", scope: "all" },
 });
 export const card = Schema.decodeUnknownSync(EventWithParticipants)({
   id: "20000000-0000-4000-8000-000000000001",
