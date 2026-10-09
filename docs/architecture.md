@@ -453,6 +453,8 @@ variant row in the existing participants table, linked to its card by eventId.
 Participant details contain subjectId, display title, fightId, and required placement (prelims or main).
 Only publish fight participants after UFC confirms their segment assignment.
 Within a card, opponents share a fightId; renderers group those rows for display.
+Event and participant row schemas require each row tag to match its details tag
+on reads and writes, including joined event decoding.
 There is no fights table or event-level fights array. The importer validates
 one or two fighters per group and consistent placement. Fight IDs are grouping
 keys within the card; subscription matching uses the existing SQL subject_events

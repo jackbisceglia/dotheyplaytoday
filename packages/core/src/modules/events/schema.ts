@@ -8,7 +8,7 @@ import { DateTime, Predicate, Schema } from "effect";
 import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
-import { TaggedUnion } from "../../lib/effect/index.js";
+import { hasMatchingDetailsTag, TaggedUnion } from "../../lib/effect/index.js";
 import { MmaEvent } from "./variants/mma.schema.js";
 import { SportEvent } from "./variants/sport.schema.js";
 
@@ -76,10 +76,12 @@ export const hasMatchingStart = Schema.makeFilter(
 
 export type Event = typeof Event.Type;
 export const Event = createSelectSchema(eventsTable, overrides).check(
+  hasMatchingDetailsTag,
   hasMatchingStart,
 );
 
 export type EventInsert = typeof EventInsert.Type;
 export const EventInsert = createInsertSchema(eventsTable, overrides).check(
+  hasMatchingDetailsTag,
   hasMatchingStart,
 );

@@ -8,7 +8,10 @@ import { Schema } from "effect";
 import { postgresTable } from "../../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../../lib/database/utils.js";
 import { Id } from "../../../lib/id/service.js";
-import { TaggedUnion } from "../../../lib/effect/index.js";
+import {
+  hasMatchingDetailsTag,
+  TaggedUnion,
+} from "../../../lib/effect/index.js";
 import { EventId, eventsTable } from "../schema.js";
 import { MmaParticipant } from "./variants/mma.schema.js";
 import { SportParticipant } from "./variants/sport.schema.js";
@@ -53,10 +56,13 @@ export const participantsTable = postgresTable(
 );
 
 export type Participant = typeof Participant.Type;
-export const Participant = createSelectSchema(participantsTable, overrides);
+export const Participant = createSelectSchema(
+  participantsTable,
+  overrides,
+).check(hasMatchingDetailsTag);
 
 export type ParticipantInsert = typeof ParticipantInsert.Type;
 export const ParticipantInsert = createInsertSchema(
   participantsTable,
   overrides,
-);
+).check(hasMatchingDetailsTag);
