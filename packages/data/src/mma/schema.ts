@@ -4,6 +4,8 @@ import {
   EventSourceId,
   EventAvailability,
 } from "@dtpt/core/modules/events/schema";
+import { ParticipantInsert } from "@dtpt/core/modules/events/participants/schema";
+import { MmaParticipant } from "@dtpt/core/modules/events/participants/variants/mma.schema";
 import { MmaEvent } from "@dtpt/core/modules/events/variants/mma.schema";
 import { SubjectId } from "@dtpt/core/modules/subjects/schema";
 import { MmaFighterSubject } from "@dtpt/core/modules/subjects/variants/mma.schema";
@@ -25,6 +27,15 @@ export const MmaImport = Schema.Struct({
       sourceUrl: Schema.NonEmptyString,
       startsAt: EventInsert.fields.startsAt,
       details: MmaEvent,
+      participants: Schema.Array(
+        ParticipantInsert.mapFields(
+          ({ id: _id, eventId: _eventId, ...fields }) => ({
+            ...fields,
+            _tag: MmaParticipant.fields._tag,
+            details: MmaParticipant,
+          }),
+        ),
+      ),
     }),
   ),
 });

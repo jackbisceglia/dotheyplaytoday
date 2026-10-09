@@ -77,11 +77,11 @@ const integrationCatalog = {
       id: "b51165b6-7428-4620-a02e-000000000099",
       sourceId: "mma_card:ufc:b51165b6-7428-4620-a02e-000000000099",
       sourceUrl: "https://www.ufc.com/event/test-fight-night",
+      participants: [],
       details: {
         ...testCard.details,
         title: "Test Fight Night",
         category: "fight_night" as const,
-        bouts: [],
       },
     },
   ],
@@ -263,155 +263,179 @@ describe("UFC PostgreSQL integration", () => {
                 nowUtc: sentAt,
                 timezone,
               });
-              const encodedFirst = ufcCatalog.cards[0];
-              if (!encodedFirst) throw new Error("Missing encoded card");
-              const importCard = (
-                details: typeof first.details,
-                availability: "active" | "cancelled" = "active",
-                startsAt = encodedFirst.startsAt,
-              ) =>
-                seedMmaCatalog({
-                  fighters: [],
-                  cards: [
-                    {
-                      ...encodedFirst,
-                      startsAt,
-                      availability,
-                      details: Schema.encodeSync(MmaEvent)(details),
-                    },
-                  ],
-                });
-              // Metadata updates retain the card identity and current fighter follows.
+              const importCard = (card: typeof first) =>
+                seedMmaCatalog(
+                  Schema.encodeSync(MmaImport)({ fighters: [], cards: [card] }),
+                );
+              const cardFor = (subjectId: typeof a.id) =>
+                events.listBySubject(subjectId);
               const renamed = {
-                ...first.details,
-                title: "UFC 332: Updated headliner",
-                venue: { title: "New venue", location: "New city" },
+                ...first,
+                details: {
+                  ...first.details,
+                  title: "UFC 332: Updated headliner",
+                  venue: { title: "New venue", location: "New city" },
+                },
               };
               yield* importCard(renamed);
-              expect((yield* events.listBySubject(a.id))[0]?.id).toBe(first.id);
-              // A bad later card rolls back an earlier card's JSON and feed changes.
-              const invalidBatch = {
-                fighters: [],
-                cards: [
-                  {
-                    ...encodedFirst,
-                    details: { ...encodedFirst.details, bouts: [] },
-                  },
-                  {
-                    ...encodedFirst,
-                    id: "b51165b6-7428-4620-a02e-000000000098",
-                    sourceId:
-                      "mma_card:ufc:b51165b6-7428-4620-a02e-000000000098",
+              expect((yield* cardFor(a.id))[0]?.id).toBe(first.id);
+              expect((yield* cardFor(a.id))[0]?.participants).toHaveLength(2);
+              // A bad later card rolls back the first card's metadata, participants and matches.
+              const cleared = {
+                ...renamed,
+                participants: [],
+              };
+              const invalid = {
+                ...first,
+                id: EventId.make("b51165b6-7428-4620-a02e-000000000098"),
+                sourceId: EventSourceId.make(
+                  "mma_card:ufc:b51165b6-7428-4620-a02e-000000000098",
+                ),
+                participants: first.participants
+                  .slice(0, 1)
+                  .map((participant) => ({
+                    ...participant,
                     details: {
-                      ...encodedFirst.details,
-                      bouts: encodedFirst.details.bouts.map((bout) => ({
-                        ...bout,
-                        fighters: [
-                          { subjectId: teamId, title: "Not a fighter" },
-                        ],
-                      })),
+                      ...participant.details,
+                      subjectId: teamId,
+                      title: "Not a fighter",
+                    },
+                  })),
+              };
+              expect(
+                (yield* seedMmaCatalog(
+                  Schema.encodeSync(MmaImport)({
+                    fighters: [],
+                    cards: [cleared, invalid],
+                  }),
+                ).pipe(Effect.flip))._tag,
+              ).toBe("InvalidMmaImport");
+              expect((yield* cardFor(a.id))[0]?.details).toEqual(
+                renamed.details,
+              );
+              expect((yield* cardFor(a.id))[0]?.participants).toHaveLength(2);
+              // A single known participant represents an unknown opponent.
+              yield* importCard({
+                ...renamed,
+                participants: first.participants.slice(0, 1),
+              });
+              expect((yield* cardFor(a.id))[0]?.participants).toHaveLength(1);
+              expect(yield* cardFor(b.id)).toEqual([]);
+              const replacement = {
+                ...renamed,
+                participants: first.participants.map((participant) =>
+                  participant.details.subjectId === b.id
+                    ? {
+                        ...participant,
+                        details: {
+                          ...participant.details,
+                          subjectId: otherFighter.id,
+                          title: otherFighter.details.display,
+                        },
+                      }
+                    : participant,
+                ),
+              };
+              yield* importCard(replacement);
+              yield* importCard(replacement);
+              expect(yield* cardFor(b.id)).toEqual([]);
+              expect(
+                (yield* cardFor(a.id))[0]?.participants.map((p) => p.details),
+              ).toEqual(
+                expect.arrayContaining(
+                  replacement.participants.map((p) => p.details),
+                ),
+              );
+              expect((yield* cardFor(a.id))[0]?.participants).toHaveLength(2);
+              expect(yield* cardFor(UfcCoverageIds.numbered)).toHaveLength(1);
+              // Invalid grouping cannot damage the existing participant snapshot.
+              const thirdFighter = decoded.fighters[3];
+              const participant = replacement.participants[0];
+              if (!thirdFighter || !participant)
+                throw new Error("Expected fighter");
+              for (const participants of [
+                [
+                  ...replacement.participants,
+                  {
+                    ...participant,
+                    details: {
+                      ...participant.details,
+                      subjectId: thirdFighter.id,
+                      title: thirdFighter.details.display,
                     },
                   },
                 ],
-              };
+                replacement.participants.map((p, index) => ({
+                  ...p,
+                  details: {
+                    ...p.details,
+                    placement:
+                      index === 0 ? ("main" as const) : ("prelims" as const),
+                  },
+                })),
+                [...replacement.participants, participant],
+              ]) {
+                expect(
+                  (yield* importCard({ ...replacement, participants }).pipe(
+                    Effect.flip,
+                  ))._tag,
+                ).toBe("InvalidMmaImport");
+                expect((yield* cardFor(a.id))[0]?.participants).toHaveLength(2);
+              }
+              // Grouping changes affect display, not card or fighter identity/matching.
+              const regrouped = replacement.participants.map((p, index) => ({
+                ...p,
+                details: { ...p.details, fightId: `fight-${String(index + 1)}` },
+              }));
+              yield* importCard({ ...replacement, participants: regrouped });
+              expect((yield* cardFor(a.id))[0]?.id).toBe(first.id);
               expect(
-                (yield* seedMmaCatalog(invalidBatch).pipe(Effect.flip))._tag,
-              ).toBe("InvalidMmaImport");
-              expect((yield* events.listBySubject(a.id))[0]?.details).toEqual(
-                renamed,
+                (yield* cardFor(a.id))[0]?.participants.map((p) => p.details),
+              ).toEqual(
+                expect.arrayContaining(regrouped.map((p) => p.details)),
               );
-              // An unknown opponent keeps the known fighter eligible without a fake subject.
-              yield* importCard({
-                ...renamed,
-                bouts: renamed.bouts.map((bout) => ({
-                  ...bout,
-                  fighters: bout.fighters.slice(0, 1),
-                })),
-              });
-              expect(yield* events.listBySubject(a.id)).toHaveLength(1);
-              expect(yield* events.listBySubject(b.id)).toEqual([]);
-              // Explicit opponent replacement in the same bout removes the old fighter edge.
-              const replacement = {
-                ...renamed,
-                bouts: first.details.bouts.map((bout) => ({
-                  ...bout,
-                  fighters: [
-                    { subjectId: a.id, title: a.details.display },
-                    {
-                      subjectId: otherFighter.id,
-                      title: otherFighter.details.display,
-                    },
-                  ],
-                })),
-              };
-              yield* importCard(replacement);
-              expect(yield* events.listBySubject(b.id)).toEqual([]);
-              expect(yield* events.listBySubject(a.id)).toHaveLength(1);
+              yield* importCard(cleared);
+              expect(yield* cardFor(a.id)).toEqual([]);
               expect(
-                yield* events.listBySubject(UfcCoverageIds.numbered),
-              ).toHaveLength(1);
+                (yield* cardFor(UfcCoverageIds.numbered))[0]?.participants,
+              ).toEqual([]);
+              yield* importCard(replacement);
+              // Rescheduling uses the ordinary event instant and keeps the card ID.
               yield* importCard({
                 ...replacement,
-                bouts: [],
-              });
-              expect(yield* events.listBySubject(a.id)).toEqual([]);
-              expect(
-                yield* events.listBySubject(UfcCoverageIds.numbered),
-              ).toHaveLength(1);
-              yield* importCard(replacement);
-              // Reseeding the same snapshot is repeatable.
-              yield* importCard(replacement);
-              expect(yield* events.listBySubject(b.id)).toEqual([]);
-              // Rescheduling changes the ordinary event instant without changing identity.
-              yield* importCard(
-                {
-                  ...replacement,
+                startsAt: DateTime.makeUnsafe("2026-10-05T20:00:00Z"),
+                details: {
+                  ...replacement.details,
                   timings: {
                     early: DateTime.makeUnsafe("2026-10-05T20:00:00Z"),
                     prelims: DateTime.makeUnsafe("2026-10-05T21:00:00Z"),
                     main: DateTime.makeUnsafe("2026-10-05T22:00:00Z"),
                   },
                 },
-                "active",
-                "2026-10-05T20:00:00.000Z",
-              );
+              });
               expect(yield* events.listBySubject(a.id, { range })).toEqual([]);
-              expect((yield* events.listBySubject(a.id))[0]?.id).toBe(first.id);
-              const rescheduled = (yield* events.listBySubject(a.id))[0];
+              const rescheduled = (yield* cardFor(a.id))[0];
               if (!rescheduled) throw new Error("Expected rescheduled card");
+              expect(rescheduled.id).toBe(first.id);
               expect(DateTime.formatIso(rescheduled.startsAt)).toBe(
                 "2026-10-05T20:00:00.000Z",
               );
-              // Changing category removes only numbered coverage; All and fighter follows remain.
-              yield* importCard({ ...replacement, category: "fight_night" });
-              expect(
-                yield* events.listBySubject(UfcCoverageIds.numbered),
-              ).toEqual([]);
-              expect(
-                yield* events.listBySubject(UfcCoverageIds.all),
-              ).toHaveLength(2);
-              expect(yield* events.listBySubject(a.id)).toHaveLength(1);
-              // Snapshot replacement and cancellations have card-local scope.
-              yield* importCard({ ...replacement, bouts: [] });
-              expect(yield* events.listBySubject(a.id)).toEqual([]);
-              expect(
-                yield* events.listBySubject(UfcCoverageIds.numbered),
-              ).toHaveLength(1);
-              yield* importCard(replacement, "cancelled");
-              expect(
-                yield* events.listBySubject(UfcCoverageIds.numbered),
-              ).toEqual([]);
+              yield* importCard({
+                ...replacement,
+                details: { ...replacement.details, category: "fight_night" },
+              });
+              expect(yield* cardFor(UfcCoverageIds.numbered)).toEqual([]);
+              expect(yield* cardFor(UfcCoverageIds.all)).toHaveLength(2);
+              expect(yield* cardFor(a.id)).toHaveLength(1);
+              yield* importCard({ ...replacement, availability: "cancelled" });
+              expect(yield* cardFor(UfcCoverageIds.numbered)).toEqual([]);
               expect(
                 yield* events.listBySubject(UfcCoverageIds.numbered, {
                   availability: "all",
                 }),
               ).toHaveLength(1);
-              expect(
-                yield* events.listBySubject(UfcCoverageIds.all),
-              ).toHaveLength(1);
-              expect((yield* events.listBySubject(teamId))[0]?.id).toBe(
-                unrelated.id,
-              );
+              expect(yield* cardFor(UfcCoverageIds.all)).toHaveLength(1);
+              expect((yield* cardFor(teamId))[0]?.id).toBe(unrelated.id);
               return yield* Effect.fail("rollback-success" as const);
             }),
           )

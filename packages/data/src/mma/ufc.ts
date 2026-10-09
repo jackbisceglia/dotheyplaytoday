@@ -53,16 +53,17 @@ export const ufcCatalog = {
           prelims: "2026-10-03T22:00:00.000Z",
           main: "2026-10-04T00:00:00.000Z",
         },
-        bouts: [
-          {
-            placement: "main",
-            fighters: fighters.slice(0, 2).map((fighter) => ({
-              subjectId: fighter.id,
-              title: fighter.name,
-            })),
-          },
-        ],
       },
+      participants: fighters.slice(0, 2).map((fighter) => ({
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          subjectId: fighter.id,
+          title: fighter.name,
+          fightId: "fight-1",
+          placement: "main",
+        },
+      })),
     },
     // Allen–Duncan remains pending until all three broadcast times are confirmed.
     // Its allocated card ID is reserved in the catalog runbook.

@@ -5,7 +5,7 @@ import {
 } from "@dtpt/core/lib/database/errors";
 import { subjectEventsTable } from "@dtpt/core/modules/subjects/feed/schema";
 import { and, eq, inArray } from "drizzle-orm";
-import { Effect, Schema } from "effect";
+import { Array, Effect, Schema } from "effect";
 
 import { ufcCoverageSubjects, UfcCoverageIds } from "./catalog.js";
 import { MmaImport, type MmaImportInput } from "./schema.js";
@@ -87,7 +87,9 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
               message: "Source identity must retain its allocated card ID",
             });
           }
-          const fighters = card.details.bouts.flatMap((bout) => bout.fighters);
+          const fighters = card.participants.map(
+            (participant) => participant.details,
+          );
           if (!hasUniqueIds(fighters.map((fighter) => fighter.subjectId))) {
             return yield* new InvalidMmaImport({
               message: "A fighter cannot occupy multiple slots on a card",
@@ -95,7 +97,23 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
           }
           if (fighters.some((fighter) => !fighterIds.has(fighter.subjectId))) {
             return yield* new InvalidMmaImport({
-              message: "Bout references an unknown fighter",
+              message: "Fight references an unknown fighter",
+            });
+          }
+          if (
+            Object.values(
+              Array.groupBy(fighters, (fighter) => fighter.fightId),
+            ).some(
+              (fight) =>
+                fight.length > 2 ||
+                fight.some(
+                  (fighter) => fighter.placement !== fight[0].placement,
+                ),
+            )
+          ) {
+            return yield* new InvalidMmaImport({
+              message:
+                "Each fight requires one or two participants with matching placement",
             });
           }
           const event = yield* events.upsert({
@@ -106,6 +124,7 @@ export const seedMmaCatalog = Effect.fn("DataSeed.seedMmaCatalog")(function* (
             availability: card.availability,
             details: card.details,
           });
+          yield* events.setParticipants(event.id, card.participants);
           // Only UFC-owned edges for this specific imported card are authoritative.
           yield* database
             .delete(subjectEventsTable)

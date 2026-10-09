@@ -42,21 +42,26 @@ reviewed October 3, 2026. Allen–Duncan is held out because its reviewed source
 does not confirm all three required broadcast timestamps. Its fighters remain
 followable. Reserve card/source UUID b51165b6-7428-4620-a02e-000000000002
 for a later confirmed import. The initial catalog lists supported headliners,
-not the complete UFC roster or full lineups. Adding other supported fighters does not require an upcoming bout.
+not the complete UFC roster or full lineups. Adding other supported fighters does not require an upcoming fight.
 
 1. Allocate a UUID once for each new fighter and card. Keep a card's
    `sourceId` (`mma_card:ufc:<allocated UUID>`) and `id` forever. Do not derive IDs
    from a title, headliner, URL, venue, scheduled date, or opponent names. Search
    the checked-in catalog before allocating; fighter profile slugs can change.
 2. Rename fighters or cards in place. When an opponent changes,
-   replace the bout's fighter list. A known fighter with an unknown opponent has
-   a one-element fighter list. Do not invent an opponent subject.
+   replace the corresponding participant row. Opponents share a `details.fightId`
+   within the card and the same `details.placement` (early, prelims, or main).
+   A known fighter with an unknown opponent has one participant in that group.
+   Do not invent an opponent subject. Fight IDs are display grouping keys, not
+   subscription identities; use ordered keys such as `fight-1`, `fight-2` to
+   control display order. Renderers sort these keys numerically within text.
 3. Treat the checked-in card JSON as the authoritative current snapshot of our
-   catalogued lineup. Reseeding replaces that JSON; remove withdrawn bouts or
-   update their fighter lists. Don't delete fighter subjects when they withdraw.
-   This is a manual catalog, not a raw scraper payload: a missing bout on an
+   catalogued lineup. Reseeding replaces event details and participant rows
+   atomically; remove withdrawn participants or update their details. Don't
+   delete fighter subjects when they withdraw.
+   This is a manual catalog, not a raw scraper payload: a missing fight on an
    incomplete source page is not evidence of withdrawal. Carry forward known
-   bouts until a removal or replacement is confirmed.
+   fights until a removal or replacement is confirmed.
 4. Retain confirmed metadata when a source omits fields. Venue and all three
    timing instants are required. Hold new cards with missing times out of the
    catalog. Review the diff and bump the catalog seed version for updates;
@@ -69,14 +74,14 @@ not the complete UFC roster or full lineups. Adding other supported fighters doe
 6. Imports rebuild UFC feed edges for each included card only, inside the same
    transaction as the card update. They never remove omitted cards, unrelated
    league edges, users, or subscriptions. Numbered cards match both coverage
-   subjects. Only fighters in the current bout list match fighter follows.
+   subjects. Only fighters in the current participant list match fighter follows.
 
 ## Time policy
 
 Store confirmed early-prelim, prelim, and main-card broadcast instants in UTC.
 Resolve the source's local time using the named IANA zone and the date (including
 DST); don't apply a fixed UTC offset year-round. Verify unusual DST ambiguity
-against the source's published offset. Never estimate individual bout times.
+against the source's published offset. Never estimate individual fight times.
 
 Every imported card must supply a confirmed event-level startsAt instant, chosen
 as the earliest confirmed broadcast start. It is the single scheduling anchor,
@@ -110,11 +115,12 @@ explicit operational step.
 
 No new database migration or subscription backfill is required for production,
 where these variants have not been published. Recreate any disposable development
-seed using the former mma_coverage tag or kind field before testing the renamed
-mma_tracking/category schemas. The event table
-and required startsAt field retain their current shape. Release all API/jobs/web
+seed using the former mma_coverage tag, kind field, or nested event lineup before
+testing the current mma_tracking/category and participant schemas. The event
+and participant tables retain their current columns, including required startsAt
+on events. Release all API/jobs/web
 readers with support for the new variants before enabling catalog revision
-2026-10-08.3. The importer is PR 2 and UI is PR 3: keep catalog publication gated
+2026-10-08.4. The importer is PR 2 and UI is PR 3: keep catalog publication gated
 until the complete stack is ready. The standard Alchemy action seeds during
 deployment, so coordinate that action with the reader rollout. Rolling readers
 back after publishing UFC data requires removing/archiving that data and its

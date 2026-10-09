@@ -68,7 +68,7 @@ notes on other leagues are at the end.
 
 ## UFC
 
-UFC cards, bouts, and fighters use a separate [catalog update workflow](./update-ufc-catalog.md). Do not apply the two-team or known-start requirements above to MMA.
+UFC cards, fights, and fighters use a separate [catalog update workflow](./update-ufc-catalog.md). UFC uses fighter participants and requires confirmed broadcast start times.
 
 ## Other leagues
 
