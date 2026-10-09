@@ -2,10 +2,10 @@ packages:
   - packages/*
 
 catalog:
-  "@effect/language-service": 0.87.3
   "@effect/platform-browser": 4.0.0-rc.117
   "@effect/platform-node": 4.0.0-rc.117
   "@effect/sql-pg": 4.0.0-rc.117
+  "@effect/tsgo": 0.51.1
   "@effect/vitest": 4.0.0-rc.117
   "@types/pg": 8.15.5
   alchemy: 2.0.0-beta.78

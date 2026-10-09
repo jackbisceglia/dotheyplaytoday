@@ -333,7 +333,7 @@ Each package's `oxlint.config.ts` imports and extends the root config with
 `extends: [base]`. `pnpm lint` keeps the recursive package workflow. The root
 config enables `options.typeAware` using `oxlint-tsgolint`, so package scripts
 and direct `oxlint` runs need no flag. Build dependent packages before linting,
-as production CI already does. `pnpm typecheck` remains the Effect-patched TypeScript 5 check;
+as production CI already does. `pnpm typecheck` runs TypeScript 7 (native `tsc`) patched by `@effect/tsgo`;
 Oxlint's native checker supplies lint diagnostics, not Effect language-service
 diagnostics. The web config omits the obsolete `baseUrl` option while preserving
 its relative `~/*` mapping.

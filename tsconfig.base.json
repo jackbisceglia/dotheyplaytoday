@@ -8,6 +8,7 @@
     "moduleResolution": "Bundler",
     "lib": ["ESNext"],
     "target": "ESNext",
+    "types": ["bun"],
     "plugins": [
       {
         "name": "@effect/language-service",
