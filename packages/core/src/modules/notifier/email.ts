@@ -1,4 +1,4 @@
-import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
+import { Array, DateTime, Effect, Layer, Match, Schema } from "effect";
 
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
@@ -22,9 +22,10 @@ import {
   type EmailViewProps,
 } from "../email/render.js";
 import { mmaTimingText } from "../mma/time.js";
-import { EventId } from "../events/schema.js";
+import { EventDetails, EventId } from "../events/schema.js";
 import type { EventWithParticipants } from "../events/service.js";
-import type { Subject } from "../subjects/schema.js";
+import { SubjectDetails } from "../subjects/schema.js";
+import type { SportTeamSubject } from "../subjects/variants/sport.schema.js";
 import type { User } from "../users/schema.js";
 import { NotifierError } from "./errors.js";
 import type { Notification } from "./notification.js";
@@ -34,13 +35,6 @@ const makeEmailDelivery = (notification: Notification): EmailDelivery => ({
   recipient: notification.user.email,
   idempotencyKey: Notifier.createDeliveryHash(notification),
 });
-
-const isTaggedAs =
-  <const TTag extends PropertyKey>(tag: TTag) =>
-  <TValue extends { readonly _tag: PropertyKey }>(
-    value: TValue,
-  ): value is Extract<TValue, { readonly _tag: TTag }> =>
-    value._tag === tag;
 
 export class EmailRenderError extends Schema.TaggedError<EmailRenderError>()(
   "EmailRenderError",
@@ -60,10 +54,6 @@ type SportsGameEvent = EventWithParticipants & {
 };
 type SportsGameParticipant = SportsGameEvent["participants"][number];
 
-type SportsTeamSubject = Subject & {
-  readonly details: ExtractFromTag<Subject["details"], "sports_team">;
-};
-
 type MmaEvent = EventWithParticipants & {
   readonly details: ExtractFromTag<
     EventWithParticipants["details"],
@@ -71,51 +61,36 @@ type MmaEvent = EventWithParticipants & {
   >;
 };
 type MmaEvents = Array.NonEmptyReadonlyArray<MmaEvent>;
-type MmaSubject = Subject & {
-  readonly details: ExtractFromTag<
-    Subject["details"],
-    "mma_fighter" | "mma_coverage"
-  >;
-};
 
 function createFeedCases() {
-  // subjects
-  const isSportsTeam = (
-    subject: Notification["subject"],
-  ): subject is SportsTeamSubject => isTaggedAs("sports_team")(subject.details);
-
-  const isMmaSubject = (
-    subject: Notification["subject"],
-  ): subject is MmaSubject =>
-    isTaggedAs("mma_fighter")(subject.details) ||
-    isTaggedAs("mma_coverage")(subject.details);
-
   // events
   const areSportsGames = (
     events: Notification["events"],
   ): events is SportsGameEvents =>
-    events.length > 0 &&
+    Array.isReadonlyArrayNonEmpty(events) &&
     events.every(
       (event) =>
         event._tag === event.details._tag &&
-        isTaggedAs("sports_game")(event.details),
+        EventDetails.guards.sports_game(event.details),
     );
 
   const areMmaEvents = (events: Notification["events"]): events is MmaEvents =>
-    events.length > 0 &&
+    Array.isReadonlyArrayNonEmpty(events) &&
     events.every(
       (event) =>
         event._tag === event.details._tag &&
-        isTaggedAs("mma_card")(event.details),
+        EventDetails.guards.mma_card(event.details),
     );
 
   return {
     sportsTeamFeed: {
-      subject: isSportsTeam,
+      subject: { details: SubjectDetails.guards.sports_team },
       events: areSportsGames,
     },
     mmaFeed: {
-      subject: isMmaSubject,
+      subject: {
+        details: SubjectDetails.isAnyOf(["mma_fighter", "mma_coverage"]),
+      },
       events: areMmaEvents,
     },
   };
@@ -226,7 +201,7 @@ const orderBySubject = (
   );
 };
 
-export const gameDayLines = (team: SportsTeamSubject["details"]): Lines => [
+export const gameDayLines = (team: SportTeamSubject): Lines => [
   team.name,
   "play today.",
 ];

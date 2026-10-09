@@ -111,18 +111,31 @@ describe("email rendering", () => {
       }),
   );
 
-  it.effect("rejects a mixed sports/MMA feed before sending", () =>
-    Effect.gen(function* () {
-      const result = yield* Effect.exit(
-        send({
-          ...notification,
-          subject: all,
-          events: [card, ...notification.events],
-        }),
-      );
-      expect(Exit.isFailure(result)).toBe(true);
-      expect(resendMock.send).not.toHaveBeenCalled();
-    }),
+  it.effect(
+    "rejects mixed feeds and mismatched event tags before sending",
+    () =>
+      Effect.gen(function* () {
+        const invalidFeeds = [
+          {
+            ...notification,
+            subject: all,
+            events: [card, ...notification.events],
+          },
+          {
+            ...notification,
+            subject: all,
+            events: [{ ...card, _tag: "sports_game" }],
+          },
+          {
+            ...notification,
+            events: [{ ...notification.events[0], _tag: "mma_card" }],
+          },
+        ] satisfies Notification[];
+        for (const input of invalidFeeds) {
+          expect(Exit.isFailure(yield* Effect.exit(send(input)))).toBe(true);
+        }
+        expect(resendMock.send).not.toHaveBeenCalled();
+      }),
   );
 
   it.effect(
