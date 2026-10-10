@@ -46,8 +46,32 @@ export const Link = Schema.TaggedStruct("link", {
   text: Schema.String,
 });
 
+export const Links = Schema.TaggedStruct("links", {
+  items: Schema.Array(Link),
+});
+
+export const TeamSchedule = Schema.TaggedStruct("team_schedule", {
+  team: Schema.String,
+  games: Schema.Array(
+    Schema.Struct({
+      date: Schema.String,
+      opponent: Schema.String,
+      time: Schema.String,
+    }),
+  ),
+});
+
 export type Block = typeof Blocks.Type;
-export const Blocks = TaggedUnion([Text, List, Matchups, Note, Entry, Link]);
+export const Blocks = TaggedUnion([
+  Text,
+  List,
+  Matchups,
+  Note,
+  Entry,
+  Link,
+  Links,
+  TeamSchedule,
+]);
 
 export type EmailViewProps = {
   readonly subject: string;
@@ -101,10 +125,14 @@ const blockPreview = (block: Block): string => {
       return `${block.label}: ${block.value}`;
     case "link":
       return block.text;
+    case "links":
+      return block.items.map((link) => link.text).join(" · ");
     case "list":
       return block.items.join(", ");
     case "matchups":
       return block.items.map(matchupText).join(" • ");
+    case "team_schedule":
+      return block.team;
   }
 };
 
@@ -122,6 +150,17 @@ const blockText = (block: Block): readonly string[] => {
       return [block.label, block.detail, block.value];
     case "link":
       return [`${block.text}: ${block.href}`];
+    case "links":
+      return block.items.map((link) => `${link.text}: ${link.href}`);
+    case "team_schedule":
+      return [
+        block.team,
+        ...(block.games.length === 0
+          ? ["No games this week."]
+          : block.games.map(
+              (game) => `${game.date} · ${game.opponent} · ${game.time}`,
+            )),
+      ];
   }
 };
 
@@ -229,6 +268,31 @@ const blockHtml = (block: Block): string => {
       );
     case "link":
       return element.link(block.href, block.text);
+    case "links":
+      return block.items
+        .map((link) => element.link(link.href, link.text))
+        .join(
+          ` <span class="email-muted" style="padding: 0 8px; font-size: 12px; color: ${color.muted};">·</span> `,
+        );
+    case "team_schedule":
+      return `<section aria-label="${escapeHtml(block.team)}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td class="email-ink" style="font-size: 16px; font-weight: 700; padding-bottom: 8px;">${escapeHtml(block.team)}</td></tr>
+</table>
+${
+  block.games.length === 0
+    ? element.note("No games this week.")
+    : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${block.games
+        .map(
+          (game) => `<tr>
+<td class="email-muted digest-date" style="width: 90px; padding: 8px 8px 8px 0; font-size: 13px; vertical-align: top; white-space: nowrap;">${escapeHtml(game.date)}</td>
+<td class="email-ink digest-opponent" style="padding: 8px 8px 8px 0; font-size: 14px; font-weight: 600; vertical-align: top; overflow-wrap: anywhere;">${escapeHtml(game.opponent)}</td>
+<td class="email-ink digest-time" align="right" style="padding: 8px 0; font-size: 13px; white-space: nowrap; vertical-align: top;">${escapeHtml(game.time)}</td>
+</tr>`,
+        )
+        .join("\n")}</table>`
+}
+</section>`;
   }
 };
 
@@ -298,6 +362,12 @@ const html = (input: EmailViewProps) => {
 
       table {
         border-collapse: collapse;
+      }
+
+      @media (max-width: 430px) {
+        .digest-date { width: 86px !important; }
+        .digest-opponent { display: block; padding-bottom: 0 !important; }
+        .digest-time { display: block; text-align: left !important; padding-top: 2px !important; white-space: normal !important; }
       }
 
       /* Keep iOS from turning start times into blue "detected data" links. */

@@ -295,6 +295,38 @@ while editing, so the entry stays cached and the editor opens without a second
 fetch. Selection feedback lives beside the shared picker rather than under
 signup.
 
+## Weekly digest
+
+The notification Worker keeps its quarter-hour daily reminder cron and adds a
+separate Monday batch at 9:00 AM Eastern. Cloudflare cron fires at both 13:00
+and 14:00 UTC Mondays (`0 13,14 * * 1`); an Eastern-time guard admits exactly
+one candidate across daylight saving changes. The guard and week selection use
+Cloudflare’s scheduled timestamp, so late execution retains the same batch.
+`jobs/src/weekly-digest` groups eligible subscription recipients by user and
+sends one personalized email to each, without consulting daily send times or
+last-sent timestamps. It uses the existing `Events.listBySubject` active-event
+query with a half-open local-week UTC range and never writes a subscription's
+`lastSentAt`.
+
+Core's `weekly-digest` module owns the digest model, timezone/calendar rules,
+and email assembly. Shared `EmailView` provides the
+branded image tile, single date range, team schedule blocks, and compact footer
+links in HTML and plain text. Participant titles currently carry no subject
+identity; the weekly renderer matches the
+normalized subject display title and returns a typed error when it cannot
+identify the followed team's side or when home/away roles are malformed.
+
+Weekly sending requires no new database schema or saved email snapshots.
+Each send uses `weekly-digest:<user-id>:<Monday-date>` as its provider
+idempotency key. The email adapter retries transient failures within a send;
+recipient-specific render and provider failures are logged while the batch
+continues. There is no durable record of individual batch completion.
+
+`POST /test/weekly-digest` is a development-only trigger using the existing
+notify options and CLI's `--weekly` flag. A dry run logs the rendered email,
+uses no email provider, and writes no delivery state. Production exposes no
+manual trigger. The Worker and generated weekly headline asset deploy together.
+
 ## Testing and validation
 
 API contract tests live in `packages/core/src/contracts/__tests__`, named for

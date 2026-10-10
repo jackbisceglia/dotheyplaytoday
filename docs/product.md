@@ -55,6 +55,42 @@ picked shows the full schedule, and Edit clears the filter.
 - A dry run renders and sends through the console notifier and does not mark the subscription sent.
 - Production scheduling is performed by the Cloudflare Worker cron. Development triggers and command-line entry points are operational tools, not the production scheduler.
 
+## Weekly digest
+
+- Verified users with followed teams receive one weekly email by default,
+  alongside their existing game-day reminders. Separate weekly preferences are
+  deferred; changing the daily send time does not change weekly delivery.
+- Delivery is one Monday 9:00 AM Eastern (`America/New_York`) batch for all
+  eligible recipients, following daylight saving time and independent of daily
+  reminder preferences. The emails remain personalized by team and recipient timezone.
+- Coverage is the batch's Monday–Sunday calendar week, including Monday games
+  before delivery. All recipients cover the same dates. Queries include each
+  recipient's local Monday midnight and exclude the next Monday midnight,
+  using calendar arithmetic across daylight saving changes.
+- The By team email includes every followed team, chronological dates,
+  opponents, `vs.` / `@`, and local start times. A fixture between two followed
+  teams appears in both sections. Cancelled games are excluded.
+- Quiet weeks still produce an email. Each team with no matching fixtures shows
+  “No games this week.”
+- The subject is “Your Weekly Update”. The body starts with the branded image
+  tile “Your teams. This week.”, then one readable date range,
+  such as “September 28 – October 4” or “October 5–11”, followed directly
+  by the team schedules. Years appear only when the range crosses a year boundary.
+  There are no game counts, summary, timezone labels, or schedule footnote;
+  start times still use the recipient's timezone. “Manage teams” and “Unsubscribe”
+  share one compact footer. Unsubscribe retains its existing unsubscribe-from-all behavior.
+  There is no weekly-only unsubscribe until separate preferences exist.
+- Weekly sends do not write daily subscription history or introduce a delivery
+  table. Each recipient uses `weekly-digest:<user-id>:<Monday-date>` as the
+  provider idempotency key. Transient transport failures use the email
+  adapter's existing bounded retries. There are no saved message snapshots or
+  durable per-recipient completion records.
+- Development supports `pnpm @jobs start:notify --weekly` with `--dry-run`,
+  `--user <email>`, and `--now <ISO-UTC-instant>`. Manual weekly runs execute
+  immediately; `--force` is unnecessary. Dry runs render without sending or
+  writing delivery state. Repeating a week retains its provider key and does
+  not guarantee a fresh delivery.
+
 ## Registration and confirmation rollout
 
 - New users start unverified and receive a “Confirm your updates” magic link. The success message is “Check your email to start your updates.”
