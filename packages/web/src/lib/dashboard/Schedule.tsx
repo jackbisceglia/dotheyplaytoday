@@ -1,4 +1,5 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
+import { Array, Match } from "effect";
 import {
   createEffect,
   createMemo,
@@ -8,7 +9,7 @@ import {
   untrack,
 } from "solid-js";
 
-import { getSportsLogo } from "../catalog/sports/index.js";
+import { getSubjectLogo } from "../catalog/index.js";
 import type { ScheduleRow } from "./schedule.js";
 
 // A previewed team fades everyone else's games; a pinned team collapses them,
@@ -30,21 +31,20 @@ const spot = (el: Element, rect = el.getBoundingClientRect()): Spot => ({
 export function Schedule(props: {
   readonly rows: readonly ScheduleRow[];
   readonly previewId: string | undefined;
-  readonly pinnedTeam: Subject | undefined;
+  readonly pinnedSubject: Subject | undefined;
 }) {
-  const days = createMemo(() => {
-    const groups = new Map<string, { row: ScheduleRow; index: number }[]>();
-    props.rows.forEach((row, index) => {
-      const rows = groups.get(row.day);
-      if (rows) rows.push({ row, index });
-      else groups.set(row.day, [{ row, index }]);
-    });
-    return [...groups].map(([day, rows]) => ({ day, rows }));
-  });
+  const days = createMemo(() =>
+    Object.entries(
+      Array.groupBy(
+        props.rows.map((row, index) => ({ row, index })),
+        ({ row }) => row.day,
+      ),
+    ),
+  );
   // The pin on screen trails the prop just long enough to measure the old
   // layout, and slides run once the new one renders.
-  const [pinnedTeam, setPinnedTeam] = createSignal(
-    untrack(() => props.pinnedTeam),
+  const [pinnedSubject, setPinnedSubject] = createSignal(
+    untrack(() => props.pinnedSubject),
   );
   let section: HTMLElement | undefined;
   let from: Map<Element, Spot> | undefined;
@@ -55,18 +55,18 @@ export function Schedule(props: {
     ) ?? []),
   ];
   createEffect(
-    () => props.pinnedTeam,
+    () => props.pinnedSubject,
     (team) => {
       if (
-        team?.id !== pinnedTeam()?.id &&
+        team?.id !== pinnedSubject()?.id &&
         !matchMedia("(prefers-reduced-motion: reduce)").matches
       ) {
         from = new Map(movers().map((el) => [el, spot(el)]));
       }
-      setPinnedTeam(team);
+      setPinnedSubject(team);
     },
   );
-  createEffect(pinnedTeam, () => {
+  createEffect(pinnedSubject, () => {
     const before = from;
     if (!before) return;
     from = undefined;
@@ -97,14 +97,15 @@ export function Schedule(props: {
     });
   });
 
-  const focusedId = () => pinnedTeam()?.id ?? props.previewId;
+  const focusedId = () => pinnedSubject()?.id ?? props.previewId;
   const isFocused = (row: ScheduleRow) =>
-    row.team.id === focusedId() || row.opponentTeam?.id === focusedId();
+    row.subjects.some((subject) => subject.id === focusedId());
+
   const emptyMessage = () => {
-    const team = pinnedTeam()?.details.name;
-    return team
-      ? `No ${team} games in the next 14 days.`
-      : "No games in the next 14 days.";
+    const subject = pinnedSubject()?.details.display;
+    return subject
+      ? `No ${subject} events in the next 14 days.`
+      : "No events in the next 14 days.";
   };
 
   return (
@@ -113,7 +114,7 @@ export function Schedule(props: {
       class="dashboard-schedule"
       aria-labelledby="schedule-heading"
       data-focus={
-        pinnedTeam() ? "pin" : props.previewId ? "preview" : undefined
+        pinnedSubject() ? "pin" : props.previewId ? "preview" : undefined
       }
     >
       <h2 id="schedule-heading" class="visually-hidden">
@@ -124,18 +125,16 @@ export function Schedule(props: {
         fallback={<p class="dashboard-schedule-empty">{emptyMessage()}</p>}
       >
         <For each={days()}>
-          {(group) => (
+          {([day, rows]) => (
             <div
               class="dashboard-schedule-group"
               data-focused={
-                group.rows.some(({ row }) => isFocused(row))
-                  ? "true"
-                  : undefined
+                rows.some(({ row }) => isFocused(row)) ? "true" : undefined
               }
             >
-              <h3 class="dashboard-schedule-day">{group.day}</h3>
+              <h3 class="dashboard-schedule-day">{day}</h3>
               <ol class="dashboard-schedule-list">
-                <For each={group.rows}>
+                <For each={rows}>
                   {({ row, index }) => (
                     <li
                       class="dashboard-schedule-row"
@@ -149,30 +148,14 @@ export function Schedule(props: {
                         {row.time}
                       </time>
                       <span class="dashboard-schedule-glyph" aria-hidden="true">
-                        {getSportsLogo(row.team.details)}
+                        {getSubjectLogo(row.subjects[0].details)}
                       </span>
                       <span class="dashboard-schedule-matchup">
-                        <strong>{row.teamName}</strong>
-                        <Show when={row.opponent}>
-                          {" "}
-                          <span>{row.matchup}</span>{" "}
-                          <Show
-                            when={row.opponentTeam}
-                            fallback={<span>{row.opponent}</span>}
-                          >
-                            {(team) => (
-                              <>
-                                <span aria-hidden="true">
-                                  {getSportsLogo(team().details)}
-                                </span>{" "}
-                                <strong>{row.opponent}</strong>
-                              </>
-                            )}
-                          </Show>
-                        </Show>
+                        <strong>{row.title}</strong>
+                        <Matchup row={row} />
                       </span>
                       <span class="dashboard-schedule-league">
-                        {row.team.details.leagueId.toUpperCase()}
+                        {row.subjects[0].details.leagueId.toUpperCase()}
                       </span>
                     </li>
                   )}
@@ -181,10 +164,61 @@ export function Schedule(props: {
             </div>
           )}
         </For>
-        <Show when={pinnedTeam() && !props.rows.some(isFocused)}>
+        <Show when={pinnedSubject() && !props.rows.some(isFocused)}>
           <p class="dashboard-schedule-empty">{emptyMessage()}</p>
         </Show>
       </Show>
     </section>
+  );
+}
+
+function Matchup(props: { readonly row: ScheduleRow }) {
+  return Match.value(props.row).pipe(
+    Match.tag("sports_game", (game) => (
+      <Show when={game.opponent}>
+        {" "}
+        <span>{game.matchup}</span>{" "}
+        <Show when={game.opponentTeam} fallback={<span>{game.opponent}</span>}>
+          {(team) => (
+            <>
+              <span aria-hidden="true">{getSubjectLogo(team().details)}</span>{" "}
+              <strong>{game.opponent}</strong>
+            </>
+          )}
+        </Show>
+      </Show>
+    )),
+    Match.tag("mma_card", (card) => (
+      <>
+        <span class="ufc-card-detail">
+          Matched:{" "}
+          {card.subjects.map((subject) => subject.details.display).join(", ")}
+        </span>
+        <For each={card.fights}>
+          {(fight) => (
+            <span class="ufc-card-detail">
+              <For each={fight.fighters}>
+                {(fighter, index) => (
+                  <>
+                    {index() > 0 && " vs "}
+                    <Show
+                      when={card.subjects.some(
+                        (subject) => subject.details.display === fighter.title,
+                      )}
+                      fallback={fighter.title}
+                    >
+                      <strong>{fighter.title}</strong>
+                    </Show>
+                  </>
+                )}
+              </For>
+              {fight.fighters.length === 1 && " vs Opponent TBD"}
+            </span>
+          )}
+        </For>
+        <span class="ufc-card-detail">{card.timing}</span>
+      </>
+    )),
+    Match.exhaustive,
   );
 }

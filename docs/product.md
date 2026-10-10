@@ -103,9 +103,8 @@ All UFC events choice; All includes numbered events and Fight Nights, excluding
 Contender Series and standalone Ultimate Fighter events/exhibitions. Each fighter
 and each enabled coverage choice uses one pick. Coverage changes preserve fighters.
 
-Cards match coverage or participating fighters. UFC selection and
-dashboard rendering are introduced in the third PR of the stack; this backend
-stage keeps the existing web interface limited to teams.
+Cards match coverage or participating fighters. The dashboard merges
+matches by card ID, lists every match reason, and highlights followed fighters.
 Emails retain subject-scoped sports behavior: following both opponents and card
 coverage can send three emails, while multiple same-day cards for one subject
 share one email. Successful subscriptions are sent at most once per local date

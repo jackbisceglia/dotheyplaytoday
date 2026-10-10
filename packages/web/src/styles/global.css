@@ -1896,6 +1896,13 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   font-weight: 700;
 }
 
+.ufc-card-detail {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
 /* Sized to the widest label so the tags line up down the edge. */
 .dashboard-schedule-league {
   min-width: 44px;
