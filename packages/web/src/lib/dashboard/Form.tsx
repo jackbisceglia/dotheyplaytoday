@@ -20,7 +20,9 @@ const capacity = SubscriptionPolicy.subject.constraints.max;
 // A short, readable URL key, like "mlb-mil"; abbreviations are unique within
 // a league.
 const teamKey = (team: Subject) =>
-  `${team.details.leagueId}-${team.details.abbreviation.toLowerCase()}`;
+  team.details._tag === "sports_team"
+    ? `${team.details.leagueId}-${team.details.abbreviation.toLowerCase()}`
+    : team.id;
 
 type FormState = {
   mode: "view" | "editing" | "saving";

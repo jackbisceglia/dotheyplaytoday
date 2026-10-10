@@ -1,17 +1,22 @@
 import type { EventsResponse } from "@dtpt/core/contracts/events";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
-import { DateTime } from "effect";
+import { DateTime, Predicate } from "effect";
+
+import {
+  isSportsSubject,
+  type SportsSubject,
+} from "../catalog/sports/index.js";
 
 export type ScheduleRow = {
-  readonly team: Subject;
+  readonly team: SportsSubject;
   readonly teamName: string;
   readonly eventId: string;
   readonly startsAt: string;
   readonly day: string;
   readonly time: string;
   readonly opponent: string;
-  readonly opponentTeam: Subject | undefined;
+  readonly opponentTeam: SportsSubject | undefined;
   readonly matchup: "at" | "vs";
 };
 
@@ -39,7 +44,11 @@ export function scheduleRows(
   const seen = new Set<string>();
   return schedule
     .flatMap(({ subject: team, events }) =>
-      events.map((event) => ({ team, event })),
+      isSportsSubject(team)
+        ? events.flatMap((event) =>
+            event.details._tag === "sports_game" ? [{ team, event }] : [],
+          )
+        : [],
     )
     .filter(({ event }) => {
       const participants = [
@@ -69,13 +78,20 @@ export function scheduleRows(
         todayDate;
       const day = today ? "Today" : dayFormat.format(date);
 
+      const participants = event.participants.flatMap((participant) =>
+        Predicate.isTagged(participant.details, "sports_game")
+          ? [{ ...participant, details: participant.details }]
+          : [],
+      );
       const participantName = (title: string) =>
-        catalog.find(
-          (subject) =>
-            subject.details.leagueId === event.details.leagueId &&
-            normalizeName(subject.details.display) === normalizeName(title),
-        )?.details.name ?? title.trim();
-      const own = event.participants.find(
+        catalog
+          .filter(isSportsSubject)
+          .find(
+            (subject) =>
+              subject.details.leagueId === event.details.leagueId &&
+              normalizeName(subject.details.display) === normalizeName(title),
+          )?.details.name ?? title.trim();
+      const own = participants.find(
         (participant) =>
           normalizeName(participant.details.title) ===
           normalizeName(team.details.display),
@@ -84,24 +100,25 @@ export function scheduleRows(
       // subscribed team's display name cannot identify its participant.
       const leading =
         own ??
-        event.participants.find(
+        participants.find(
           (participant) => participant.details.role === "away",
         ) ??
-        event.participants.find(
-          (participant) => participant.details.role === "home",
-        );
+        participants.find((participant) => participant.details.role === "home");
       const opponent =
         leading &&
-        event.participants.find(
+        participants.find(
           (participant) => participant.details.role !== leading.details.role,
         );
       const opponentTeam = opponent
-        ? schedule.find(
-            ({ subject }) =>
-              subject.details.leagueId === event.details.leagueId &&
-              normalizeName(subject.details.display) ===
-                normalizeName(opponent.details.title),
-          )?.subject
+        ? schedule
+            .map(({ subject }) => subject)
+            .filter(isSportsSubject)
+            .find(
+              (subject) =>
+                subject.details.leagueId === event.details.leagueId &&
+                normalizeName(subject.details.display) ===
+                  normalizeName(opponent.details.title),
+            )
         : undefined;
       return {
         team,

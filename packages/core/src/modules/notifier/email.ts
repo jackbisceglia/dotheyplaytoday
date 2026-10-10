@@ -1,22 +1,43 @@
-import { type Array, DateTime, Effect, Layer, Match, Schema } from "effect";
+import {
+  Array,
+  DateTime,
+  Effect,
+  Layer,
+  Match,
+  Predicate,
+  Schema,
+} from "effect";
 
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
-import type { ExtractFromTag } from "../../lib/types.js";
 import { EmailLayerResend } from "../email/resend.js";
 import { Email, type EmailDelivery } from "../email/service.js";
-import { type Lines, makeTiledHeadline } from "../email/headline.js";
+import {
+  type Lines,
+  makeTiledHeadline,
+  TextHeadline,
+} from "../email/headline.js";
 import {
   EmailView,
+  Text,
+  Note,
+  List,
   Link,
   Matchups,
   type EmailMatchup,
   type EmailRendered,
   type EmailViewProps,
 } from "../email/render.js";
+import { mmaFights } from "../mma/fights.js";
+import { mmaTimingText } from "../mma/time.js";
 import { EventId } from "../events/schema.js";
-import type { EventWithParticipants } from "../events/service.js";
-import type { Subject } from "../subjects/schema.js";
+import {
+  isEventWithParticipants,
+  type NarrowedEventWithParticipants,
+} from "../events/joined.js";
+import { SportParticipant } from "../events/participants/variants/sport.schema.js";
+import { SubjectDetails } from "../subjects/schema.js";
+import type { SportTeamSubject } from "../subjects/variants/sport.schema.js";
 import type { User } from "../users/schema.js";
 import { NotifierError } from "./errors.js";
 import type { Notification } from "./notification.js";
@@ -27,46 +48,41 @@ const makeEmailDelivery = (notification: Notification): EmailDelivery => ({
   idempotencyKey: Notifier.createDeliveryHash(notification),
 });
 
-const isTaggedAs =
-  <const TTag extends PropertyKey>(tag: TTag) =>
-  <TValue extends { readonly _tag: PropertyKey }>(
-    value: TValue,
-  ): value is Extract<TValue, { readonly _tag: TTag }> =>
-    value._tag === tag;
-
 export class EmailRenderError extends Schema.TaggedError<EmailRenderError>()(
   "EmailRenderError",
   {
     message: Schema.String,
     eventId: EventId,
-    role: Schema.Literals(["home", "away"]),
+    role: SportParticipant.fields.role,
   },
 ) {}
 
 type SportsGameEvents = Array.NonEmptyReadonlyArray<SportsGameEvent>;
-type SportsGameEvent = ExtractFromTag<EventWithParticipants, "sports_game">;
+type SportsGameEvent = NarrowedEventWithParticipants<"sports_game">;
 type SportsGameParticipant = SportsGameEvent["participants"][number];
 
-type SportsTeamSubject = Subject & {
-  readonly details: ExtractFromTag<Subject["details"], "sports_team">;
-};
+type MmaEvents = Array.NonEmptyReadonlyArray<
+  NarrowedEventWithParticipants<"mma_card">
+>;
 
 function createFeedCases() {
-  // subjects
-  const isSportsTeam = (
-    subject: Notification["subject"],
-  ): subject is SportsTeamSubject => isTaggedAs("sports_team")(subject.details);
-
-  // events
-  const areSportsGames = (
-    events: Notification["events"],
-  ): events is SportsGameEvents =>
-    events.length > 0 && events.every(isTaggedAs("sports_game"));
-
   return {
     sportsTeamFeed: {
-      subject: isSportsTeam,
-      events: areSportsGames,
+      subject: { details: Predicate.isTagged("sports_team") },
+
+      events: (events: Notification["events"]): events is SportsGameEvents =>
+        Array.isReadonlyArrayNonEmpty(events) &&
+        events.every(isEventWithParticipants("sports_game")),
+    },
+
+    mmaFeed: {
+      subject: {
+        details: SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"]),
+      },
+
+      events: (events: Notification["events"]): events is MmaEvents =>
+        Array.isReadonlyArrayNonEmpty(events) &&
+        events.every(isEventWithParticipants("mma_card")),
     },
   };
 }
@@ -176,7 +192,7 @@ const orderBySubject = (
   );
 };
 
-export const gameDayLines = (team: SportsTeamSubject["details"]): Lines => [
+export const gameDayLines = (team: SportTeamSubject): Lines => [
   team.name,
   "play today.",
 ];
@@ -206,8 +222,8 @@ const shouldIncludeNflKickoffEvent = (
   return hasNflGame() && isNflKickoffDay();
 };
 
-const formatStartTime = (event: SportsGameEvent, tz: User["timezone"]) => {
-  const userLocaleDateTime = DateTime.setZone(event.startsAt, tz);
+const formatStartTime = (startsAt: DateTime.Utc, tz: User["timezone"]) => {
+  const userLocaleDateTime = DateTime.setZone(startsAt, tz);
 
   return DateTime.format(userLocaleDateTime, {
     locale: "en-US",
@@ -257,7 +273,7 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
                 leading: leading.details.title,
                 separator,
                 trailing: trailing.details.title,
-                detail: formatStartTime(game, timezone),
+                detail: formatStartTime(game.startsAt, timezone),
               } satisfies EmailMatchup;
             }),
           );
@@ -281,7 +297,61 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
           } satisfies EmailViewProps;
         }),
       ),
-      Match.exhaustive,
+      Match.when(cases.mmaFeed, (notification) => {
+        const subject = notification.subject;
+
+        const title =
+          subject.details._tag === "mma_fighter"
+            ? `${subject.details.display} fights today`
+            : "UFC cards today";
+
+        const blocks = notification.events.flatMap((event) => {
+          const card = event.details;
+
+          const fights = mmaFights(
+            event.participants.map((participant) => participant.details),
+          );
+
+          const relevant = fights.filter((fight) =>
+            fight.fighters.some(
+              (fighter) => fighter.title === subject.details.display,
+            ),
+          );
+
+          return [
+            Text.make({ value: card.title }),
+
+            ...relevant.map((fight) =>
+              Text.make({
+                value: `Following ${subject.details.display}: ${fight.fighters.map((fighter) => fighter.title).join(" vs ")}${fight.fighters.length === 1 ? " vs Opponent TBD" : ""} (${fight.placement})`,
+              }),
+            ),
+
+            List.make({
+              items: fights.map(
+                (fight) =>
+                  fight.fighters.map((fighter) => fighter.title).join(" vs ") +
+                  (fight.fighters.length === 1 ? " vs Opponent TBD" : ""),
+              ),
+            }),
+
+            Note.make({
+              value: `${card.venue.title}, ${card.venue.location}. Starts: ${formatStartTime(event.startsAt, timezone)}. ${mmaTimingText(card, timezone)}`,
+            }),
+          ];
+        });
+
+        return Effect.succeed({
+          subject: title,
+          headline: TextHeadline.make({ lines: [title] }),
+          blocks: [
+            ...blocks,
+            Link.make({ href: unsubscribeUrl, text: "Unsubscribe" }),
+          ],
+          metadata: { unsubscribe: unsubscribeUrl },
+        } satisfies EmailViewProps);
+      }),
+      Match.orElse(() => Effect.die("Unsupported subject/event combination")),
     );
   },
 );

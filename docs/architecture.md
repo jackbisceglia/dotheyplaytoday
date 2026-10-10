@@ -442,3 +442,41 @@ Alchemy's PostgreSQL bridge uses the `Drizzle/Postgres` entrypoint; the
 production migration ledger retains its existing table name. Standalone Vite
 uses the matching `@alchemy.run/cloudflare-runtime` package. The API uses
 Alchemy's `Http.Platform` layer for its fileless HTTP platform services.
+
+### UFC variants and catalog reconciliation
+
+`SubjectDetails` includes `mma_fighter` and `mma_tracking`; the existing subject
+selection API, subscriptions table, shared four-pick policy, and notification
+orchestrator serve both sports and UFC. The subscription service rejects two
+coverage subjects in one selection. Tracking details use `scope: numbered | all`. Each fighter appearance is a `mma_card`
+variant row in the existing participants table, linked to its card by eventId.
+Participant details contain display title, fightId, and required placement (prelims or main).
+Subject-event feed associations determine subscription matches, as with sports.
+Only publish fight participants after UFC confirms their segment assignment.
+Within a card, opponents share a fightId; renderers group those rows for display.
+Event and participant row schemas require each row tag to match its details tag
+on reads and writes, including joined event decoding.
+There is no fights table or event-level fights array. The importer validates
+one or two fighters per group and consistent placement. Fight IDs are grouping
+keys within the card; subscription matching uses the existing SQL subject_events
+relationships, independently of these display groups.
+Sports participants retain their home/away roles. Both variants use the existing
+Events.setParticipants replacement and event query relation. Participant row IDs
+are regenerated on replacement; event and fighter subject IDs remain stable.
+There is no per-fight scheduling. Every event retains its
+required startsAt instant and the existing NOT NULL database constraint. UFC
+uses the earliest confirmed broadcast start; the variant's timings struct adds
+required prelims/main timestamps for rendering; both must be
+confirmed before importing a card. Early prelims fold into prelims; startsAt must
+match timings.prelims.
+The existing range queries, local-date handling, and notification scheduler are
+unchanged. No database migration is needed.
+
+Delivery remains per subscription, including last-send state and provider
+idempotency keys. UFC dashboard rendering follows in the third PR. Until then,
+the web interface narrows the expanded contracts to supported sports teams and
+games.
+
+Release all backend and UI readers before UFC catalog publication. The importer
+is the second PR and the UI is the third; keep the seed revision gated until
+the complete stack is ready. No database migration or backfill is required.

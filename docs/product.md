@@ -6,7 +6,7 @@
 
 **Subject** and **Event** are intentionally reusable domain terms. Sports teams and games are the current production implementation, but the model can support other event-driven subjects without redefining the core behavior.
 
-Registration uses `POST /api/user`. Users can subscribe to up to four teams. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
+Registration uses `POST /api/user`. Users can select up to four picks shared across teams, UFC fighters, and UFC card coverage. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
 
 ## Dashboard
 
@@ -29,7 +29,7 @@ matchup, and ends with a light grey league tag. Matching participant sets at the
 when both teams are subscribed; the first subscription supplies the row’s order.
 Both subscribed sides show their emoji and bold nickname within that one row.
 Rematches and doubleheaders at different start times have separate rows.
-Cancelled games are excluded. An empty window reads “No games in the next 14 days.” Editing replaces the list with the
+Cancelled games are excluded. An empty window reads “No events in the next 14 days.” Editing replaces the list with the
 picker while keeping the heading, send-time sentence, and roster anchored.
 
 Hovering a roster tile with a mouse previews that team's games: the tile
@@ -46,7 +46,7 @@ picked shows the full schedule, and Edit clears the filter.
 
 - Only subscriptions whose user has `emailVerified: true` enter notification processing. Pending users are excluded at the database query, including forced and dry runs.
 - A schedule is a fixed local wall-clock time interpreted in the user's IANA timezone.
-- Event start times are stored as UTC instants. An event matches when its instant falls on the current calendar date in the user's timezone.
+- Event start times are required UTC instants for all sports, including UFC. An event matches when its instant falls on the current calendar date in the user's timezone.
 - Normal notification reads exclude cancelled events.
 - Notifications are scoped to one subscription and therefore one subject.
 - Multiple matching events for the same subscribed subject on the same day are combined into one notification.
@@ -85,8 +85,8 @@ picked shows the full schedule, and Edit clears the filter.
 | Term                | Meaning                                                                                                  |
 | ------------------- | -------------------------------------------------------------------------------------------------------- |
 | User                | A notification recipient identified by email, timezone, and unsubscribe identity.                        |
-| Subject             | Something a user can follow; currently a supported sports team.                                          |
-| Event               | A time-bound occurrence that may cause a notification; currently a game.                                 |
+| Subject             | Something a user can follow; a supported sports team, UFC fighter, or UFC coverage choice.               |
+| Event               | A time-bound occurrence that may cause a notification; a game or UFC card.                               |
 | Subject Event       | The association that says an event is relevant to a subject.                                             |
 | Participant         | An entity taking part in an event, used to describe the event independently of subscriptions.            |
 | Subscription        | A user's choice to follow one subject on a schedule, including its last successful send state.           |
@@ -95,3 +95,41 @@ picked shows the full schedule, and Edit clears the filter.
 | Notifier            | The notification-specific boundary that renders and sends a `Notification`.                              |
 | Email               | The provider-neutral transport boundary that sends a complete outbound email.                            |
 | Transactional Email | An application workflow that owns its input, rendering, and delivery through `Email`.                    |
+
+## UFC
+
+Fighters are independent subjects. Card coverage is a single Off / Numbered /
+All UFC events choice; All includes numbered events and Fight Nights, excluding
+Contender Series and standalone Ultimate Fighter events/exhibitions. Each fighter
+and each enabled coverage choice uses one pick. Coverage changes preserve fighters.
+
+Cards match coverage or participating fighters. UFC selection and
+dashboard rendering are introduced in the third PR of the stack; this backend
+stage keeps the existing web interface limited to teams.
+Emails retain subject-scoped sports behavior: following both opponents and card
+coverage can send three emails, while multiple same-day cards for one subject
+share one email. Successful subscriptions are sent at most once per local date
+under ordinary scheduling. Rescheduling to a later local date can send again.
+Post-send correction alerts are outside this version.
+
+Every card has a required event start instant, chosen as the earliest confirmed
+broadcast start. This is the sole anchor for local dates, schedules, and ordinary
+reminders, exactly as for sports games. The MMA variant adds a timings object
+with required prelims and main timestamps. Early prelims belong to prelims, whose
+start is the earliest confirmed preliminary broadcast. Cards without both
+confirmed broadcast times remain outside the published catalog.
+Emails and schedules use those fields for enrichment, never individual fight
+start estimates. Do not invent missing segment times. Do not import a new card
+until its event and main-card starts are confirmed. Incomplete source updates
+retain previously confirmed timings; a confirmed postponement with no replacement
+time must explicitly deactivate the card until a new start is confirmed.
+Cancelled cards don't qualify. A card's fights and participant rows describe its current
+lineup; withdrawals remove a fight or update its participants. New fights enter
+the catalog only after UFC confirms their prelims/main placement. Keep existing
+confirmed placement when an incomplete source update omits it. The checked-in
+card and participant snapshot is authoritative. When reviewing incomplete source data, retain known fights and
+metadata unless a change is confirmed. Catalog publication is a separate rollout
+step; coverage choices apply to catalogued UFC events.
+
+Backend and UI reader support must be released before publishing UFC
+catalog subjects and cards. Existing team subscriptions remain unchanged.

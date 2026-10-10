@@ -1,5 +1,12 @@
 import { Array, Effect, pipe, Schema, SchemaIssue } from "effect";
 
+export const hasMatchingDetailsTag = Schema.makeFilter(
+  (row: {
+    readonly _tag: string;
+    readonly details: { readonly _tag: string };
+  }) => row._tag === row.details._tag || "Row tag must match details tag",
+);
+
 export const whenSchemaIssue =
   <A, E, R>(callback: (issue: SchemaIssue.Issue) => Effect.Effect<A, E, R>) =>
   (error: unknown) =>
