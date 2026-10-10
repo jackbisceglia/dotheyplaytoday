@@ -472,11 +472,17 @@ match timings.prelims.
 The existing range queries, local-date handling, and notification scheduler are
 unchanged. No database migration is needed.
 
-Delivery remains per subscription, including last-send state and provider
-idempotency keys. UFC dashboard rendering follows in the third PR. Until then,
-the web interface narrows the expanded contracts to supported sports teams and
-games.
+UFC follows the sports catalog layout: `mma/ufc/{subjects,events,index}.ts` exports
+a collection registered in `SeedCollections`. The shared catalog importer,
+development subset, summaries, and historical cutoff apply to both families.
+The importer uses existing Subjects/Events services in one transaction, with
+MMA-specific identity validation and reconciliation of MMA feed edges for each
+imported card. Sports feed writes retain their existing additive behavior. Checked-in card snapshots replace the event JSON
+through the ordinary event upsert. Omitted cards remain untouched; source review
+preserves known information when upstream listings are incomplete. Delivery
+remains per subscription, including last-send state and provider idempotency keys.
+UFC dashboard rendering follows in the third PR. Until then, the web interface
+narrows the expanded contracts to sports teams and games.
 
-Release all backend and UI readers before UFC catalog publication. The importer
-is the second PR and the UI is the third; keep the seed revision gated until
-the complete stack is ready. No database migration or backfill is required.
+See [UFC catalog updates](./runbooks/update-ufc-catalog.md) for source authority,
+broadcast timing, rollout ordering, and the local PostgreSQL integration test.

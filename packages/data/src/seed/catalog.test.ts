@@ -1,10 +1,21 @@
-import { Database, Events, Subjects } from "@dtpt/core";
+import {
+  Database,
+  Events,
+  Subjects,
+  Subject,
+  SubjectNotFound,
+} from "@dtpt/core";
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { TestClock } from "effect/testing";
 import { vi } from "vitest";
 
-import { decodeSportsSeedCollections, seedCatalog } from "./catalog.js";
+import {
+  decodeSeedCollections,
+  seedCatalog,
+  summarizeCatalog,
+} from "./catalog.js";
+import { ufcCollection } from "../mma/ufc/index.js";
 import { SeedCollections } from "./index.js";
 
 const template = SeedCollections[0];
@@ -41,18 +52,30 @@ const seedServices = () => {
   );
   const transaction = vi.fn((body: () => Effect.Effect<void>) => body());
 
+  const reconcile = vi.fn(() => Effect.void);
   const layer = Layer.mergeAll(
-    // lint(anti-slop/require-safety-comment-for-type-assertion): The importer only invokes transaction; all domain writes use the service fakes.
+    // lint(anti-slop/require-safety-comment-for-type-assertion): Only the database methods used by catalog seeding are supplied; domain writes use service fakes.
     // oxlint-disable-next-line anti-slop/no-chained-type-assertions -- This fixture intentionally omits unused Drizzle methods.
-    Layer.succeed(Database, { transaction } as unknown as Database),
+    Layer.succeed(Database, {
+      transaction,
+    } as unknown as Database),
     Layer.mock(Events, { upsert, setParticipants: participants }),
     Layer.mock(Subjects, {
       upsert: (subject) => Effect.succeed(subject),
       addEventToFeed: addFeed,
+      removeEventFromFeeds: reconcile,
+      get: (id) => {
+        const subject = ufcCollection.subjects.find(
+          (subject) => subject.id === id,
+        );
+        return subject
+          ? Schema.decodeUnknownEffect(Subject)(subject)
+          : Effect.fail(new SubjectNotFound({ key: "id", value: id }));
+      },
     }),
   );
 
-  return { upsert, participants, addFeed, transaction, layer };
+  return { upsert, participants, addFeed, transaction, reconcile, layer };
 };
 
 describe("catalog seed cutoff", () => {
@@ -80,7 +103,7 @@ describe("catalog seed cutoff", () => {
       Effect.gen(function* () {
         // The boundary case is still October 7 in New York; use UTC.
         yield* TestClock.setTime(Date.parse(now));
-        const decoded = yield* decodeSportsSeedCollections(input);
+        const decoded = yield* decodeSeedCollections(input);
         const collection = decoded[0];
         if (!collection) throw new Error("Missing decoded fixture");
         const expected = collection.events.slice(skip);
@@ -112,6 +135,42 @@ describe("catalog seed cutoff", () => {
         );
         expect(imported.subjects.map((subject) => subject.id)).toEqual(
           collection.subjects.map((subject) => subject.id),
+        );
+      }),
+    );
+  }
+});
+
+describe("UFC uses the shared catalog workflow", () => {
+  for (const strategy of ["future", "all"] as const) {
+    it.effect(`applies the ${strategy} strategy to UFC events and feeds`, () =>
+      Effect.gen(function* () {
+        yield* TestClock.setTime(
+          Math.max(
+            ...ufcCollection.events.map((event) => Date.parse(event.startsAt)),
+          ) +
+            3 * 24 * 60 * 60 * 1000,
+        );
+        const { upsert, reconcile, addFeed, layer } = seedServices();
+        const collections = yield* seedCatalog({
+          collections: [ufcCollection],
+          strategy,
+        }).pipe(Effect.provide(layer));
+        const expectedCount =
+          strategy === "all" ? ufcCollection.events.length : 0;
+        expect(upsert).toHaveBeenCalledTimes(expectedCount);
+        expect(reconcile).toHaveBeenCalledTimes(expectedCount);
+        expect(addFeed).toHaveBeenCalledTimes(
+          strategy === "all"
+            ? ufcCollection.subjects.flatMap((subject) => subject.feedIds)
+                .length
+            : 0,
+        );
+        expect(summarizeCatalog(collections)).toContain(
+          `events=${expectedCount.toString()}`,
+        );
+        expect(collections[0]?.subjects).toHaveLength(
+          ufcCollection.subjects.length,
         );
       }),
     );

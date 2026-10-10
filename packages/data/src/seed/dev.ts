@@ -1,6 +1,6 @@
 import { DateTime } from "effect";
 
-import type { SportsSeedInput } from "./catalog.js";
+import type { SeedCollectionInput } from "../schema/catalog.js";
 import { SeedCollections } from "./index.js";
 
 const DevSeedWindowDays = 2;
@@ -16,7 +16,9 @@ export const devSeedWindow = (now: Date): DevSeedWindow => {
   return { from, to: DateTime.add(from, { days: DevSeedWindowDays }) };
 };
 
-export const subsetEvents = <Collection extends (typeof SeedCollections)[number]>(
+export const subsetEvents = <
+  Collection extends (typeof SeedCollections)[number],
+>(
   collection: Collection,
   window: DevSeedWindow,
 ) => {
@@ -42,7 +44,7 @@ export const subsetEvents = <Collection extends (typeof SeedCollections)[number]
   };
 };
 
-export const buildDevSeed = (now: Date = new Date()): SportsSeedInput[] =>
+export const buildDevSeed = (now: Date = new Date()): SeedCollectionInput[] =>
   SeedCollections.map((collection) =>
     subsetEvents(collection, devSeedWindow(now)),
   );

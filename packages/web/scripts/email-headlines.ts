@@ -12,6 +12,7 @@ import { confirmationLines } from "@dtpt/core/modules/email/transactional/confir
 import { signInLines } from "@dtpt/core/modules/email/transactional/sign-in";
 import { gameDayLines, kickoffLines } from "@dtpt/core/modules/notifier/email";
 import { SeedCollections } from "@dtpt/data/seed/index";
+import { Predicate } from "effect";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -128,7 +129,11 @@ if (contentHeight !== HEIGHT) {
 }
 
 const teams = SeedCollections.flatMap((collection) =>
-  collection.subjects.map((subject) => gameDayLines(subject.details)),
+  collection.subjects.flatMap((subject) =>
+    Predicate.isTagged(subject.details, "sports_team")
+      ? [gameDayLines(subject.details)]
+      : [],
+  ),
 );
 
 // Teams that share a name ("Kings", "Giants") share one image.
