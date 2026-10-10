@@ -52,7 +52,7 @@ export const MmaEventSeed = Schema.Struct({
     Schema.makeFilter(function hasValidFights(participants) {
       const fighters = participants.map((participant) => participant.details);
       if (
-        new Set(fighters.map((fighter) => fighter.subjectId)).size !==
+        new Set(fighters.map((fighter) => fighter.title)).size !==
         fighters.length
       ) {
         return "A fighter cannot occupy multiple slots on a card";

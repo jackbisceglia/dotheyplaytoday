@@ -21,7 +21,7 @@ export const Fighters = {
       display: "Natalia Silva",
       profileUrl: "https://www.ufc.com/athlete/natalia-silva",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000001"),
+    feedIds: getFighterFeedIds("Natalia Silva"),
   },
   WangCong: {
     id: "c759cf80-2526-432b-8010-000000000002",
@@ -32,7 +32,7 @@ export const Fighters = {
       display: "Wang Cong",
       profileUrl: "https://www.ufc.com/athlete/wang-cong",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000002"),
+    feedIds: getFighterFeedIds("Wang Cong"),
   },
   BrendanAllen: {
     id: "c759cf80-2526-432b-8010-000000000003",
@@ -43,7 +43,7 @@ export const Fighters = {
       display: "Brendan Allen",
       profileUrl: "https://www.ufc.com/athlete/brendan-allen",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000003"),
+    feedIds: getFighterFeedIds("Brendan Allen"),
   },
   ChristianLeroyDuncan: {
     id: "c759cf80-2526-432b-8010-000000000004",
@@ -54,7 +54,7 @@ export const Fighters = {
       display: "Christian Leroy Duncan",
       profileUrl: "https://www.ufc.com/athlete/christian-leroy-duncan",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000004"),
+    feedIds: getFighterFeedIds("Christian Leroy Duncan"),
   },
   MatheusCamilo: {
     id: "c759cf80-2526-432b-8010-000000000005",
@@ -65,7 +65,7 @@ export const Fighters = {
       display: "Matheus Camilo",
       profileUrl: "https://www.ufc.com/athlete/matheus-camilo",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000005"),
+    feedIds: getFighterFeedIds("Matheus Camilo"),
   },
   JaiHerbert: {
     id: "c759cf80-2526-432b-8010-000000000006",
@@ -76,7 +76,7 @@ export const Fighters = {
       display: "Jai Herbert",
       profileUrl: "https://www.ufc.com/athlete/jai-herbert",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000006"),
+    feedIds: getFighterFeedIds("Jai Herbert"),
   },
   LoopyGodinez: {
     id: "c759cf80-2526-432b-8010-000000000007",
@@ -87,7 +87,7 @@ export const Fighters = {
       display: "Loopy Godinez",
       profileUrl: "https://www.ufc.com/athlete/loopy-godinez",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000007"),
+    feedIds: getFighterFeedIds("Loopy Godinez"),
   },
   KetlenSouza: {
     id: "c759cf80-2526-432b-8010-000000000008",
@@ -98,7 +98,7 @@ export const Fighters = {
       display: "Ketlen Souza",
       profileUrl: "https://www.ufc.com/athlete/ketlen-souza",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000008"),
+    feedIds: getFighterFeedIds("Ketlen Souza"),
   },
   AndreFili: {
     id: "c759cf80-2526-432b-8010-000000000009",
@@ -109,7 +109,7 @@ export const Fighters = {
       display: "Andre Fili",
       profileUrl: "https://www.ufc.com/athlete/andre-fili",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000009"),
+    feedIds: getFighterFeedIds("Andre Fili"),
   },
   KaiKamakaIII: {
     id: "c759cf80-2526-432b-8010-000000000010",
@@ -120,7 +120,7 @@ export const Fighters = {
       display: "Kai Kamaka III",
       profileUrl: "https://www.ufc.com/athlete/kai-kamaka-iii",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000010"),
+    feedIds: getFighterFeedIds("Kai Kamaka III"),
   },
   MalcolmWellmaker: {
     id: "c759cf80-2526-432b-8010-000000000011",
@@ -131,7 +131,7 @@ export const Fighters = {
       display: "Malcolm Wellmaker",
       profileUrl: "https://www.ufc.com/athlete/malcolm-wellmaker",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000011"),
+    feedIds: getFighterFeedIds("Malcolm Wellmaker"),
   },
   OtariTanzilovi: {
     id: "c759cf80-2526-432b-8010-000000000012",
@@ -142,7 +142,7 @@ export const Fighters = {
       display: "Otari Tanzilovi",
       profileUrl: "https://www.ufc.com/athlete/otari-tanzilovi",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000012"),
+    feedIds: getFighterFeedIds("Otari Tanzilovi"),
   },
   JuliusWalker: {
     id: "c759cf80-2526-432b-8010-000000000013",
@@ -153,7 +153,7 @@ export const Fighters = {
       display: "Julius Walker",
       profileUrl: "https://www.ufc.com/athlete/julius-walker",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000013"),
+    feedIds: getFighterFeedIds("Julius Walker"),
   },
   GeraldMeerschaert: {
     id: "c759cf80-2526-432b-8010-000000000014",
@@ -164,7 +164,7 @@ export const Fighters = {
       display: "Gerald Meerschaert",
       profileUrl: "https://www.ufc.com/athlete/gerald-meerschaert",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000014"),
+    feedIds: getFighterFeedIds("Gerald Meerschaert"),
   },
   FranciscoPrado: {
     id: "c759cf80-2526-432b-8010-000000000015",
@@ -175,7 +175,7 @@ export const Fighters = {
       display: "Francisco Prado",
       profileUrl: "https://www.ufc.com/athlete/francisco-prado",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000015"),
+    feedIds: getFighterFeedIds("Francisco Prado"),
   },
   IsmaelBonfim: {
     id: "c759cf80-2526-432b-8010-000000000016",
@@ -186,7 +186,7 @@ export const Fighters = {
       display: "Ismael Bonfim",
       profileUrl: "https://www.ufc.com/athlete/ismael-bonfim",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000016"),
+    feedIds: getFighterFeedIds("Ismael Bonfim"),
   },
   NikoPrice: {
     id: "c759cf80-2526-432b-8010-000000000017",
@@ -197,7 +197,7 @@ export const Fighters = {
       display: "Niko Price",
       profileUrl: "https://www.ufc.com/athlete/niko-price",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000017"),
+    feedIds: getFighterFeedIds("Niko Price"),
   },
   LeonShahbazyan: {
     id: "c759cf80-2526-432b-8010-000000000018",
@@ -208,7 +208,7 @@ export const Fighters = {
       display: "Leon Shahbazyan",
       profileUrl: "https://www.ufc.com/athlete/leon-shahbazyan",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000018"),
+    feedIds: getFighterFeedIds("Leon Shahbazyan"),
   },
   FelipeFranco: {
     id: "c759cf80-2526-432b-8010-000000000019",
@@ -219,7 +219,7 @@ export const Fighters = {
       display: "Felipe Franco",
       profileUrl: "https://www.ufc.com/athlete/felipe-franco",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000019"),
+    feedIds: getFighterFeedIds("Felipe Franco"),
   },
   BrendsonRibeiro: {
     id: "c759cf80-2526-432b-8010-000000000020",
@@ -230,7 +230,7 @@ export const Fighters = {
       display: "Brendson Ribeiro",
       profileUrl: "https://www.ufc.com/athlete/brendson-ribeiro",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000020"),
+    feedIds: getFighterFeedIds("Brendson Ribeiro"),
   },
   AllenFryeJr: {
     id: "c759cf80-2526-432b-8010-000000000021",
@@ -241,7 +241,7 @@ export const Fighters = {
       display: "Allen Frye Jr.",
       profileUrl: "https://www.ufc.com/athlete/allen-frye-jr",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000021"),
+    feedIds: getFighterFeedIds("Allen Frye Jr."),
   },
   RJHarris: {
     id: "c759cf80-2526-432b-8010-000000000022",
@@ -252,7 +252,7 @@ export const Fighters = {
       display: "RJ Harris",
       profileUrl: "https://www.ufc.com/athlete/rj-harris",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000022"),
+    feedIds: getFighterFeedIds("RJ Harris"),
   },
   AlicePereira: {
     id: "c759cf80-2526-432b-8010-000000000023",
@@ -263,7 +263,7 @@ export const Fighters = {
       display: "Alice Pereira",
       profileUrl: "https://www.ufc.com/athlete/alice-pereira",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000023"),
+    feedIds: getFighterFeedIds("Alice Pereira"),
   },
   DariaZhelezniakova: {
     id: "c759cf80-2526-432b-8010-000000000024",
@@ -274,7 +274,7 @@ export const Fighters = {
       display: "Daria Zhelezniakova",
       profileUrl: "https://www.ufc.com/athlete/dariya-zheleznyakova",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000024"),
+    feedIds: getFighterFeedIds("Daria Zhelezniakova"),
   },
   ErnestaKareckaite: {
     id: "c759cf80-2526-432b-8010-000000000025",
@@ -285,7 +285,7 @@ export const Fighters = {
       display: "Ernesta Kareckaitė",
       profileUrl: "https://www.ufc.com/athlete/ernesta-kareckaite",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000025"),
+    feedIds: getFighterFeedIds("Ernesta Kareckaitė"),
   },
   MelissaGatto: {
     id: "c759cf80-2526-432b-8010-000000000026",
@@ -296,7 +296,7 @@ export const Fighters = {
       display: "Melissa Gatto",
       profileUrl: "https://www.ufc.com/athlete/melissa-gatto",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000026"),
+    feedIds: getFighterFeedIds("Melissa Gatto"),
   },
   JoaquinBuckley: {
     id: "c759cf80-2526-432b-8010-000000000027",
@@ -307,7 +307,7 @@ export const Fighters = {
       display: "Joaquin Buckley",
       profileUrl: "https://www.ufc.com/athlete/joaquin-buckley",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000027"),
+    feedIds: getFighterFeedIds("Joaquin Buckley"),
   },
   MikeMalott: {
     id: "c759cf80-2526-432b-8010-000000000028",
@@ -318,7 +318,7 @@ export const Fighters = {
       display: "Mike Malott",
       profileUrl: "https://www.ufc.com/athlete/mike-malott",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000028"),
+    feedIds: getFighterFeedIds("Mike Malott"),
   },
   ErinBlanchfield: {
     id: "c759cf80-2526-432b-8010-000000000029",
@@ -329,7 +329,7 @@ export const Fighters = {
       display: "Erin Blanchfield",
       profileUrl: "https://www.ufc.com/athlete/erin-blanchfield",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000029"),
+    feedIds: getFighterFeedIds("Erin Blanchfield"),
   },
   JasmineJasudavicius: {
     id: "c759cf80-2526-432b-8010-000000000030",
@@ -340,7 +340,7 @@ export const Fighters = {
       display: "Jasmine Jasudavicius",
       profileUrl: "https://www.ufc.com/athlete/jasmine-jasudavicius",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000030"),
+    feedIds: getFighterFeedIds("Jasmine Jasudavicius"),
   },
   KyleNelson: {
     id: "c759cf80-2526-432b-8010-000000000031",
@@ -351,7 +351,7 @@ export const Fighters = {
       display: "Kyle Nelson",
       profileUrl: "https://www.ufc.com/athlete/kyle-nelson",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000031"),
+    feedIds: getFighterFeedIds("Kyle Nelson"),
   },
   CristianPerezGonzalez: {
     id: "c759cf80-2526-432b-8010-000000000032",
@@ -362,7 +362,7 @@ export const Fighters = {
       display: "Cristian Perez Gonzalez",
       profileUrl: "https://www.ufc.com/athlete/cristian-perez-gonzalez",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000032"),
+    feedIds: getFighterFeedIds("Cristian Perez Gonzalez"),
   },
   MarcAndreBarriault: {
     id: "c759cf80-2526-432b-8010-000000000033",
@@ -373,7 +373,7 @@ export const Fighters = {
       display: "Marc-Andre Barriault",
       profileUrl: "https://www.ufc.com/athlete/marc-andre-barriault",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000033"),
+    feedIds: getFighterFeedIds("Marc-Andre Barriault"),
   },
   KyleDaukaus: {
     id: "c759cf80-2526-432b-8010-000000000034",
@@ -384,7 +384,7 @@ export const Fighters = {
       display: "Kyle Daukaus",
       profileUrl: "https://www.ufc.com/athlete/kyle-daukaus",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000034"),
+    feedIds: getFighterFeedIds("Kyle Daukaus"),
   },
   LouisJourdain: {
     id: "c759cf80-2526-432b-8010-000000000035",
@@ -395,7 +395,7 @@ export const Fighters = {
       display: "Louis Jourdain",
       profileUrl: "https://www.ufc.com/athlete/louis-jourdain",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000035"),
+    feedIds: getFighterFeedIds("Louis Jourdain"),
   },
   TimmyCuamba: {
     id: "c759cf80-2526-432b-8010-000000000036",
@@ -406,7 +406,7 @@ export const Fighters = {
       display: "Timmy Cuamba",
       profileUrl: "https://www.ufc.com/athlete/timothy-cuamba",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000036"),
+    feedIds: getFighterFeedIds("Timmy Cuamba"),
   },
   MandelNallo: {
     id: "c759cf80-2526-432b-8010-000000000037",
@@ -417,7 +417,7 @@ export const Fighters = {
       display: "Mandel Nallo",
       profileUrl: "https://www.ufc.com/athlete/mandel-nallo",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000037"),
+    feedIds: getFighterFeedIds("Mandel Nallo"),
   },
   NateLandwehr: {
     id: "c759cf80-2526-432b-8010-000000000038",
@@ -428,7 +428,7 @@ export const Fighters = {
       display: "Nate Landwehr",
       profileUrl: "https://www.ufc.com/athlete/nate-landwehr",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000038"),
+    feedIds: getFighterFeedIds("Nate Landwehr"),
   },
   TannerBoser: {
     id: "c759cf80-2526-432b-8010-000000000039",
@@ -439,7 +439,7 @@ export const Fighters = {
       display: "Tanner Boser",
       profileUrl: "https://www.ufc.com/athlete/tanner-boser",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000039"),
+    feedIds: getFighterFeedIds("Tanner Boser"),
   },
   JhonataDiniz: {
     id: "c759cf80-2526-432b-8010-000000000040",
@@ -450,7 +450,7 @@ export const Fighters = {
       display: "Jhonata Diniz",
       profileUrl: "https://www.ufc.com/athlete/jhonata-diniz",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000040"),
+    feedIds: getFighterFeedIds("Jhonata Diniz"),
   },
   JulienLeblanc: {
     id: "c759cf80-2526-432b-8010-000000000041",
@@ -461,7 +461,7 @@ export const Fighters = {
       display: "Julien Leblanc",
       profileUrl: "https://www.ufc.com/athlete/julien-leblanc",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000041"),
+    feedIds: getFighterFeedIds("Julien Leblanc"),
   },
   NickGalanti: {
     id: "c759cf80-2526-432b-8010-000000000042",
@@ -472,7 +472,7 @@ export const Fighters = {
       display: "Nick Galanti",
       profileUrl: "https://www.ufc.com/athlete/nick-galanti",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000042"),
+    feedIds: getFighterFeedIds("Nick Galanti"),
   },
   JavadMahjoub: {
     id: "c759cf80-2526-432b-8010-000000000043",
@@ -483,7 +483,7 @@ export const Fighters = {
       display: "Javad Mahjoub",
       profileUrl: "https://www.ufc.com/athlete/javad-mahjoub",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000043"),
+    feedIds: getFighterFeedIds("Javad Mahjoub"),
   },
   JoelFaglier: {
     id: "c759cf80-2526-432b-8010-000000000044",
@@ -494,7 +494,7 @@ export const Fighters = {
       display: "Joel Faglier",
       profileUrl: "https://www.ufc.com/athlete/joel-faglier",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000044"),
+    feedIds: getFighterFeedIds("Joel Faglier"),
   },
   JameyLynHorth: {
     id: "c759cf80-2526-432b-8010-000000000045",
@@ -505,7 +505,7 @@ export const Fighters = {
       display: "Jamey-Lyn Horth",
       profileUrl: "https://www.ufc.com/athlete/jamey-lyn-horth",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000045"),
+    feedIds: getFighterFeedIds("Jamey-Lyn Horth"),
   },
   KatlynCerminara: {
     id: "c759cf80-2526-432b-8010-000000000046",
@@ -516,7 +516,7 @@ export const Fighters = {
       display: "Katlyn Cerminara",
       profileUrl: "https://www.ufc.com/athlete/katlyn-cerminara",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000046"),
+    feedIds: getFighterFeedIds("Katlyn Cerminara"),
   },
   ChadAnheliger: {
     id: "c759cf80-2526-432b-8010-000000000047",
@@ -527,7 +527,7 @@ export const Fighters = {
       display: "Chad Anheliger",
       profileUrl: "https://www.ufc.com/athlete/chad-anheliger",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000047"),
+    feedIds: getFighterFeedIds("Chad Anheliger"),
   },
   StevenKoslow: {
     id: "c759cf80-2526-432b-8010-000000000048",
@@ -538,7 +538,7 @@ export const Fighters = {
       display: "Steven Koslow",
       profileUrl: "https://www.ufc.com/athlete/steven-koslow",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000048"),
+    feedIds: getFighterFeedIds("Steven Koslow"),
   },
   MelissaCroden: {
     id: "c759cf80-2526-432b-8010-000000000049",
@@ -549,7 +549,7 @@ export const Fighters = {
       display: "Melissa Croden",
       profileUrl: "https://www.ufc.com/athlete/melissa-croden",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000049"),
+    feedIds: getFighterFeedIds("Melissa Croden"),
   },
   ChelseaChandler: {
     id: "c759cf80-2526-432b-8010-000000000050",
@@ -560,7 +560,7 @@ export const Fighters = {
       display: "Chelsea Chandler",
       profileUrl: "https://www.ufc.com/athlete/chelsea-chandler",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000050"),
+    feedIds: getFighterFeedIds("Chelsea Chandler"),
   },
   CodyChovancek: {
     id: "c759cf80-2526-432b-8010-000000000051",
@@ -571,7 +571,7 @@ export const Fighters = {
       display: "Cody Chovancek",
       profileUrl: "https://www.ufc.com/athlete/cody-chovancek",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000051"),
+    feedIds: getFighterFeedIds("Cody Chovancek"),
   },
   SuYoungYou: {
     id: "c759cf80-2526-432b-8010-000000000052",
@@ -582,7 +582,7 @@ export const Fighters = {
       display: "SuYoung You",
       profileUrl: "https://www.ufc.com/athlete/suyoung-you",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000052"),
+    feedIds: getFighterFeedIds("SuYoung You"),
   },
   AlexanderVolkanovski: {
     id: "c759cf80-2526-432b-8010-000000000053",
@@ -593,7 +593,7 @@ export const Fighters = {
       display: "Alexander Volkanovski",
       profileUrl: "https://www.ufc.com/athlete/alexander-volkanovski",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000053"),
+    feedIds: getFighterFeedIds("Alexander Volkanovski"),
   },
   MovsarEvloev: {
     id: "c759cf80-2526-432b-8010-000000000054",
@@ -604,7 +604,7 @@ export const Fighters = {
       display: "Movsar Evloev",
       profileUrl: "https://www.ufc.com/athlete/movsar-evloev",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000054"),
+    feedIds: getFighterFeedIds("Movsar Evloev"),
   },
   PetrYan: {
     id: "c759cf80-2526-432b-8010-000000000055",
@@ -615,7 +615,7 @@ export const Fighters = {
       display: "Petr Yan",
       profileUrl: "https://www.ufc.com/athlete/petr-yan",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000055"),
+    feedIds: getFighterFeedIds("Petr Yan"),
   },
   MerabDvalishvili: {
     id: "c759cf80-2526-432b-8010-000000000056",
@@ -626,7 +626,7 @@ export const Fighters = {
       display: "Merab Dvalishvili",
       profileUrl: "https://www.ufc.com/athlete/merab-dvalishvili",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000056"),
+    feedIds: getFighterFeedIds("Merab Dvalishvili"),
   },
   LoneerKavanagh: {
     id: "c759cf80-2526-432b-8010-000000000057",
@@ -637,7 +637,7 @@ export const Fighters = {
       display: "Lone’er Kavanagh",
       profileUrl: "https://www.ufc.com/athlete/loneer-kavanagh",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000057"),
+    feedIds: getFighterFeedIds("Lone’er Kavanagh"),
   },
   RamazanTemirov: {
     id: "c759cf80-2526-432b-8010-000000000058",
@@ -648,7 +648,7 @@ export const Fighters = {
       display: "Ramazan Temirov",
       profileUrl: "https://www.ufc.com/athlete/ramazan-temirov",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000058"),
+    feedIds: getFighterFeedIds("Ramazan Temirov"),
   },
   AlexanderVolkov: {
     id: "c759cf80-2526-432b-8010-000000000059",
@@ -659,7 +659,7 @@ export const Fighters = {
       display: "Alexander Volkov",
       profileUrl: "https://www.ufc.com/athlete/alexander-volkov",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000059"),
+    feedIds: getFighterFeedIds("Alexander Volkov"),
   },
   RizvanKuniev: {
     id: "c759cf80-2526-432b-8010-000000000060",
@@ -670,7 +670,7 @@ export const Fighters = {
       display: "Rizvan Kuniev",
       profileUrl: "https://www.ufc.com/athlete/rizvan-kuniev",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000060"),
+    feedIds: getFighterFeedIds("Rizvan Kuniev"),
   },
   AaronPico: {
     id: "c759cf80-2526-432b-8010-000000000061",
@@ -681,7 +681,7 @@ export const Fighters = {
       display: "Aaron Pico",
       profileUrl: "https://www.ufc.com/athlete/aaron-pico",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000061"),
+    feedIds: getFighterFeedIds("Aaron Pico"),
   },
   LoseneKeita: {
     id: "c759cf80-2526-432b-8010-000000000062",
@@ -692,7 +692,7 @@ export const Fighters = {
       display: "Losene Keita",
       profileUrl: "https://www.ufc.com/athlete/losene-keita",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000062"),
+    feedIds: getFighterFeedIds("Losene Keita"),
   },
   AzamatMurzakanov: {
     id: "c759cf80-2526-432b-8010-000000000063",
@@ -703,7 +703,7 @@ export const Fighters = {
       display: "Azamat Murzakanov",
       profileUrl: "https://www.ufc.com/athlete/azamat-murzakanov",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000063"),
+    feedIds: getFighterFeedIds("Azamat Murzakanov"),
   },
   DominickReyes: {
     id: "c759cf80-2526-432b-8010-000000000064",
@@ -714,7 +714,7 @@ export const Fighters = {
       display: "Dominick Reyes",
       profileUrl: "https://www.ufc.com/athlete/dominick-reyes",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000064"),
+    feedIds: getFighterFeedIds("Dominick Reyes"),
   },
   NikitaKrylov: {
     id: "c759cf80-2526-432b-8010-000000000065",
@@ -725,7 +725,7 @@ export const Fighters = {
       display: "Nikita Krylov",
       profileUrl: "https://www.ufc.com/athlete/nikita-krylov",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000065"),
+    feedIds: getFighterFeedIds("Nikita Krylov"),
   },
   AbdulRakhmanYakhyaev: {
     id: "c759cf80-2526-432b-8010-000000000066",
@@ -736,7 +736,7 @@ export const Fighters = {
       display: "Abdul Rakhman Yakhyaev",
       profileUrl: "https://www.ufc.com/athlete/abdulrakhman-yakhyaev",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000066"),
+    feedIds: getFighterFeedIds("Abdul Rakhman Yakhyaev"),
   },
   AbusMagomedov: {
     id: "c759cf80-2526-432b-8010-000000000067",
@@ -747,7 +747,7 @@ export const Fighters = {
       display: "Abus Magomedov",
       profileUrl: "https://www.ufc.com/athlete/abus-magomedov",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000067"),
+    feedIds: getFighterFeedIds("Abus Magomedov"),
   },
   CamRowston: {
     id: "c759cf80-2526-432b-8010-000000000068",
@@ -758,7 +758,7 @@ export const Fighters = {
       display: "Cam Rowston",
       profileUrl: "https://www.ufc.com/athlete/cameron-rowston",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000068"),
+    feedIds: getFighterFeedIds("Cam Rowston"),
   },
   GrantDawson: {
     id: "c759cf80-2526-432b-8010-000000000069",
@@ -769,7 +769,7 @@ export const Fighters = {
       display: "Grant Dawson",
       profileUrl: "https://www.ufc.com/athlete/grant-dawson",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000069"),
+    feedIds: getFighterFeedIds("Grant Dawson"),
   },
   NurulloAliev: {
     id: "c759cf80-2526-432b-8010-000000000070",
@@ -780,7 +780,7 @@ export const Fighters = {
       display: "Nurullo Aliev",
       profileUrl: "https://www.ufc.com/athlete/nurullo-aliev",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000070"),
+    feedIds: getFighterFeedIds("Nurullo Aliev"),
   },
   RenatoMoicano: {
     id: "c759cf80-2526-432b-8010-000000000071",
@@ -791,7 +791,7 @@ export const Fighters = {
       display: "Renato Moicano",
       profileUrl: "https://www.ufc.com/athlete/renato-moicano",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000071"),
+    feedIds: getFighterFeedIds("Renato Moicano"),
   },
   TomNolan: {
     id: "c759cf80-2526-432b-8010-000000000072",
@@ -802,7 +802,7 @@ export const Fighters = {
       display: "Tom Nolan",
       profileUrl: "https://www.ufc.com/athlete/tom-nolan",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000072"),
+    feedIds: getFighterFeedIds("Tom Nolan"),
   },
   RandyBrown: {
     id: "c759cf80-2526-432b-8010-000000000073",
@@ -813,7 +813,7 @@ export const Fighters = {
       display: "Randy Brown",
       profileUrl: "https://www.ufc.com/athlete/randy-brown",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000073"),
+    feedIds: getFighterFeedIds("Randy Brown"),
   },
   CarlosLeal: {
     id: "c759cf80-2526-432b-8010-000000000074",
@@ -824,7 +824,7 @@ export const Fighters = {
       display: "Carlos Leal",
       profileUrl: "https://www.ufc.com/athlete/carlos-leal",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000074"),
+    feedIds: getFighterFeedIds("Carlos Leal"),
   },
   LuciaSzabova: {
     id: "c759cf80-2526-432b-8010-000000000075",
@@ -834,7 +834,7 @@ export const Fighters = {
       leagueId: "ufc",
       display: "Lucia Szabova",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000075"),
+    feedIds: getFighterFeedIds("Lucia Szabova"),
   },
   TainaraLisboa: {
     id: "c759cf80-2526-432b-8010-000000000076",
@@ -845,7 +845,7 @@ export const Fighters = {
       display: "Tainara Lisboa",
       profileUrl: "https://www.ufc.com/athlete/tainara-lisboa",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000076"),
+    feedIds: getFighterFeedIds("Tainara Lisboa"),
   },
   YanaSantos: {
     id: "c759cf80-2526-432b-8010-000000000077",
@@ -856,7 +856,7 @@ export const Fighters = {
       display: "Yana Santos",
       profileUrl: "https://www.ufc.com/athlete/yana-santos",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000077"),
+    feedIds: getFighterFeedIds("Yana Santos"),
   },
   LuanaSantos: {
     id: "c759cf80-2526-432b-8010-000000000078",
@@ -867,7 +867,7 @@ export const Fighters = {
       display: "Luana Santos",
       profileUrl: "https://www.ufc.com/athlete/luana-santos",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000078"),
+    feedIds: getFighterFeedIds("Luana Santos"),
   },
   TalitaAlencar: {
     id: "c759cf80-2526-432b-8010-000000000079",
@@ -878,7 +878,7 @@ export const Fighters = {
       display: "Talita Alencar",
       profileUrl: "https://www.ufc.com/athlete/talita-alencar",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000079"),
+    feedIds: getFighterFeedIds("Talita Alencar"),
   },
   PieraRodriguez: {
     id: "c759cf80-2526-432b-8010-000000000080",
@@ -889,7 +889,7 @@ export const Fighters = {
       display: "Piera Rodriguez",
       profileUrl: "https://www.ufc.com/athlete/piera-rodriguez",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000080"),
+    feedIds: getFighterFeedIds("Piera Rodriguez"),
   },
   NickKlein: {
     id: "c759cf80-2526-432b-8010-000000000081",
@@ -900,7 +900,7 @@ export const Fighters = {
       display: "Nick Klein",
       profileUrl: "https://www.ufc.com/athlete/nick-klein",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000081"),
+    feedIds: getFighterFeedIds("Nick Klein"),
   },
   JosephKropschot: {
     id: "c759cf80-2526-432b-8010-000000000082",
@@ -911,7 +911,7 @@ export const Fighters = {
       display: "Joseph Kropschot",
       profileUrl: "https://www.ufc.com/athlete/joseph-kropschot",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000082"),
+    feedIds: getFighterFeedIds("Joseph Kropschot"),
   },
   RodrigoSezinando: {
     id: "c759cf80-2526-432b-8010-000000000083",
@@ -922,7 +922,7 @@ export const Fighters = {
       display: "Rodrigo Sezinando",
       profileUrl: "https://www.ufc.com/athlete/rodrigo-sezinando",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000083"),
+    feedIds: getFighterFeedIds("Rodrigo Sezinando"),
   },
   TheodorBerggren: {
     id: "c759cf80-2526-432b-8010-000000000084",
@@ -933,7 +933,7 @@ export const Fighters = {
       display: "Theodor Berggren",
       profileUrl: "https://www.ufc.com/athlete/theodor-berggren",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000084"),
+    feedIds: getFighterFeedIds("Theodor Berggren"),
   },
   JeanPaulLebosnoyani: {
     id: "c759cf80-2526-432b-8010-000000000085",
@@ -944,7 +944,7 @@ export const Fighters = {
       display: "Jean-Paul Lebosnoyani",
       profileUrl: "https://www.ufc.com/athlete/jean-paul-lebosnoyani",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000085"),
+    feedIds: getFighterFeedIds("Jean-Paul Lebosnoyani"),
   },
   FarmanHasanov: {
     id: "c759cf80-2526-432b-8010-000000000086",
@@ -955,7 +955,7 @@ export const Fighters = {
       display: "Farman Hasanov",
       profileUrl: "https://www.ufc.com/athlete/farman-hasanov",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000086"),
+    feedIds: getFighterFeedIds("Farman Hasanov"),
   },
   AzamatBekoev: {
     id: "c759cf80-2526-432b-8010-000000000087",
@@ -966,7 +966,7 @@ export const Fighters = {
       display: "Azamat Bekoev",
       profileUrl: "https://www.ufc.com/athlete/azamat-bekoev",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000087"),
+    feedIds: getFighterFeedIds("Azamat Bekoev"),
   },
   AndrePetroski: {
     id: "c759cf80-2526-432b-8010-000000000088",
@@ -977,7 +977,7 @@ export const Fighters = {
       display: "Andre Petroski",
       profileUrl: "https://www.ufc.com/athlete/andre-petroski",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000088"),
+    feedIds: getFighterFeedIds("Andre Petroski"),
   },
   JulianErosa: {
     id: "c759cf80-2526-432b-8010-000000000089",
@@ -988,7 +988,7 @@ export const Fighters = {
       display: "Julian Erosa",
       profileUrl: "https://www.ufc.com/athlete/julian-erosa",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000089"),
+    feedIds: getFighterFeedIds("Julian Erosa"),
   },
   JeongYeongLee: {
     id: "c759cf80-2526-432b-8010-000000000090",
@@ -999,7 +999,7 @@ export const Fighters = {
       display: "JeongYeong Lee",
       profileUrl: "https://www.ufc.com/athlete/jeongyeong-lee",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000090"),
+    feedIds: getFighterFeedIds("JeongYeong Lee"),
   },
   FrancisMarshall: {
     id: "c759cf80-2526-432b-8010-000000000091",
@@ -1010,7 +1010,7 @@ export const Fighters = {
       display: "Francis Marshall",
       profileUrl: "https://www.ufc.com/athlete/francis-marshall",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000091"),
+    feedIds: getFighterFeedIds("Francis Marshall"),
   },
   GastonBolanos: {
     id: "c759cf80-2526-432b-8010-000000000092",
@@ -1021,7 +1021,7 @@ export const Fighters = {
       display: "Gaston Bolanos",
       profileUrl: "https://www.ufc.com/athlete/gaston-bolanos",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000092"),
+    feedIds: getFighterFeedIds("Gaston Bolanos"),
   },
   GabrielBonfim: {
     id: "c759cf80-2526-432b-8010-000000000093",
@@ -1032,7 +1032,7 @@ export const Fighters = {
       display: "Gabriel Bonfim",
       profileUrl: "https://www.ufc.com/athlete/gabriel-bonfim",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000093"),
+    feedIds: getFighterFeedIds("Gabriel Bonfim"),
   },
   SeanBrady: {
     id: "c759cf80-2526-432b-8010-000000000094",
@@ -1043,7 +1043,7 @@ export const Fighters = {
       display: "Sean Brady",
       profileUrl: "https://www.ufc.com/athlete/sean-brady",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000094"),
+    feedIds: getFighterFeedIds("Sean Brady"),
   },
   TatianaSuarez: {
     id: "c759cf80-2526-432b-8010-000000000095",
@@ -1054,7 +1054,7 @@ export const Fighters = {
       display: "Tatiana Suarez",
       profileUrl: "https://www.ufc.com/athlete/tatiana-suarez",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000095"),
+    feedIds: getFighterFeedIds("Tatiana Suarez"),
   },
   VirnaJandiroba: {
     id: "c759cf80-2526-432b-8010-000000000096",
@@ -1065,7 +1065,7 @@ export const Fighters = {
       display: "Virna Jandiroba",
       profileUrl: "https://www.ufc.com/athlete/virna-jandiroba",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000096"),
+    feedIds: getFighterFeedIds("Virna Jandiroba"),
   },
   MantasKondratavicius: {
     id: "c759cf80-2526-432b-8010-000000000097",
@@ -1076,7 +1076,7 @@ export const Fighters = {
       display: "Mantas Kondratavicius",
       profileUrl: "https://www.ufc.com/athlete/mantas-kondratavicius",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000097"),
+    feedIds: getFighterFeedIds("Mantas Kondratavicius"),
   },
   WesSchultz: {
     id: "c759cf80-2526-432b-8010-000000000098",
@@ -1087,7 +1087,7 @@ export const Fighters = {
       display: "Wes Schultz",
       profileUrl: "https://www.ufc.com/athlete/wes-schultz",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000098"),
+    feedIds: getFighterFeedIds("Wes Schultz"),
   },
   BillyElekana: {
     id: "c759cf80-2526-432b-8010-000000000099",
@@ -1098,7 +1098,7 @@ export const Fighters = {
       display: "Billy Elekana",
       profileUrl: "https://www.ufc.com/athlete/billy-elekana",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000099"),
+    feedIds: getFighterFeedIds("Billy Elekana"),
   },
   LucasFernando: {
     id: "c759cf80-2526-432b-8010-000000000100",
@@ -1109,7 +1109,7 @@ export const Fighters = {
       display: "Lucas Fernando",
       profileUrl: "https://www.ufc.com/athlete/lucas-fernando",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000100"),
+    feedIds: getFighterFeedIds("Lucas Fernando"),
   },
   AustinBashi: {
     id: "c759cf80-2526-432b-8010-000000000101",
@@ -1120,7 +1120,7 @@ export const Fighters = {
       display: "Austin Bashi",
       profileUrl: "https://www.ufc.com/athlete/austin-bashi",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000101"),
+    feedIds: getFighterFeedIds("Austin Bashi"),
   },
   LucasBrennan: {
     id: "c759cf80-2526-432b-8010-000000000102",
@@ -1131,7 +1131,7 @@ export const Fighters = {
       display: "Lucas Brennan",
       profileUrl: "https://www.ufc.com/athlete/lucas-brennan",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000102"),
+    feedIds: getFighterFeedIds("Lucas Brennan"),
   },
   KarineSilva: {
     id: "c759cf80-2526-432b-8010-000000000103",
@@ -1142,7 +1142,7 @@ export const Fighters = {
       display: "Karine Silva",
       profileUrl: "https://www.ufc.com/athlete/karine-silva",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000103"),
+    feedIds: getFighterFeedIds("Karine Silva"),
   },
   GabriellaFernandes: {
     id: "c759cf80-2526-432b-8010-000000000104",
@@ -1153,7 +1153,7 @@ export const Fighters = {
       display: "Gabriella Fernandes",
       profileUrl: "https://www.ufc.com/athlete/gabriella-fernandes",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000104"),
+    feedIds: getFighterFeedIds("Gabriella Fernandes"),
   },
   PriscilaCachoeira: {
     id: "c759cf80-2526-432b-8010-000000000105",
@@ -1164,7 +1164,7 @@ export const Fighters = {
       display: "Priscila Cachoeira",
       profileUrl: "https://www.ufc.com/athlete/priscila-cachoeira",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000105"),
+    feedIds: getFighterFeedIds("Priscila Cachoeira"),
   },
   NinaMilosevic: {
     id: "c759cf80-2526-432b-8010-000000000106",
@@ -1175,7 +1175,7 @@ export const Fighters = {
       display: "Nina Milošević",
       profileUrl: "https://www.ufc.com/athlete/nina-milosevic",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000106"),
+    feedIds: getFighterFeedIds("Nina Milošević"),
   },
   KeiichiroNakamura: {
     id: "c759cf80-2526-432b-8010-000000000107",
@@ -1186,7 +1186,7 @@ export const Fighters = {
       display: "Keiichiro Nakamura",
       profileUrl: "https://www.ufc.com/athlete/keiichiro-nakamura",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000107"),
+    feedIds: getFighterFeedIds("Keiichiro Nakamura"),
   },
   OllieSchmid: {
     id: "c759cf80-2526-432b-8010-000000000108",
@@ -1197,7 +1197,7 @@ export const Fighters = {
       display: "Ollie Schmid",
       profileUrl: "https://www.ufc.com/athlete/ollie-schmid",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000108"),
+    feedIds: getFighterFeedIds("Ollie Schmid"),
   },
   SeokhyeonKo: {
     id: "c759cf80-2526-432b-8010-000000000109",
@@ -1208,7 +1208,7 @@ export const Fighters = {
       display: "Seokhyeon Ko",
       profileUrl: "https://www.ufc.com/athlete/seokhyeon-ko",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000109"),
+    feedIds: getFighterFeedIds("Seokhyeon Ko"),
   },
   WellingtonTurman: {
     id: "c759cf80-2526-432b-8010-000000000110",
@@ -1219,7 +1219,7 @@ export const Fighters = {
       display: "Wellington Turman",
       profileUrl: "https://www.ufc.com/athlete/wellington-turman",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000110"),
+    feedIds: getFighterFeedIds("Wellington Turman"),
   },
   JonnyParsons: {
     id: "c759cf80-2526-432b-8010-000000000111",
@@ -1230,7 +1230,7 @@ export const Fighters = {
       display: "Jonny Parsons",
       profileUrl: "https://www.ufc.com/athlete/jonny-parsons",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000111"),
+    feedIds: getFighterFeedIds("Jonny Parsons"),
   },
   JoseSouza: {
     id: "c759cf80-2526-432b-8010-000000000112",
@@ -1241,7 +1241,7 @@ export const Fighters = {
       display: "José Souza",
       profileUrl: "https://www.ufc.com/athlete/jose-henrique",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000112"),
+    feedIds: getFighterFeedIds("José Souza"),
   },
   DaveyGrant: {
     id: "c759cf80-2526-432b-8010-000000000113",
@@ -1252,7 +1252,7 @@ export const Fighters = {
       display: "Davey Grant",
       profileUrl: "https://www.ufc.com/athlete/davey-grant",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000113"),
+    feedIds: getFighterFeedIds("Davey Grant"),
   },
   ElijahSmith: {
     id: "c759cf80-2526-432b-8010-000000000114",
@@ -1263,7 +1263,7 @@ export const Fighters = {
       display: "Elijah Smith",
       profileUrl: "https://www.ufc.com/athlete/elijah-smith",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000114"),
+    feedIds: getFighterFeedIds("Elijah Smith"),
   },
   JoseDelano: {
     id: "c759cf80-2526-432b-8010-000000000115",
@@ -1274,7 +1274,7 @@ export const Fighters = {
       display: "José Delano",
       profileUrl: "https://www.ufc.com/athlete/jose-delano",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000115"),
+    feedIds: getFighterFeedIds("José Delano"),
   },
   MurtazaliMagomedov: {
     id: "c759cf80-2526-432b-8010-000000000116",
@@ -1285,7 +1285,7 @@ export const Fighters = {
       display: "Murtazali Magomedov",
       profileUrl: "https://www.ufc.com/athlete/murtazali-magomedov",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000116"),
+    feedIds: getFighterFeedIds("Murtazali Magomedov"),
   },
   GabrielLorenco: {
     id: "c759cf80-2526-432b-8010-000000000117",
@@ -1296,7 +1296,7 @@ export const Fighters = {
       display: "Gabriel Lorenço",
       profileUrl: "https://www.ufc.com/athlete/gabriel-lorenco",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000117"),
+    feedIds: getFighterFeedIds("Gabriel Lorenço"),
   },
   AlvinHines: {
     id: "c759cf80-2526-432b-8010-000000000118",
@@ -1307,7 +1307,7 @@ export const Fighters = {
       display: "Alvin Hines",
       profileUrl: "https://www.ufc.com/athlete/alvin-hines",
     },
-    feedIds: getFighterFeedIds("c759cf80-2526-432b-8010-000000000118"),
+    feedIds: getFighterFeedIds("Alvin Hines"),
   },
 } as const satisfies Record<string, UfcSubjectSeed>;
 

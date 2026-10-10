@@ -79,7 +79,10 @@ already included. Adding supported fighters does not require an upcoming fight.
    `sourceId` (`mma_card:ufc:<allocated UUID>`) and `id` forever. Do not derive IDs
    from a title, headliner, URL, venue, scheduled date, or opponent names. Search
    the checked-in catalog before allocating; fighter profile slugs can change.
-2. Rename fighters or cards in place. When an opponent changes,
+2. Rename fighters or cards in place. Fighter participant titles must match their
+   subject display names; update both together when correcting a name, keeping
+   the subject ID. Fighter feed IDs are derived from these titles; participant
+   JSON does not repeat subject IDs. When an opponent changes,
    replace the corresponding participant row. Opponents share a `details.fightId`
    within the card and the same required `details.placement` (prelims or main).
    Never publish new fight participants without confirmed segment placement;

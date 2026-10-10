@@ -33,7 +33,7 @@ import { UfcCoverageIds } from "../mma/ufc/subjects.js";
 const sourceCard = catalog.events[0];
 if (!sourceCard) throw new Error("Expected catalog card");
 const participants = sourceCard.participants.slice(0, 2);
-const fighterIds = new Set(participants.map((p) => p.details.subjectId));
+const fighterTitles = new Set(participants.map((p) => p.details.title));
 const fighters = catalog.subjects.filter(Predicate.isTagged("mma_fighter"));
 const ufcCollection = {
   ...catalog,
@@ -53,13 +53,16 @@ const ufcCollection = {
     },
   ],
   subjects: [
-    ...fighters.filter((fighter) => fighterIds.has(fighter.id)),
-    ...fighters.filter((fighter) => !fighterIds.has(fighter.id)).slice(0, 2),
+    ...fighters.filter((fighter) => fighterTitles.has(fighter.details.display)),
+    ...fighters
+      .filter((fighter) => !fighterTitles.has(fighter.details.display))
+      .slice(0, 2),
     ...catalog.subjects.filter(Predicate.isTagged("mma_tracking")),
   ].map((subject) => ({
     ...subject,
     feedIds:
-      subject._tag === "mma_tracking" || fighterIds.has(subject.id)
+      subject._tag === "mma_tracking" ||
+      fighterTitles.has(subject.details.display)
         ? [sourceCard.sourceId]
         : [],
   })),
@@ -107,7 +110,6 @@ describe("MMA import boundaries", () => {
           ...participant,
           details: {
             ...participant.details,
-            subjectId: thirdFighter.id,
             title: thirdFighter.details.display,
           },
         },
@@ -175,7 +177,8 @@ const collectionWithEvents = (events: MmaSeed["events"]): MmaSeed => ({
           ? subject.details.scope === "all" ||
             event.details.category === "numbered"
           : event.participants.some(
-              (participant) => participant.details.subjectId === subject.id,
+              (participant) =>
+                participant.details.title === subject.details.display,
             ),
       )
       .map((event) => event.sourceId),
@@ -408,20 +411,10 @@ describe("UFC PostgreSQL integration", () => {
               };
               const invalid = {
                 ...first,
-                id: EventId.make("b51165b6-7428-4620-a02e-000000000098"),
                 sourceId: EventSourceId.make(
-                  "mma_card:ufc:b51165b6-7428-4620-a02e-000000000098",
+                  "mma_card:ufc:b51165b6-7428-4620-a02e-000000000099",
                 ),
-                participants: first.participants
-                  .slice(0, 1)
-                  .map((participant) => ({
-                    ...participant,
-                    details: {
-                      ...participant.details,
-                      subjectId: teamId,
-                      title: "Not a fighter",
-                    },
-                  })),
+                id: EventId.make("b51165b6-7428-4620-a02e-000000000098"),
               };
               expect(
                 (yield* seedCatalog({
@@ -447,12 +440,11 @@ describe("UFC PostgreSQL integration", () => {
               const replacement = {
                 ...renamed,
                 participants: first.participants.map((participant) =>
-                  participant.details.subjectId === b.id
+                  participant.details.title === b.details.display
                     ? {
                         ...participant,
                         details: {
                           ...participant.details,
-                          subjectId: otherFighter.id,
                           title: otherFighter.details.display,
                         },
                       }

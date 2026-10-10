@@ -21,7 +21,7 @@ describe("UFC catalog", () => {
       for (const participant of event.participants) {
         expect(
           catalog.subjects.find(
-            (subject) => subject.id === participant.details.subjectId,
+            (subject) => subject.details.display === participant.details.title,
           )?.feedIds,
         ).toContain(event.sourceId);
       }
@@ -33,7 +33,8 @@ describe("UFC catalog", () => {
           ? subject.details.scope === "all" ||
             event.details.category === "numbered"
           : event.participants.some(
-              (participant) => participant.details.subjectId === subject.id,
+              (participant) =>
+                participant.details.title === subject.details.display,
             ),
       );
       expect(subject.feedIds).toEqual(expected.map((event) => event.sourceId));

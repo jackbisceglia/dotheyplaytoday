@@ -31,7 +31,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000003",
           title: "Brendan Allen",
           fightId: "fight-1",
           placement: "main",
@@ -41,7 +40,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000004",
           title: "Christian Leroy Duncan",
           fightId: "fight-1",
           placement: "main",
@@ -51,7 +49,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000005",
           title: "Matheus Camilo",
           fightId: "fight-2",
           placement: "main",
@@ -61,7 +58,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000006",
           title: "Jai Herbert",
           fightId: "fight-2",
           placement: "main",
@@ -71,7 +67,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000007",
           title: "Loopy Godinez",
           fightId: "fight-3",
           placement: "main",
@@ -81,7 +76,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000008",
           title: "Ketlen Souza",
           fightId: "fight-3",
           placement: "main",
@@ -91,7 +85,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000009",
           title: "Andre Fili",
           fightId: "fight-4",
           placement: "main",
@@ -101,7 +94,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000010",
           title: "Kai Kamaka III",
           fightId: "fight-4",
           placement: "main",
@@ -111,7 +103,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000011",
           title: "Malcolm Wellmaker",
           fightId: "fight-5",
           placement: "main",
@@ -121,7 +112,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000012",
           title: "Otari Tanzilovi",
           fightId: "fight-5",
           placement: "main",
@@ -131,7 +121,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000013",
           title: "Julius Walker",
           fightId: "fight-6",
           placement: "prelims",
@@ -141,7 +130,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000014",
           title: "Gerald Meerschaert",
           fightId: "fight-6",
           placement: "prelims",
@@ -151,7 +139,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000015",
           title: "Francisco Prado",
           fightId: "fight-7",
           placement: "prelims",
@@ -161,7 +148,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000016",
           title: "Ismael Bonfim",
           fightId: "fight-7",
           placement: "prelims",
@@ -171,7 +157,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000017",
           title: "Niko Price",
           fightId: "fight-8",
           placement: "prelims",
@@ -181,7 +166,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000018",
           title: "Leon Shahbazyan",
           fightId: "fight-8",
           placement: "prelims",
@@ -191,7 +175,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000019",
           title: "Felipe Franco",
           fightId: "fight-9",
           placement: "prelims",
@@ -201,7 +184,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000020",
           title: "Brendson Ribeiro",
           fightId: "fight-9",
           placement: "prelims",
@@ -211,7 +193,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000021",
           title: "Allen Frye Jr.",
           fightId: "fight-10",
           placement: "prelims",
@@ -221,7 +202,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000022",
           title: "RJ Harris",
           fightId: "fight-10",
           placement: "prelims",
@@ -231,7 +211,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000023",
           title: "Alice Pereira",
           fightId: "fight-11",
           placement: "prelims",
@@ -241,7 +220,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000024",
           title: "Daria Zhelezniakova",
           fightId: "fight-11",
           placement: "prelims",
@@ -251,7 +229,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000025",
           title: "Ernesta Kareckaitė",
           fightId: "fight-12",
           placement: "prelims",
@@ -261,7 +238,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000026",
           title: "Melissa Gatto",
           fightId: "fight-12",
           placement: "prelims",
@@ -295,7 +271,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000027",
           title: "Joaquin Buckley",
           fightId: "fight-1",
           placement: "main",
@@ -305,7 +280,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000028",
           title: "Mike Malott",
           fightId: "fight-1",
           placement: "main",
@@ -315,7 +289,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000029",
           title: "Erin Blanchfield",
           fightId: "fight-2",
           placement: "main",
@@ -325,7 +298,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000030",
           title: "Jasmine Jasudavicius",
           fightId: "fight-2",
           placement: "main",
@@ -335,7 +307,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000031",
           title: "Kyle Nelson",
           fightId: "fight-3",
           placement: "main",
@@ -345,7 +316,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000032",
           title: "Cristian Perez Gonzalez",
           fightId: "fight-3",
           placement: "main",
@@ -355,7 +325,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000033",
           title: "Marc-Andre Barriault",
           fightId: "fight-4",
           placement: "main",
@@ -365,7 +334,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000034",
           title: "Kyle Daukaus",
           fightId: "fight-4",
           placement: "main",
@@ -375,7 +343,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000035",
           title: "Louis Jourdain",
           fightId: "fight-5",
           placement: "main",
@@ -385,7 +352,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000036",
           title: "Timmy Cuamba",
           fightId: "fight-5",
           placement: "main",
@@ -395,7 +361,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000037",
           title: "Mandel Nallo",
           fightId: "fight-6",
           placement: "main",
@@ -405,7 +370,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000038",
           title: "Nate Landwehr",
           fightId: "fight-6",
           placement: "main",
@@ -415,7 +379,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000039",
           title: "Tanner Boser",
           fightId: "fight-7",
           placement: "prelims",
@@ -425,7 +388,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000040",
           title: "Jhonata Diniz",
           fightId: "fight-7",
           placement: "prelims",
@@ -435,7 +397,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000041",
           title: "Julien Leblanc",
           fightId: "fight-8",
           placement: "prelims",
@@ -445,7 +406,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000042",
           title: "Nick Galanti",
           fightId: "fight-8",
           placement: "prelims",
@@ -455,7 +415,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000043",
           title: "Javad Mahjoub",
           fightId: "fight-9",
           placement: "prelims",
@@ -465,7 +424,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000044",
           title: "Joel Faglier",
           fightId: "fight-9",
           placement: "prelims",
@@ -475,7 +433,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000045",
           title: "Jamey-Lyn Horth",
           fightId: "fight-10",
           placement: "prelims",
@@ -485,7 +442,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000046",
           title: "Katlyn Cerminara",
           fightId: "fight-10",
           placement: "prelims",
@@ -495,7 +451,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000047",
           title: "Chad Anheliger",
           fightId: "fight-11",
           placement: "prelims",
@@ -505,7 +460,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000048",
           title: "Steven Koslow",
           fightId: "fight-11",
           placement: "prelims",
@@ -515,7 +469,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000049",
           title: "Melissa Croden",
           fightId: "fight-12",
           placement: "prelims",
@@ -525,7 +478,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000050",
           title: "Chelsea Chandler",
           fightId: "fight-12",
           placement: "prelims",
@@ -535,7 +487,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000051",
           title: "Cody Chovancek",
           fightId: "fight-13",
           placement: "prelims",
@@ -545,7 +496,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000052",
           title: "SuYoung You",
           fightId: "fight-13",
           placement: "prelims",
@@ -579,7 +529,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000053",
           title: "Alexander Volkanovski",
           fightId: "fight-1",
           placement: "main",
@@ -589,7 +538,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000054",
           title: "Movsar Evloev",
           fightId: "fight-1",
           placement: "main",
@@ -599,7 +547,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000055",
           title: "Petr Yan",
           fightId: "fight-2",
           placement: "main",
@@ -609,7 +556,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000056",
           title: "Merab Dvalishvili",
           fightId: "fight-2",
           placement: "main",
@@ -619,7 +565,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000057",
           title: "Lone’er Kavanagh",
           fightId: "fight-3",
           placement: "main",
@@ -629,7 +574,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000058",
           title: "Ramazan Temirov",
           fightId: "fight-3",
           placement: "main",
@@ -639,7 +583,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000059",
           title: "Alexander Volkov",
           fightId: "fight-4",
           placement: "main",
@@ -649,7 +592,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000060",
           title: "Rizvan Kuniev",
           fightId: "fight-4",
           placement: "main",
@@ -659,7 +601,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000061",
           title: "Aaron Pico",
           fightId: "fight-5",
           placement: "main",
@@ -669,7 +610,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000062",
           title: "Losene Keita",
           fightId: "fight-5",
           placement: "main",
@@ -679,7 +619,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000063",
           title: "Azamat Murzakanov",
           fightId: "fight-6",
           placement: "prelims",
@@ -689,7 +628,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000064",
           title: "Dominick Reyes",
           fightId: "fight-6",
           placement: "prelims",
@@ -699,7 +637,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000065",
           title: "Nikita Krylov",
           fightId: "fight-7",
           placement: "prelims",
@@ -709,7 +646,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000066",
           title: "Abdul Rakhman Yakhyaev",
           fightId: "fight-7",
           placement: "prelims",
@@ -719,7 +655,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000067",
           title: "Abus Magomedov",
           fightId: "fight-8",
           placement: "prelims",
@@ -729,7 +664,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000068",
           title: "Cam Rowston",
           fightId: "fight-8",
           placement: "prelims",
@@ -739,7 +673,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000069",
           title: "Grant Dawson",
           fightId: "fight-9",
           placement: "prelims",
@@ -749,7 +682,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000070",
           title: "Nurullo Aliev",
           fightId: "fight-9",
           placement: "prelims",
@@ -783,7 +715,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000071",
           title: "Renato Moicano",
           fightId: "fight-1",
           placement: "main",
@@ -793,7 +724,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000072",
           title: "Tom Nolan",
           fightId: "fight-1",
           placement: "main",
@@ -828,7 +758,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000093",
           title: "Gabriel Bonfim",
           fightId: "fight-1",
           placement: "main",
@@ -838,7 +767,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          subjectId: "c759cf80-2526-432b-8010-000000000094",
           title: "Sean Brady",
           fightId: "fight-1",
           placement: "main",
@@ -848,12 +776,12 @@ export const events: readonly UfcEventSeed[] = [
   },
 ];
 
-export const getFighterFeedIds = (subjectId: string) =>
+export const getFighterFeedIds = (title: string) =>
   events
     .values()
     .filter((event) =>
       event.participants.some(
-        (participant) => participant.details.subjectId === subjectId,
+        (participant) => participant.details.title === title,
       ),
     )
     .map((event) => event.sourceId)
