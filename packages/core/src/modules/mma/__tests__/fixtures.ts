@@ -45,7 +45,6 @@ export const card = Schema.decodeUnknownSync(EventWithParticipants)({
     _tag: "mma_card",
     details: {
       _tag: "mma_card",
-      subjectId: subject.id,
       title: subject.details.display,
       fightId: "fight-1",
       placement: "main",

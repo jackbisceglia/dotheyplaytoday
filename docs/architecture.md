@@ -450,7 +450,8 @@ selection API, subscriptions table, shared four-pick policy, and notification
 orchestrator serve both sports and UFC. The subscription service rejects two
 coverage subjects in one selection. Tracking details use `scope: numbered | all`. Each fighter appearance is a `mma_card`
 variant row in the existing participants table, linked to its card by eventId.
-Participant details contain subjectId, display title, fightId, and required placement (prelims or main).
+Participant details contain display title, fightId, and required placement (prelims or main).
+Subject-event feed associations determine subscription matches, as with sports.
 Only publish fight participants after UFC confirms their segment assignment.
 Within a card, opponents share a fightId; renderers group those rows for display.
 Event and participant row schemas require each row tag to match its details tag

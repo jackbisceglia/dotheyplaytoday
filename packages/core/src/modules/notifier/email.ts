@@ -313,7 +313,9 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
           );
 
           const relevant = fights.filter((fight) =>
-            fight.fighters.some((fighter) => fighter.subjectId === subject.id),
+            fight.fighters.some(
+              (fighter) => fighter.title === subject.details.display,
+            ),
           );
 
           return [

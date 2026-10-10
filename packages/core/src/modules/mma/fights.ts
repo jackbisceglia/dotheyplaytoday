@@ -8,7 +8,5 @@ export const mmaFights = (participants: readonly MmaParticipant[]) =>
     .map(([id, fighters]) => ({
       id,
       placement: fighters[0].placement,
-      fighters: fighters.toSorted((a, b) =>
-        a.subjectId.localeCompare(b.subjectId),
-      ),
+      fighters: fighters.toSorted((a, b) => a.title.localeCompare(b.title)),
     }));
