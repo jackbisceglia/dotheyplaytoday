@@ -577,6 +577,7 @@ export const Teams = {
       Games._849834.sourceId,
       Games._849833.sourceId,
       Games._849832.sourceId,
+      Games._849831.sourceId,
     ],
   },
   ColoradoRockies: {
@@ -2223,6 +2224,7 @@ export const Teams = {
       Games._849834.sourceId,
       Games._849833.sourceId,
       Games._849832.sourceId,
+      Games._849831.sourceId,
     ],
   },
   MiamiMarlins: {
