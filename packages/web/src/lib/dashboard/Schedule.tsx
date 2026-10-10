@@ -203,7 +203,7 @@ function Matchup(props: { readonly row: ScheduleRow }) {
                     {index() > 0 && " vs "}
                     <Show
                       when={card.subjects.some(
-                        (subject) => subject.id === fighter.subjectId,
+                        (subject) => subject.details.display === fighter.title,
                       )}
                       fallback={fighter.title}
                     >

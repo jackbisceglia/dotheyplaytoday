@@ -58,11 +58,11 @@ describe("UFC schedule", () => {
     expect(
       row?.fights.map((fight) => ({
         id: fight.id,
-        fighters: fight.fighters.map((fighter) => fighter.subjectId),
+        fighters: fight.fighters.map((fighter) => fighter.title),
       })),
     ).toEqual([
-      { id: "fight-1", fighters: [fighterA.id] },
-      { id: "fight-2", fighters: [fighterB.id] },
+      { id: "fight-1", fighters: [fighterA.details.display] },
+      { id: "fight-2", fighters: [fighterB.details.display] },
     ]);
     expect(
       scheduleRows([pick(all)], ny, [all], now)[0]?.fights[0]?.fighters,
