@@ -113,7 +113,11 @@ Each fighter's nullable `p4p` field records the men's ranking; missing values in
 older records decode as null.
 
 Cards match coverage or participating fighters. The dashboard merges
-matches by card ID, lists every match reason, and highlights followed fighters.
+matches by card ID. Each card shows only its event number and title by default,
+with a collapsed “View fights” accordion showing the fight count. Expanding it
+reveals broadcast times, every match reason, and the lineup with followed
+fighters highlighted. Time, emoji, and league badge stay aligned at the top of
+each schedule row, including expanded cards.
 Emails retain subject-scoped sports behavior: following both opponents and card
 coverage can send three emails, while multiple same-day cards for one subject
 share one email. Successful subscriptions are sent at most once per local date
