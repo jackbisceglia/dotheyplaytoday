@@ -767,6 +767,11 @@ button {
   gap: 22px;
 }
 
+/* Legends sit outside the fieldset flex layout, so gap does not apply. */
+.ufc-cards > legend {
+  margin-bottom: 12px;
+}
+
 .ufc-coverage {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

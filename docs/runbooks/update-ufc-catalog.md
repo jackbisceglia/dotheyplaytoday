@@ -91,7 +91,7 @@ The current top-15 snapshot is from October 6, 2026. Set `p4p` to the integer
 rank (1–15), or `null` for unranked fighters and all women's fighters. Clear old
 ranks when updating the list; add missing ranked fighters even without a booked
 fight, using an empty feed list until an imported card includes them. The picker
-shows ranks 1–10 when search is empty. Bump `CatalogSeedVersion` after rank changes,
+shows ranks 1–15 when search is empty. Bump `CatalogSeedVersion` after rank changes,
 as for other catalog updates.
 
 1. Allocate a UUID once for each new fighter and card. Keep a card's

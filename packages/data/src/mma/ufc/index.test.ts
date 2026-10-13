@@ -251,13 +251,13 @@ describe("UFC catalog", () => {
     }
   });
 
-  it("includes the men's P4P top 10 even without a booked fight", () => {
+  it("includes the men's P4P top 15 even without a booked fight", () => {
     const ranked = catalog.subjects
       .filter(
         (subject) =>
           Predicate.isTagged(subject.details, "mma_fighter") &&
           subject.details.p4p !== null &&
-          subject.details.p4p <= 10,
+          subject.details.p4p <= 15,
       )
       .toSorted((a, b) => {
         const rank = (subject: typeof a) =>
@@ -277,6 +277,11 @@ describe("UFC catalog", () => {
       "Tom Aspinall",
       "Merab Dvalishvili",
       "Alex Pereira",
+      "Ciryl Gane",
+      "Khamzat Chimaev",
+      "Arman Tsarukyan",
+      "Alexandre Pantoja",
+      "Carlos Ulberg",
     ]);
     expect(ranked[0]?.feedIds).toEqual([]);
   });
