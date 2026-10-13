@@ -77,7 +77,7 @@ describe("development seed collections", () => {
     const collections = buildDevSeed(new Date("2026-10-10T12:00:00Z"));
     const ufc = collections.find((collection) => collection.id === "mma.ufc");
     expect(ufc?.events).toHaveLength(1);
-    expect(ufc?.subjects).toHaveLength(127);
+    expect(ufc?.subjects).toHaveLength(262);
     expect(ufc?.subjects.flatMap((subject) => subject.feedIds)).toHaveLength(
       25,
     );
@@ -85,7 +85,7 @@ describe("development seed collections", () => {
     const later = buildDevSeed(new Date("2026-10-12T12:00:00Z"));
     const past = later.find((collection) => collection.id === "mma.ufc");
     expect(past?.events).toEqual([]);
-    expect(past?.subjects).toHaveLength(127);
+    expect(past?.subjects).toHaveLength(262);
     expect(past?.subjects.flatMap((subject) => subject.feedIds)).toEqual([]);
   });
 
