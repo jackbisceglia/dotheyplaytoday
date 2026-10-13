@@ -448,7 +448,12 @@ Alchemy's `Http.Platform` layer for its fileless HTTP platform services.
 `SubjectDetails` includes `mma_fighter` and `mma_tracking`; the existing subject
 selection API, subscriptions table, shared four-pick policy, and notification
 orchestrator serve both sports and UFC. The subscription service rejects two
-coverage subjects in one selection. Tracking details use `scope: numbered | all`. Each fighter appearance is a `mma_card`
+coverage subjects in one selection. Tracking details use `scope: numbered | all`.
+Fighter details carry a nullable
+men's P4P integer rank (1–15); decoding defaults an absent key to null for existing
+JSON rows. The shared UFC picker uses ranks 1–10 for its empty search state and
+searches the full supported roster otherwise. Each fighter appearance is a
+`mma_card`
 variant row in the existing participants table, linked to its card by eventId.
 Participant details contain display title, fightId, and required placement (prelims or main).
 Subject-event feed associations determine subscription matches, as with sports.

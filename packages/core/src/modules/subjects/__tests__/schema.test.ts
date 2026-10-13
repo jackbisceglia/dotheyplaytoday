@@ -3,6 +3,7 @@ import { Schema } from "effect";
 
 import { Subject, SubjectInsert } from "../schema.js";
 import { SportLeagueIds } from "../variants/sport.schema.js";
+import { MmaFighterSubject } from "../variants/mma.schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -22,6 +23,30 @@ const subjectInput = {
 };
 
 describe("Subject model", () => {
+  const fighter = {
+    _tag: "mma_fighter",
+    leagueId: "ufc",
+    display: "Fighter",
+  };
+
+  it("decodes older fighter details with a null P4P rank", () => {
+    const details = decode(MmaFighterSubject)(fighter);
+    expect(details.p4p).toBeNull();
+    expect(encode(MmaFighterSubject)(details)).toEqual({
+      ...fighter,
+      p4p: null,
+    });
+  });
+
+  it("accepts null or a valid P4P rank and rejects invalid ranks", () => {
+    for (const p4p of [null, 1, 10, 15]) {
+      expect(decode(MmaFighterSubject)({ ...fighter, p4p }).p4p).toBe(p4p);
+    }
+    for (const p4p of [0, -1, 16, 1.5, "1"]) {
+      expect(() => decode(MmaFighterSubject)({ ...fighter, p4p })).toThrow();
+    }
+  });
+
   it("lists supported league ids", () => {
     expect(SportLeagueIds).toEqual(["nba", "nfl", "mlb", "nhl"]);
   });

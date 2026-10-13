@@ -58,7 +58,7 @@ lists early prelims at 5 PM Eastern, also folded into prelims. The current
 UFC 333 event page lists Pico–Keita; it supersedes the older opponent announcement.
 
 There are 36 fights with confirmed placement and 72 participating fighters.
-The 118 fighter subjects remain independently followable, including fighters
+The 260 fighter subjects remain independently followable, including fighters
 whose announced bouts are withheld pending placement. Existing IDs
 remain unchanged, including Allen–Duncan's reserved card ID ending in 000002.
 The historical UFC 332 card leaves the active checked-in window; omitting it
@@ -74,6 +74,25 @@ that optional display link until UFC publishes one. José Souza's official
 profile uses the slug [jose-henrique](https://www.ufc.com/athlete/jose-henrique).
 This is a reviewed snapshot, not a guarantee that every future announcement is
 already included. Adding supported fighters does not require an upcoming fight.
+
+The October 12 fighter audit includes all 176 unique fighters in UFC's October 6
+champion, divisional top-15, and men's/women's P4P lists. Existing lineup subjects
+are retained, bringing the catalog to 260 fighters and two coverage subjects.
+Israel Adesanya is included even without a booked fight. The ranked division
+snapshot in `packages/data/src/mma/ufc/index.test.ts` checks complete coverage and
+rejects duplicate names after accent/punctuation normalization. Refresh it with
+the next ranking update. This scope covers ranked fighters and imported lineups,
+not the entire active UFC roster. Add other supported active fighters as needed;
+include an optional profile URL only when verified against an official athlete
+page. Missing profile links do not prevent following a fighter.
+
+Maintain men's P4P ranks in fighter details using [UFC rankings](https://www.ufc.com/rankings).
+The current top-15 snapshot is from October 6, 2026. Set `p4p` to the integer
+rank (1–15), or `null` for unranked fighters and all women's fighters. Clear old
+ranks when updating the list; add missing ranked fighters even without a booked
+fight, using an empty feed list until an imported card includes them. The picker
+shows ranks 1–10 when search is empty. Bump `CatalogSeedVersion` after rank changes,
+as for other catalog updates.
 
 1. Allocate a UUID once for each new fighter and card. Keep a card's
    `sourceId` (`mma_card:ufc:<allocated UUID>`) and `id` forever. Do not derive IDs
