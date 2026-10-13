@@ -16,13 +16,16 @@ export const getSubjectAbbreviation = (details: SubjectDetails) =>
   Match.value(details).pipe(
     Match.tag("sports_team", (team) => team.abbreviation),
     Match.tag("mma_fighter", (fighter) => {
-      const firstSpace = fighter.display.indexOf(" ");
-      return firstSpace < 0
-        ? fighter.display
-        : `${fighter.display.charAt(0)}. ${fighter.display.slice(firstSpace + 1)}`;
+      const [firstName, ...remainingNames] = fighter.display.split(" ");
+      if (!firstName || remainingNames.length === 0) return fighter.display;
+      return `${firstName.charAt(0)}. ${remainingNames.join(" ")}`;
     }),
     Match.tag("mma_tracking", (tracking) =>
-      tracking.scope === "numbered" ? "PPVs" : "All cards",
+      Match.value(tracking.scope).pipe(
+        Match.when("numbered", () => "PPVs"),
+        Match.when("all", () => "All cards"),
+        Match.exhaustive,
+      ),
     ),
     Match.exhaustive,
   );
