@@ -12,9 +12,9 @@ describe("UFC catalog", () => {
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
       24, 26, 18, 2, 2,
     ]);
-    expect(catalog.subjects).toHaveLength(120);
+    expect(catalog.subjects).toHaveLength(127);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      120,
+      127,
     );
 
     for (const event of catalog.events) {
@@ -39,6 +39,35 @@ describe("UFC catalog", () => {
       );
       expect(subject.feedIds).toEqual(expected.map((event) => event.sourceId));
     }
+  });
+
+  it("includes the men's P4P top 10 even without a booked fight", () => {
+    const ranked = catalog.subjects
+      .filter(
+        (subject) =>
+          Predicate.isTagged(subject.details, "mma_fighter") &&
+          subject.details.p4p !== null,
+      )
+      .toSorted((a, b) => {
+        const rank = (subject: typeof a) =>
+          Predicate.isTagged(subject.details, "mma_fighter")
+            ? (subject.details.p4p ?? Infinity)
+            : Infinity;
+        return rank(a) - rank(b);
+      });
+    expect(ranked.map((subject) => subject.details.display)).toEqual([
+      "Islam Makhachev",
+      "Alexander Volkanovski",
+      "Justin Gaethje",
+      "Petr Yan",
+      "Ilia Topuria",
+      "Joshua Van",
+      "Sean Strickland",
+      "Tom Aspinall",
+      "Merab Dvalishvili",
+      "Alex Pereira",
+    ]);
+    expect(ranked[0]?.feedIds).toEqual([]);
   });
 
   it("uses the earliest prelim segment and applies Eastern DST by event date", () => {

@@ -1,8 +1,8 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { Predicate } from "effect";
-import { createMemo, createSignal, For } from "solid-js";
+import { createMemo, createSignal, createUniqueId, For, Show } from "solid-js";
 
-import { getSubjectLogo } from "../catalog/index.js";
+import { getVisibleUfcFighters } from "../catalog/ufc.js";
 
 export function UfcPicker(props: {
   readonly subjects: readonly Subject[];
@@ -11,98 +11,109 @@ export function UfcPicker(props: {
   readonly onToggle: (subject: Subject) => void;
 }) {
   const [search, setSearch] = createSignal("");
+  const searchId = `ufc-fighter-search-${createUniqueId()}`;
   const coverage = createMemo(() =>
-    props.subjects.filter((subject) =>
-      Predicate.isTagged(subject.details, "mma_tracking"),
-    ),
+    props.subjects
+      .filter((subject) => Predicate.isTagged(subject.details, "mma_tracking"))
+      .toSorted((a, b) => {
+        const numbered = (subject: Subject) =>
+          Predicate.isTagged(subject.details, "mma_tracking") &&
+          subject.details.scope === "numbered";
+        return Number(numbered(b)) - Number(numbered(a));
+      }),
   );
-  const currentCoverage = () =>
-    coverage().find((subject) => props.selected.has(subject.id));
-  const fighters = createMemo(() => {
-    const query = search().trim().toLowerCase();
-
-    return props.subjects
-      .filter(
-        (subject) =>
-          Predicate.isTagged(subject.details, "mma_fighter") &&
-          subject.details.display.toLowerCase().includes(query),
-      )
-      .toSorted((a, b) => a.details.display.localeCompare(b.details.display));
-  });
+  const fighters = createMemo(() =>
+    getVisibleUfcFighters(props.subjects, search()),
+  );
+  const searching = () => search().trim().length > 0;
 
   return (
-    <>
+    <div class="ufc-picker">
       <fieldset class="form-section">
-        <legend class="form-label">UFC card coverage</legend>
-        <div class="league-row">
-          <button
-            type="button"
-            class="league-pill"
-            aria-pressed={currentCoverage() ? "false" : "true"}
-            onClick={() => {
-              const current = currentCoverage();
-              if (current) props.onToggle(current);
-            }}
-          >
-            Off
-          </button>
+        <legend class="form-label">Cards</legend>
+        <div class="ufc-coverage">
           <For each={coverage()}>
             {(subject) => (
               <button
                 type="button"
-                class="league-pill"
+                class="team-card ufc-coverage-tile"
+                aria-label={
+                  Predicate.isTagged(subject.details, "mma_tracking") &&
+                  subject.details.scope === "numbered"
+                    ? "PPVs: numbered UFC events"
+                    : "All UFC cards: numbered events and Fight Nights"
+                }
                 aria-pressed={props.selected.has(subject.id) ? "true" : "false"}
+                data-rejected={
+                  props.rejectedSelectionId === subject.id ? "true" : undefined
+                }
                 onClick={() => {
-                  if (!props.selected.has(subject.id)) props.onToggle(subject);
+                  props.onToggle(subject);
                 }}
               >
-                {subject.details.display}
+                {Predicate.isTagged(subject.details, "mma_tracking") &&
+                subject.details.scope === "numbered"
+                  ? "PPVs"
+                  : "All"}
               </button>
             )}
           </For>
         </div>
       </fieldset>
-      <p class="form-hint">
-        All includes numbered events and Fight Nights. Contender Series is
-        excluded. Coverage uses one pick; each fighter uses one pick. Fighter
-        follows work with coverage off.
-      </p>
-      <label class="form-label" for="ufc-fighter-search">
-        Follow fighters
-      </label>
-      <input
-        id="ufc-fighter-search"
-        type="search"
-        class="form-input"
-        placeholder="Find a fighter"
-        value={search()}
-        onInput={(event) => setSearch(event.currentTarget.value)}
-      />
-      <div class="team-grid">
-        <For
-          each={fighters()}
-          fallback={<p class="form-hint">No matching fighters.</p>}
+      <div class="form-section">
+        <label class="form-label" for={searchId}>
+          Fighters
+        </label>
+        <input
+          id={searchId}
+          type="search"
+          class="form-input"
+          placeholder="Search fighters"
+          value={search()}
+          onInput={(event) => setSearch(event.currentTarget.value)}
+        />
+        <div
+          class="ufc-fighter-list"
+          role="group"
+          aria-label={searching() ? "Matching fighters" : "Men's P4P top 10"}
         >
-          {(fighter) => (
-            <button
-              type="button"
-              class="team-card"
-              aria-pressed={props.selected.has(fighter.id) ? "true" : "false"}
-              data-rejected={
-                props.rejectedSelectionId === fighter.id ? "true" : undefined
-              }
-              onClick={() => {
-                props.onToggle(fighter);
-              }}
-            >
-              <span class="team-glyph" aria-hidden="true">
-                {getSubjectLogo(fighter.details)}
-              </span>
-              <span class="team-name">{fighter.details.display}</span>
-            </button>
-          )}
-        </For>
+          <For
+            each={fighters()}
+            fallback={
+              <p class="ufc-empty">
+                {searching()
+                  ? "No matching fighters."
+                  : "Search to find a fighter."}
+              </p>
+            }
+          >
+            {(fighter) => (
+              <button
+                type="button"
+                class="ufc-fighter-row"
+                aria-pressed={props.selected.has(fighter.id) ? "true" : "false"}
+                data-rejected={
+                  props.rejectedSelectionId === fighter.id ? "true" : undefined
+                }
+                onClick={() => {
+                  props.onToggle(fighter);
+                }}
+              >
+                <Show when={!searching()}>
+                  <span class="ufc-fighter-rank">
+                    <span class="visually-hidden">P4P rank </span>
+                    {fighter.details.p4p}
+                  </span>
+                </Show>
+                <span class="ufc-fighter-name">{fighter.details.display}</span>
+                <span class="ufc-fighter-check" aria-hidden="true">
+                  {props.selected.has(fighter.id) ? "✓" : "+"}
+                </span>
+              </button>
+            )}
+          </For>
+        </div>
       </div>
-    </>
+    </div>
   );
 }

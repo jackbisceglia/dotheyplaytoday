@@ -15,6 +15,14 @@ export const getSubjectLogo = (details: SubjectDetails) =>
 export const getSubjectAbbreviation = (details: SubjectDetails) =>
   Match.value(details).pipe(
     Match.tag("sports_team", (team) => team.abbreviation),
-    Match.tag("mma_fighter", "mma_tracking", (subject) => subject.display),
+    Match.tag("mma_fighter", (fighter) => {
+      const firstSpace = fighter.display.indexOf(" ");
+      return firstSpace < 0
+        ? fighter.display
+        : `${fighter.display.charAt(0)}. ${fighter.display.slice(firstSpace + 1)}`;
+    }),
+    Match.tag("mma_tracking", (tracking) =>
+      tracking.scope === "numbered" ? "PPVs" : "All cards",
+    ),
     Match.exhaustive,
   );

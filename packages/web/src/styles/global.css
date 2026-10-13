@@ -358,6 +358,7 @@ button {
 .skip-link:focus-visible,
 .form-input:focus-visible,
 .team-card:focus-visible,
+.ufc-fighter-row:focus-visible,
 .btn:focus-visible,
 .league-pill:focus-visible,
 .signup-success-title:focus-visible,
@@ -737,7 +738,8 @@ button {
   box-shadow: var(--shadow);
 }
 
-.team-card[data-rejected="true"] {
+.team-card[data-rejected="true"],
+.ufc-fighter-row[data-rejected="true"] {
   border-color: var(--error);
   animation: team-card-reject 280ms ease-in-out;
 }
@@ -756,6 +758,96 @@ button {
   75% {
     transform: translateX(-2px);
   }
+}
+
+/* UFC picks use compact coverage tiles and a single column of fighter names. */
+.ufc-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ufc-coverage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ufc-coverage-tile {
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.ufc-fighter-list {
+  border: 2px solid var(--rule);
+  background: #fff;
+}
+
+.ufc-fighter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.ufc-fighter-row[data-rejected="true"] {
+  outline: 2px solid var(--error);
+  outline-offset: -2px;
+}
+
+.ufc-fighter-row:last-child {
+  border-bottom: none;
+}
+
+.ufc-fighter-row:hover {
+  background: var(--kelly-wash);
+}
+
+.ufc-fighter-row[aria-pressed="true"] {
+  background: var(--kelly-wash);
+  color: var(--kelly-deep);
+  box-shadow: inset 4px 0 var(--kelly);
+}
+
+.ufc-fighter-rank {
+  flex: 0 0 14px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.ufc-fighter-row[aria-pressed="true"] .ufc-fighter-rank {
+  color: inherit;
+}
+
+.ufc-fighter-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.ufc-fighter-check {
+  flex: 0 0 16px;
+  text-align: center;
+}
+
+.ufc-empty {
+  margin: 0;
+  padding: 12px;
+  color: var(--muted);
 }
 
 .team-glyph {
@@ -1291,6 +1383,7 @@ select.form-input {
   .header-cta,
   .skip-link,
   .team-card,
+  .ufc-fighter-row,
   .coming-soon-tooltip {
     transition: none;
   }
@@ -1307,6 +1400,7 @@ select.form-input {
   }
 
   .team-card[data-rejected="true"],
+  .ufc-fighter-row[data-rejected="true"],
   .app-toast,
   .login-modal {
     animation: none;
@@ -1661,7 +1755,8 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 }
 
 /* A full roster fades what can't be added; tapping one still shakes. */
-.dashboard-picker[data-full="true"] .team-card[aria-pressed="false"] {
+.dashboard-picker[data-full="true"] .team-card[aria-pressed="false"],
+.dashboard-picker[data-full="true"] .ufc-fighter-row[aria-pressed="false"] {
   opacity: 0.45;
 }
 
