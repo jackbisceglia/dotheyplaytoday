@@ -16,7 +16,7 @@ export function getVisibleUfcFighters(
         Predicate.isTagged(subject.details, "mma_fighter") &&
         (query
           ? searchKey(subject.details.display).includes(query)
-          : subject.details.p4p !== null && subject.details.p4p <= 10),
+          : subject.details.p4p !== null && subject.details.p4p <= 15),
     )
     .toSorted((a, b) =>
       query

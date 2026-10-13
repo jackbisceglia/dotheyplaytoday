@@ -451,7 +451,7 @@ orchestrator serve both sports and UFC. The subscription service rejects two
 coverage subjects in one selection. Tracking details use `scope: numbered | all`.
 Fighter details carry a nullable
 men's P4P integer rank (1–15); decoding defaults an absent key to null for existing
-JSON rows. The shared UFC picker uses ranks 1–10 for its empty search state and
+JSON rows. The shared UFC picker uses ranks 1–15 for its empty search state and
 searches the full supported roster otherwise. Each fighter appearance is a
 `mma_card`
 variant row in the existing participants table, linked to its card by eventId.

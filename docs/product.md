@@ -105,10 +105,10 @@ and each enabled coverage choice uses one pick. Coverage changes preserve fighte
 
 The UFC picker offers compact PPVs (numbered events) and All tiles, in that
 order. Tap the selected tile again to turn coverage off. With an empty fighter
-search, the list shows the men's P4P top 10 in rank order. Typing searches all
+search, the list shows the men's P4P top 15 in rank order. Typing searches all
 supported fighters, including women and unranked fighters, alphabetically.
 Search transliterates names and queries to ASCII and ignores case, spaces, and
-punctuation; an empty search key shows the P4P top 10.
+punctuation; an empty search key shows the P4P top 15.
 Each fighter's nullable `p4p` field records the men's ranking; missing values in
 older records decode as null.
 

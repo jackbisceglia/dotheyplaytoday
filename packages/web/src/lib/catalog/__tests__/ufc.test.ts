@@ -13,16 +13,32 @@ const fighter = (suffix: string, display: string, p4p: number | null) =>
   });
 const first = fighter("11", "Zed Ranked", 1);
 const second = fighter("12", "Alpha Ranked", 2);
-const outsideTop10 = fighter("13", "Other Ranked", 11);
+const eleventh = fighter("13", "Other Ranked", 11);
+const fifteenth = fighter("20", "Last Ranked", 15);
 const unranked = fighter("14", "Brendan Allen", null);
 const woman = fighter("15", "Natalia Silva", null);
-const subjects = [second, unranked, all, outsideTop10, first, woman];
+const subjects = [second, unranked, all, fifteenth, eleventh, first, woman];
 
 describe("UFC fighter browsing", () => {
-  it("shows only the top 10 in rank order for empty or whitespace search", () => {
-    expect(getVisibleUfcFighters(subjects, "")).toEqual([first, second]);
-    expect(getVisibleUfcFighters(subjects, "   ")).toEqual([first, second]);
-    expect(getVisibleUfcFighters(subjects, " ’- ")).toEqual([first, second]);
+  it("shows only the top 15 in rank order for empty or whitespace search", () => {
+    expect(getVisibleUfcFighters(subjects, "")).toEqual([
+      first,
+      second,
+      eleventh,
+      fifteenth,
+    ]);
+    expect(getVisibleUfcFighters(subjects, "   ")).toEqual([
+      first,
+      second,
+      eleventh,
+      fifteenth,
+    ]);
+    expect(getVisibleUfcFighters(subjects, " ’- ")).toEqual([
+      first,
+      second,
+      eleventh,
+      fifteenth,
+    ]);
   });
   it.each([
     ["16", "Jiří Procházka", "Jiri Prochazka"],
@@ -41,7 +57,8 @@ describe("UFC fighter browsing", () => {
   it("searches all fighters regardless of rank, alphabetically and ignoring case", () => {
     expect(getVisibleUfcFighters(subjects, "  RANKED ")).toEqual([
       second,
-      outsideTop10,
+      fifteenth,
+      eleventh,
       first,
     ]);
     expect(getVisibleUfcFighters(subjects, "allen")).toEqual([unranked]);

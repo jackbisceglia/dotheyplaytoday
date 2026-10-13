@@ -30,7 +30,7 @@ export function UfcPicker(props: {
 
   return (
     <div class="ufc-picker">
-      <fieldset class="form-section">
+      <fieldset class="form-section ufc-cards">
         <legend class="form-label">Cards</legend>
         <div class="ufc-coverage">
           <For each={coverage()}>
@@ -76,7 +76,7 @@ export function UfcPicker(props: {
         <div
           class="ufc-fighter-list"
           role="group"
-          aria-label={searching() ? "Matching fighters" : "Men's P4P top 10"}
+          aria-label={searching() ? "Matching fighters" : "Men's P4P top 15"}
         >
           <For
             each={fighters()}
