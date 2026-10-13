@@ -3,6 +3,7 @@ import { Predicate } from "effect";
 import { createMemo, createSignal, createUniqueId, For, Show } from "solid-js";
 
 import { getVisibleUfcFighters } from "../catalog/ufc.js";
+import { searchKey } from "../search.js";
 
 export function UfcPicker(props: {
   readonly subjects: readonly Subject[];
@@ -25,7 +26,7 @@ export function UfcPicker(props: {
   const fighters = createMemo(() =>
     getVisibleUfcFighters(props.subjects, search()),
   );
-  const searching = () => search().trim().length > 0;
+  const searching = () => searchKey(search()).length > 0;
 
   return (
     <div class="ufc-picker">

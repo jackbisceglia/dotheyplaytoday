@@ -22,6 +22,21 @@ describe("UFC fighter browsing", () => {
   it("shows only the top 10 in rank order for empty or whitespace search", () => {
     expect(getVisibleUfcFighters(subjects, "")).toEqual([first, second]);
     expect(getVisibleUfcFighters(subjects, "   ")).toEqual([first, second]);
+    expect(getVisibleUfcFighters(subjects, " ’- ")).toEqual([first, second]);
+  });
+  it.each([
+    ["16", "Jiří Procházka", "Jiri Prochazka"],
+    ["17", "Benoît Saint Denis", "Benoit Saint Denis"],
+    ["18", "Jan Błachowicz", "Jan Blachowicz"],
+    ["19", "Sean O'Malley", "Sean OMalley"],
+  ])("finds %s / %s with ASCII search %s", (suffix, display, query) => {
+    const pick = fighter(suffix, display, null);
+    const catalog = [...subjects, pick];
+    expect(getVisibleUfcFighters(catalog, query)).toEqual([pick]);
+    expect(getVisibleUfcFighters(catalog, display)).toEqual([pick]);
+    expect(getVisibleUfcFighters(catalog, display.normalize("NFD"))).toEqual([
+      pick,
+    ]);
   });
   it("searches all fighters regardless of rank, alphabetically and ignoring case", () => {
     expect(getVisibleUfcFighters(subjects, "  RANKED ")).toEqual([
@@ -30,6 +45,7 @@ describe("UFC fighter browsing", () => {
       first,
     ]);
     expect(getVisibleUfcFighters(subjects, "allen")).toEqual([unranked]);
+    expect(getVisibleUfcFighters(subjects, "ÁLLEN")).toEqual([unranked]);
     expect(getVisibleUfcFighters(subjects, "silva")).toEqual([woman]);
     expect(getVisibleUfcFighters(subjects, "not a fighter")).toEqual([]);
   });

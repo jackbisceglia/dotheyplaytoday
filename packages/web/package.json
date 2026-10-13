@@ -18,7 +18,8 @@
     "alchemy": "catalog:",
     "better-auth": "catalog:",
     "effect": "catalog:",
-    "solid-js": "2.0.0-rc.0"
+    "solid-js": "2.0.0-rc.0",
+    "transliteration": "^2.6.1"
   },
   "devDependencies": {
     "@alchemy.run/cloudflare-runtime": "2.0.0-beta.78",

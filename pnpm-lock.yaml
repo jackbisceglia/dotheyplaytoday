@@ -225,6 +225,9 @@ importers:
       solid-js:
         specifier: 2.0.0-rc.0
         version: 2.0.0-rc.0
+      transliteration:
+        specifier: ^2.6.1
+        version: 2.6.1
     devDependencies:
       '@alchemy.run/cloudflare-runtime':
         specifier: 2.0.0-beta.78
@@ -3059,6 +3062,11 @@ packages:
     resolution: {integrity: sha512-QXqwfEl9ddlGBaRFXIvNKK6OhipSiLXuRuLJX5DErz0o0Q0rYxulWLdFryTkV5PkdZct5iMInwYEGe/eR++1AA==}
     hasBin: true
 
+  transliteration@2.6.1:
+    resolution: {integrity: sha512-hJ9BhrQAOnNTbpOr1MxsNjZISkn7ppvF5TKUeFmTE1mG4ZPD/XVxF0L0LUoIUCWmQyxH0gJpVtfYLAWf298U9w==}
+    engines: {node: '>=20.0.0'}
+    hasBin: true
+
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -5843,6 +5851,8 @@ snapshots:
       picomatch: 4.0.5
 
   tlds@1.261.0: {}
+
+  transliteration@2.6.1: {}
 
   tslib@2.8.1: {}
 
