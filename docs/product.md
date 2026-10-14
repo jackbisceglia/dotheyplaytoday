@@ -42,6 +42,8 @@ touch screens get it, and outranks hovering another tile. It's recorded in the
 URL as `?team=mlb-mil` (league and abbreviation). A link for a team that isn't
 picked shows the full schedule, and Edit clears the filter.
 
+Supported sports subjects now include NBA, NFL, MLB, NHL, and NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences). Only provider-confirmed game starts become notification-capable events.
+
 ## Notifications
 
 - Only subscriptions whose user has `emailVerified: true` enter notification processing. Pending users are excluded at the database query, including forced and dry runs.

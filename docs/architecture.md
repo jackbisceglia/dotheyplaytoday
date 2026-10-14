@@ -7,7 +7,7 @@
 - `packages/jobs` implements notification orchestration and scheduled Workers
   using `core` services and notifiers. Internal operational jobs live under
   `src/ops`, grouped by concern.
-- `packages/data` owns catalog, event, and development seed data and writes through `core` domain services.
+- `packages/data` owns catalog, event, and development seed data and writes through `core` domain services, including NCAA Division I men's basketball snapshots.
 - `packages/web` is the Solid 2 Start-mode frontend and consumes shared `core` contracts.
 
 The feedback write path is intentionally small: its API handler validates the

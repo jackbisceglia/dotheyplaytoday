@@ -2,8 +2,13 @@ import { describe, expect, it } from "@effect/vitest";
 import { Schema } from "effect";
 
 import { Subject, SubjectInsert } from "../schema.js";
-import { SportLeagueIds } from "../variants/sport.schema.js";
 import { MmaFighterSubject } from "../variants/mma.schema.js";
+import {
+  SportConferences,
+  SportLeagueIds,
+  SportTeamSubject,
+  getSportConference,
+} from "../variants/sport.schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -19,6 +24,7 @@ const subjectInput = {
     display: "Boston Celtics",
     abbreviation: "BOS",
     slug: "boston-celtics",
+    conferenceId: "east",
   },
 };
 
@@ -48,7 +54,7 @@ describe("Subject model", () => {
   });
 
   it("lists supported league ids", () => {
-    expect(SportLeagueIds).toEqual(["nba", "nfl", "mlb", "nhl"]);
+    expect(SportLeagueIds).toEqual(["nba", "nfl", "mlb", "nhl", "ncaam"]);
   });
 
   it("rejects malformed subject-owned fields and details", () => {
@@ -80,5 +86,51 @@ describe("Subject model", () => {
     expect(insert).toEqual(subjectInput);
     expect(selected._tag).toBe(subject._tag);
     expect(selected.details).toEqual(subject.details);
+  });
+
+  it("rejects legacy subjects without conferenceId", () => {
+    const { conferenceId: _conferenceId, ...legacy } = subjectInput.details;
+    expect(() => decode(SportTeamSubject)(legacy)).toThrow();
+  });
+
+  it("encodes and decodes valid conference metadata", () => {
+    const withConference = {
+      ...subjectInput.details,
+      leagueId: "nba",
+      conferenceId: "east",
+    };
+
+    const decoded = decode(SportTeamSubject)(withConference);
+    expect(decoded.conferenceId).toBe("east");
+    expect(() => encode(SportTeamSubject)(decoded)).not.toThrow();
+  });
+
+  it("rejects unknown and mismatched conference ids", () => {
+    expect(() =>
+      decode(SportTeamSubject)({
+        ...subjectInput.details,
+        leagueId: "nba",
+        conferenceId: "not-a-conference",
+      }),
+    ).toThrow();
+
+    expect(() =>
+      decode(SportTeamSubject)({
+        ...subjectInput.details,
+        leagueId: "nba",
+        conferenceId: "nfc",
+      }),
+    ).toThrow();
+  });
+
+  it("has valid conference catalog consistency", () => {
+    const pairs = SportConferences.map((conference) => `${conference.leagueId}:${conference.id}`);
+    expect(new Set(pairs).size).toBe(pairs.length);
+    expect(SportConferences.every((conference) =>
+      SportConferences.some((candidate) => candidate.id === conference.id && candidate.leagueId === conference.leagueId),
+    )).toBe(true);
+    expect(getSportConference("nba", "east")?.label).toBe("Eastern Conference");
+    expect(getSportConference("nhl", "east")?.label).toBe("Eastern Conference");
+    expect(getSportConference("nba", "east")).not.toBe(getSportConference("nhl", "east"));
   });
 });
