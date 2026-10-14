@@ -582,6 +582,7 @@ export const Teams = {
       Games._849813.sourceId,
       Games._849818.sourceId,
       Games._849817.sourceId,
+      Games._849816.sourceId,
     ],
   },
   ColoradoRockies: {
@@ -1731,6 +1732,7 @@ export const Teams = {
       Games._849813.sourceId,
       Games._849818.sourceId,
       Games._849817.sourceId,
+      Games._849816.sourceId,
     ],
   },
   TexasRangers: {
