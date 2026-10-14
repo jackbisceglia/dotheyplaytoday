@@ -141,23 +141,13 @@ export function Schedule(props: {
                       style={{ "--row-index": index }}
                       data-focused={isFocused(row) ? "true" : undefined}
                     >
-                      <time
-                        class="dashboard-schedule-time"
-                        datetime={row.startsAt}
-                      >
-                        {row.time}
-                      </time>
-                      <span class="dashboard-schedule-glyph" aria-hidden="true">
-                        {getSubjectLogo(row.subjects[0].details)}
-                      </span>
-                      <div class="dashboard-schedule-matchup">
-                        <strong>{row.title}</strong>
-                        <Matchup row={row} />
-                      </div>
-                      <span class="dashboard-schedule-league">
-                        {row.subjects[0].details.leagueId.toUpperCase()}
-                      </span>
-                      {row._tag === "mma_card" && <UfcCardDetails card={row} />}
+                      {row._tag === "mma_card" ? (
+                        <UfcCard card={row} />
+                      ) : (
+                        <div class="dashboard-schedule-line">
+                          <RowLine row={row} />
+                        </div>
+                      )}
                     </li>
                   )}
                 </For>
@@ -173,78 +163,112 @@ export function Schedule(props: {
   );
 }
 
-function Matchup(props: { readonly row: ScheduleRow }) {
+function RowLine(props: { readonly row: ScheduleRow }) {
+  return (
+    <>
+      <time class="dashboard-schedule-time" datetime={props.row.startsAt}>
+        {props.row.time}
+      </time>
+      <span class="dashboard-schedule-glyph" aria-hidden="true">
+        {getSubjectLogo(props.row.subjects[0].details)}
+      </span>
+      <div class="dashboard-schedule-matchup">
+        <Show when={props.row.label}>
+          {(label) => <span class="dashboard-schedule-label">{label()}</span>}
+        </Show>
+        <Headline row={props.row} />
+      </div>
+      <span class="dashboard-schedule-league">
+        {props.row.subjects[0].details.leagueId.toUpperCase()}
+      </span>
+    </>
+  );
+}
+
+// Bold marks what you follow; a card nobody picked a fighter on stays plain.
+function Headline(props: { readonly row: ScheduleRow }) {
   return Match.value(props.row).pipe(
     Match.tag("sports_game", (game) => (
-      <Show when={game.opponent}>
-        {" "}
-        <span>{game.matchup}</span>{" "}
-        <Show when={game.opponentTeam} fallback={<span>{game.opponent}</span>}>
-          {(team) => (
+      <>
+        <strong>{game.title}</strong>
+        <Show when={game.opponent}>
+          {" "}
+          <span>{game.matchup}</span>{" "}
+          <Show
+            when={game.opponentTeam}
+            fallback={<span>{game.opponent}</span>}
+          >
+            {(team) => (
+              <>
+                <span aria-hidden="true">{getSubjectLogo(team().details)}</span>{" "}
+                <strong>{game.opponent}</strong>
+              </>
+            )}
+          </Show>
+        </Show>
+      </>
+    )),
+    Match.tag("mma_card", (card) => (
+      <Show when={card.headliners.length > 0} fallback={card.title}>
+        <For each={card.headliners}>
+          {(headliner, index) => (
             <>
-              <span aria-hidden="true">{getSubjectLogo(team().details)}</span>{" "}
-              <strong>{game.opponent}</strong>
+              {index() > 0 && (
+                <>
+                  {" "}
+                  <span>vs</span>{" "}
+                </>
+              )}
+              {headliner.followed ? (
+                <strong>{headliner.name}</strong>
+              ) : (
+                headliner.name
+              )}
             </>
           )}
-        </Show>
+        </For>
       </Show>
     )),
-    Match.tag("mma_card", () => null),
     Match.exhaustive,
   );
 }
 
-function UfcCardDetails(props: {
+// The whole row opens the card.
+function UfcCard(props: {
   readonly card: Extract<ScheduleRow, { readonly _tag: "mma_card" }>;
 }) {
   return (
     <details class="ufc-card-details">
-      <summary class="ufc-card-summary">
-        <span class="ufc-card-summary-closed">View fights</span>
-        <span class="ufc-card-summary-open">Hide fights</span>
-        <span class="ufc-card-count">({props.card.fights.length})</span>
+      <summary class="dashboard-schedule-line ufc-card-summary">
+        <RowLine row={props.card} />
       </summary>
-      <div class="ufc-card-content">
-        <p class="ufc-card-detail">{props.card.timing}</p>
-        <p class="ufc-card-detail">
-          Matched:{" "}
-          {props.card.subjects
-            .map((subject) => subject.details.display)
-            .join(", ")}
-        </p>
-        <Show
-          when={props.card.fights.length > 0}
-          fallback={
-            <p class="ufc-card-detail">Fight lineup to be announced.</p>
-          }
-        >
-          <ul class="ufc-card-fights">
-            <For each={props.card.fights}>
-              {(fight) => (
-                <li>
-                  <For each={fight.fighters}>
-                    {(fighter, index) => (
-                      <>
-                        {index() > 0 && " vs "}
-                        <Show
-                          when={props.card.subjects.some(
-                            (subject) =>
-                              subject.details.display === fighter.title,
-                          )}
-                          fallback={fighter.title}
-                        >
-                          <strong>{fighter.title}</strong>
-                        </Show>
-                      </>
+      <Show
+        when={props.card.sections.length > 0}
+        fallback={<p class="ufc-card-empty">Fight lineup to be announced.</p>}
+      >
+        <div class="ufc-card-content">
+          <For each={props.card.sections}>
+            {(section) => (
+              <section class="ufc-card-section" aria-label={section.name}>
+                <span class="ufc-card-time">{section.time}</span>
+                <span class="ufc-card-placement" aria-hidden="true">
+                  {section.name}
+                </span>
+                <ol class="ufc-card-fights">
+                  <For each={section.fights}>
+                    {(fight) => (
+                      <li>
+                        {fight.fighters.join(" vs ")}
+                        {fight.fighters.length === 1 && " vs TBD"}
+                      </li>
                     )}
                   </For>
-                  {fight.fighters.length === 1 && " vs Opponent TBD"}
-                </li>
-              )}
-            </For>
-          </ul>
-        </Show>
-      </div>
+                </ol>
+              </section>
+            )}
+          </For>
+        </div>
+      </Show>
     </details>
   );
 }

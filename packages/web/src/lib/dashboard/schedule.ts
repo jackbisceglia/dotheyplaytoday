@@ -5,8 +5,8 @@ import {
 } from "@dtpt/core/modules/events/joined";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
-import { mmaTimingText } from "@dtpt/core/modules/mma/time";
 import { mmaFights } from "@dtpt/core/modules/mma/fights";
+import type { MmaEvent } from "@dtpt/core/modules/events/variants/mma.schema";
 import { Array, DateTime, Match } from "effect";
 
 import {
@@ -21,6 +21,8 @@ export type ScheduleRow = {
   readonly day: string;
   readonly time: string;
   readonly title: string;
+  // Context above the headline, such as a card's event name.
+  readonly label: string | undefined;
   readonly subjects: Array.NonEmptyReadonlyArray<Subject>;
 } & (
   | {
@@ -31,12 +33,146 @@ export type ScheduleRow = {
     }
   | {
       readonly _tag: "mma_card";
-      readonly fights: ReturnType<typeof mmaFights>;
-      readonly timing: string;
+      readonly headliners: readonly Fighter[];
+      readonly sections: readonly {
+        readonly name: "Main card" | "Prelims";
+        readonly time: string;
+        readonly fights: readonly {
+          readonly id: string;
+          readonly fighters: readonly string[];
+        }[];
+      }[];
     }
 );
 
+type Fighter = { readonly name: string; readonly followed: boolean };
+
 const normalizeName = (value: string) => value.trim().toLowerCase();
+
+// Card titles name fighters by surname: "Volkanovski" names Alexander Volkanovski.
+const matchesName = (fullName: string, name: string) =>
+  ` ${normalizeName(fullName)}`.endsWith(` ${normalizeName(name)}`);
+
+const followedFighters = (subjects: readonly Subject[]) =>
+  subjects.flatMap((subject) =>
+    subject._tag === "mma_fighter"
+      ? [normalizeName(subject.details.display)]
+      : [],
+  );
+
+type Fights = ReturnType<typeof mmaFights>;
+
+// A card title's surnames stand for its main event's fighters, so a followed
+// undercard namesake never matches a headliner. The main event is the bout
+// matching the most of them, first in billing order, so one whose opponent
+// withdrew still counts.
+const titleFighters = (names: readonly string[], fights: Fights) => {
+  const matched = (fight: Fights[number]) =>
+    names.filter((name) =>
+      fight.fighters.some((fighter) => matchesName(fighter.title, name)),
+    ).length;
+  const mainEvent = fights.reduce<Fights[number] | undefined>(
+    (best, fight) =>
+      matched(fight) > (best ? matched(best) : 0) ? fight : best,
+    undefined,
+  );
+  return names.map(
+    (name) =>
+      mainEvent?.fighters.find((fighter) => matchesName(fighter.title, name))
+        ?.title,
+  );
+};
+
+// "UFC 333: Volkanovski vs Evloev" labels the row "UFC 333" and headlines the
+// matchup; the badge already says UFC, so Fight Nights drop it.
+const cardHeading = (
+  card: MmaEvent,
+  fights: Fights,
+  followed: readonly string[],
+) => {
+  const [event, matchup] = card.title.split(/:\s*(.*)/s);
+  if (!event || !matchup) {
+    return { title: card.title, label: undefined, headliners: [] };
+  }
+
+  const names = matchup.split(/\s+vs\.?\s+/i);
+  const titles = titleFighters(names, fights);
+  return {
+    title: matchup,
+    label: card.category === "fight_night" ? "Fight Night" : event.trim(),
+    headliners: names.map((name, index) => {
+      const title = titles[index];
+      return {
+        name,
+        followed:
+          title !== undefined && followed.includes(normalizeName(title)),
+      };
+    }),
+  };
+};
+
+const suffixes = new Set(["jr", "jr.", "sr", "sr.", "ii", "iii", "iv"]);
+const particles = new Set([
+  "da",
+  "de",
+  "del",
+  "della",
+  "di",
+  "dos",
+  "van",
+  "von",
+]);
+
+// Lineups list surnames, keeping "Jr." and "Della"-style particles attached.
+// Family-name-first names come out wrong until the catalog carries surnames.
+const surname = (name: string) => {
+  const words = name.trim().split(/\s+/);
+  const word = (index: number) => words[index]?.toLowerCase() ?? "";
+  let start = words.length - 1;
+  if (start > 0 && suffixes.has(word(start))) start -= 1;
+  while (start > 1 && particles.has(word(start - 1))) start -= 1;
+  return words.slice(start).join(" ");
+};
+
+const placements = [
+  ["main", "Main card"],
+  ["prelims", "Prelims"],
+] as const;
+
+// Billing order: the main card, then the prelims, each from its own start.
+// The main event keeps the title's corner order; other fights stay alphabetical.
+const cardSections = (
+  card: MmaEvent,
+  fights: Fights,
+  headliners: readonly Fighter[],
+  timeFormat: Intl.DateTimeFormat,
+) => {
+  const billed = titleFighters(
+    headliners.map(({ name }) => name),
+    fights,
+  );
+  const billing = (title: string) => {
+    const index = billed.indexOf(title);
+    return index === -1 ? billed.length : index;
+  };
+  return placements.flatMap(([placement, name]) => {
+    const placed = fights.filter((fight) => fight.placement === placement);
+    if (placed.length === 0) return [];
+
+    return [
+      {
+        name,
+        time: timeFormat.format(DateTime.toDateUtc(card.timings[placement])),
+        fights: placed.map((fight) => ({
+          id: fight.id,
+          fighters: fight.fighters
+            .toSorted((a, b) => billing(a.title) - billing(b.title))
+            .map((fighter) => surname(fighter.title)),
+        })),
+      },
+    ];
+  });
+};
 
 const eventKey = (event: EventWithParticipants) =>
   Match.value(event.details).pipe(
@@ -111,17 +247,29 @@ export function scheduleRows(
       return Match.value(event).pipe(
         Match.when(
           isEventWithParticipants("mma_card"),
-          (card): ScheduleRow[] => [
-            {
-              ...common,
-              _tag: "mma_card",
-              title: card.details.title,
-              fights: mmaFights(
-                card.participants.map((participant) => participant.details),
-              ),
-              timing: mmaTimingText(card.details, timezone),
-            },
-          ],
+          (card): ScheduleRow[] => {
+            const fights = mmaFights(
+              card.participants.map((participant) => participant.details),
+            );
+            const heading = cardHeading(
+              card.details,
+              fights,
+              followedFighters(subjects),
+            );
+            return [
+              {
+                ...common,
+                _tag: "mma_card",
+                ...heading,
+                sections: cardSections(
+                  card.details,
+                  fights,
+                  heading.headliners,
+                  timeFormat,
+                ),
+              },
+            ];
+          },
         ),
         Match.when(
           isEventWithParticipants("sports_game"),
@@ -162,6 +310,7 @@ export function scheduleRows(
               {
                 ...common,
                 _tag: "sports_game",
+                label: undefined,
                 title:
                   own || !leading
                     ? subject.details.name
