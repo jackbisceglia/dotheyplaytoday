@@ -3,8 +3,8 @@ import type { SportTeamSubject } from "@dtpt/core/modules/subjects/variants/spor
 import type { SportsSubject } from "./sports/index.js";
 
 type CollegeConferenceId = Extract<
-  SportTeamSubject,
-  { leagueId: "ncaam" }
+  SportTeamSubject["league"],
+  { id: "ncaam" }
 >["conferenceId"];
 
 const conferenceLabels = {
@@ -34,8 +34,8 @@ export type CollegeGroup = { readonly id: string; readonly label: string };
 export function getCollegeGroups(teams: readonly SportsSubject[]) {
   const conferences = new Map<string, string>();
   for (const team of teams) {
-    if (team.details.leagueId === "ncaam") {
-      const id = team.details.conferenceId;
+    if (team.details.league.id === "ncaam") {
+      const id = team.details.league.conferenceId;
       conferences.set(id, conferenceLabels[id]);
     }
   }
@@ -59,4 +59,4 @@ export const getCollegeTeams = (
           (a, b) =>
             (a.details.apRank ?? Infinity) - (b.details.apRank ?? Infinity),
         )
-    : teams.filter((team) => team.details.conferenceId === groupId);
+    : teams.filter((team) => team.details.league.conferenceId === groupId);

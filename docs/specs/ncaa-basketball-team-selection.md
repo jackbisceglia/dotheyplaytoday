@@ -216,9 +216,12 @@ count in the action bar.
 
 ## 4. Required catalog and API metadata
 
-All new fields are additive and optional on the shared `SportTeamSubject`, so
-pro records decode unchanged. **This UI needs `conference` populated on every
-`ncaam` subject.**
+Every sports team uses required `league: { id, conferenceId }` membership,
+including pro teams. Core validates each league's conference IDs; web owns
+their labels. Only `apRank` is additive and optional. The versioned catalog
+seed updates existing records before readers use the new shape. In the table
+below, `leagueId` means `league.id` and `conferenceId` means
+`league.conferenceId` for sports-team subjects.
 
 | Field                                  | Need                                                                                                                    | Example                                                              | Used by                                  |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------- |
@@ -227,7 +230,7 @@ pro records decode unchanged. **This UI needs `conference` populated on every
 | `location`                             | School name                                                                                                             | `Miami (OH)`                                                         | Reserved for future use                  |
 | `name`                                 | Nickname                                                                                                                | `RedHawks`                                                           | Roster tile line (`RedHawks · NCAAM`)    |
 | `abbreviation`                         | ≤5 characters and **unique within the league**, enforced by a data test                                                 | `M-OH`, `TA&M`, `CONN`                                               | Card, summary, roster, `?team=` key      |
-| `conferenceId` _(new, backend thread)_ | Required conference ID validated by core; display labels live in web's `lib/catalog/college.ts`                       | `"mac"` → "MAC"                                                      | Dropdown options and grouping            |
+| `conferenceId` _(new, backend thread)_ | Required conference ID validated by core; display labels live in web's `lib/catalog/college.ts`                         | `"mac"` → "MAC"                                                      | Dropdown options and grouping            |
 | `apRank` _(new)_                       | Optional integer key, 1–25, from the latest AP poll. An absent key means unranked                                       | `3`                                                                  | Top 25 option, order, and badge          |
 
 Constraints for the data spec:
@@ -245,7 +248,10 @@ Constraints for the data spec:
   The backend thread's `NCAA MBB` is replaced so the pill matches the roster
   and schedule tags.
 
-**API:** no new endpoint, and no contract change beyond these additive fields.
+**API:** no new endpoint. Sports-team membership moves from flat fields to
+`details.league.id` and `details.league.conferenceId`. Sports events and MMA
+subjects retain their existing `leagueId` fields. Shared UI labels use
+`getSubjectLeagueId` to read either subject kind.
 
 ## 5. States
 
