@@ -14,7 +14,7 @@ import { SeedCollectionId } from "./seed.js";
 export type SportSubjectSeed = typeof SportSubjectSeed.Type;
 export const SportSubjectSeed = Schema.Struct({
   ...SubjectInsert.fields,
-  _tag: SportTeamSubject.fields._tag,
+  _tag: Schema.Literals(["sports_team"]),
   details: SportTeamSubject,
   feedIds: Schema.Array(EventSourceId),
 });

@@ -142,6 +142,7 @@ export const nflNotification = decode(Notification)({
     details: {
       _tag: "sports_team",
       leagueId: "nfl",
+      conferenceId: "nfc",
       location: "Philadelphia",
       name: "Eagles",
       display: "Philadelphia Eagles",

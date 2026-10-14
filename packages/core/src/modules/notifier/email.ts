@@ -36,7 +36,6 @@ import {
   type NarrowedEventWithParticipants,
 } from "../events/joined.js";
 import { SportParticipant } from "../events/participants/variants/sport.schema.js";
-import { SubjectDetails } from "../subjects/schema.js";
 import type { SportTeamSubject } from "../subjects/variants/sport.schema.js";
 import type { User } from "../users/schema.js";
 import { NotifierError } from "./errors.js";
@@ -77,7 +76,9 @@ function createFeedCases() {
 
     mmaFeed: {
       subject: {
-        details: SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"]),
+        details: (details: unknown) =>
+          Predicate.isTagged("mma_fighter")(details) ||
+          Predicate.isTagged("mma_tracking")(details),
       },
 
       events: (events: Notification["events"]): events is MmaEvents =>

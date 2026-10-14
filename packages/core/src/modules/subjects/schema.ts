@@ -8,7 +8,6 @@ import { Schema } from "effect";
 import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
-import { TaggedUnion } from "../../lib/effect/index.js";
 import {
   MmaFighterSubject,
   MmaTrackingSubject,
@@ -22,22 +21,25 @@ export type SubjectSchemasMatchTable = Check<
 export type SubjectId = typeof SubjectId.Type;
 export const SubjectId = Id.SchemaBranded("SubjectId");
 
+const subjectTags = ["sports_team", "mma_fighter", "mma_tracking"] as const;
+
 export type SubjectDetails = typeof SubjectDetails.Type;
-export const SubjectDetails = TaggedUnion([
+export const SubjectDetails = Schema.Union([
   SportTeamSubject,
   MmaFighterSubject,
   MmaTrackingSubject,
 ]);
 
+
 const overrides = {
   id: SubjectId,
-  _tag: Schema.Literals(SubjectDetails.tags),
+  _tag: Schema.Literals(subjectTags),
   details: SubjectDetails,
 };
 
 export const subjectsTable = postgresTable("subjects", {
   id: text().primaryKey(),
-  _tag: text("_tag", { enum: SubjectDetails.tags }).notNull(),
+  _tag: text("_tag", { enum: subjectTags }).notNull(),
   details: jsonb()
     .notNull()
     .$type<Schema.Codec.Encoded<typeof SubjectDetails>>(),

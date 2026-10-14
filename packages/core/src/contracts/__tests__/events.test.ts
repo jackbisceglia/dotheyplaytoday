@@ -18,6 +18,7 @@ const response = [
         name: "Celtics",
         location: "Boston",
         abbreviation: "BOS",
+        conferenceId: "east",
       },
     },
     schedule: { _tag: "fixed_local_time", sendAtSecondsLocal: 32400 },

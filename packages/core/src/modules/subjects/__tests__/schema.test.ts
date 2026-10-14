@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
+import { expectTypeOf } from "vitest";
 import { Schema } from "effect";
 
 import { Subject, SubjectInsert } from "../schema.js";
@@ -133,4 +134,58 @@ describe("Subject model", () => {
     expect(getSportConference("nhl", "east")?.label).toBe("Eastern Conference");
     expect(getSportConference("nba", "east")).not.toBe(getSportConference("nhl", "east"));
   });
+
+
+  it("narrows conference IDs by league at the type level", () => {
+    type NbaSubject = Extract<SportTeamSubject, { leagueId: "nba" }>;
+    type NhlSubject = Extract<SportTeamSubject, { leagueId: "nhl" }>;
+    type NflSubject = Extract<SportTeamSubject, { leagueId: "nfl" }>;
+    type MlbSubject = Extract<SportTeamSubject, { leagueId: "mlb" }>;
+    type NcaamSubject = Extract<SportTeamSubject, { leagueId: "ncaam" }>;
+
+    expectTypeOf<NbaSubject["conferenceId"]>().toEqualTypeOf<"east" | "west">();
+    expectTypeOf<NhlSubject["conferenceId"]>().toEqualTypeOf<"east" | "west">();
+    expectTypeOf<NflSubject["conferenceId"]>().toEqualTypeOf<"afc" | "nfc">();
+    expectTypeOf<MlbSubject["conferenceId"]>().toEqualTypeOf<"al" | "nl">();
+    expectTypeOf<NcaamSubject["conferenceId"]>().toEqualTypeOf<
+      | "acc"
+      | "aac"
+      | "a10"
+      | "big-east"
+      | "big-ten"
+      | "big-12"
+      | "mac"
+      | "mvc"
+      | "mountain-west"
+      | "pac-12"
+      | "sec"
+      | "wcc"
+    >();
+
+    const valid: SportTeamSubject = {
+      _tag: "sports_team",
+      leagueId: "nba",
+      display: "Boston Celtics",
+      location: "Boston",
+      name: "Celtics",
+      abbreviation: "BOS",
+      conferenceId: "east",
+    };
+
+    // @ts-expect-error NBA cannot have an NFL conference.
+    const invalidNba: SportTeamSubject = {
+      ...valid,
+      leagueId: "nba",
+      conferenceId: "nfc",
+    };
+    // @ts-expect-error MLB cannot have an NCAAM conference.
+    const invalidMlb: SportTeamSubject = {
+      ...valid,
+      leagueId: "mlb",
+      conferenceId: "acc",
+    };
+
+    void [valid, invalidNba, invalidMlb];
+  });
+
 });

@@ -32,6 +32,7 @@ const team = (id: string, name: string) =>
       name,
       location: name,
       abbreviation: "NBA",
+      conferenceId: "east",
     },
   });
 const celtics = team("00000000-0000-4000-8000-000000000003", "Boston Celtics");
