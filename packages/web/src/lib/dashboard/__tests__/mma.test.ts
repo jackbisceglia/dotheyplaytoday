@@ -154,6 +154,27 @@ describe("UFC schedule", () => {
         { name: "B", followed: false },
       ],
     ]);
+
+    const withdrawn = {
+      ...titled("UFC 333: A vs C", "numbered"),
+      participants: card.participants.map((participant) => ({
+        ...participant,
+        details: {
+          ...participant.details,
+          fightId:
+            participant.details.title === fighterA.details.display
+              ? "fight-1"
+              : "fight-2",
+        },
+      })),
+    };
+    expect(heading(withdrawn, fighterA)).toEqual([
+      "UFC 333",
+      [
+        { name: "A", followed: true },
+        { name: "C", followed: false },
+      ],
+    ]);
   });
 
   it("splits the lineup into billed sections of surnames in title order", () => {

@@ -63,12 +63,18 @@ const followedFighters = (subjects: readonly Subject[]) =>
 type Fights = ReturnType<typeof mmaFights>;
 
 // A card title's surnames stand for its main event's fighters, so a followed
-// undercard namesake never matches a headliner.
+// undercard namesake never matches a headliner. The main event is the bout
+// matching the most of them, first in billing order, so one whose opponent
+// withdrew still counts.
 const titleFighters = (names: readonly string[], fights: Fights) => {
-  const mainEvent = fights.find((fight) =>
-    names.every((name) =>
+  const matched = (fight: Fights[number]) =>
+    names.filter((name) =>
       fight.fighters.some((fighter) => matchesName(fighter.title, name)),
-    ),
+    ).length;
+  const mainEvent = fights.reduce<Fights[number] | undefined>(
+    (best, fight) =>
+      matched(fight) > (best ? matched(best) : 0) ? fight : best,
+    undefined,
   );
   return names.map(
     (name) =>
