@@ -93,7 +93,7 @@ SubjectPicker
   - The 900px breakpoint depends on how wide the pill row is. Recheck it
     whenever a league pill is added, since each pill adds about 80px.
   - Options: `Top 25`, then an `<optgroup label="Conferences">` with each
-    conference's label from core's `SportConferences`, sorted by
+    conference's label from web's `lib/catalog/college.ts`, sorted by
     `localeCompare`: `ACC, American, Atlantic 10, Big 12, Big East, Big Ten,
 MAC, Missouri Valley, Mountain West, SEC, WCC`.
   - Only conferences that have subjects get an option, so the list grows on
@@ -227,7 +227,7 @@ pro records decode unchanged. **This UI needs `conference` populated on every
 | `location`                             | School name                                                                                                             | `Miami (OH)`                                                         | Reserved for future use                  |
 | `name`                                 | Nickname                                                                                                                | `RedHawks`                                                           | Roster tile line (`RedHawks · NCAAM`)    |
 | `abbreviation`                         | ≤5 characters and **unique within the league**, enforced by a data test                                                 | `M-OH`, `TA&M`, `CONN`                                               | Card, summary, roster, `?team=` key      |
-| `conferenceId` _(new, backend thread)_ | Required ID into core's `SportConferences`, which holds the display label                                               | `"mac"` → "MAC"                                                      | Dropdown options and grouping            |
+| `conferenceId` _(new, backend thread)_ | Required conference ID validated by core; display labels live in web's `lib/catalog/college.ts`                       | `"mac"` → "MAC"                                                      | Dropdown options and grouping            |
 | `apRank` _(new)_                       | Optional integer key, 1–25, from the latest AP poll. An absent key means unranked                                       | `3`                                                                  | Top 25 option, order, and badge          |
 
 Constraints for the data spec:

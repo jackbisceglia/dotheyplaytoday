@@ -54,6 +54,25 @@ describe("college browsing", () => {
     ]);
   });
 
+  it("does not include pro conferences in college browsing", () => {
+    const celtics = Schema.decodeUnknownSync(Subject)({
+      id: "20000000-0000-4000-8000-000000000099",
+      _tag: "sports_team",
+      details: {
+        _tag: "sports_team",
+        leagueId: "nba",
+        conferenceId: "east",
+        display: "Boston Celtics",
+        location: "Boston",
+        name: "Celtics",
+        abbreviation: "BOS",
+      },
+    });
+    expect(getCollegeGroups(getTeams([duke, celtics])).conferences).toEqual([
+      { id: "acc", label: "ACC" },
+    ]);
+  });
+
   it("offers the Top 25 only once a team is ranked", () => {
     expect(getCollegeGroups(teams).ranked).toBe(true);
     expect(getCollegeGroups(getTeams([miami, dayton])).ranked).toBe(false);

@@ -1,6 +1,26 @@
-import { getSportConference } from "@dtpt/core/modules/subjects/variants/sport.schema";
+import type { SportTeamSubject } from "@dtpt/core/modules/subjects/variants/sport.schema";
 
 import type { SportsSubject } from "./sports/index.js";
+
+type CollegeConferenceId = Extract<
+  SportTeamSubject,
+  { leagueId: "ncaam" }
+>["conferenceId"];
+
+const conferenceLabels = {
+  acc: "ACC",
+  aac: "American",
+  a10: "Atlantic 10",
+  "big-east": "Big East",
+  "big-ten": "Big Ten",
+  "big-12": "Big 12",
+  mac: "MAC",
+  mvc: "Missouri Valley",
+  "mountain-west": "Mountain West",
+  "pac-12": "Pac-12",
+  sec: "SEC",
+  wcc: "WCC",
+} satisfies Record<CollegeConferenceId, string>;
 
 // College leagues are browsed by AP Top 25 or conference instead of as one
 // grid. Teams arrive filtered to the league and sorted by display name.
@@ -14,11 +34,10 @@ export type CollegeGroup = { readonly id: string; readonly label: string };
 export function getCollegeGroups(teams: readonly SportsSubject[]) {
   const conferences = new Map<string, string>();
   for (const team of teams) {
-    const conference = getSportConference(
-      team.details.leagueId,
-      team.details.conferenceId,
-    );
-    if (conference) conferences.set(conference.id, conference.label);
+    if (team.details.leagueId === "ncaam") {
+      const id = team.details.conferenceId;
+      conferences.set(id, conferenceLabels[id]);
+    }
   }
 
   return {
