@@ -141,6 +141,19 @@ describe("UFC schedule", () => {
       ],
     ]);
     expect(heading(card)).toEqual([undefined, []]);
+
+    const namesake = Schema.decodeUnknownSync(Subject)({
+      ...fighterA,
+      id: "10000000-0000-4000-8000-000000000005",
+      details: { ...fighterA.details, display: "Other B" },
+    });
+    expect(heading(titled("UFC 333: A vs B", "numbered"), namesake)).toEqual([
+      "UFC 333",
+      [
+        { name: "A", followed: false },
+        { name: "B", followed: false },
+      ],
+    ]);
   });
 
   it("splits the lineup into billed sections of surnames in title order", () => {

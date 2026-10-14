@@ -2,7 +2,6 @@ import type { EventsResponse } from "@dtpt/core/contracts/events";
 import {
   isEventWithParticipants,
   type EventWithParticipants,
-  type NarrowedEventWithParticipants,
 } from "@dtpt/core/modules/events/joined";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
@@ -61,21 +60,48 @@ const followedFighters = (subjects: readonly Subject[]) =>
       : [],
   );
 
+type Fights = ReturnType<typeof mmaFights>;
+
+// A card title's surnames stand for its main event's fighters, so a followed
+// undercard namesake never matches a headliner.
+const titleFighters = (names: readonly string[], fights: Fights) => {
+  const mainEvent = fights.find((fight) =>
+    names.every((name) =>
+      fight.fighters.some((fighter) => matchesName(fighter.title, name)),
+    ),
+  );
+  return names.map(
+    (name) =>
+      mainEvent?.fighters.find((fighter) => matchesName(fighter.title, name))
+        ?.title,
+  );
+};
+
 // "UFC 333: Volkanovski vs Evloev" labels the row "UFC 333" and headlines the
 // matchup; the badge already says UFC, so Fight Nights drop it.
-const cardHeading = (card: MmaEvent, followed: readonly string[]) => {
+const cardHeading = (
+  card: MmaEvent,
+  fights: Fights,
+  followed: readonly string[],
+) => {
   const [event, matchup] = card.title.split(/:\s*(.*)/s);
   if (!event || !matchup) {
     return { title: card.title, label: undefined, headliners: [] };
   }
 
+  const names = matchup.split(/\s+vs\.?\s+/i);
+  const titles = titleFighters(names, fights);
   return {
     title: matchup,
     label: card.category === "fight_night" ? "Fight Night" : event.trim(),
-    headliners: matchup.split(/\s+vs\.?\s+/i).map((name) => ({
-      name,
-      followed: followed.some((fighter) => matchesName(fighter, name)),
-    })),
+    headliners: names.map((name, index) => {
+      const title = titles[index];
+      return {
+        name,
+        followed:
+          title !== undefined && followed.includes(normalizeName(title)),
+      };
+    }),
   };
 };
 
@@ -110,17 +136,19 @@ const placements = [
 // Billing order: the main card, then the prelims, each from its own start.
 // The main event keeps the title's corner order; other fights stay alphabetical.
 const cardSections = (
-  card: NarrowedEventWithParticipants<"mma_card">,
+  card: MmaEvent,
+  fights: Fights,
   headliners: readonly Fighter[],
   timeFormat: Intl.DateTimeFormat,
 ) => {
-  const billing = (title: string) => {
-    const index = headliners.findIndex(({ name }) => matchesName(title, name));
-    return index === -1 ? headliners.length : index;
-  };
-  const fights = mmaFights(
-    card.participants.map((participant) => participant.details),
+  const billed = titleFighters(
+    headliners.map(({ name }) => name),
+    fights,
   );
+  const billing = (title: string) => {
+    const index = billed.indexOf(title);
+    return index === -1 ? billed.length : index;
+  };
   return placements.flatMap(([placement, name]) => {
     const placed = fights.filter((fight) => fight.placement === placement);
     if (placed.length === 0) return [];
@@ -128,9 +156,7 @@ const cardSections = (
     return [
       {
         name,
-        time: timeFormat.format(
-          DateTime.toDateUtc(card.details.timings[placement]),
-        ),
+        time: timeFormat.format(DateTime.toDateUtc(card.timings[placement])),
         fights: placed.map((fight) => ({
           id: fight.id,
           fighters: fight.fighters
@@ -216,14 +242,25 @@ export function scheduleRows(
         Match.when(
           isEventWithParticipants("mma_card"),
           (card): ScheduleRow[] => {
-            const followed = followedFighters(subjects);
-            const heading = cardHeading(card.details, followed);
+            const fights = mmaFights(
+              card.participants.map((participant) => participant.details),
+            );
+            const heading = cardHeading(
+              card.details,
+              fights,
+              followedFighters(subjects),
+            );
             return [
               {
                 ...common,
                 _tag: "mma_card",
                 ...heading,
-                sections: cardSections(card, heading.headliners, timeFormat),
+                sections: cardSections(
+                  card.details,
+                  fights,
+                  heading.headliners,
+                  timeFormat,
+                ),
               },
             ];
           },
