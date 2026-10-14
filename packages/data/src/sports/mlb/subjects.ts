@@ -15,6 +15,7 @@ export const Teams = {
       display: "Los Angeles Angels",
       abbreviation: "LAA",
       slug: "los-angeles-angels",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824009.sourceId,
@@ -95,6 +96,7 @@ export const Teams = {
       display: "Arizona Diamondbacks",
       abbreviation: "AZ",
       slug: "arizona-diamondbacks",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._825060.sourceId,
@@ -176,6 +178,7 @@ export const Teams = {
       display: "Baltimore Orioles",
       abbreviation: "BAL",
       slug: "baltimore-orioles",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824170.sourceId,
@@ -256,6 +259,7 @@ export const Teams = {
       display: "Boston Red Sox",
       abbreviation: "BOS",
       slug: "boston-red-sox",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824766.sourceId,
@@ -341,6 +345,7 @@ export const Teams = {
       display: "Chicago Cubs",
       abbreviation: "CHC",
       slug: "chicago-cubs",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._824655.sourceId,
@@ -424,6 +429,7 @@ export const Teams = {
       display: "Cincinnati Reds",
       abbreviation: "CIN",
       slug: "cincinnati-reds",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._824332.sourceId,
@@ -506,6 +512,7 @@ export const Teams = {
       display: "Cleveland Guardians",
       abbreviation: "CLE",
       slug: "cleveland-guardians",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824414.sourceId,
@@ -595,6 +602,7 @@ export const Teams = {
       display: "Colorado Rockies",
       abbreviation: "COL",
       slug: "colorado-rockies",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._824332.sourceId,
@@ -674,6 +682,7 @@ export const Teams = {
       display: "Detroit Tigers",
       abbreviation: "DET",
       slug: "detroit-tigers",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824009.sourceId,
@@ -755,6 +764,7 @@ export const Teams = {
       display: "Houston Astros",
       abbreviation: "HOU",
       slug: "houston-astros",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824170.sourceId,
@@ -836,6 +846,7 @@ export const Teams = {
       display: "Kansas City Royals",
       abbreviation: "KC",
       slug: "kansas-city-royals",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824090.sourceId,
@@ -916,6 +927,7 @@ export const Teams = {
       display: "Los Angeles Dodgers",
       abbreviation: "LAD",
       slug: "los-angeles-dodgers",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._823524.sourceId,
@@ -1004,6 +1016,7 @@ export const Teams = {
       display: "Washington Nationals",
       abbreviation: "WSH",
       slug: "washington-nationals",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._824981.sourceId,
@@ -1084,6 +1097,7 @@ export const Teams = {
       display: "New York Mets",
       abbreviation: "NYM",
       slug: "new-york-mets",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._823441.sourceId,
@@ -1163,6 +1177,7 @@ export const Teams = {
       display: "Athletics",
       abbreviation: "ATH",
       slug: "athletics",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824981.sourceId,
@@ -1244,6 +1259,7 @@ export const Teams = {
       display: "Pittsburgh Pirates",
       abbreviation: "PIT",
       slug: "pittsburgh-pirates",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._824414.sourceId,
@@ -1324,6 +1340,7 @@ export const Teams = {
       display: "San Diego Padres",
       abbreviation: "SD",
       slug: "san-diego-padres",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._824090.sourceId,
@@ -1411,6 +1428,7 @@ export const Teams = {
       display: "Seattle Mariners",
       abbreviation: "SEA",
       slug: "seattle-mariners",
+      conferenceId: "al",
     },
     feedIds: [
       Games._823115.sourceId,
@@ -1491,6 +1509,7 @@ export const Teams = {
       display: "San Francisco Giants",
       abbreviation: "SF",
       slug: "san-francisco-giants",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._823115.sourceId,
@@ -1572,6 +1591,7 @@ export const Teams = {
       display: "St. Louis Cardinals",
       abbreviation: "STL",
       slug: "st-louis-cardinals",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._825060.sourceId,
@@ -1654,6 +1674,7 @@ export const Teams = {
       display: "Tampa Bay Rays",
       abbreviation: "TB",
       slug: "tampa-bay-rays",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824766.sourceId,
@@ -1744,6 +1765,7 @@ export const Teams = {
       display: "Texas Rangers",
       abbreviation: "TEX",
       slug: "texas-rangers",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824901.sourceId,
@@ -1825,6 +1847,7 @@ export const Teams = {
       display: "Toronto Blue Jays",
       abbreviation: "TOR",
       slug: "toronto-blue-jays",
+      conferenceId: "al",
     },
     feedIds: [
       Games._822789.sourceId,
@@ -1906,6 +1929,7 @@ export const Teams = {
       display: "Minnesota Twins",
       abbreviation: "MIN",
       slug: "minnesota-twins",
+      conferenceId: "al",
     },
     feedIds: [
       Games._824655.sourceId,
@@ -1986,6 +2010,7 @@ export const Teams = {
       display: "Philadelphia Phillies",
       abbreviation: "PHI",
       slug: "philadelphia-phillies",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._823441.sourceId,
@@ -2068,6 +2093,7 @@ export const Teams = {
       display: "Atlanta Braves",
       abbreviation: "ATL",
       slug: "atlanta-braves",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._824901.sourceId,
@@ -2157,6 +2183,7 @@ export const Teams = {
       display: "Chicago White Sox",
       abbreviation: "CWS",
       slug: "chicago-white-sox",
+      conferenceId: "al",
     },
     feedIds: [
       Games._822789.sourceId,
@@ -2246,6 +2273,7 @@ export const Teams = {
       display: "Miami Marlins",
       abbreviation: "MIA",
       slug: "miami-marlins",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._823766.sourceId,
@@ -2326,6 +2354,7 @@ export const Teams = {
       display: "New York Yankees",
       abbreviation: "NYY",
       slug: "new-york-yankees",
+      conferenceId: "al",
     },
     feedIds: [
       Games._823524.sourceId,
@@ -2412,6 +2441,7 @@ export const Teams = {
       display: "Milwaukee Brewers",
       abbreviation: "MIL",
       slug: "milwaukee-brewers",
+      conferenceId: "nl",
     },
     feedIds: [
       Games._823766.sourceId,

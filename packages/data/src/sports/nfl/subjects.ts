@@ -16,6 +16,7 @@ export const Teams = {
       display: "Arizona Cardinals",
       abbreviation: "ARI",
       slug: "arizona-cardinals",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CardinalsAtChargers.sourceId,
@@ -48,6 +49,7 @@ export const Teams = {
       display: "Atlanta Falcons",
       abbreviation: "ATL",
       slug: "atlanta-falcons",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.FalconsAtSteelers.sourceId,
@@ -80,6 +82,7 @@ export const Teams = {
       display: "Baltimore Ravens",
       abbreviation: "BAL",
       slug: "baltimore-ravens",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.RavensAtColts.sourceId,
@@ -112,6 +115,7 @@ export const Teams = {
       display: "Buffalo Bills",
       abbreviation: "BUF",
       slug: "buffalo-bills",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BillsAtTexans.sourceId,
@@ -144,6 +148,7 @@ export const Teams = {
       display: "Carolina Panthers",
       abbreviation: "CAR",
       slug: "carolina-panthers",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.BearsAtPanthers.sourceId,
@@ -176,6 +181,7 @@ export const Teams = {
       display: "Chicago Bears",
       abbreviation: "CHI",
       slug: "chicago-bears",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.BearsAtPanthers.sourceId,
@@ -208,6 +214,7 @@ export const Teams = {
       display: "Cincinnati Bengals",
       abbreviation: "CIN",
       slug: "cincinnati-bengals",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BuccaneersAtBengals.sourceId,
@@ -240,6 +247,7 @@ export const Teams = {
       display: "Cleveland Browns",
       abbreviation: "CLE",
       slug: "cleveland-browns",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BrownsAtJaguars.sourceId,
@@ -272,6 +280,7 @@ export const Teams = {
       display: "Dallas Cowboys",
       abbreviation: "DAL",
       slug: "dallas-cowboys",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CowboysAtGiants.sourceId,
@@ -304,6 +313,7 @@ export const Teams = {
       display: "Denver Broncos",
       abbreviation: "DEN",
       slug: "denver-broncos",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BroncosAtChiefs.sourceId,
@@ -336,6 +346,7 @@ export const Teams = {
       display: "Detroit Lions",
       abbreviation: "DET",
       slug: "detroit-lions",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.SaintsAtLions.sourceId,
@@ -368,6 +379,7 @@ export const Teams = {
       display: "Green Bay Packers",
       abbreviation: "GB",
       slug: "green-bay-packers",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.PackersAtVikings.sourceId,
@@ -400,6 +412,7 @@ export const Teams = {
       display: "Houston Texans",
       abbreviation: "HOU",
       slug: "houston-texans",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BillsAtTexans.sourceId,
@@ -432,6 +445,7 @@ export const Teams = {
       display: "Indianapolis Colts",
       abbreviation: "IND",
       slug: "indianapolis-colts",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.RavensAtColts.sourceId,
@@ -464,6 +478,7 @@ export const Teams = {
       display: "Jacksonville Jaguars",
       abbreviation: "JAX",
       slug: "jacksonville-jaguars",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BrownsAtJaguars.sourceId,
@@ -496,6 +511,7 @@ export const Teams = {
       display: "Kansas City Chiefs",
       abbreviation: "KC",
       slug: "kansas-city-chiefs",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BroncosAtChiefs.sourceId,
@@ -528,6 +544,7 @@ export const Teams = {
       display: "Las Vegas Raiders",
       abbreviation: "LV",
       slug: "las-vegas-raiders",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.DolphinsAtRaiders.sourceId,
@@ -560,6 +577,7 @@ export const Teams = {
       display: "Los Angeles Chargers",
       abbreviation: "LAC",
       slug: "los-angeles-chargers",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.CardinalsAtChargers.sourceId,
@@ -592,6 +610,7 @@ export const Teams = {
       display: "Los Angeles Rams",
       abbreviation: "LAR",
       slug: "los-angeles-rams",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1._49ersAtRams.sourceId,
@@ -624,6 +643,7 @@ export const Teams = {
       display: "Miami Dolphins",
       abbreviation: "MIA",
       slug: "miami-dolphins",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.DolphinsAtRaiders.sourceId,
@@ -656,6 +676,7 @@ export const Teams = {
       display: "Minnesota Vikings",
       abbreviation: "MIN",
       slug: "minnesota-vikings",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.PackersAtVikings.sourceId,
@@ -688,6 +709,7 @@ export const Teams = {
       display: "New England Patriots",
       abbreviation: "NE",
       slug: "new-england-patriots",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.PatriotsAtSeahawks.sourceId,
@@ -720,6 +742,7 @@ export const Teams = {
       display: "New Orleans Saints",
       abbreviation: "NO",
       slug: "new-orleans-saints",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.SaintsAtLions.sourceId,
@@ -752,6 +775,7 @@ export const Teams = {
       display: "New York Giants",
       abbreviation: "NYG",
       slug: "new-york-giants",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CowboysAtGiants.sourceId,
@@ -784,6 +808,7 @@ export const Teams = {
       display: "New York Jets",
       abbreviation: "NYJ",
       slug: "new-york-jets",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.JetsAtTitans.sourceId,
@@ -816,6 +841,7 @@ export const Teams = {
       display: "Philadelphia Eagles",
       abbreviation: "PHI",
       slug: "philadelphia-eagles",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CommandersAtEagles.sourceId,
@@ -848,6 +874,7 @@ export const Teams = {
       display: "Pittsburgh Steelers",
       abbreviation: "PIT",
       slug: "pittsburgh-steelers",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.FalconsAtSteelers.sourceId,
@@ -880,6 +907,7 @@ export const Teams = {
       display: "San Francisco 49ers",
       abbreviation: "SF",
       slug: "san-francisco-49ers",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1._49ersAtRams.sourceId,
@@ -912,6 +940,7 @@ export const Teams = {
       display: "Seattle Seahawks",
       abbreviation: "SEA",
       slug: "seattle-seahawks",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.PatriotsAtSeahawks.sourceId,
@@ -944,6 +973,7 @@ export const Teams = {
       display: "Tampa Bay Buccaneers",
       abbreviation: "TB",
       slug: "tampa-bay-buccaneers",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.BuccaneersAtBengals.sourceId,
@@ -976,6 +1006,7 @@ export const Teams = {
       display: "Tennessee Titans",
       abbreviation: "TEN",
       slug: "tennessee-titans",
+      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.JetsAtTitans.sourceId,
@@ -1008,6 +1039,7 @@ export const Teams = {
       display: "Washington Commanders",
       abbreviation: "WSH",
       slug: "washington-commanders",
+      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CommandersAtEagles.sourceId,

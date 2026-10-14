@@ -81,6 +81,7 @@ const makeRecipient = (
         details: {
           _tag: "sports_team",
           leagueId: "nba",
+          conferenceId: "east",
           location: "Boston",
           name: opts.subjectName ?? "Celtics",
           display: `Boston ${opts.subjectName ?? "Celtics"}`,
