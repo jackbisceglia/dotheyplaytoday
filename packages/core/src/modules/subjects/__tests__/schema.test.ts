@@ -8,7 +8,6 @@ import {
   SportConferences,
   SportConferenceId,
   SportConferenceIds,
-  SportLeagueDefinitions,
   SportLeagueIds,
   SportTeamSubject,
   getSportConference,
@@ -136,23 +135,26 @@ describe("Subject model", () => {
     expect(SportConferenceIds).toEqual([
       ...new Set(SportConferences.map((conference) => conference.id)),
     ]);
-    for (const league of SportLeagueDefinitions) {
-      for (const conference of league.conferences) {
-        expect(getSportConference(league.id, conference.id)).toEqual({
-          ...conference,
-          leagueId: league.id,
-        });
-        expect(() =>
-          decode(SportTeamSubject)({
-            ...subjectInput.details,
-            leagueId: league.id,
-            conferenceId: conference.id,
-          }),
-        ).not.toThrow();
-      }
+    for (const conference of SportConferences) {
+      expect(getSportConference(conference.leagueId, conference.id)).toEqual(
+        conference,
+      );
+      expect(() =>
+        decode(SportTeamSubject)({
+          ...subjectInput.details,
+          leagueId: conference.leagueId,
+          conferenceId: conference.id,
+        }),
+      ).not.toThrow();
     }
-    expect(getSportConference("nba", "east")?.label).toBe("Eastern Conference");
-    expect(getSportConference("nhl", "east")?.label).toBe("Eastern Conference");
+    expect(getSportConference("nba", "east")).toEqual({
+      leagueId: "nba",
+      id: "east",
+    });
+    expect(getSportConference("nhl", "east")).toEqual({
+      leagueId: "nhl",
+      id: "east",
+    });
     expect(getSportConference("nba", "east")).not.toBe(
       getSportConference("nhl", "east"),
     );

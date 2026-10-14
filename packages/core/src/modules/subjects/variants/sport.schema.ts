@@ -1,80 +1,56 @@
 import { Schema } from "effect";
 
-type SportConference<Id extends string = string> = {
-  readonly id: Id;
-  readonly label: string;
-};
-
 type SportLeagueDefinition<
   Id extends string = string,
   ConferenceId extends string = string,
 > = {
   readonly id: Id;
-  readonly label: string;
-  readonly conferences: readonly SportConference<ConferenceId>[];
+  readonly conferences: readonly ConferenceId[];
 };
 
-export const SportLeagueDefinitions = [
-  {
-    id: "nba",
-    label: "NBA",
-    conferences: [
-      { id: "east", label: "Eastern Conference" },
-      { id: "west", label: "Western Conference" },
-    ],
-  },
-  {
-    id: "nfl",
-    label: "NFL",
-    conferences: [
-      { id: "afc", label: "AFC" },
-      { id: "nfc", label: "NFC" },
-    ],
-  },
-  {
-    id: "mlb",
-    label: "MLB",
-    conferences: [
-      { id: "al", label: "American League" },
-      { id: "nl", label: "National League" },
-    ],
-  },
-  {
-    id: "nhl",
-    label: "NHL",
-    conferences: [
-      { id: "east", label: "Eastern Conference" },
-      { id: "west", label: "Western Conference" },
-    ],
-  },
-  {
-    id: "ncaam",
-    label: "NCAA MBB",
-    conferences: [
-      { id: "acc", label: "ACC" },
-      { id: "aac", label: "American" },
-      { id: "a10", label: "Atlantic 10" },
-      { id: "big-east", label: "Big East" },
-      { id: "big-ten", label: "Big Ten" },
-      { id: "big-12", label: "Big 12" },
-      { id: "mac", label: "MAC" },
-      { id: "mvc", label: "Missouri Valley" },
-      { id: "mountain-west", label: "Mountain West" },
-      { id: "pac-12", label: "Pac-12" },
-      { id: "sec", label: "SEC" },
-      { id: "wcc", label: "WCC" },
-    ],
-  },
-] as const satisfies readonly SportLeagueDefinition[];
+const nba = {
+  id: "nba",
+  conferences: ["east", "west"],
+} as const satisfies SportLeagueDefinition;
+const nfl = {
+  id: "nfl",
+  conferences: ["afc", "nfc"],
+} as const satisfies SportLeagueDefinition;
+const mlb = {
+  id: "mlb",
+  conferences: ["al", "nl"],
+} as const satisfies SportLeagueDefinition;
+const nhl = {
+  id: "nhl",
+  conferences: ["east", "west"],
+} as const satisfies SportLeagueDefinition;
+const ncaam = {
+  id: "ncaam",
+  conferences: [
+    "acc",
+    "aac",
+    "a10",
+    "big-east",
+    "big-ten",
+    "big-12",
+    "mac",
+    "mvc",
+    "mountain-west",
+    "pac-12",
+    "sec",
+    "wcc",
+  ],
+} as const satisfies SportLeagueDefinition;
 
-export const SportLeagueIds = SportLeagueDefinitions.map((league) => league.id);
+const leagues = [nba, nfl, mlb, nhl, ncaam] as const;
+
+export const SportLeagueIds = leagues.map((league) => league.id);
 export const SportLeagueId = Schema.Literals(SportLeagueIds);
 export type SportLeagueId = typeof SportLeagueId.Type;
 
-export const SportConferences = SportLeagueDefinitions.flatMap((league) =>
-  league.conferences.map((conference) => ({
-    id: conference.id,
-    label: conference.label,
+export const SportConferences = leagues.flatMap((league) =>
+  league.conferences.map((id) => ({
+    id,
     leagueId: league.id,
   })),
 );
@@ -94,15 +70,7 @@ export const getSportConference = (
       conference.id === conferenceId && conference.leagueId === leagueId,
   );
 
-const commonSportTeamFields = {
-  display: Schema.NonEmptyString,
-  location: Schema.NonEmptyString,
-  name: Schema.NonEmptyString,
-  abbreviation: Schema.NonEmptyString,
-  slug: Schema.optional(Schema.NonEmptyString),
-} as const;
-
-const sportTeamSchema = <
+const createSportsTeamSubject = <
   const Id extends string,
   const ConferenceId extends string,
 >(
@@ -110,20 +78,20 @@ const sportTeamSchema = <
 ) =>
   Schema.TaggedStruct("sports_team", {
     leagueId: Schema.Literal(league.id),
-    conferenceId: Schema.Literals(
-      league.conferences.map((conference) => conference.id),
-    ),
-    ...commonSportTeamFields,
+    conferenceId: Schema.Literals(league.conferences),
+    display: Schema.NonEmptyString,
+    location: Schema.NonEmptyString,
+    name: Schema.NonEmptyString,
+    abbreviation: Schema.NonEmptyString,
+    slug: Schema.optional(Schema.NonEmptyString),
   });
 
-const [nba, nfl, mlb, nhl, ncaam] = SportLeagueDefinitions;
-
 export const SportTeamSubject = Schema.Union([
-  sportTeamSchema(nba),
-  sportTeamSchema(nfl),
-  sportTeamSchema(mlb),
-  sportTeamSchema(nhl),
-  sportTeamSchema(ncaam),
+  createSportsTeamSubject(nba),
+  createSportsTeamSubject(nfl),
+  createSportsTeamSubject(mlb),
+  createSportsTeamSubject(nhl),
+  createSportsTeamSubject(ncaam),
 ]).pipe(Schema.toTaggedUnion("leagueId"));
 
 export type SportTeamSubject = typeof SportTeamSubject.Type;
