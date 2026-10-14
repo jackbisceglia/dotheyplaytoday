@@ -2,10 +2,13 @@ import { describe, expect, it } from "@effect/vitest";
 import { expectTypeOf } from "vitest";
 import { Schema } from "effect";
 
-import { Subject, SubjectInsert } from "../schema.js";
+import { Subject, SubjectDetails, SubjectInsert } from "../schema.js";
 import { MmaFighterSubject } from "../variants/mma.schema.js";
 import {
   SportConferences,
+  SportConferenceId,
+  SportConferenceIds,
+  SportLeagueDefinitions,
   SportLeagueIds,
   SportTeamSubject,
   getSportConference,
@@ -125,16 +128,61 @@ describe("Subject model", () => {
   });
 
   it("has valid conference catalog consistency", () => {
-    const pairs = SportConferences.map((conference) => `${conference.leagueId}:${conference.id}`);
+    expect(SportTeamSubject.discriminants).toEqual(SportLeagueIds);
+    const pairs = SportConferences.map(
+      (conference) => `${conference.leagueId}:${conference.id}`,
+    );
     expect(new Set(pairs).size).toBe(pairs.length);
-    expect(SportConferences.every((conference) =>
-      SportConferences.some((candidate) => candidate.id === conference.id && candidate.leagueId === conference.leagueId),
-    )).toBe(true);
+    expect(SportConferenceIds).toEqual([
+      ...new Set(SportConferences.map((conference) => conference.id)),
+    ]);
+    for (const league of SportLeagueDefinitions) {
+      for (const conference of league.conferences) {
+        expect(getSportConference(league.id, conference.id)).toEqual({
+          ...conference,
+          leagueId: league.id,
+        });
+        expect(() =>
+          decode(SportTeamSubject)({
+            ...subjectInput.details,
+            leagueId: league.id,
+            conferenceId: conference.id,
+          }),
+        ).not.toThrow();
+      }
+    }
     expect(getSportConference("nba", "east")?.label).toBe("Eastern Conference");
     expect(getSportConference("nhl", "east")?.label).toBe("Eastern Conference");
-    expect(getSportConference("nba", "east")).not.toBe(getSportConference("nhl", "east"));
+    expect(getSportConference("nba", "east")).not.toBe(
+      getSportConference("nhl", "east"),
+    );
   });
 
+  it("derives outer tags and preserves tagged-union helpers", () => {
+    expect(SubjectDetails.tags).toEqual([
+      "sports_team",
+      "mma_fighter",
+      "mma_tracking",
+    ]);
+    expectTypeOf<typeof SubjectDetails.tags>().toEqualTypeOf<
+      readonly ["sports_team", "mma_fighter", "mma_tracking"]
+    >();
+    const team = decode(SubjectDetails)(subjectInput.details);
+    const mma = decode(SubjectDetails)(fighter);
+    expect(SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"])(team)).toBe(
+      false,
+    );
+    expect(SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"])(mma)).toBe(
+      true,
+    );
+    expect(
+      SubjectDetails.match(team, {
+        sports_team: (details) => details.leagueId,
+        mma_fighter: (details) => details.leagueId,
+        mma_tracking: (details) => details.leagueId,
+      }),
+    ).toBe("nba");
+  });
 
   it("narrows conference IDs by league at the type level", () => {
     type NbaSubject = Extract<SportTeamSubject, { leagueId: "nba" }>;
@@ -146,6 +194,7 @@ describe("Subject model", () => {
     expectTypeOf<NbaSubject["conferenceId"]>().toEqualTypeOf<"east" | "west">();
     expectTypeOf<NhlSubject["conferenceId"]>().toEqualTypeOf<"east" | "west">();
     expectTypeOf<NflSubject["conferenceId"]>().toEqualTypeOf<"afc" | "nfc">();
+    expectTypeOf<string>().not.toExtend<SportConferenceId>();
     expectTypeOf<MlbSubject["conferenceId"]>().toEqualTypeOf<"al" | "nl">();
     expectTypeOf<NcaamSubject["conferenceId"]>().toEqualTypeOf<
       | "acc"
@@ -187,5 +236,4 @@ describe("Subject model", () => {
 
     void [valid, invalidNba, invalidMlb];
   });
-
 });

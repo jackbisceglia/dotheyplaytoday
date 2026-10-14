@@ -26,7 +26,7 @@ type TaggedMember<TTag extends PropertyKey, TLiteral extends string> =
     >;
   };
 
-type TaggedUnionMember = TaggedMember<"_tag", string> & {
+type TaggedUnionMember = Schema.Top & {
   readonly Type: { readonly _tag: string };
 };
 
@@ -35,7 +35,7 @@ export function TaggedUnion<
 >(entries: Members) {
   const schema = Schema.Union(entries).pipe(Schema.toTaggedUnion("_tag"));
 
-  return Object.assign(schema, { tags: tagsFromTaggedUnion(schema) });
+  return Object.assign(schema, { tags: schema.discriminants });
 }
 
 /**

@@ -1,11 +1,17 @@
 import { Schema } from "effect";
 
-type SportConference = { readonly id: string; readonly label: string };
-
-type SportLeagueDefinition = {
-  readonly id: string;
+type SportConference<Id extends string = string> = {
+  readonly id: Id;
   readonly label: string;
-  readonly conferences: readonly SportConference[];
+};
+
+type SportLeagueDefinition<
+  Id extends string = string,
+  ConferenceId extends string = string,
+> = {
+  readonly id: Id;
+  readonly label: string;
+  readonly conferences: readonly SportConference<ConferenceId>[];
 };
 
 export const SportLeagueDefinitions = [
@@ -61,33 +67,23 @@ export const SportLeagueDefinitions = [
   },
 ] as const satisfies readonly SportLeagueDefinition[];
 
-export type SportLeagueId = (typeof SportLeagueDefinitions)[number]["id"];
-// lint(anti-slop/require-safety-comment-for-type-assertion): league ids are derived from the authoritative definitions.
-export const SportLeagueIds = SportLeagueDefinitions.map(
-  (league) => league.id,
-) as readonly SportLeagueId[];
+export const SportLeagueIds = SportLeagueDefinitions.map((league) => league.id);
 export const SportLeagueId = Schema.Literals(SportLeagueIds);
+export type SportLeagueId = typeof SportLeagueId.Type;
 
-// lint(anti-slop/require-safety-comment-for-type-assertion): conference rows are derived from each league definition.
 export const SportConferences = SportLeagueDefinitions.flatMap((league) =>
   league.conferences.map((conference) => ({
     id: conference.id,
     label: conference.label,
     leagueId: league.id,
   })),
-) as readonly {
-  readonly id: string;
-  readonly label: string;
-  readonly leagueId: SportLeagueId;
-}[];
+);
 
-export type SportConferenceId = (typeof SportConferences)[number]["id"];
-// lint(anti-slop/require-safety-comment-for-type-assertion): conference ids are derived from the authoritative definitions.
-export const SportConferenceIds = SportConferences.map(
-  (conference) => conference.id,
-// lint(anti-slop/require-safety-comment-for-type-assertion): conference ids are derived from the authoritative definitions.
-) as readonly SportConferenceId[];
+export const SportConferenceIds = [
+  ...new Set(SportConferences.map((conference) => conference.id)),
+];
 export const SportConferenceId = Schema.Literals(SportConferenceIds);
+export type SportConferenceId = typeof SportConferenceId.Type;
 
 export const getSportConference = (
   leagueId: SportLeagueId,
@@ -106,67 +102,28 @@ const commonSportTeamFields = {
   slug: Schema.optional(Schema.NonEmptyString),
 } as const;
 
-const SportNbaTeamSubject = Schema.TaggedStruct("sports_team", {
-  leagueId: Schema.Literal(SportLeagueDefinitions[0].id),
-  conferenceId: Schema.Literals(
-    // lint(anti-slop/require-safety-comment-for-type-assertion): conference IDs are derived from the authoritative league definition.
-    SportLeagueDefinitions[0].conferences.map(
-      (conference) => conference.id,
-    ) as readonly (typeof SportLeagueDefinitions)[0]["conferences"][number]["id"][],
-  ),
-  ...commonSportTeamFields,
-});
+const sportTeamSchema = <
+  const Id extends string,
+  const ConferenceId extends string,
+>(
+  league: SportLeagueDefinition<Id, ConferenceId>,
+) =>
+  Schema.TaggedStruct("sports_team", {
+    leagueId: Schema.Literal(league.id),
+    conferenceId: Schema.Literals(
+      league.conferences.map((conference) => conference.id),
+    ),
+    ...commonSportTeamFields,
+  });
 
-const SportNflTeamSubject = Schema.TaggedStruct("sports_team", {
-  leagueId: Schema.Literal(SportLeagueDefinitions[1].id),
-  conferenceId: Schema.Literals(
-    // lint(anti-slop/require-safety-comment-for-type-assertion): conference IDs are derived from the authoritative league definition.
-    SportLeagueDefinitions[1].conferences.map(
-      (conference) => conference.id,
-    ) as readonly (typeof SportLeagueDefinitions)[1]["conferences"][number]["id"][],
-  ),
-  ...commonSportTeamFields,
-});
-
-const SportMlbTeamSubject = Schema.TaggedStruct("sports_team", {
-  leagueId: Schema.Literal(SportLeagueDefinitions[2].id),
-  conferenceId: Schema.Literals(
-    // lint(anti-slop/require-safety-comment-for-type-assertion): conference IDs are derived from the authoritative league definition.
-    SportLeagueDefinitions[2].conferences.map(
-      (conference) => conference.id,
-    ) as readonly (typeof SportLeagueDefinitions)[2]["conferences"][number]["id"][],
-  ),
-  ...commonSportTeamFields,
-});
-
-const SportNhlTeamSubject = Schema.TaggedStruct("sports_team", {
-  leagueId: Schema.Literal(SportLeagueDefinitions[3].id),
-  conferenceId: Schema.Literals(
-    // lint(anti-slop/require-safety-comment-for-type-assertion): conference IDs are derived from the authoritative league definition.
-    SportLeagueDefinitions[3].conferences.map(
-      (conference) => conference.id,
-    ) as readonly (typeof SportLeagueDefinitions)[3]["conferences"][number]["id"][],
-  ),
-  ...commonSportTeamFields,
-});
-
-const SportNcaamTeamSubject = Schema.TaggedStruct("sports_team", {
-  leagueId: Schema.Literal(SportLeagueDefinitions[4].id),
-  conferenceId: Schema.Literals(
-    // lint(anti-slop/require-safety-comment-for-type-assertion): conference IDs are derived from the authoritative league definition.
-    SportLeagueDefinitions[4].conferences.map(
-      (conference) => conference.id,
-    ) as readonly (typeof SportLeagueDefinitions)[4]["conferences"][number]["id"][],
-  ),
-  ...commonSportTeamFields,
-});
+const [nba, nfl, mlb, nhl, ncaam] = SportLeagueDefinitions;
 
 export const SportTeamSubject = Schema.Union([
-  SportNbaTeamSubject,
-  SportNflTeamSubject,
-  SportMlbTeamSubject,
-  SportNhlTeamSubject,
-  SportNcaamTeamSubject,
-]);
+  sportTeamSchema(nba),
+  sportTeamSchema(nfl),
+  sportTeamSchema(mlb),
+  sportTeamSchema(nhl),
+  sportTeamSchema(ncaam),
+]).pipe(Schema.toTaggedUnion("leagueId"));
 
 export type SportTeamSubject = typeof SportTeamSubject.Type;
