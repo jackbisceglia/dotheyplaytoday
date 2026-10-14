@@ -4,7 +4,11 @@ import { Schema } from "effect";
 
 import { Subject, SubjectDetails, SubjectInsert } from "../schema.js";
 import { MmaFighterSubject } from "../variants/mma.schema.js";
-import { SportLeagueId, SportTeamSubject } from "../variants/sport.schema.js";
+import {
+  SportLeague,
+  SportLeagueId,
+  SportTeamSubject,
+} from "../variants/sport.schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -14,13 +18,12 @@ const subjectInput = {
   _tag: "sports_team",
   details: {
     _tag: "sports_team",
-    leagueId: "nba",
+    league: { id: "nba", conferenceId: "east" },
     location: "Boston",
     name: "Celtics",
     display: "Boston Celtics",
     abbreviation: "BOS",
     slug: "boston-celtics",
-    conferenceId: "east",
   },
 };
 
@@ -69,7 +72,10 @@ describe("Subject model", () => {
     expect(() =>
       decode(Subject)({
         ...subjectInput,
-        details: { ...subjectInput.details, leagueId: "epl" },
+        details: {
+          ...subjectInput.details,
+          league: { id: "epl", conferenceId: "east" },
+        },
       }),
     ).toThrow();
     expect(() =>
@@ -90,20 +96,30 @@ describe("Subject model", () => {
     expect(selected.details).toEqual(subject.details);
   });
 
-  it("rejects legacy subjects without conferenceId", () => {
-    const { conferenceId: _conferenceId, ...legacy } = subjectInput.details;
-    expect(() => decode(SportTeamSubject)(legacy)).toThrow();
+  it("requires nested league membership and rejects the old flat shape", () => {
+    const { league, ...withoutLeague } = subjectInput.details;
+    for (const input of [
+      withoutLeague,
+      {
+        ...withoutLeague,
+        leagueId: league.id,
+        conferenceId: league.conferenceId,
+      },
+      { ...withoutLeague, league: { id: league.id } },
+      { ...withoutLeague, league: { conferenceId: league.conferenceId } },
+    ]) {
+      expect(() => decode(SportTeamSubject)(input)).toThrow();
+    }
   });
 
   it("encodes and decodes valid conference metadata", () => {
     const withConference = {
       ...subjectInput.details,
-      leagueId: "nba",
-      conferenceId: "east",
+      league: { id: "nba", conferenceId: "east" },
     };
 
     const decoded = decode(SportTeamSubject)(withConference);
-    expect(decoded.conferenceId).toBe("east");
+    expect(decoded.league.conferenceId).toBe("east");
     expect(() => encode(SportTeamSubject)(decoded)).not.toThrow();
   });
 
@@ -111,32 +127,29 @@ describe("Subject model", () => {
     expect(() =>
       decode(SportTeamSubject)({
         ...subjectInput.details,
-        leagueId: "nba",
-        conferenceId: "not-a-conference",
+        league: { id: "nba", conferenceId: "not-a-conference" },
       }),
     ).toThrow();
 
     expect(() =>
       decode(SportTeamSubject)({
         ...subjectInput.details,
-        leagueId: "nba",
-        conferenceId: "nfc",
+        league: { id: "nba", conferenceId: "nfc" },
       }),
     ).toThrow();
   });
 
   it("accepts each league's schema-defined conferences without duplicate IDs", () => {
-    expect(SportTeamSubject.discriminants).toEqual(SportLeagueId.literals);
-    for (const leagueId of SportTeamSubject.discriminants) {
+    expect(SportLeague.discriminants).toEqual(SportLeagueId.literals);
+    for (const leagueId of SportLeague.discriminants) {
       const conferences =
-        SportTeamSubject.cases[leagueId].fields.conferenceId.literals;
+        SportLeague.cases[leagueId].fields.conferenceId.literals;
       expect(new Set(conferences).size).toBe(conferences.length);
       for (const conferenceId of conferences) {
         expect(() =>
           decode(SportTeamSubject)({
             ...subjectInput.details,
-            leagueId,
-            conferenceId,
+            league: { id: leagueId, conferenceId },
           }),
         ).not.toThrow();
       }
@@ -144,13 +157,13 @@ describe("Subject model", () => {
   });
 
   it("derives outer tags and preserves tagged-union helpers", () => {
-    expect(SubjectDetails.discriminants).toEqual([
+    expect(SubjectDetails.tags).toEqual([
       "sports_team",
       "mma_fighter",
       "mma_tracking",
     ]);
-    expectTypeOf<typeof SubjectDetails.discriminants>().toEqualTypeOf<
-      readonly ["sports_team", "mma_fighter", "mma_tracking"]
+    expectTypeOf<(typeof SubjectDetails.tags)[number]>().toEqualTypeOf<
+      "sports_team" | "mma_fighter" | "mma_tracking"
     >();
     const team = decode(SubjectDetails)(subjectInput.details);
     const mma = decode(SubjectDetails)(fighter);
@@ -162,7 +175,7 @@ describe("Subject model", () => {
     );
     expect(
       SubjectDetails.match(team, {
-        sports_team: (details) => details.leagueId,
+        sports_team: (details) => details.league.id,
         mma_fighter: (details) => details.leagueId,
         mma_tracking: (details) => details.leagueId,
       }),
@@ -170,16 +183,18 @@ describe("Subject model", () => {
   });
 
   it("narrows conference IDs by league at the type level", () => {
-    type NbaSubject = Extract<SportTeamSubject, { leagueId: "nba" }>;
-    type NhlSubject = Extract<SportTeamSubject, { leagueId: "nhl" }>;
-    type NflSubject = Extract<SportTeamSubject, { leagueId: "nfl" }>;
-    type MlbSubject = Extract<SportTeamSubject, { leagueId: "mlb" }>;
-    type NcaamSubject = Extract<SportTeamSubject, { leagueId: "ncaam" }>;
+    type NbaSubject = Extract<SportTeamSubject["league"], { id: "nba" }>;
+    type NhlSubject = Extract<SportTeamSubject["league"], { id: "nhl" }>;
+    type NflSubject = Extract<SportTeamSubject["league"], { id: "nfl" }>;
+    type MlbSubject = Extract<SportTeamSubject["league"], { id: "mlb" }>;
+    type NcaamSubject = Extract<SportTeamSubject["league"], { id: "ncaam" }>;
 
     expectTypeOf<NbaSubject["conferenceId"]>().toEqualTypeOf<"east" | "west">();
     expectTypeOf<NhlSubject["conferenceId"]>().toEqualTypeOf<"east" | "west">();
     expectTypeOf<NflSubject["conferenceId"]>().toEqualTypeOf<"afc" | "nfc">();
-    expectTypeOf<string>().not.toExtend<SportTeamSubject["conferenceId"]>();
+    expectTypeOf<string>().not.toExtend<
+      SportTeamSubject["league"]["conferenceId"]
+    >();
     expectTypeOf<MlbSubject["conferenceId"]>().toEqualTypeOf<"al" | "nl">();
     expectTypeOf<NcaamSubject["conferenceId"]>().toEqualTypeOf<
       | "acc"
@@ -198,27 +213,23 @@ describe("Subject model", () => {
 
     const valid: SportTeamSubject = {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: { id: "nba", conferenceId: "east" },
       display: "Boston Celtics",
       location: "Boston",
       name: "Celtics",
       abbreviation: "BOS",
-      conferenceId: "east",
     };
 
-    // @ts-expect-error NBA cannot have an NFL conference.
-    const invalidNba: SportTeamSubject = {
-      ...valid,
-      leagueId: "nba",
-      conferenceId: "nfc",
-    };
-    // @ts-expect-error MLB cannot have an NCAAM conference.
-    const invalidMlb: SportTeamSubject = {
-      ...valid,
-      leagueId: "mlb",
-      conferenceId: "acc",
-    };
-
-    void [valid, invalidNba, invalidMlb];
+    expectTypeOf<{
+      id: "nba";
+      conferenceId: "nfc";
+    }>().not.toExtend<SportLeague>();
+    expectTypeOf<{
+      id: "mlb";
+      conferenceId: "acc";
+    }>().not.toExtend<SportLeague>();
+    if (valid.league.id === "nba") {
+      expectTypeOf(valid.league.conferenceId).toEqualTypeOf<"east" | "west">();
+    }
   });
 });

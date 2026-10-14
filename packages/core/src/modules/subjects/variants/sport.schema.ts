@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-type SportLeague<
+type League<
   Id extends string = string,
   ConferenceId extends string = string,
 > = {
@@ -8,8 +8,7 @@ type SportLeague<
   readonly conferences: readonly ConferenceId[];
 };
 
-const createLeague = <const League extends SportLeague>(league: League) =>
-  league;
+const createLeague = <const Config extends League>(league: Config) => league;
 
 const nba = createLeague({
   id: "nba",
@@ -45,35 +44,36 @@ const ncaam = createLeague({
   ],
 });
 
-const leagues = [nba, nfl, mlb, nhl, ncaam] as const;
-
-export const SportLeagueId = Schema.Literals(
-  leagues.map((league) => league.id),
-);
-export type SportLeagueId = typeof SportLeagueId.Type;
-
-const createSportsTeamSubject = <
+const createLeagueSchema = <
   const Id extends string,
   const ConferenceId extends string,
 >(
-  league: SportLeague<Id, ConferenceId>,
+  league: League<Id, ConferenceId>,
 ) =>
-  Schema.TaggedStruct("sports_team", {
-    leagueId: Schema.Literal(league.id),
+  Schema.Struct({
+    id: Schema.Literal(league.id),
     conferenceId: Schema.Literals(league.conferences),
-    display: Schema.NonEmptyString,
-    location: Schema.NonEmptyString,
-    name: Schema.NonEmptyString,
-    abbreviation: Schema.NonEmptyString,
-    slug: Schema.optional(Schema.NonEmptyString),
   });
 
-export const SportTeamSubject = Schema.Union([
-  createSportsTeamSubject(nba),
-  createSportsTeamSubject(nfl),
-  createSportsTeamSubject(mlb),
-  createSportsTeamSubject(nhl),
-  createSportsTeamSubject(ncaam),
-]).pipe(Schema.toTaggedUnion("leagueId"));
+export const SportLeague = Schema.Union([
+  createLeagueSchema(nba),
+  createLeagueSchema(nfl),
+  createLeagueSchema(mlb),
+  createLeagueSchema(nhl),
+  createLeagueSchema(ncaam),
+]).pipe(Schema.toTaggedUnion("id"));
+export type SportLeague = typeof SportLeague.Type;
+
+export const SportLeagueId = Schema.Literals(SportLeague.discriminants);
+export type SportLeagueId = typeof SportLeagueId.Type;
+
+export const SportTeamSubject = Schema.TaggedStruct("sports_team", {
+  league: SportLeague,
+  display: Schema.NonEmptyString,
+  location: Schema.NonEmptyString,
+  name: Schema.NonEmptyString,
+  abbreviation: Schema.NonEmptyString,
+  slug: Schema.optional(Schema.NonEmptyString),
+});
 
 export type SportTeamSubject = typeof SportTeamSubject.Type;

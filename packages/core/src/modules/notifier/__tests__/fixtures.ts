@@ -31,8 +31,7 @@ export const notification = decode(Notification)({
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
-      conferenceId: "east",
+      league: { id: "nba", conferenceId: "east" },
       location: "Boston",
       name: "Celtics",
       display: "Boston Celtics",
@@ -141,8 +140,7 @@ export const nflNotification = decode(Notification)({
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
-      conferenceId: "nfc",
+      league: { id: "nfl", conferenceId: "nfc" },
       location: "Philadelphia",
       name: "Eagles",
       display: "Philadelphia Eagles",

@@ -10,13 +10,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Arizona",
       name: "Cardinals",
       display: "Arizona Cardinals",
       abbreviation: "ARI",
       slug: "arizona-cardinals",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CardinalsAtChargers.sourceId,
@@ -43,13 +45,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Atlanta",
       name: "Falcons",
       display: "Atlanta Falcons",
       abbreviation: "ATL",
       slug: "atlanta-falcons",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.FalconsAtSteelers.sourceId,
@@ -76,13 +80,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Baltimore",
       name: "Ravens",
       display: "Baltimore Ravens",
       abbreviation: "BAL",
       slug: "baltimore-ravens",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.RavensAtColts.sourceId,
@@ -109,13 +115,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Buffalo",
       name: "Bills",
       display: "Buffalo Bills",
       abbreviation: "BUF",
       slug: "buffalo-bills",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BillsAtTexans.sourceId,
@@ -142,13 +150,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Carolina",
       name: "Panthers",
       display: "Carolina Panthers",
       abbreviation: "CAR",
       slug: "carolina-panthers",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.BearsAtPanthers.sourceId,
@@ -175,13 +185,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Chicago",
       name: "Bears",
       display: "Chicago Bears",
       abbreviation: "CHI",
       slug: "chicago-bears",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.BearsAtPanthers.sourceId,
@@ -208,13 +220,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Cincinnati",
       name: "Bengals",
       display: "Cincinnati Bengals",
       abbreviation: "CIN",
       slug: "cincinnati-bengals",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BuccaneersAtBengals.sourceId,
@@ -241,13 +255,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Cleveland",
       name: "Browns",
       display: "Cleveland Browns",
       abbreviation: "CLE",
       slug: "cleveland-browns",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BrownsAtJaguars.sourceId,
@@ -274,13 +290,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Dallas",
       name: "Cowboys",
       display: "Dallas Cowboys",
       abbreviation: "DAL",
       slug: "dallas-cowboys",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CowboysAtGiants.sourceId,
@@ -307,13 +325,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Denver",
       name: "Broncos",
       display: "Denver Broncos",
       abbreviation: "DEN",
       slug: "denver-broncos",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BroncosAtChiefs.sourceId,
@@ -340,13 +360,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Detroit",
       name: "Lions",
       display: "Detroit Lions",
       abbreviation: "DET",
       slug: "detroit-lions",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.SaintsAtLions.sourceId,
@@ -373,13 +395,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Green Bay",
       name: "Packers",
       display: "Green Bay Packers",
       abbreviation: "GB",
       slug: "green-bay-packers",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.PackersAtVikings.sourceId,
@@ -406,13 +430,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Houston",
       name: "Texans",
       display: "Houston Texans",
       abbreviation: "HOU",
       slug: "houston-texans",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BillsAtTexans.sourceId,
@@ -439,13 +465,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Indianapolis",
       name: "Colts",
       display: "Indianapolis Colts",
       abbreviation: "IND",
       slug: "indianapolis-colts",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.RavensAtColts.sourceId,
@@ -472,13 +500,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Jacksonville",
       name: "Jaguars",
       display: "Jacksonville Jaguars",
       abbreviation: "JAX",
       slug: "jacksonville-jaguars",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BrownsAtJaguars.sourceId,
@@ -505,13 +535,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Kansas City",
       name: "Chiefs",
       display: "Kansas City Chiefs",
       abbreviation: "KC",
       slug: "kansas-city-chiefs",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.BroncosAtChiefs.sourceId,
@@ -538,13 +570,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Las Vegas",
       name: "Raiders",
       display: "Las Vegas Raiders",
       abbreviation: "LV",
       slug: "las-vegas-raiders",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.DolphinsAtRaiders.sourceId,
@@ -571,13 +605,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Los Angeles",
       name: "Chargers",
       display: "Los Angeles Chargers",
       abbreviation: "LAC",
       slug: "los-angeles-chargers",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.CardinalsAtChargers.sourceId,
@@ -604,13 +640,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Los Angeles",
       name: "Rams",
       display: "Los Angeles Rams",
       abbreviation: "LAR",
       slug: "los-angeles-rams",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1._49ersAtRams.sourceId,
@@ -637,13 +675,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Miami",
       name: "Dolphins",
       display: "Miami Dolphins",
       abbreviation: "MIA",
       slug: "miami-dolphins",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.DolphinsAtRaiders.sourceId,
@@ -670,13 +710,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Minnesota",
       name: "Vikings",
       display: "Minnesota Vikings",
       abbreviation: "MIN",
       slug: "minnesota-vikings",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.PackersAtVikings.sourceId,
@@ -703,13 +745,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "New England",
       name: "Patriots",
       display: "New England Patriots",
       abbreviation: "NE",
       slug: "new-england-patriots",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.PatriotsAtSeahawks.sourceId,
@@ -736,13 +780,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "New Orleans",
       name: "Saints",
       display: "New Orleans Saints",
       abbreviation: "NO",
       slug: "new-orleans-saints",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.SaintsAtLions.sourceId,
@@ -769,13 +815,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "New York",
       name: "Giants",
       display: "New York Giants",
       abbreviation: "NYG",
       slug: "new-york-giants",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CowboysAtGiants.sourceId,
@@ -802,13 +850,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "New York",
       name: "Jets",
       display: "New York Jets",
       abbreviation: "NYJ",
       slug: "new-york-jets",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.JetsAtTitans.sourceId,
@@ -835,13 +885,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Philadelphia",
       name: "Eagles",
       display: "Philadelphia Eagles",
       abbreviation: "PHI",
       slug: "philadelphia-eagles",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CommandersAtEagles.sourceId,
@@ -868,13 +920,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Pittsburgh",
       name: "Steelers",
       display: "Pittsburgh Steelers",
       abbreviation: "PIT",
       slug: "pittsburgh-steelers",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.FalconsAtSteelers.sourceId,
@@ -901,13 +955,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "San Francisco",
       name: "49ers",
       display: "San Francisco 49ers",
       abbreviation: "SF",
       slug: "san-francisco-49ers",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1._49ersAtRams.sourceId,
@@ -934,13 +990,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Seattle",
       name: "Seahawks",
       display: "Seattle Seahawks",
       abbreviation: "SEA",
       slug: "seattle-seahawks",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.PatriotsAtSeahawks.sourceId,
@@ -967,13 +1025,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Tampa Bay",
       name: "Buccaneers",
       display: "Tampa Bay Buccaneers",
       abbreviation: "TB",
       slug: "tampa-bay-buccaneers",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.BuccaneersAtBengals.sourceId,
@@ -1000,13 +1060,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Tennessee",
       name: "Titans",
       display: "Tennessee Titans",
       abbreviation: "TEN",
       slug: "tennessee-titans",
-      conferenceId: "afc",
     },
     feedIds: [
       Games.Week1.JetsAtTitans.sourceId,
@@ -1033,13 +1095,15 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Washington",
       name: "Commanders",
       display: "Washington Commanders",
       abbreviation: "WSH",
       slug: "washington-commanders",
-      conferenceId: "nfc",
     },
     feedIds: [
       Games.Week1.CommandersAtEagles.sourceId,

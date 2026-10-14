@@ -44,6 +44,8 @@ picked shows the full schedule, and Edit clears the filter.
 
 Supported sports subjects now include NBA, NFL, MLB, NHL, and NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences). Only provider-confirmed game starts become notification-capable events.
 
+Sports teams remain one `sports_team` subject kind. Their required `details.league` object contains `id` and `conferenceId`; each league permits only its own conferences. Conferences are browsing metadata, not separate subscriptions. MMA subjects retain their existing representation.
+
 ## Notifications
 
 - Only subscriptions whose user has `emailVerified: true` enter notification processing. Pending users are excluded at the database query, including forced and dry runs.

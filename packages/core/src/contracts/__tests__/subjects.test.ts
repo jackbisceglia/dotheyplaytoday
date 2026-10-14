@@ -14,8 +14,7 @@ describe("subjects contract", () => {
         _tag: "sports_team",
         details: {
           _tag: "sports_team",
-          leagueId: "nba",
-          conferenceId: "east",
+          league: { id: "nba", conferenceId: "east" },
           display: "Boston Celtics",
           location: "Boston",
           name: "Celtics",
@@ -31,8 +30,7 @@ describe("subjects contract", () => {
         _tag: "sports_team",
         details: {
           _tag: "sports_team",
-          leagueId: "nba",
-          conferenceId: "east",
+          league: { id: "nba", conferenceId: "east" },
           display: "Boston Celtics",
           location: "Boston",
           name: "Celtics",
