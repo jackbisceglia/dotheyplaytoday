@@ -10,7 +10,6 @@ import {
   SportConferenceIds,
   SportLeagueIds,
   SportTeamSubject,
-  getSportConference,
 } from "../variants/sport.schema.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -136,9 +135,6 @@ describe("Subject model", () => {
       ...new Set(SportConferences.map((conference) => conference.id)),
     ]);
     for (const conference of SportConferences) {
-      expect(getSportConference(conference.leagueId, conference.id)).toEqual(
-        conference,
-      );
       expect(() =>
         decode(SportTeamSubject)({
           ...subjectInput.details,
@@ -147,17 +143,6 @@ describe("Subject model", () => {
         }),
       ).not.toThrow();
     }
-    expect(getSportConference("nba", "east")).toEqual({
-      leagueId: "nba",
-      id: "east",
-    });
-    expect(getSportConference("nhl", "east")).toEqual({
-      leagueId: "nhl",
-      id: "east",
-    });
-    expect(getSportConference("nba", "east")).not.toBe(
-      getSportConference("nhl", "east"),
-    );
   });
 
   it("derives outer tags and preserves tagged-union helpers", () => {

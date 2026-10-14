@@ -65,15 +65,6 @@ export const SportConferenceIds = [
 export const SportConferenceId = Schema.Literals(SportConferenceIds);
 export type SportConferenceId = typeof SportConferenceId.Type;
 
-export const getSportConference = (
-  leagueId: SportLeagueId,
-  conferenceId: SportConferenceId,
-) =>
-  SportConferences.find(
-    (conference) =>
-      conference.id === conferenceId && conference.leagueId === leagueId,
-  );
-
 const createSportsTeamSubject = <
   const Id extends string,
   const ConferenceId extends string,
