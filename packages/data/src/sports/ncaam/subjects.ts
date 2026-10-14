@@ -2375,4 +2375,5 @@ export const Teams = {
   },
 } as const;
 
-export const subjects = Object.values(Teams) as unknown as NcaamSportSubjectSeed[];
+// lint(anti-slop/require-safety-comment-for-type-assertion): generated team record values match seed subject shape.
+export const subjects = Object.values(Teams) as NcaamSportSubjectSeed[];

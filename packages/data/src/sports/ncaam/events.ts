@@ -1616,42 +1616,45 @@ const Schedule: readonly NcaamScheduleEntry[] = [
 export function createNcaamEvents(
   entries: readonly NcaamScheduleEntry[],
 ): readonly NcaamSportEventSeed[] {
-  return entries
+  const records = entries
+    .values()
     .filter((entry) => entry[4])
     .map(([espnId, startsAt, homeTeam, awayTeam]) => {
-    const id = `00000000-0000-4000-8000-000${espnId}`;
+      const id = `00000000-0000-4000-8000-000${espnId}`;
 
-    return {
-      id,
-      _tag: "sports_game",
-      sourceId: `sports_game:espn:${id}`,
-      startsAt,
-      availability: "active",
-      details: {
-        _tag: "sports_game",
-        leagueId: "ncaam",
-      },
-      participants: [
-        {
-          _tag: "sports_game",
-          details: {
-            _tag: "sports_game",
-            role: "home",
-            title: homeTeam,
-          },
+      return {
+        id,
+        _tag: "sports_game" as const,
+        sourceId: `sports_game:espn:${id}`,
+        startsAt,
+        availability: "active" as const,
+        details: {
+          _tag: "sports_game" as const,
+          leagueId: "ncaam" as const,
         },
-        {
-          _tag: "sports_game",
-          details: {
-            _tag: "sports_game",
-            role: "away",
-            title: awayTeam,
+        participants: [
+          {
+            _tag: "sports_game" as const,
+            details: {
+              _tag: "sports_game" as const,
+              role: "home" as const,
+              title: homeTeam,
+            },
           },
-        },
-      ],
-    };
-  });
+          {
+            _tag: "sports_game" as const,
+            details: {
+              _tag: "sports_game" as const,
+              role: "away" as const,
+              title: awayTeam,
+            },
+          },
+        ],
+      };
+    })
+    .toArray();
 
+  return records;
 }
 
 export const events = createNcaamEvents(Schedule);

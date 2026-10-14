@@ -280,6 +280,7 @@ describe("UFC PostgreSQL integration", () => {
                 details: {
                   _tag: "sports_team",
                   leagueId: "nba",
+                  conferenceId: "east",
                   display: "Test team",
                   name: "Test",
                   location: "Test",

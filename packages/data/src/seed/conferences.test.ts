@@ -19,30 +19,35 @@ const byConference = (subjects: readonly { details: TeamDetail }[]) =>
 describe("conference coverage", () => {
   it("has exact conference counts", () => {
     expect(nbaCollection.subjects).toHaveLength(30);
+    // lint(anti-slop/require-safety-comment-for-type-assertion): runtime subjects are checked-in subject arrays.
     expect(byConference(nbaCollection.subjects as never)).toMatchObject({
       east: 15,
       west: 15,
     });
 
     expect(nhlCollection.subjects).toHaveLength(32);
+    // lint(anti-slop/require-safety-comment-for-type-assertion): runtime subjects are checked-in subject arrays.
     expect(byConference(nhlCollection.subjects as never)).toMatchObject({
       east: 16,
       west: 16,
     });
 
     expect(nflCollection.subjects).toHaveLength(32);
+    // lint(anti-slop/require-safety-comment-for-type-assertion): runtime subjects are checked-in subject arrays.
     expect(byConference(nflCollection.subjects as never)).toMatchObject({
       afc: 16,
       nfc: 16,
     });
 
     expect(mlbCollection.subjects).toHaveLength(30);
+    // lint(anti-slop/require-safety-comment-for-type-assertion): runtime subjects are checked-in subject arrays.
     expect(byConference(mlbCollection.subjects as never)).toMatchObject({
       al: 15,
       nl: 15,
     });
 
     expect(ncaamCollection.subjects).toHaveLength(158);
+    // lint(anti-slop/require-safety-comment-for-type-assertion): runtime subjects are checked-in subject arrays.
     expect(byConference(ncaamCollection.subjects as never)).toMatchObject({
       acc: 18,
       aac: 13,
@@ -62,9 +67,12 @@ describe("conference coverage", () => {
   it("has representative affiliations", () => {
     const byDisplay = (collection: typeof nbaCollection) =>
       new Map(
-        (collection.subjects as unknown as { details: { display: string; conferenceId?: string } }[]).map(
-          (subject) => [subject.details.display, subject.details.conferenceId],
-        ),
+        // lint(anti-slop/require-safety-comment-for-type-assertion): SeedSubjects decode into sports-team details.
+        Array.from(collection.subjects).map((subject) => {
+          // lint(anti-slop/require-safety-comment-for-type-assertion): subject payload is checked-in seed data.
+          const row = subject as { details: { display: string; conferenceId?: string } };
+          return [row.details.display, row.details.conferenceId];
+        }),
       );
 
     expect(byDisplay(nbaCollection).get("Boston Celtics")).toBe("east");

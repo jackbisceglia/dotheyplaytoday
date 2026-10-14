@@ -17,14 +17,14 @@ describe("development seed collections", () => {
 
       expect(collection.subjects).toHaveLength(production.subjects.length);
 
+      // lint(anti-slop/require-safety-comment-for-type-assertion): DevSeedSubjects carry checked-in feedIds.
+      const devSubjects = collection.subjects as readonly { feedIds: readonly unknown[]; }[];
       if (collection.id === "sports.nba") {
         expect(collection.events).toHaveLength(production.events.length);
-        expect(collection.subjects.some((subject) => subject.feedIds.length > 0))
-          .toBe(true);
+        expect(devSubjects.some((subject) => subject.feedIds.length > 0)).toBe(true);
       } else {
         expect(collection.events).toHaveLength(0);
-        expect(collection.subjects.every((subject) => subject.feedIds.length === 0))
-          .toBe(true);
+        expect(devSubjects.every((subject) => subject.feedIds.length === 0)).toBe(true);
       }
     }
   });
