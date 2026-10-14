@@ -113,11 +113,11 @@ Each fighter's nullable `p4p` field records the men's ranking; missing values in
 older records decode as null.
 
 Cards match coverage or participating fighters. The dashboard merges
-matches by card ID. Each card shows only its event number and title by default,
-with a collapsed “View fights” accordion showing the fight count. Expanding it
-reveals broadcast times, every match reason, and the lineup with followed
-fighters highlighted. Time, emoji, and league badge stay aligned at the top of
-each schedule row, including expanded cards.
+matches by card ID. Each card's row labels it with its event name (“UFC 333”,
+or “Fight Night”) above the main-event matchup, bolding only followed
+fighters. Tapping the row expands its lineup by surname in billing order: the
+main card, then the prelims, each beside its local start time. Time, emoji,
+and league badge sit on the matchup line, including expanded cards.
 Emails retain subject-scoped sports behavior: following both opponents and card
 coverage can send three emails, while multiple same-day cards for one subject
 share one email. Successful subscriptions are sent at most once per local date
