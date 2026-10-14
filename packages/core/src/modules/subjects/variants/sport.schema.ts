@@ -8,23 +8,27 @@ type SportLeagueDefinition<
   readonly conferences: readonly ConferenceId[];
 };
 
-const nba = {
+const createLeagueDefinition = <const Definition extends SportLeagueDefinition>(
+  definition: Definition,
+) => definition;
+
+const nba = createLeagueDefinition({
   id: "nba",
   conferences: ["east", "west"],
-} as const satisfies SportLeagueDefinition;
-const nfl = {
+});
+const nfl = createLeagueDefinition({
   id: "nfl",
   conferences: ["afc", "nfc"],
-} as const satisfies SportLeagueDefinition;
-const mlb = {
+});
+const mlb = createLeagueDefinition({
   id: "mlb",
   conferences: ["al", "nl"],
-} as const satisfies SportLeagueDefinition;
-const nhl = {
+});
+const nhl = createLeagueDefinition({
   id: "nhl",
   conferences: ["east", "west"],
-} as const satisfies SportLeagueDefinition;
-const ncaam = {
+});
+const ncaam = createLeagueDefinition({
   id: "ncaam",
   conferences: [
     "acc",
@@ -40,7 +44,7 @@ const ncaam = {
     "sec",
     "wcc",
   ],
-} as const satisfies SportLeagueDefinition;
+});
 
 const leagues = [nba, nfl, mlb, nhl, ncaam] as const;
 

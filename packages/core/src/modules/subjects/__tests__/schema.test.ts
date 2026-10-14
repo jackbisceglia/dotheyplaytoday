@@ -161,12 +161,12 @@ describe("Subject model", () => {
   });
 
   it("derives outer tags and preserves tagged-union helpers", () => {
-    expect(SubjectDetails.tags).toEqual([
+    expect(SubjectDetails.discriminants).toEqual([
       "sports_team",
       "mma_fighter",
       "mma_tracking",
     ]);
-    expectTypeOf<typeof SubjectDetails.tags>().toEqualTypeOf<
+    expectTypeOf<typeof SubjectDetails.discriminants>().toEqualTypeOf<
       readonly ["sports_team", "mma_fighter", "mma_tracking"]
     >();
     const team = decode(SubjectDetails)(subjectInput.details);
