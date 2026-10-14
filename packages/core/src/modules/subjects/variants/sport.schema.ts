@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-type SportLeagueDefinition<
+type SportLeague<
   Id extends string = string,
   ConferenceId extends string = string,
 > = {
@@ -8,27 +8,26 @@ type SportLeagueDefinition<
   readonly conferences: readonly ConferenceId[];
 };
 
-const createLeagueDefinition = <const Definition extends SportLeagueDefinition>(
-  definition: Definition,
-) => definition;
+const createLeague = <const League extends SportLeague>(league: League) =>
+  league;
 
-const nba = createLeagueDefinition({
+const nba = createLeague({
   id: "nba",
   conferences: ["east", "west"],
 });
-const nfl = createLeagueDefinition({
+const nfl = createLeague({
   id: "nfl",
   conferences: ["afc", "nfc"],
 });
-const mlb = createLeagueDefinition({
+const mlb = createLeague({
   id: "mlb",
   conferences: ["al", "nl"],
 });
-const nhl = createLeagueDefinition({
+const nhl = createLeague({
   id: "nhl",
   conferences: ["east", "west"],
 });
-const ncaam = createLeagueDefinition({
+const ncaam = createLeague({
   id: "ncaam",
   conferences: [
     "acc",
@@ -48,28 +47,16 @@ const ncaam = createLeagueDefinition({
 
 const leagues = [nba, nfl, mlb, nhl, ncaam] as const;
 
-export const SportLeagueIds = leagues.map((league) => league.id);
-export const SportLeagueId = Schema.Literals(SportLeagueIds);
-export type SportLeagueId = typeof SportLeagueId.Type;
-
-export const SportConferences = leagues.flatMap((league) =>
-  league.conferences.map((id) => ({
-    id,
-    leagueId: league.id,
-  })),
+export const SportLeagueId = Schema.Literals(
+  leagues.map((league) => league.id),
 );
-
-export const SportConferenceIds = [
-  ...new Set(SportConferences.map((conference) => conference.id)),
-];
-export const SportConferenceId = Schema.Literals(SportConferenceIds);
-export type SportConferenceId = typeof SportConferenceId.Type;
+export type SportLeagueId = typeof SportLeagueId.Type;
 
 const createSportsTeamSubject = <
   const Id extends string,
   const ConferenceId extends string,
 >(
-  league: SportLeagueDefinition<Id, ConferenceId>,
+  league: SportLeague<Id, ConferenceId>,
 ) =>
   Schema.TaggedStruct("sports_team", {
     leagueId: Schema.Literal(league.id),
