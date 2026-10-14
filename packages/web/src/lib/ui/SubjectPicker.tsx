@@ -3,6 +3,12 @@ import type { ParentProps } from "solid-js";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { getTeams, getSportsLogo } from "../catalog/sports/index.js";
 import { leagues as catalogLeagues } from "../catalog/index.js";
+import {
+  getCollegeGroups,
+  getCollegeTeams,
+  isCollegeLeague,
+  topRankedGroup,
+} from "../catalog/college.js";
 import { UfcPicker } from "./UfcPicker.jsx";
 import { ComingSoon } from "./ComingSoon.jsx";
 
@@ -32,27 +38,98 @@ export function SubjectPicker(props: {
       ? selected
       : available[0]?.id;
   });
+  const leagueTeams = createMemo(() =>
+    teams().filter((team) => team.details.league.id === activeLeague()),
+  );
+
+  // College leagues narrow the grid to the Top 25 or one conference.
+  const [selectedGroup, setSelectedGroup] = createSignal<string>();
+  const collegeGroups = createMemo(() =>
+    isCollegeLeague(activeLeague())
+      ? getCollegeGroups(leagueTeams())
+      : undefined,
+  );
+  const activeGroup = createMemo(() => {
+    const groups = collegeGroups();
+    if (!groups) return undefined;
+
+    const available = [
+      ...(groups.ranked ? [topRankedGroup] : []),
+      ...groups.conferences.map((conference) => conference.id),
+    ];
+    const selected = selectedGroup();
+
+    return selected !== undefined && available.includes(selected)
+      ? selected
+      : available[0];
+  });
+  const visibleTeams = createMemo(() => {
+    const group = activeGroup();
+
+    return group === undefined
+      ? leagueTeams()
+      : getCollegeTeams(leagueTeams(), group);
+  });
 
   return (
     <>
       <fieldset class="form-section">
         <legend class="visually-hidden">League</legend>
-        <div class="league-row">
-          <For each={leagues()}>
-            {(league) => (
-              <button
-                class="league-pill"
-                type="button"
-                aria-pressed={activeLeague() === league.id ? "true" : "false"}
-                onClick={() => setSelectedLeague(league.id)}
+        <div class="picker-header">
+          <div class="league-row">
+            <For each={leagues()}>
+              {(league) => (
+                <button
+                  class="league-pill"
+                  type="button"
+                  aria-pressed={activeLeague() === league.id ? "true" : "false"}
+                  onClick={() => {
+                    setSelectedLeague(league.id);
+                    setSelectedGroup(undefined);
+                  }}
+                >
+                  {league.label}
+                </button>
+              )}
+            </For>
+            <For each={comingSoonLeagues}>
+              {(league) => (
+                <ComingSoon class="league-pill">{league}</ComingSoon>
+              )}
+            </For>
+          </div>
+          <Show when={collegeGroups()}>
+            {(groups) => (
+              <select
+                class="group-select"
+                aria-label="Teams"
+                onChange={(event) => {
+                  setSelectedGroup(event.currentTarget.value);
+                }}
               >
-                {league.label}
-              </button>
+                <Show when={groups().ranked}>
+                  <option
+                    value={topRankedGroup}
+                    selected={activeGroup() === topRankedGroup}
+                  >
+                    Top 25
+                  </option>
+                </Show>
+                <optgroup label="Conferences">
+                  <For each={groups().conferences}>
+                    {(conference) => (
+                      <option
+                        value={conference.id}
+                        selected={activeGroup() === conference.id}
+                      >
+                        {conference.label}
+                      </option>
+                    )}
+                  </For>
+                </optgroup>
+              </select>
             )}
-          </For>
-          <For each={comingSoonLeagues}>
-            {(league) => <ComingSoon class="league-pill">{league}</ComingSoon>}
-          </For>
+          </Show>
         </div>
       </fieldset>
 
@@ -71,12 +148,13 @@ export function SubjectPicker(props: {
           />
         </Show>
         <Show when={activeLeague() !== "ufc"}>
+          <Show when={activeGroup() !== undefined}>
+            <p class="visually-hidden" aria-live="polite">
+              {visibleTeams().length} teams
+            </p>
+          </Show>
           <div class="team-grid">
-            <For
-              each={teams().filter(
-                (team) => team.details.league.id === activeLeague(),
-              )}
-            >
+            <For each={visibleTeams()}>
               {(team) => (
                 <button
                   type="button"
@@ -89,6 +167,18 @@ export function SubjectPicker(props: {
                     props.onToggle(team);
                   }}
                 >
+                  <Show
+                    when={
+                      activeGroup() === topRankedGroup && team.details.apRank
+                    }
+                  >
+                    {(rank) => (
+                      <span class="team-rank">
+                        <span class="visually-hidden">Rank </span>
+                        {rank()}
+                      </span>
+                    )}
+                  </Show>
                   <span class="team-glyph" aria-hidden="true">
                     {getSportsLogo(team.details)}
                   </span>

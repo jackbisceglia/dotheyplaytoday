@@ -362,6 +362,7 @@ button {
 .ufc-fighter-row:focus-visible,
 .btn:focus-visible,
 .league-pill:focus-visible,
+.group-select:focus-visible,
 .signup-success-title:focus-visible,
 .unsubscribe-title:focus-visible {
   outline: 3px solid var(--kelly);
@@ -612,6 +613,60 @@ button {
   display: inline-flex;
 }
 
+/* The league pills and, for college leagues, the Top 25/conference select
+   share a line once both fit; narrower screens give the select its own. */
+.picker-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px 12px;
+}
+
+.picker-header .league-row {
+  flex: 1;
+}
+
+/* A native select dressed as a league pill. */
+.group-select {
+  flex: none;
+  padding: 8px 40px 8px 18px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 55%,
+    calc(100% - 16px) 55%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font-weight: 900;
+  font-stretch: 70%;
+  font-size: 0.92rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  appearance: none;
+}
+
+@media (max-width: 899px) {
+  .picker-header {
+    flex-wrap: wrap;
+  }
+
+  .picker-header .league-row {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .group-select {
+    width: 100%;
+  }
+}
+
 /* Fixed, with top/left set by the component: the league row scrolls, and any
    scroll container clips on both axes, so an absolute tooltip cannot sit
    beneath its pill. */
@@ -715,6 +770,7 @@ button {
 }
 
 .team-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -729,6 +785,18 @@ button {
     background 0.12s,
     transform 0.12s,
     box-shadow 0.12s;
+}
+
+/* Top 25 rank, in the corner so ranked cards keep the standard layout. */
+.team-rank {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-weight: 900;
+  font-stretch: 70%;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
 }
 
 .team-card:hover {
