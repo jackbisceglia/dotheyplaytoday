@@ -179,7 +179,7 @@ function RowLine(props: { readonly row: ScheduleRow }) {
         <Headline row={props.row} />
       </div>
       <span class="dashboard-schedule-league">
-        {props.row.subjects[0].details.leagueId.toUpperCase()}
+        {props.row.subjects[0].details.league.id.toUpperCase()}
       </span>
     </>
   );

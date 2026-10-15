@@ -114,7 +114,7 @@ function RosterSubjectLabel(props: { readonly subject: Subject }) {
               </>
             )}
           </Show>
-          {props.subject.details.leagueId.toUpperCase()}
+          {props.subject.details.league.id.toUpperCase()}
         </span>
       </span>
     </>

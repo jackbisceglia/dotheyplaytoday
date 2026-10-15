@@ -1,9 +1,17 @@
 import { describe, expect, it } from "@effect/vitest";
+import { expectTypeOf } from "vitest";
 import { Schema } from "effect";
 
-import { Subject, SubjectInsert } from "../schema.js";
-import { SportLeagueIds } from "../variants/sport.schema.js";
-import { MmaFighterSubject } from "../variants/mma.schema.js";
+import { Subject, SubjectDetails, SubjectInsert } from "../schema.js";
+import {
+  MmaFighterSubject,
+  MmaTrackingSubject,
+} from "../variants/mma.schema.js";
+import {
+  SportLeague,
+  SportLeagueId,
+  SportTeamSubject,
+} from "../variants/sport.schema.js";
 
 const decode = Schema.decodeUnknownSync;
 const encode = Schema.encodeSync;
@@ -13,7 +21,7 @@ const subjectInput = {
   _tag: "sports_team",
   details: {
     _tag: "sports_team",
-    leagueId: "nba",
+    league: { id: "nba", conferenceId: "east" },
     location: "Boston",
     name: "Celtics",
     display: "Boston Celtics",
@@ -25,11 +33,11 @@ const subjectInput = {
 describe("Subject model", () => {
   const fighter = {
     _tag: "mma_fighter",
-    leagueId: "ufc",
+    league: { id: "ufc" },
     display: "Fighter",
   };
 
-  it("decodes older fighter details with a null P4P rank", () => {
+  it("defaults a missing fighter P4P rank to null", () => {
     const details = decode(MmaFighterSubject)(fighter);
     expect(details.p4p).toBeNull();
     expect(encode(MmaFighterSubject)(details)).toEqual({
@@ -47,8 +55,40 @@ describe("Subject model", () => {
     }
   });
 
+  it("requires nested league membership on fighter and tracking subjects", () => {
+    const tracking = {
+      _tag: "mma_tracking",
+      league: { id: "ufc" },
+      display: "All UFC events",
+      scope: "all",
+    };
+    expect(decode(MmaFighterSubject)(fighter).league).toEqual({ id: "ufc" });
+    expect(decode(MmaTrackingSubject)(tracking).league).toEqual({ id: "ufc" });
+    for (const input of [fighter, tracking]) {
+      const { league: _league, ...withoutLeague } = input;
+      for (const invalid of [
+        withoutLeague,
+        { ...withoutLeague, leagueId: "ufc" },
+        { ...withoutLeague, league: {} },
+        { ...withoutLeague, league: { id: "boxing" } },
+      ]) {
+        expect(() => decode(SubjectDetails)(invalid)).toThrow();
+      }
+      expect(decode(SubjectDetails)(input).league.id).toBe("ufc");
+    }
+    expectTypeOf<SubjectDetails["league"]["id"]>().toEqualTypeOf<
+      SportLeagueId | "ufc"
+    >();
+  });
+
   it("lists supported league ids", () => {
-    expect(SportLeagueIds).toEqual(["nba", "nfl", "mlb", "nhl"]);
+    expect(SportLeagueId.literals).toEqual([
+      "nba",
+      "nfl",
+      "mlb",
+      "nhl",
+      "ncaam",
+    ]);
   });
 
   it("rejects malformed subject-owned fields and details", () => {
@@ -61,7 +101,10 @@ describe("Subject model", () => {
     expect(() =>
       decode(Subject)({
         ...subjectInput,
-        details: { ...subjectInput.details, leagueId: "epl" },
+        details: {
+          ...subjectInput.details,
+          league: { id: "epl", conferenceId: "east" },
+        },
       }),
     ).toThrow();
     expect(() =>
@@ -80,5 +123,168 @@ describe("Subject model", () => {
     expect(insert).toEqual(subjectInput);
     expect(selected._tag).toBe(subject._tag);
     expect(selected.details).toEqual(subject.details);
+  });
+
+  it("requires nested league membership and rejects the old flat shape", () => {
+    const { league, ...withoutLeague } = subjectInput.details;
+    for (const input of [
+      withoutLeague,
+      {
+        ...withoutLeague,
+        leagueId: league.id,
+        conferenceId: league.conferenceId,
+      },
+      { ...withoutLeague, league: { id: league.id } },
+      { ...withoutLeague, league: { conferenceId: league.conferenceId } },
+    ]) {
+      expect(() => decode(SportTeamSubject)(input)).toThrow();
+    }
+  });
+
+  it("encodes and decodes valid conference metadata", () => {
+    const withConference = {
+      ...subjectInput.details,
+      league: { id: "nba", conferenceId: "east" },
+    };
+
+    const decoded = decode(SportTeamSubject)(withConference);
+    expect(decoded.league.conferenceId).toBe("east");
+    expect(() => encode(SportTeamSubject)(decoded)).not.toThrow();
+  });
+
+  it("rejects unknown and mismatched conference ids", () => {
+    expect(() =>
+      decode(SportTeamSubject)({
+        ...subjectInput.details,
+        league: { id: "nba", conferenceId: "not-a-conference" },
+      }),
+    ).toThrow();
+
+    expect(() =>
+      decode(SportTeamSubject)({
+        ...subjectInput.details,
+        league: { id: "nba", conferenceId: "nfc" },
+      }),
+    ).toThrow();
+  });
+
+  it("keeps AP ranks on NCAA league membership and defaults missing ranks to null", () => {
+    const league = { id: "ncaam", conferenceId: "acc" };
+    expect(decode(SportLeague)(league)).toEqual({ ...league, apRank: null });
+    for (const apRank of [null, 1, 13, 25]) {
+      expect(decode(SportLeague)({ ...league, apRank })).toEqual({
+        ...league,
+        apRank,
+      });
+    }
+    for (const apRank of [0, 26, 1.5, "1"]) {
+      expect(() => decode(SportLeague)({ ...league, apRank })).toThrow();
+    }
+    for (const schema of [
+      SportLeague.cases.nba,
+      SportLeague.cases.nhl,
+      SportLeague.cases.nfl,
+      SportLeague.cases.mlb,
+    ]) {
+      expect(schema.fields).not.toHaveProperty("apRank");
+    }
+    expect(
+      decode(SportLeague)({ id: "nba", conferenceId: "east" }),
+    ).not.toHaveProperty("apRank");
+    expect(SportTeamSubject.fields).not.toHaveProperty("apRank");
+  });
+
+  it("accepts each league's schema-defined conferences without duplicate IDs", () => {
+    expect(SportLeague.discriminants).toEqual(SportLeagueId.literals);
+    for (const leagueId of SportLeague.discriminants) {
+      const conferences =
+        SportLeague.cases[leagueId].fields.conferenceId.literals;
+      expect(new Set(conferences).size).toBe(conferences.length);
+      for (const conferenceId of conferences) {
+        expect(() =>
+          decode(SportTeamSubject)({
+            ...subjectInput.details,
+            league: { id: leagueId, conferenceId },
+          }),
+        ).not.toThrow();
+      }
+    }
+  });
+
+  it("derives outer tags and preserves tagged-union helpers", () => {
+    expect(SubjectDetails.tags).toEqual([
+      "sports_team",
+      "mma_fighter",
+      "mma_tracking",
+    ]);
+    expectTypeOf<(typeof SubjectDetails.tags)[number]>().toEqualTypeOf<
+      "sports_team" | "mma_fighter" | "mma_tracking"
+    >();
+    const team = decode(SubjectDetails)(subjectInput.details);
+    const mma = decode(SubjectDetails)(fighter);
+    expect(SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"])(team)).toBe(
+      false,
+    );
+    expect(SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"])(mma)).toBe(
+      true,
+    );
+    expect(
+      SubjectDetails.match(team, {
+        sports_team: (details) => details.league.id,
+        mma_fighter: (details) => details.league.id,
+        mma_tracking: (details) => details.league.id,
+      }),
+    ).toBe("nba");
+  });
+
+  it("narrows conference IDs by league at the type level", () => {
+    type NbaSubject = Extract<SportTeamSubject["league"], { id: "nba" }>;
+    type NhlSubject = Extract<SportTeamSubject["league"], { id: "nhl" }>;
+    type NflSubject = Extract<SportTeamSubject["league"], { id: "nfl" }>;
+    type MlbSubject = Extract<SportTeamSubject["league"], { id: "mlb" }>;
+    type NcaamSubject = Extract<SportTeamSubject["league"], { id: "ncaam" }>;
+
+    expectTypeOf<NbaSubject["conferenceId"]>().toEqualTypeOf<"east" | "west">();
+    expectTypeOf<NhlSubject["conferenceId"]>().toEqualTypeOf<"east" | "west">();
+    expectTypeOf<NflSubject["conferenceId"]>().toEqualTypeOf<"afc" | "nfc">();
+    expectTypeOf<string>().not.toExtend<
+      SportTeamSubject["league"]["conferenceId"]
+    >();
+    expectTypeOf<MlbSubject["conferenceId"]>().toEqualTypeOf<"al" | "nl">();
+    expectTypeOf<NcaamSubject["conferenceId"]>().toEqualTypeOf<
+      | "acc"
+      | "aac"
+      | "a10"
+      | "big-east"
+      | "big-ten"
+      | "big-12"
+      | "mac"
+      | "mvc"
+      | "mountain-west"
+      | "pac-12"
+      | "sec"
+      | "wcc"
+    >();
+
+    const valid: SportTeamSubject = {
+      _tag: "sports_team",
+      league: { id: "nba", conferenceId: "east" },
+      display: "Boston Celtics",
+      location: "Boston",
+      name: "Celtics",
+      abbreviation: "BOS",
+    };
+
+    expectTypeOf<{
+      id: "nba";
+      conferenceId: "nfc";
+    }>().not.toExtend<SportLeague>();
+    expectTypeOf<{
+      id: "mlb";
+      conferenceId: "acc";
+    }>().not.toExtend<SportLeague>();
+    if (valid.league.id === "nba") {
+      expectTypeOf(valid.league.conferenceId).toEqualTypeOf<"east" | "west">();
+    }
   });
 });

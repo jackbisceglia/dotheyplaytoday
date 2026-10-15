@@ -12,7 +12,7 @@ const team = (id: string, display: string, name: string) =>
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: { id: "nba", conferenceId: "east" },
       display,
       name,
       location: name,

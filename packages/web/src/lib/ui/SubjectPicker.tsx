@@ -18,7 +18,7 @@ export function SubjectPicker(props: {
 }) {
   const leagues = createMemo(() =>
     catalogLeagues.filter((league) =>
-      props.subjects.some((subject) => subject.details.leagueId === league.id),
+      props.subjects.some((subject) => subject.details.league.id === league.id),
     ),
   );
   const teams = createMemo(() => getTeams(props.subjects));
@@ -74,7 +74,7 @@ export function SubjectPicker(props: {
           <div class="team-grid">
             <For
               each={teams().filter(
-                (team) => team.details.leagueId === activeLeague(),
+                (team) => team.details.league.id === activeLeague(),
               )}
             >
               {(team) => (

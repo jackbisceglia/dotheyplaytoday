@@ -9,7 +9,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Anaheim",
       name: "Ducks",
       display: "Anaheim Ducks",
@@ -23,7 +26,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Boston",
       name: "Bruins",
       display: "Boston Bruins",
@@ -37,7 +43,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Buffalo",
       name: "Sabres",
       display: "Buffalo Sabres",
@@ -51,7 +60,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Calgary",
       name: "Flames",
       display: "Calgary Flames",
@@ -65,7 +77,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Carolina",
       name: "Hurricanes",
       display: "Carolina Hurricanes",
@@ -79,7 +94,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Chicago",
       name: "Blackhawks",
       display: "Chicago Blackhawks",
@@ -93,7 +111,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Colorado",
       name: "Avalanche",
       display: "Colorado Avalanche",
@@ -107,7 +128,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Columbus",
       name: "Blue Jackets",
       display: "Columbus Blue Jackets",
@@ -121,7 +145,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Dallas",
       name: "Stars",
       display: "Dallas Stars",
@@ -135,7 +162,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Detroit",
       name: "Red Wings",
       display: "Detroit Red Wings",
@@ -149,7 +179,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Edmonton",
       name: "Oilers",
       display: "Edmonton Oilers",
@@ -163,7 +196,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Florida",
       name: "Panthers",
       display: "Florida Panthers",
@@ -177,7 +213,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Los Angeles",
       name: "Kings",
       display: "Los Angeles Kings",
@@ -191,7 +230,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Minnesota",
       name: "Wild",
       display: "Minnesota Wild",
@@ -205,7 +247,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Montreal",
       name: "Canadiens",
       display: "Montreal Canadiens",
@@ -219,7 +264,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Nashville",
       name: "Predators",
       display: "Nashville Predators",
@@ -233,7 +281,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "New Jersey",
       name: "Devils",
       display: "New Jersey Devils",
@@ -247,7 +298,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "New York",
       name: "Islanders",
       display: "New York Islanders",
@@ -261,7 +315,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "New York",
       name: "Rangers",
       display: "New York Rangers",
@@ -275,7 +332,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Ottawa",
       name: "Senators",
       display: "Ottawa Senators",
@@ -289,7 +349,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Philadelphia",
       name: "Flyers",
       display: "Philadelphia Flyers",
@@ -303,7 +366,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Pittsburgh",
       name: "Penguins",
       display: "Pittsburgh Penguins",
@@ -317,7 +383,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "San Jose",
       name: "Sharks",
       display: "San Jose Sharks",
@@ -331,7 +400,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Seattle",
       name: "Kraken",
       display: "Seattle Kraken",
@@ -345,7 +417,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "St. Louis",
       name: "Blues",
       display: "St. Louis Blues",
@@ -359,7 +434,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Tampa Bay",
       name: "Lightning",
       display: "Tampa Bay Lightning",
@@ -373,7 +451,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Toronto",
       name: "Maple Leafs",
       display: "Toronto Maple Leafs",
@@ -387,7 +468,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Utah",
       name: "Mammoth",
       display: "Utah Mammoth",
@@ -401,7 +485,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Vancouver",
       name: "Canucks",
       display: "Vancouver Canucks",
@@ -415,7 +502,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Vegas",
       name: "Golden Knights",
       display: "Vegas Golden Knights",
@@ -429,7 +519,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "east",
+      },
       location: "Washington",
       name: "Capitals",
       display: "Washington Capitals",
@@ -443,7 +536,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nhl",
+      league: {
+        id: "nhl",
+        conferenceId: "west",
+      },
       location: "Winnipeg",
       name: "Jets",
       display: "Winnipeg Jets",

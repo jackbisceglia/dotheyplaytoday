@@ -42,6 +42,10 @@ touch screens get it, and outranks hovering another tile. It's recorded in the
 URL as `?team=mlb-mil` (league and abbreviation). A link for a team that isn't
 picked shows the full schedule, and Edit clears the filter.
 
+Supported sports subjects include NBA, NFL, MLB, NHL, and NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences). Only provider-confirmed game starts become notification-capable events.
+
+Conferences organize team browsing; they are not separate subscriptions. UFC offers fighter and event-coverage subscriptions. Broader support for combat sports such as boxing and Muay Thai is tracked in [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
+
 ## Notifications
 
 - Only subscriptions whose user has `emailVerified: true` enter notification processing. Pending users are excluded at the database query, including forced and dry runs.

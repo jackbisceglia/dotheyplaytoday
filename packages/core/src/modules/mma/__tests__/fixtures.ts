@@ -8,7 +8,7 @@ export const fighterA = Schema.decodeUnknownSync(Subject)({
   _tag: "mma_fighter",
   details: {
     _tag: "mma_fighter",
-    leagueId: "ufc",
+    league: { id: "ufc" },
     display: "Fighter A",
     profileUrl: "https://www.ufc.com/athlete/a",
   },
@@ -23,7 +23,7 @@ export const numbered = Schema.decodeUnknownSync(Subject)({
   _tag: "mma_tracking",
   details: {
     _tag: "mma_tracking",
-    leagueId: "ufc",
+    league: { id: "ufc" },
     display: "Numbered UFC events",
     scope: "numbered",
   },

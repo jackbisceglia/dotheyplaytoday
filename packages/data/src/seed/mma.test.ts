@@ -73,6 +73,18 @@ const first = decoded.events[0];
 if (!first) throw new Error("Expected seed card");
 
 describe("MMA import boundaries", () => {
+  it("decodes nested league membership for every UFC subject without changing IDs", () => {
+    const imported = Schema.decodeUnknownSync(MmaSeed)(catalog);
+    expect(imported.subjects).toHaveLength(262);
+    expect(imported.subjects.map((subject) => subject.id)).toEqual(
+      catalog.subjects.map((subject) => subject.id),
+    );
+    for (const subject of imported.subjects) {
+      expect(subject.details.league).toEqual({ id: "ufc" });
+      expect(subject.details).not.toHaveProperty("leagueId");
+    }
+  });
+
   it("rejects missing or null event starts and missing main-card times", () => {
     const firstCard = ufcCollection.events[0];
     if (!firstCard) throw new Error("Expected card");
@@ -235,19 +247,14 @@ describe("UFC PostgreSQL integration", () => {
               for (const filename of readdirSync(directory)
                 .filter((name) => name.endsWith(".sql"))
                 .sort()) {
-                // These migrations contain plain SQL statements, with no
-                // procedural bodies or semicolons inside string literals.
-                // The PostgreSQL driver accepts one command per query.
-                const statements = readFileSync(
-                  new URL(filename, directory),
-                  "utf8",
-                )
-                  .replace(/^\s*--.*$/gm, "")
-                  .split(";");
+                const sql = readFileSync(new URL(filename, directory), "utf8");
+                // Preserve procedural bodies at the explicit Alchemy boundaries.
+                // Older migrations contain only plain, semicolon-delimited SQL.
+                const statements = sql.includes("--> statement-breakpoint")
+                  ? sql.split("--> statement-breakpoint")
+                  : sql.replace(/^\s*--.*$/gm, "").split(";");
                 for (const statement of statements) {
-                  if (statement.trim()) {
-                    yield* database.execute(statement);
-                  }
+                  if (statement.trim()) yield* database.execute(statement);
                 }
               }
               yield* seedCatalog({
@@ -279,7 +286,7 @@ describe("UFC PostgreSQL integration", () => {
                 _tag: "sports_team",
                 details: {
                   _tag: "sports_team",
-                  leagueId: "nba",
+                  league: { id: "nba", conferenceId: "east" },
                   display: "Test team",
                   name: "Test",
                   location: "Test",

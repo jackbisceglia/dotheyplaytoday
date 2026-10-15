@@ -18,7 +18,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Natalia Silva",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/natalia-silva",
@@ -30,7 +30,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Wang Cong",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/wang-cong",
@@ -42,7 +42,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Brendan Allen",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/brendan-allen",
@@ -54,7 +54,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Christian Leroy Duncan",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/christian-leroy-duncan",
@@ -66,7 +66,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Matheus Camilo",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/matheus-camilo",
@@ -78,7 +78,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jai Herbert",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jai-herbert",
@@ -90,7 +90,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Loopy Godinez",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/loopy-godinez",
@@ -102,7 +102,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ketlen Souza",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/ketlen-souza",
@@ -114,7 +114,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Andre Fili",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/andre-fili",
@@ -126,7 +126,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Kai Kamaka III",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/kai-kamaka-iii",
@@ -138,7 +138,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Malcolm Wellmaker",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/malcolm-wellmaker",
@@ -150,7 +150,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Otari Tanzilovi",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/otari-tanzilovi",
@@ -162,7 +162,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Julius Walker",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/julius-walker",
@@ -174,7 +174,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Gerald Meerschaert",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/gerald-meerschaert",
@@ -186,7 +186,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Francisco Prado",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/francisco-prado",
@@ -198,7 +198,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ismael Bonfim",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/ismael-bonfim",
@@ -210,7 +210,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Niko Price",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/niko-price",
@@ -222,7 +222,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Leon Shahbazyan",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/leon-shahbazyan",
@@ -234,7 +234,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Felipe Franco",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/felipe-franco",
@@ -246,7 +246,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Brendson Ribeiro",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/brendson-ribeiro",
@@ -258,7 +258,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Allen Frye Jr.",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/allen-frye-jr",
@@ -270,7 +270,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "RJ Harris",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/rj-harris",
@@ -282,7 +282,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alice Pereira",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/alice-pereira",
@@ -294,7 +294,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Daria Zhelezniakova",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/dariya-zheleznyakova",
@@ -306,7 +306,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ernesta Kareckaitė",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/ernesta-kareckaite",
@@ -318,7 +318,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Melissa Gatto",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/melissa-gatto",
@@ -330,7 +330,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Joaquin Buckley",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/joaquin-buckley",
@@ -342,7 +342,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mike Malott",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/mike-malott",
@@ -354,7 +354,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Erin Blanchfield",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/erin-blanchfield",
@@ -366,7 +366,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jasmine Jasudavicius",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jasmine-jasudavicius",
@@ -378,7 +378,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Kyle Nelson",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/kyle-nelson",
@@ -390,7 +390,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Cristian Perez Gonzalez",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/cristian-perez-gonzalez",
@@ -402,7 +402,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Marc-Andre Barriault",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/marc-andre-barriault",
@@ -414,7 +414,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Kyle Daukaus",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/kyle-daukaus",
@@ -426,7 +426,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Louis Jourdain",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/louis-jourdain",
@@ -438,7 +438,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Timmy Cuamba",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/timothy-cuamba",
@@ -450,7 +450,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mandel Nallo",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/mandel-nallo",
@@ -462,7 +462,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Nate Landwehr",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/nate-landwehr",
@@ -474,7 +474,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tanner Boser",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/tanner-boser",
@@ -486,7 +486,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jhonata Diniz",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jhonata-diniz",
@@ -498,7 +498,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Julien Leblanc",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/julien-leblanc",
@@ -510,7 +510,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Nick Galanti",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/nick-galanti",
@@ -522,7 +522,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Javad Mahjoub",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/javad-mahjoub",
@@ -534,7 +534,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Joel Faglier",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/joel-faglier",
@@ -546,7 +546,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jamey-Lyn Horth",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jamey-lyn-horth",
@@ -558,7 +558,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Katlyn Cerminara",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/katlyn-cerminara",
@@ -570,7 +570,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Chad Anheliger",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/chad-anheliger",
@@ -582,7 +582,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Steven Koslow",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/steven-koslow",
@@ -594,7 +594,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Melissa Croden",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/melissa-croden",
@@ -606,7 +606,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Chelsea Chandler",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/chelsea-chandler",
@@ -618,7 +618,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Cody Chovancek",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/cody-chovancek",
@@ -630,7 +630,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "SuYoung You",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/suyoung-you",
@@ -642,7 +642,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alexander Volkanovski",
       p4p: 2,
       profileUrl: "https://www.ufc.com/athlete/alexander-volkanovski",
@@ -654,7 +654,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Movsar Evloev",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/movsar-evloev",
@@ -666,7 +666,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Petr Yan",
       p4p: 4,
       profileUrl: "https://www.ufc.com/athlete/petr-yan",
@@ -678,7 +678,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Merab Dvalishvili",
       p4p: 9,
       profileUrl: "https://www.ufc.com/athlete/merab-dvalishvili",
@@ -690,7 +690,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Lone’er Kavanagh",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/loneer-kavanagh",
@@ -702,7 +702,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ramazan Temirov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/ramazan-temirov",
@@ -714,7 +714,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alexander Volkov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/alexander-volkov",
@@ -726,7 +726,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Rizvan Kuniev",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/rizvan-kuniev",
@@ -738,7 +738,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Aaron Pico",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/aaron-pico",
@@ -750,7 +750,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Losene Keita",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/losene-keita",
@@ -762,7 +762,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Azamat Murzakanov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/azamat-murzakanov",
@@ -774,7 +774,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Dominick Reyes",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/dominick-reyes",
@@ -786,7 +786,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Nikita Krylov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/nikita-krylov",
@@ -798,7 +798,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Abdul Rakhman Yakhyaev",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/abdulrakhman-yakhyaev",
@@ -810,7 +810,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Abus Magomedov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/abus-magomedov",
@@ -822,7 +822,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Cam Rowston",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/cameron-rowston",
@@ -834,7 +834,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Grant Dawson",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/grant-dawson",
@@ -846,7 +846,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Nurullo Aliev",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/nurullo-aliev",
@@ -858,7 +858,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Renato Moicano",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/renato-moicano",
@@ -870,7 +870,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tom Nolan",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/tom-nolan",
@@ -882,7 +882,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Randy Brown",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/randy-brown",
@@ -894,7 +894,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Carlos Leal",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/carlos-leal",
@@ -906,7 +906,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Lucia Szabova",
     },
     feedIds: getFighterFeedIds("Lucia Szabova"),
@@ -916,7 +916,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tainara Lisboa",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/tainara-lisboa",
@@ -928,7 +928,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Yana Santos",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/yana-santos",
@@ -940,7 +940,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Luana Santos",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/luana-santos",
@@ -952,7 +952,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Talita Alencar",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/talita-alencar",
@@ -964,7 +964,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Piera Rodriguez",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/piera-rodriguez",
@@ -976,7 +976,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Nick Klein",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/nick-klein",
@@ -988,7 +988,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Joseph Kropschot",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/joseph-kropschot",
@@ -1000,7 +1000,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Rodrigo Sezinando",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/rodrigo-sezinando",
@@ -1012,7 +1012,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Theodor Berggren",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/theodor-berggren",
@@ -1024,7 +1024,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jean-Paul Lebosnoyani",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jean-paul-lebosnoyani",
@@ -1036,7 +1036,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Farman Hasanov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/farman-hasanov",
@@ -1048,7 +1048,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Azamat Bekoev",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/azamat-bekoev",
@@ -1060,7 +1060,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Andre Petroski",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/andre-petroski",
@@ -1072,7 +1072,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Julian Erosa",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/julian-erosa",
@@ -1084,7 +1084,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "JeongYeong Lee",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jeongyeong-lee",
@@ -1096,7 +1096,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Francis Marshall",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/francis-marshall",
@@ -1108,7 +1108,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Gaston Bolanos",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/gaston-bolanos",
@@ -1120,7 +1120,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Gabriel Bonfim",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/gabriel-bonfim",
@@ -1132,7 +1132,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Sean Brady",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/sean-brady",
@@ -1144,7 +1144,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tatiana Suarez",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/tatiana-suarez",
@@ -1156,7 +1156,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Virna Jandiroba",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/virna-jandiroba",
@@ -1168,7 +1168,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mantas Kondratavicius",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/mantas-kondratavicius",
@@ -1180,7 +1180,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Wes Schultz",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/wes-schultz",
@@ -1192,7 +1192,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Billy Elekana",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/billy-elekana",
@@ -1204,7 +1204,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Lucas Fernando",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/lucas-fernando",
@@ -1216,7 +1216,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Austin Bashi",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/austin-bashi",
@@ -1228,7 +1228,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Lucas Brennan",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/lucas-brennan",
@@ -1240,7 +1240,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Karine Silva",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/karine-silva",
@@ -1252,7 +1252,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Gabriella Fernandes",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/gabriella-fernandes",
@@ -1264,7 +1264,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Priscila Cachoeira",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/priscila-cachoeira",
@@ -1276,7 +1276,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Nina Milošević",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/nina-milosevic",
@@ -1288,7 +1288,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Keiichiro Nakamura",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/keiichiro-nakamura",
@@ -1300,7 +1300,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ollie Schmid",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/ollie-schmid",
@@ -1312,7 +1312,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Seokhyeon Ko",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/seokhyeon-ko",
@@ -1324,7 +1324,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Wellington Turman",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/wellington-turman",
@@ -1336,7 +1336,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jonny Parsons",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jonny-parsons",
@@ -1348,7 +1348,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "José Souza",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jose-henrique",
@@ -1360,7 +1360,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Davey Grant",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/davey-grant",
@@ -1372,7 +1372,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Elijah Smith",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/elijah-smith",
@@ -1384,7 +1384,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "José Delano",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jose-delano",
@@ -1396,7 +1396,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Murtazali Magomedov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/murtazali-magomedov",
@@ -1408,7 +1408,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Gabriel Lorenço",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/gabriel-lorenco",
@@ -1420,7 +1420,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alvin Hines",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/alvin-hines",
@@ -1432,7 +1432,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Islam Makhachev",
       p4p: 1,
       profileUrl: "https://www.ufc.com/athlete/islam-makhachev",
@@ -1444,7 +1444,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Justin Gaethje",
       p4p: 3,
       profileUrl: "https://www.ufc.com/athlete/justin-gaethje",
@@ -1456,7 +1456,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ilia Topuria",
       p4p: 5,
       profileUrl: "https://www.ufc.com/athlete/ilia-topuria",
@@ -1468,7 +1468,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Joshua Van",
       p4p: 6,
       profileUrl: "https://www.ufc.com/athlete/joshua-van",
@@ -1480,7 +1480,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Sean Strickland",
       p4p: 7,
       profileUrl: "https://www.ufc.com/athlete/sean-strickland",
@@ -1492,7 +1492,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tom Aspinall",
       p4p: 8,
       profileUrl: "https://www.ufc.com/athlete/tom-aspinall",
@@ -1504,7 +1504,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alex Pereira",
       p4p: 10,
       profileUrl: "https://www.ufc.com/athlete/alex-pereira",
@@ -1516,7 +1516,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ciryl Gane",
       p4p: 11,
     },
@@ -1527,7 +1527,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Khamzat Chimaev",
       p4p: 12,
     },
@@ -1538,7 +1538,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Arman Tsarukyan",
       p4p: 13,
     },
@@ -1549,7 +1549,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alexandre Pantoja",
       p4p: 14,
       profileUrl: "https://www.ufc.com/athlete/alexandre-pantoja",
@@ -1561,7 +1561,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Carlos Ulberg",
       p4p: 15,
     },
@@ -1572,7 +1572,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Manel Kape",
       p4p: null,
     },
@@ -1583,7 +1583,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Brandon Royval",
       p4p: null,
     },
@@ -1594,7 +1594,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tatsuro Taira",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/tatsuro-taira",
@@ -1606,7 +1606,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Kyoji Horiguchi",
       p4p: null,
     },
@@ -1617,7 +1617,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Asu Almabayev",
       p4p: null,
     },
@@ -1628,7 +1628,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Brandon Moreno",
       p4p: null,
     },
@@ -1639,7 +1639,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Amir Albazi",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/amir-albazi",
@@ -1651,7 +1651,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tim Elliott",
       p4p: null,
     },
@@ -1662,7 +1662,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Steve Erceg",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/steve-erceg",
@@ -1674,7 +1674,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Sumudaerji",
       p4p: null,
     },
@@ -1685,7 +1685,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tagir Ulanbekov",
       p4p: null,
     },
@@ -1696,7 +1696,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alex Perez",
       p4p: null,
     },
@@ -1707,7 +1707,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Sean O'Malley",
       p4p: null,
     },
@@ -1718,7 +1718,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Song Yadong",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/song-yadong",
@@ -1730,7 +1730,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Umar Nurmagomedov",
       p4p: null,
     },
@@ -1741,7 +1741,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mario Bautista",
       p4p: null,
     },
@@ -1752,7 +1752,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Cory Sandhagen",
       p4p: null,
     },
@@ -1763,7 +1763,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Payton Talbott",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/payton-talbott",
@@ -1775,7 +1775,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Aiemann Zahabi",
       p4p: null,
     },
@@ -1786,7 +1786,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "David Martinez",
       p4p: null,
     },
@@ -1797,7 +1797,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Raul Rosas Jr.",
       p4p: null,
     },
@@ -1808,7 +1808,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Marlon Vera",
       p4p: null,
     },
@@ -1819,7 +1819,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Deiveson Figueiredo",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/deiveson-figueiredo",
@@ -1831,7 +1831,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Farid Basharat",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/farid-basharat",
@@ -1843,7 +1843,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Marcus McGhee",
       p4p: null,
     },
@@ -1854,7 +1854,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Raoni Barcelos",
       p4p: null,
     },
@@ -1865,7 +1865,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Diego Lopes",
       p4p: null,
     },
@@ -1876,7 +1876,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Lerone Murphy",
       p4p: null,
     },
@@ -1887,7 +1887,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Aljamain Sterling",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/aljamain-sterling",
@@ -1899,7 +1899,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jean Silva",
       p4p: null,
     },
@@ -1910,7 +1910,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Yair Rodriguez",
       p4p: null,
     },
@@ -1921,7 +1921,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Arnold Allen",
       p4p: null,
     },
@@ -1932,7 +1932,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Youssef Zalal",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/youssef-zalal",
@@ -1944,7 +1944,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Kevin Vallejos",
       p4p: null,
     },
@@ -1955,7 +1955,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Steve Garcia",
       p4p: null,
     },
@@ -1966,7 +1966,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Melquizael Costa",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/melquizael-costa",
@@ -1978,7 +1978,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Brian Ortega",
       p4p: null,
     },
@@ -1989,7 +1989,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Patricio Pitbull",
       p4p: null,
     },
@@ -2000,7 +2000,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "David Onama",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/david-onama",
@@ -2012,7 +2012,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Charles Oliveira",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/charles-oliveira",
@@ -2024,7 +2024,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Max Holloway",
       p4p: null,
     },
@@ -2035,7 +2035,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Paddy Pimblett",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/paddy-pimblett",
@@ -2047,7 +2047,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Benoît Saint Denis",
       p4p: null,
     },
@@ -2058,7 +2058,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Quillan Salkilld",
       p4p: null,
     },
@@ -2069,7 +2069,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mauricio Ruffy",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/mauricio-ruffy",
@@ -2081,7 +2081,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Salahdine Parnasse",
       p4p: null,
     },
@@ -2092,7 +2092,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mateusz Gamrot",
       p4p: null,
     },
@@ -2103,7 +2103,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Rafael Fiziev",
       p4p: null,
     },
@@ -2114,7 +2114,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Dan Hooker",
       p4p: null,
     },
@@ -2125,7 +2125,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Beneil Dariush",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/beneil-dariush",
@@ -2137,7 +2137,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ian Machado Garry",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/ian-machado-garry",
@@ -2149,7 +2149,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Carlos Prates",
       p4p: null,
     },
@@ -2160,7 +2160,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Michael Morales",
       p4p: null,
     },
@@ -2171,7 +2171,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jack Della Maddalena",
       p4p: null,
     },
@@ -2182,7 +2182,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Belal Muhammad",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/belal-muhammad",
@@ -2194,7 +2194,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Leon Edwards",
       p4p: null,
     },
@@ -2205,7 +2205,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Kamaru Usman",
       p4p: null,
     },
@@ -2216,7 +2216,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Yaroslav Amosov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/yaroslav-amosov",
@@ -2228,7 +2228,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Uroš Medić",
       p4p: null,
     },
@@ -2239,7 +2239,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Daniel Rodriguez",
       p4p: null,
     },
@@ -2250,7 +2250,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Neil Magny",
       p4p: null,
     },
@@ -2261,7 +2261,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Dricus Du Plessis",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/dricus-du-plessis",
@@ -2273,7 +2273,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Nassourdine Imavov",
       p4p: null,
     },
@@ -2284,7 +2284,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Caio Borralho",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/caio-borralho",
@@ -2296,7 +2296,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Joe Pyfer",
       p4p: null,
     },
@@ -2307,7 +2307,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Gregory Rodrigues",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/gregory-rodrigues",
@@ -2319,7 +2319,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Anthony Hernandez",
       p4p: null,
     },
@@ -2330,7 +2330,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Israel Adesanya",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/israel-adesanya",
@@ -2342,7 +2342,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jared Cannonier",
       p4p: null,
     },
@@ -2353,7 +2353,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ikram Aliskerov",
       p4p: null,
     },
@@ -2364,7 +2364,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Bo Nickal",
       p4p: null,
     },
@@ -2375,7 +2375,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Shara Magomedov",
       p4p: null,
     },
@@ -2386,7 +2386,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Magomed Ankalaev",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/magomed-ankalaev",
@@ -2398,7 +2398,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jiří Procházka",
       p4p: null,
     },
@@ -2409,7 +2409,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Khalil Rountree Jr.",
       p4p: null,
     },
@@ -2420,7 +2420,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Navajo Stirling",
       p4p: null,
     },
@@ -2431,7 +2431,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Paulo Costa",
       p4p: null,
     },
@@ -2442,7 +2442,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jan Błachowicz",
       p4p: null,
     },
@@ -2453,7 +2453,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Bogdan Guskov",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/bogdan-guskov",
@@ -2465,7 +2465,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Robert Whittaker",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/robert-whittaker",
@@ -2477,7 +2477,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alonzo Menifield",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/alonzo-menifield",
@@ -2489,7 +2489,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Muhammad Saidov",
       p4p: null,
     },
@@ -2500,7 +2500,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Reinier de Ridder",
       p4p: null,
     },
@@ -2511,7 +2511,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Sergei Pavlovich",
       p4p: null,
     },
@@ -2522,7 +2522,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Josh Hokit",
       p4p: null,
     },
@@ -2533,7 +2533,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Curtis Blaydes",
       p4p: null,
     },
@@ -2544,7 +2544,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Waldo Cortes Acosta",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/waldo-cortes-acosta",
@@ -2556,7 +2556,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Vitor Petrino",
       p4p: null,
     },
@@ -2567,7 +2567,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Serghei Spivac",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/serghei-spivac",
@@ -2579,7 +2579,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ante Delija",
       p4p: null,
     },
@@ -2590,7 +2590,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Valter Walker",
       p4p: null,
     },
@@ -2601,7 +2601,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tyrell Fortune",
       p4p: null,
     },
@@ -2612,7 +2612,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Derrick Lewis",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/derrick-lewis",
@@ -2624,7 +2624,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Aleksandar Rakić",
       p4p: null,
     },
@@ -2635,7 +2635,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mario Pinto",
       p4p: null,
     },
@@ -2646,7 +2646,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Valentina Shevchenko",
       p4p: null,
     },
@@ -2657,7 +2657,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Kayla Harrison",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/kayla-harrison",
@@ -2669,7 +2669,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Zhang Weili",
       p4p: null,
     },
@@ -2680,7 +2680,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mackenzie Dern",
       p4p: null,
     },
@@ -2691,7 +2691,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alexa Grasso",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/alexa-grasso",
@@ -2703,7 +2703,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Manon Fiorot",
       p4p: null,
     },
@@ -2714,7 +2714,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Julianna Peña",
       p4p: null,
     },
@@ -2725,7 +2725,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Rose Namajunas",
       p4p: null,
     },
@@ -2736,7 +2736,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Raquel Pennington",
       p4p: null,
     },
@@ -2747,7 +2747,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Denise Gomes",
       p4p: null,
     },
@@ -2758,7 +2758,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Maycee Barber",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/maycee-barber",
@@ -2770,7 +2770,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Gillian Robertson",
       p4p: null,
     },
@@ -2781,7 +2781,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Yan Xiaonan",
       p4p: null,
     },
@@ -2792,7 +2792,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Fatima Kline",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/fatima-kline",
@@ -2804,7 +2804,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Alexia Thainara",
       p4p: null,
     },
@@ -2815,7 +2815,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jéssica Andrade",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/jessica-andrade",
@@ -2827,7 +2827,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tabatha Ricci",
       p4p: null,
     },
@@ -2838,7 +2838,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Amanda Lemos",
       p4p: null,
     },
@@ -2849,7 +2849,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Amanda Ribas",
       p4p: null,
     },
@@ -2860,7 +2860,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Angela Hill",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/angela-hill",
@@ -2872,7 +2872,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Mizuki",
       p4p: null,
     },
@@ -2883,7 +2883,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Tracy Cortez",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/tracy-cortez",
@@ -2895,7 +2895,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Miranda Maverick",
       p4p: null,
     },
@@ -2906,7 +2906,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Casey O'Neill",
       p4p: null,
     },
@@ -2917,7 +2917,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Eduarda Moura",
       p4p: null,
     },
@@ -2928,7 +2928,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Regina Tarin",
       p4p: null,
     },
@@ -2939,7 +2939,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Joselyne Edwards",
       p4p: null,
     },
@@ -2950,7 +2950,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Ailin Perez",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/ailin-perez",
@@ -2962,7 +2962,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Norma Dumont",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/norma-dumont",
@@ -2974,7 +2974,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Jacqueline Cavalcanti",
       p4p: null,
     },
@@ -2985,7 +2985,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Macy Chiasson",
       p4p: null,
     },
@@ -2996,7 +2996,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Karol Rosa",
       p4p: null,
     },
@@ -3007,7 +3007,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Bia Mesquita",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/bia-mesquita",
@@ -3019,7 +3019,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Michelle Montague",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/michelle-montague",
@@ -3031,7 +3031,7 @@ export const Fighters = {
     _tag: "mma_fighter",
     details: {
       _tag: "mma_fighter",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Nora Cornolle",
       p4p: null,
       profileUrl: "https://www.ufc.com/athlete/nora-cornolle",
@@ -3046,7 +3046,7 @@ export const Tracking = {
     _tag: "mma_tracking",
     details: {
       _tag: "mma_tracking",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "Numbered UFC events",
       scope: "numbered",
     },
@@ -3057,7 +3057,7 @@ export const Tracking = {
     _tag: "mma_tracking",
     details: {
       _tag: "mma_tracking",
-      leagueId: "ufc",
+      league: { id: "ufc" },
       display: "All UFC events",
       scope: "all",
     },

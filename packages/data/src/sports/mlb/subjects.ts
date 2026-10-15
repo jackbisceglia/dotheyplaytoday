@@ -9,7 +9,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Anaheim",
       name: "Angels",
       display: "Los Angeles Angels",
@@ -89,7 +92,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Phoenix",
       name: "D-backs",
       display: "Arizona Diamondbacks",
@@ -170,7 +176,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Baltimore",
       name: "Orioles",
       display: "Baltimore Orioles",
@@ -250,7 +259,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Boston",
       name: "Red Sox",
       display: "Boston Red Sox",
@@ -335,7 +347,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Chicago",
       name: "Cubs",
       display: "Chicago Cubs",
@@ -418,7 +433,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Cincinnati",
       name: "Reds",
       display: "Cincinnati Reds",
@@ -500,7 +518,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Cleveland",
       name: "Guardians",
       display: "Cleveland Guardians",
@@ -590,7 +611,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Denver",
       name: "Rockies",
       display: "Colorado Rockies",
@@ -669,7 +693,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Detroit",
       name: "Tigers",
       display: "Detroit Tigers",
@@ -750,7 +777,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Houston",
       name: "Astros",
       display: "Houston Astros",
@@ -831,7 +861,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Kansas City",
       name: "Royals",
       display: "Kansas City Royals",
@@ -911,7 +944,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Los Angeles",
       name: "Dodgers",
       display: "Los Angeles Dodgers",
@@ -999,7 +1035,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Washington",
       name: "Nationals",
       display: "Washington Nationals",
@@ -1079,7 +1118,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Flushing",
       name: "Mets",
       display: "New York Mets",
@@ -1158,7 +1200,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Sacramento",
       name: "Athletics",
       display: "Athletics",
@@ -1239,7 +1284,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Pittsburgh",
       name: "Pirates",
       display: "Pittsburgh Pirates",
@@ -1319,7 +1367,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "San Diego",
       name: "Padres",
       display: "San Diego Padres",
@@ -1406,7 +1457,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Seattle",
       name: "Mariners",
       display: "Seattle Mariners",
@@ -1486,7 +1540,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "San Francisco",
       name: "Giants",
       display: "San Francisco Giants",
@@ -1567,7 +1624,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "St. Louis",
       name: "Cardinals",
       display: "St. Louis Cardinals",
@@ -1649,7 +1709,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "St. Petersburg",
       name: "Rays",
       display: "Tampa Bay Rays",
@@ -1740,7 +1803,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Arlington",
       name: "Rangers",
       display: "Texas Rangers",
@@ -1821,7 +1887,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Toronto",
       name: "Blue Jays",
       display: "Toronto Blue Jays",
@@ -1902,7 +1971,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Minneapolis",
       name: "Twins",
       display: "Minnesota Twins",
@@ -1982,7 +2054,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Philadelphia",
       name: "Phillies",
       display: "Philadelphia Phillies",
@@ -2064,7 +2139,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Atlanta",
       name: "Braves",
       display: "Atlanta Braves",
@@ -2153,7 +2231,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Chicago",
       name: "White Sox",
       display: "Chicago White Sox",
@@ -2242,7 +2323,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Miami",
       name: "Marlins",
       display: "Miami Marlins",
@@ -2322,7 +2406,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "al",
+      },
       location: "Bronx",
       name: "Yankees",
       display: "New York Yankees",
@@ -2408,7 +2495,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "mlb",
+      league: {
+        id: "mlb",
+        conferenceId: "nl",
+      },
       location: "Milwaukee",
       name: "Brewers",
       display: "Milwaukee Brewers",

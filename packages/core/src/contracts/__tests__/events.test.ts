@@ -13,7 +13,7 @@ const response = [
       _tag: "sports_team",
       details: {
         _tag: "sports_team",
-        leagueId: "nba",
+        league: { id: "nba", conferenceId: "east" },
         display: "Boston Celtics",
         name: "Celtics",
         location: "Boston",

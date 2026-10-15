@@ -23,7 +23,7 @@ const subjectKey = (subject: Subject) =>
   Match.value(subject.details).pipe(
     Match.tag(
       "sports_team",
-      (team) => `${team.leagueId}-${team.abbreviation.toLowerCase()}`,
+      (team) => `${team.league.id}-${team.abbreviation.toLowerCase()}`,
     ),
     Match.tag("mma_fighter", "mma_tracking", () => subject.id),
     Match.exhaustive,

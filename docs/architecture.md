@@ -7,7 +7,7 @@
 - `packages/jobs` implements notification orchestration and scheduled Workers
   using `core` services and notifiers. Internal operational jobs live under
   `src/ops`, grouped by concern.
-- `packages/data` owns catalog, event, and development seed data and writes through `core` domain services.
+- `packages/data` owns catalog, event, and development seed data and writes through `core` domain services, including NCAA Division I men's basketball snapshots.
 - `packages/web` is the Solid 2 Start-mode frontend and consumes shared `core` contracts.
 
 The feedback write path is intentionally small: its API handler validates the
@@ -17,6 +17,14 @@ UTC window; there is no feedback domain service because neither path has
 reusable domain behavior.
 
 Dependencies point inward toward `core`. The API, jobs, data, and web packages do not provide domain abstractions for `core` or depend on one another for their primary behavior.
+
+Every subject exposes `details.league.id`. Sports-team details are one tagged struct with a required `league: { id, conferenceId }`. Its league field is a discriminated union keyed by `id`, so conference constraints are enforced by the schema and its inferred TypeScript type. MMA fighter and tracking subjects use `league: { id: "ufc" }` without conferences. `SubjectDetails` uses the ordinary project `TaggedUnion` helper with one sports-team member; no suspended schema, custom grouping, or mixed-subject league accessor is needed. Event details retain their existing `leagueId` fields. Generalizing MMA to CombatSports is deferred to [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
+
+Only NCAAM league membership contains `apRank`, an integer from 1 to 25 or null for unranked/unavailable. Decoding a missing rank defaults to null, matching the MMA P4P rank convention. No AP poll data is populated or refreshed automatically.
+
+The NCAAM catalog contains 158 teams across 12 conferences and 1,604 confirmed-time events from the ESPN snapshot fetched on 2026-10-13. The import excluded 1,442 unconfirmed starts before writing the checked-in schedule. The snapshot does not refresh automatically; provider terms/SLA, schedule completeness, and postponement/reschedule semantics remain unverified. Conference rosters were checked against the [NCAA directory](https://web3.ncaa.org/directory/memberList?division=I&sportCode=MBB&type=12) and official conference member pages. Noncatalog opponents remain participant titles without subject/feed edges.
+
+SQL migration `0006_subject_league_membership.sql` adds nested membership to existing subjects before new workers activate, including a hand-authored conference backfill for all 124 professional team IDs. It retains legacy fields so old workers can read rows during deployment, and fails atomically for invalid/unmapped membership. Public schemas and writes remain nested-only; no application compatibility decoder is needed. `CatalogSeedVersion` stays at the existing `2026-10-14.1` value for this release. After migration/code deployment and retirement of old workers, a separate version-bump PR triggers the NCAA catalog refresh and nested-only upserts. Follow the [two-stage rollout](./runbooks/subject-league-rollout.md); do not force the catalog action during the first stage.
 
 ## Runtime and infrastructure
 
