@@ -37,6 +37,7 @@ body {
 }
 
 .site-page {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   min-height: 100svh;
@@ -790,12 +791,11 @@ button {
   letter-spacing: 0.06em;
 }
 
-/* A fixed height keeps the page the same length whatever the search matches,
-   so the input never moves while typing. Seven and a half rows show that the
-   list scrolls; the stable gutter keeps rows from narrowing when it does, and x
-   is hidden so the reject shake cannot add a horizontal scrollbar. */
+/* Long results scroll inside; seven and a half rows show that the list
+   continues. The stable gutter keeps rows from narrowing when it scrolls, and
+   x is hidden so the reject shake cannot add a horizontal scrollbar. */
 .ufc-fighter-list {
-  height: calc(7.5 * 44px + 4px);
+  max-height: calc(7.5 * 44px + 4px);
   overflow: hidden auto;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
