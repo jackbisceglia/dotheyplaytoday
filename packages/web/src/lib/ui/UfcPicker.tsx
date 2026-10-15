@@ -27,6 +27,7 @@ export function UfcPicker(props: {
     getVisibleUfcFighters(props.subjects, search()),
   );
   const searching = () => searchKey(search()).length > 0;
+  let list: HTMLDivElement | undefined;
 
   return (
     <div class="ufc-picker">
@@ -71,9 +72,13 @@ export function UfcPicker(props: {
           class="form-input"
           placeholder="Search fighters"
           value={search()}
-          onInput={(event) => setSearch(event.currentTarget.value)}
+          onInput={(event) => {
+            setSearch(event.currentTarget.value);
+            list?.scrollTo({ top: 0 });
+          }}
         />
         <div
+          ref={list}
           class="ufc-fighter-list"
           role="group"
           aria-label={searching() ? "Matching fighters" : "Men's P4P top 15"}
