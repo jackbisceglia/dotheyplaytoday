@@ -1,4 +1,4 @@
-# Nested subject league rollout (PR #180)
+# Nested subject league rollout
 
 The catalog seed is the backfill: existing team and MMA JSON is replaced through
 `Subjects.upsert` at the same subject IDs. It does not recreate subscriptions or
