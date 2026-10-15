@@ -44,7 +44,7 @@ picked shows the full schedule, and Edit clears the filter.
 
 Supported sports subjects now include NBA, NFL, MLB, NHL, and NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences). Only provider-confirmed game starts become notification-capable events.
 
-Sports teams remain one `sports_team` subject kind. Their required `details.league` object contains `id` and `conferenceId`; each league permits only its own conferences. Conferences are browsing metadata, not separate subscriptions. MMA subjects retain their existing representation.
+Sports teams remain one `sports_team` subject kind. Their required `details.league` object contains `id` and `conferenceId`; each league permits only its own conferences. Conferences are browsing metadata, not separate subscriptions. MMA fighter and tracking subjects use `league: { id: "ufc" }`, without conferences. All subject kinds expose `details.league.id`; existing MMA tags and subscription behavior are unchanged. A broader CombatSports model for MMA, boxing, and Muay Thai is deferred to [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
 
 ## Notifications
 

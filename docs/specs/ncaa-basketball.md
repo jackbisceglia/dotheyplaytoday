@@ -8,7 +8,7 @@ Implementation status: implemented in worktree. Women's support remains future s
 - The base PR includes mechanical web compatibility updates and NCAAM league/logo metadata so it typechecks independently. Conference and Top 25 browsing are the second PR in the stack.
 - Data lives in `packages/data/src/sports/ncaam/`: 158 subjects and 1,604 confirmed event seeds.
 - Seed collections: `packages/data/src/seed/index.ts` includes `ncaamCollection`. Development retains all catalog subjects and trims events/feed edges to the existing development window.
-- `CatalogSeedVersion` in `packages/data/src/seed/config.ts` is `2026-10-14.1`.
+- `CatalogSeedVersion` in `packages/data/src/seed/config.ts` is `2026-10-14.2`.
 - Catalog/event source IDs use the existing `sports_game:espn:<uuid>` shape and `00000000-0000-4000-8000-000<espn id>` IDs; IDs are provider-derived.
 - Provider changes over 2026 realignment are reflected in the approved rosters.
 
@@ -71,7 +71,7 @@ Genuine remaining gaps:
 ## 4. Domain and UI decisions
 
 - Conferences are browse metadata only in v1. There are no conference Subject or subscription paths.
-- A team remains `_tag: "sports_team"`; membership is required as `league: { id: "ncaam", conferenceId: "acc" }`. The inner league schema discriminates by `id`, while the outer subject tagged union retains its normal helpers and derived tags. Old flat membership fields are not part of the new team payload; sports-event and MMA payloads are unchanged.
+- A team remains `_tag: "sports_team"`; membership is required as `league: { id: "ncaam", conferenceId: "acc" }`. The inner league schema discriminates by `id`, while the outer subject tagged union retains its normal helpers and derived tags. All subjects expose `league.id`: MMA fighter/tracking membership is `league: { id: "ufc" }`. Event payloads retain flat `leagueId` fields.
 - Users still subscribe to up to four teams, and notification matching still uses the user's local calendar date.
 - Women's support should use a separate `ncaaw` league ID or equivalent disambiguated identity model later; only `ncaam` is implemented now.
 - Pac-12 is implemented as an approved conference, not treated as an omission.

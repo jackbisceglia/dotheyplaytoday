@@ -18,9 +18,9 @@ reusable domain behavior.
 
 Dependencies point inward toward `core`. The API, jobs, data, and web packages do not provide domain abstractions for `core` or depend on one another for their primary behavior.
 
-Sports-team details are one tagged struct with a required `league: { id, conferenceId }`. The league field is a discriminated union keyed by `id`, so conference constraints are enforced by the schema and its inferred TypeScript type. `SubjectDetails` uses the ordinary project `TaggedUnion` helper with one sports-team member; no suspended schema or custom grouping is needed. Sports-event details and MMA details keep their existing `leagueId` fields.
+Every subject exposes `details.league.id`. Sports-team details are one tagged struct with a required `league: { id, conferenceId }`. Its league field is a discriminated union keyed by `id`, so conference constraints are enforced by the schema and its inferred TypeScript type. MMA fighter and tracking subjects use `league: { id: "ufc" }` without conferences. `SubjectDetails` uses the ordinary project `TaggedUnion` helper with one sports-team member; no suspended schema, custom grouping, or mixed-subject league accessor is needed. Event details retain their existing `leagueId` fields. Generalizing MMA to CombatSports is deferred to [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
 
-Catalog revision `2026-10-14.1` refreshes existing team JSON through the normal `Subjects.upsert` path, replacing flat membership fields without changing subject IDs, subscriptions, or feeds. Run the updated catalog seed before API or notification workers read existing rows with the nested-membership schema. No separate SQL backfill migration is required.
+Catalog revision `2026-10-14.2` refreshes existing team and MMA subject JSON through the normal `Subjects.upsert` path, replacing flat membership fields without changing subject IDs, subscriptions, or feeds. Run the updated catalog seed before API or notification workers read existing rows with the nested-membership schema. No separate SQL backfill migration is required.
 
 ## Runtime and infrastructure
 

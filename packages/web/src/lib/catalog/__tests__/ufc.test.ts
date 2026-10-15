@@ -9,7 +9,7 @@ const fighter = (suffix: string, display: string, p4p: number | null) =>
   Schema.decodeUnknownSync(Subject)({
     id: `10000000-0000-4000-8000-0000000000${suffix}`,
     _tag: "mma_fighter",
-    details: { _tag: "mma_fighter", leagueId: "ufc", display, p4p },
+    details: { _tag: "mma_fighter", league: { id: "ufc" }, display, p4p },
   });
 const first = fighter("11", "Zed Ranked", 1);
 const second = fighter("12", "Alpha Ranked", 2);

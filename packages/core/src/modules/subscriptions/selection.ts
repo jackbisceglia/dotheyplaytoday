@@ -10,7 +10,7 @@ import type { Subject } from "../subjects/schema.js";
 const exclusiveSelectionGroup = (subject: Subject): string | undefined =>
   Match.value(subject.details).pipe(
     Match.tag("mma_tracking", (details) =>
-      [details._tag, details.leagueId].join(":"),
+      [details._tag, details.league.id].join(":"),
     ),
     Match.orElse(() => undefined),
   );

@@ -3,7 +3,10 @@ import { expectTypeOf } from "vitest";
 import { Schema } from "effect";
 
 import { Subject, SubjectDetails, SubjectInsert } from "../schema.js";
-import { MmaFighterSubject } from "../variants/mma.schema.js";
+import {
+  MmaFighterSubject,
+  MmaTrackingSubject,
+} from "../variants/mma.schema.js";
 import {
   SportLeague,
   SportLeagueId,
@@ -30,11 +33,11 @@ const subjectInput = {
 describe("Subject model", () => {
   const fighter = {
     _tag: "mma_fighter",
-    leagueId: "ufc",
+    league: { id: "ufc" },
     display: "Fighter",
   };
 
-  it("decodes older fighter details with a null P4P rank", () => {
+  it("defaults a missing fighter P4P rank to null", () => {
     const details = decode(MmaFighterSubject)(fighter);
     expect(details.p4p).toBeNull();
     expect(encode(MmaFighterSubject)(details)).toEqual({
@@ -50,6 +53,32 @@ describe("Subject model", () => {
     for (const p4p of [0, -1, 16, 1.5, "1"]) {
       expect(() => decode(MmaFighterSubject)({ ...fighter, p4p })).toThrow();
     }
+  });
+
+  it("requires nested league membership on fighter and tracking subjects", () => {
+    const tracking = {
+      _tag: "mma_tracking",
+      league: { id: "ufc" },
+      display: "All UFC events",
+      scope: "all",
+    };
+    expect(decode(MmaFighterSubject)(fighter).league).toEqual({ id: "ufc" });
+    expect(decode(MmaTrackingSubject)(tracking).league).toEqual({ id: "ufc" });
+    for (const input of [fighter, tracking]) {
+      const { league: _league, ...withoutLeague } = input;
+      for (const invalid of [
+        withoutLeague,
+        { ...withoutLeague, leagueId: "ufc" },
+        { ...withoutLeague, league: {} },
+        { ...withoutLeague, league: { id: "boxing" } },
+      ]) {
+        expect(() => decode(SubjectDetails)(invalid)).toThrow();
+      }
+      expect(decode(SubjectDetails)(input).league.id).toBe("ufc");
+    }
+    expectTypeOf<SubjectDetails["league"]["id"]>().toEqualTypeOf<
+      SportLeagueId | "ufc"
+    >();
   });
 
   it("lists supported league ids", () => {
@@ -192,8 +221,8 @@ describe("Subject model", () => {
     expect(
       SubjectDetails.match(team, {
         sports_team: (details) => details.league.id,
-        mma_fighter: (details) => details.leagueId,
-        mma_tracking: (details) => details.leagueId,
+        mma_fighter: (details) => details.league.id,
+        mma_tracking: (details) => details.league.id,
       }),
     ).toBe("nba");
   });

@@ -2,11 +2,7 @@ import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { Predicate } from "effect";
 import { For, Match, Show, Switch } from "solid-js";
 
-import {
-  getSubjectLogo,
-  getSubjectAbbreviation,
-  getSubjectLeagueId,
-} from "../catalog/index.js";
+import { getSubjectLogo, getSubjectAbbreviation } from "../catalog/index.js";
 
 // The same tiles in view and edit mode, so editing only adds controls around
 // what's already on screen. Unfilled capacity reads as quiet empty slots; the
@@ -118,7 +114,7 @@ function RosterSubjectLabel(props: { readonly subject: Subject }) {
               </>
             )}
           </Show>
-          {getSubjectLeagueId(props.subject.details).toUpperCase()}
+          {props.subject.details.league.id.toUpperCase()}
         </span>
       </span>
     </>

@@ -73,6 +73,18 @@ const first = decoded.events[0];
 if (!first) throw new Error("Expected seed card");
 
 describe("MMA import boundaries", () => {
+  it("decodes nested league membership for every UFC subject without changing IDs", () => {
+    const imported = Schema.decodeUnknownSync(MmaSeed)(catalog);
+    expect(imported.subjects).toHaveLength(262);
+    expect(imported.subjects.map((subject) => subject.id)).toEqual(
+      catalog.subjects.map((subject) => subject.id),
+    );
+    for (const subject of imported.subjects) {
+      expect(subject.details.league).toEqual({ id: "ufc" });
+      expect(subject.details).not.toHaveProperty("leagueId");
+    }
+  });
+
   it("rejects missing or null event starts and missing main-card times", () => {
     const firstCard = ufcCollection.events[0];
     if (!firstCard) throw new Error("Expected card");

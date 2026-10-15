@@ -2,10 +2,7 @@ import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import type { ParentProps } from "solid-js";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { getTeams, getSportsLogo } from "../catalog/sports/index.js";
-import {
-  getSubjectLeagueId,
-  leagues as catalogLeagues,
-} from "../catalog/index.js";
+import { leagues as catalogLeagues } from "../catalog/index.js";
 import { UfcPicker } from "./UfcPicker.jsx";
 import { ComingSoon } from "./ComingSoon.jsx";
 
@@ -21,9 +18,7 @@ export function SubjectPicker(props: {
 }) {
   const leagues = createMemo(() =>
     catalogLeagues.filter((league) =>
-      props.subjects.some(
-        (subject) => getSubjectLeagueId(subject.details) === league.id,
-      ),
+      props.subjects.some((subject) => subject.details.league.id === league.id),
     ),
   );
   const teams = createMemo(() => getTeams(props.subjects));

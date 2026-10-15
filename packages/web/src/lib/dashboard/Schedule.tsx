@@ -9,7 +9,7 @@ import {
   untrack,
 } from "solid-js";
 
-import { getSubjectLogo, getSubjectLeagueId } from "../catalog/index.js";
+import { getSubjectLogo } from "../catalog/index.js";
 import type { ScheduleRow } from "./schedule.js";
 
 // A previewed team fades everyone else's games; a pinned team collapses them,
@@ -179,7 +179,7 @@ function RowLine(props: { readonly row: ScheduleRow }) {
         <Headline row={props.row} />
       </div>
       <span class="dashboard-schedule-league">
-        {getSubjectLeagueId(props.row.subjects[0].details).toUpperCase()}
+        {props.row.subjects[0].details.league.id.toUpperCase()}
       </span>
     </>
   );
