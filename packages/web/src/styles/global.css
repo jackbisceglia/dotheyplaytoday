@@ -566,11 +566,14 @@ button {
   scrollbar-color: var(--rule) transparent;
 }
 
-.league-row::-webkit-scrollbar {
+.league-row::-webkit-scrollbar,
+.ufc-fighter-list::-webkit-scrollbar {
+  width: 6px;
   height: 6px;
 }
 
-.league-row::-webkit-scrollbar-thumb {
+.league-row::-webkit-scrollbar-thumb,
+.ufc-fighter-list::-webkit-scrollbar-thumb {
   background: var(--rule);
   border-radius: 3px;
 }
@@ -787,7 +790,16 @@ button {
   letter-spacing: 0.06em;
 }
 
+/* A fixed height keeps the page the same length whatever the search matches,
+   so the input never moves while typing. Seven and a half rows show that the
+   list scrolls; the stable gutter keeps rows from narrowing when it does, and x
+   is hidden so the reject shake cannot add a horizontal scrollbar. */
 .ufc-fighter-list {
+  height: calc(7.5 * 44px + 4px);
+  overflow: hidden auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
   border: 2px solid var(--rule);
   background: #fff;
 }
@@ -810,6 +822,11 @@ button {
 .ufc-fighter-row[data-rejected="true"] {
   outline: 2px solid var(--error);
   outline-offset: -2px;
+}
+
+/* The list clips, so the focus ring sits inside the row. */
+.ufc-fighter-row:focus-visible {
+  outline-offset: -3px;
 }
 
 .ufc-fighter-row:last-child {
