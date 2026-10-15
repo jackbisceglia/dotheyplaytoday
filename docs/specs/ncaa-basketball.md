@@ -8,7 +8,7 @@ Implementation status: implemented in worktree. Women's support remains future s
 - The base PR includes mechanical web compatibility updates and NCAAM league/logo metadata so it typechecks independently. Conference and Top 25 browsing are the second PR in the stack.
 - Data lives in `packages/data/src/sports/ncaam/`: 158 subjects and 1,604 confirmed event seeds.
 - Seed collections: `packages/data/src/seed/index.ts` includes `ncaamCollection`. Development retains all catalog subjects and trims events/feed edges to the existing development window.
-- `CatalogSeedVersion` in `packages/data/src/seed/config.ts` is `2026-10-14.2`.
+- `CatalogSeedVersion` in `packages/data/src/seed/config.ts` is `2026-10-15.1`.
 - Catalog/event source IDs use the existing `sports_game:espn:<uuid>` shape and `00000000-0000-4000-8000-000<espn id>` IDs; IDs are provider-derived.
 - Provider changes over 2026 realignment are reflected in the approved rosters.
 
