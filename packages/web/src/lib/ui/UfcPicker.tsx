@@ -27,7 +27,7 @@ export function UfcPicker(props: {
     getVisibleUfcFighters(props.subjects, search()),
   );
   const searching = () => searchKey(search()).length > 0;
-  let list!: HTMLDivElement;
+  let list: HTMLDivElement | undefined;
 
   return (
     <div class="ufc-picker">
@@ -74,7 +74,7 @@ export function UfcPicker(props: {
           value={search()}
           onInput={(event) => {
             setSearch(event.currentTarget.value);
-            list.scrollTop = 0;
+            list?.scrollTo({ top: 0 });
           }}
         />
         <div
