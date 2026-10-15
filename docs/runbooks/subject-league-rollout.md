@@ -4,7 +4,7 @@ Deploy the storage migration separately from the catalog refresh.
 
 ## 1. Merge and deploy the migration/code changes
 
-Keep `CatalogSeedVersion` at the existing `2026-10-14.1` value in this release.
+The first-stage deployment keeps `CatalogSeedVersion` at `2026-10-14.1`.
 `SeedProduction` runs when its `{ target, version }` input changes or deployment
 is forced; implementation changes alone do not trigger it. Inspect the Alchemy
 plan and confirm that `SeedProduction` is unchanged. Do not use `--force`, change
@@ -33,19 +33,28 @@ New workers decode the expanded rows with the canonical nested schema; extra
 legacy fields are ignored on read. No temporary application decoder is needed.
 Existing professional teams therefore become readable before the later seed.
 
-## 2. Open a separate catalog-version PR
+## 2. Merge the cleanup/catalog-version PR after the first deploy
 
-Only after the migration/code deployment is complete and old worker invocations
-have drained, open a PR that bumps `CatalogSeedVersion`. Its deploy reruns
-`SeedProduction`, introducing the NCAA catalog and refreshing names/schedules.
-Normal upsert writes nested-only JSON at the same subject IDs. Existing
-subscriptions and feed identities are retained; normal MMA feed reconciliation
-still applies.
+The follow-on bumps `CatalogSeedVersion` to `2026-10-15.1` and adds
+`0007_remove_legacy_subject_membership.sql`. A draft can be prepared earlier,
+but do not merge it until the first code/migration deploy has succeeded and all
+flat-only worker invocations have drained. Verify those rollout prerequisites
+before marking it ready.
+
+Migration 0007 removes the obsolete top-level `leagueId` and `conferenceId`
+fields from every migrated subject, including rows absent from the catalog. It
+refuses to remove fields from a row without valid nested membership and does not
+touch event payloads. The version bump then reruns `SeedProduction`, introducing
+the NCAA catalog and refreshing names/schedules. Normal upsert writes nested-only
+JSON at the same subject IDs. Existing subscriptions and feed identities are
+retained; normal MMA feed reconciliation still applies.
 
 Do not combine the version bump with the first deployment: nested-only writes
-would remove the fields that old workers still require. Once the later seed
+would remove the fields that old workers still require. Once migration 0007
 runs, rolling back to flat-only worker binaries is unsafe without restoring the
-legacy fields as well. Re-running migration 0006 is not a reverse migration.
+legacy fields as well, even if the subsequent seed fails. New workers can still
+read the cleaned rows if the seed needs retrying. Re-running migration 0006 is
+not a reverse migration.
 
 ## Regression test
 
@@ -55,6 +64,8 @@ Build core first, then run with an explicit empty local scratch database:
 
 The test starts from pre-migration tables and real flat JSONB for every pro team
 and both MMA subject kinds, applies the actual SQL before any catalog refresh,
-checks legacy-field preservation and current subscription reads, then simulates
-the separate seed. It also checks atomic failure for invalid/unmapped rows and
-idempotence. All DDL/data roll back; without the explicit URL the test is skipped.
+checks legacy-field preservation and current subscription reads, then applies
+the cleanup and separate seed. It covers cleanup of a noncatalog subject,
+unchanged event membership, atomic failure for invalid/unmapped rows, and
+idempotence of both migrations. All DDL/data roll back; without the explicit URL
+the test is skipped.
