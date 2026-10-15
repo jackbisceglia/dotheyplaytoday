@@ -1,6 +1,13 @@
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { Predicate } from "effect";
-import { createMemo, createSignal, createUniqueId, For, Show } from "solid-js";
+import {
+  createMemo,
+  createSignal,
+  createUniqueId,
+  For,
+  onSettled,
+  Show,
+} from "solid-js";
 
 import { getVisibleUfcFighters } from "../catalog/ufc.js";
 import { searchKey } from "../search.js";
@@ -28,6 +35,10 @@ export function UfcPicker(props: {
   );
   const searching = () => searchKey(search()).length > 0;
   let list: HTMLDivElement | undefined;
+
+  onSettled(() => () => {
+    document.body.style.removeProperty("min-height");
+  });
 
   return (
     <div class="ufc-picker">
@@ -73,6 +84,11 @@ export function UfcPicker(props: {
           placeholder="Search fighters"
           value={search()}
           onInput={(event) => {
+            // Fewer results can shorten the page under the scroll position,
+            // and the browser would clamp the scroll and move this input. Hold
+            // the page down to the viewport's bottom; the slack sits above the
+            // footer.
+            document.body.style.minHeight = `${String(scrollY + innerHeight)}px`;
             setSearch(event.currentTarget.value);
             list?.scrollTo({ top: 0 });
           }}
