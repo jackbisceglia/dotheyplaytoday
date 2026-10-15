@@ -151,3 +151,21 @@ step; coverage choices apply to catalogued UFC events.
 
 See the [UFC catalog runbook](./runbooks/update-ufc-catalog.md) for timing,
 reconciliation, source authority, and rollout details.
+
+## NCAA men's basketball
+
+The `NCAAM` picker uses the same team cards as the pro leagues, narrowed by a
+pill-styled dropdown with no visible label. It offers Top 25 first, then a
+Conferences group listing each conference that has teams, sorted by name. Top
+25 is the default and shows ranked teams in rank order with each card's rank in
+its corner; ranked teams outside our coverage leave real gaps rather than
+renumbering. Before any team has a rank, the Top 25 option is absent and the
+first conference is selected. Choosing another league resets the dropdown.
+There is no school search.
+
+From 900px wide the dropdown sits right-aligned on the league-pill line; below
+that it takes its own line, and on phones it spans the full width.
+
+A team's optional `apRank` records its latest AP Top 25 position; an absent key
+means unranked. Conferences only filter the picker; teams remain the only
+NCAAM subjects.
