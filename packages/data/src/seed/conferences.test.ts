@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Schema } from "effect";
-import type { SportTeamSubject } from "@dtpt/core/modules/subjects/variants/sport.schema";
-import { SportsSeed } from "../schema/sports.js";
+import { SportsSeed, type SportsSeedEncoded } from "../schema/sports.js";
 
 import { mlbCollection } from "../sports/mlb/index.js";
 import { nbaCollection } from "../sports/nba/index.js";
@@ -9,7 +8,7 @@ import { ncaamCollection } from "../sports/ncaam/index.js";
 import { nflCollection } from "../sports/nfl/index.js";
 import { nhlCollection } from "../sports/nhl/index.js";
 
-type TeamDetail = Pick<SportTeamSubject, "league" | "display">;
+type TeamDetail = Pick<SportsSeedEncoded["subjects"][number]["details"], "league" | "display">;
 
 const byConference = (subjects: readonly { details: TeamDetail }[]) =>
   subjects.reduce<Record<string, number>>((counts, subject) => {

@@ -6,7 +6,7 @@ it("provides NCAA men's basketball through the shared logo matcher", () => {
   expect(
     getSportsLogo({
       _tag: "sports_team",
-      league: { id: "ncaam", conferenceId: "acc" },
+      league: { id: "ncaam", conferenceId: "acc", apRank: null },
       display: "Example",
       location: "Example",
       name: "Example",

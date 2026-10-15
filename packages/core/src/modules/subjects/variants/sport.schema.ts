@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 
 type League<
   Id extends string = string,
@@ -44,7 +44,7 @@ const ncaam = createLeague({
   ],
 });
 
-// The latest AP Top 25 position; absent when the team is unranked.
+// The latest AP Top 25 position; null when the team is unranked.
 const ApRank = Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 25 }));
 
 const createLeagueSchema = <
@@ -63,7 +63,13 @@ export const SportLeague = Schema.Union([
   createLeagueSchema(nfl),
   createLeagueSchema(mlb),
   createLeagueSchema(nhl),
-  createLeagueSchema(ncaam),
+  Schema.Struct({
+    ...createLeagueSchema(ncaam).fields,
+    apRank: ApRank.pipe(
+      Schema.NullOr,
+      Schema.withDecodingDefaultKey(Effect.succeed(null)),
+    ),
+  }),
 ]).pipe(Schema.toTaggedUnion("id"));
 export type SportLeague = typeof SportLeague.Type;
 
@@ -77,7 +83,6 @@ export const SportTeamSubject = Schema.TaggedStruct("sports_team", {
   name: Schema.NonEmptyString,
   abbreviation: Schema.NonEmptyString,
   slug: Schema.optional(Schema.NonEmptyString),
-  apRank: Schema.optionalKey(ApRank),
 });
 
 export type SportTeamSubject = typeof SportTeamSubject.Type;

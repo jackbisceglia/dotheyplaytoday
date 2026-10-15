@@ -192,7 +192,7 @@ const orderBySubject = (
   );
 };
 
-export const gameDayLines = (team: SportTeamSubject): Lines => [
+export const gameDayLines = (team: Pick<SportTeamSubject, "name">): Lines => [
   team.name,
   "play today.",
 ];

@@ -42,9 +42,9 @@ touch screens get it, and outranks hovering another tile. It's recorded in the
 URL as `?team=mlb-mil` (league and abbreviation). A link for a team that isn't
 picked shows the full schedule, and Edit clears the filter.
 
-Supported sports subjects now include NBA, NFL, MLB, NHL, and NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences). Only provider-confirmed game starts become notification-capable events.
+Supported sports subjects include NBA, NFL, MLB, NHL, and NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences). Only provider-confirmed game starts become notification-capable events.
 
-Sports teams remain one `sports_team` subject kind. Their required `details.league` object contains `id` and `conferenceId`; each league permits only its own conferences. Conferences are browsing metadata, not separate subscriptions. MMA fighter and tracking subjects use `league: { id: "ufc" }`, without conferences. All subject kinds expose `details.league.id`; existing MMA tags and subscription behavior are unchanged. A broader CombatSports model for MMA, boxing, and Muay Thai is deferred to [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
+Conferences organize team browsing; they are not separate subscriptions. UFC offers fighter and event-coverage subscriptions. Broader support for combat sports such as boxing and Muay Thai is tracked in [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
 
 ## Notifications
 

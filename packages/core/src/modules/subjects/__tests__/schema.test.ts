@@ -168,20 +168,30 @@ describe("Subject model", () => {
     ).toThrow();
   });
 
-  it("accepts AP ranks from 1 to 25 and treats a missing rank as unranked", () => {
+  it("keeps AP ranks on NCAA league membership and defaults missing ranks to null", () => {
+    const league = { id: "ncaam", conferenceId: "acc" };
+    expect(decode(SportLeague)(league)).toEqual({ ...league, apRank: null });
+    for (const apRank of [null, 1, 13, 25]) {
+      expect(decode(SportLeague)({ ...league, apRank })).toEqual({
+        ...league,
+        apRank,
+      });
+    }
+    for (const apRank of [0, 26, 1.5, "1"]) {
+      expect(() => decode(SportLeague)({ ...league, apRank })).toThrow();
+    }
+    for (const schema of [
+      SportLeague.cases.nba,
+      SportLeague.cases.nhl,
+      SportLeague.cases.nfl,
+      SportLeague.cases.mlb,
+    ]) {
+      expect(schema.fields).not.toHaveProperty("apRank");
+    }
     expect(
-      decode(SportTeamSubject)(subjectInput.details).apRank,
-    ).toBeUndefined();
-    for (const apRank of [1, 13, 25]) {
-      expect(
-        decode(SportTeamSubject)({ ...subjectInput.details, apRank }).apRank,
-      ).toBe(apRank);
-    }
-    for (const apRank of [0, 26, 1.5, "1", null]) {
-      expect(() =>
-        decode(SportTeamSubject)({ ...subjectInput.details, apRank }),
-      ).toThrow();
-    }
+      decode(SportLeague)({ id: "nba", conferenceId: "east" }),
+    ).not.toHaveProperty("apRank");
+    expect(SportTeamSubject.fields).not.toHaveProperty("apRank");
   });
 
   it("accepts each league's schema-defined conferences without duplicate IDs", () => {

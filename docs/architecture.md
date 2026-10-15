@@ -20,7 +20,11 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 
 Every subject exposes `details.league.id`. Sports-team details are one tagged struct with a required `league: { id, conferenceId }`. Its league field is a discriminated union keyed by `id`, so conference constraints are enforced by the schema and its inferred TypeScript type. MMA fighter and tracking subjects use `league: { id: "ufc" }` without conferences. `SubjectDetails` uses the ordinary project `TaggedUnion` helper with one sports-team member; no suspended schema, custom grouping, or mixed-subject league accessor is needed. Event details retain their existing `leagueId` fields. Generalizing MMA to CombatSports is deferred to [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
 
-Catalog revision `2026-10-15.1` refreshes existing team and MMA subject JSON through the normal `Subjects.upsert` path, replacing flat membership fields and correcting truncated NCAA team nicknames without changing subject IDs, subscriptions, or feeds. Run the updated catalog seed before API or notification workers read existing rows with the nested-membership schema. No separate SQL backfill migration is required.
+Only NCAAM league membership contains `apRank`, an integer from 1 to 25 or null for unranked/unavailable. Decoding a missing rank defaults to null, matching the MMA P4P rank convention. No AP poll data is populated or refreshed automatically.
+
+The NCAAM catalog contains 158 teams across 12 conferences and 1,604 confirmed-time events from the ESPN snapshot fetched on 2026-10-13. The import excluded 1,442 unconfirmed starts before writing the checked-in schedule. The snapshot does not refresh automatically; provider terms/SLA, schedule completeness, and postponement/reschedule semantics remain unverified. Conference rosters were checked against the [NCAA directory](https://web3.ncaa.org/directory/memberList?division=I&sportCode=MBB&type=12) and official conference member pages. Noncatalog opponents remain participant titles without subject/feed edges.
+
+Catalog revision `2026-10-15.2` refreshes existing team and MMA subject JSON through the normal `Subjects.upsert` path, replacing flat membership fields and correcting truncated NCAA team nicknames without changing subject IDs, subscriptions, or feeds. The legacy-row migration and deployment-order requirements must be satisfied before deploying readers of the nested-membership schema.
 
 ## Runtime and infrastructure
 

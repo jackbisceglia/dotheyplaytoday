@@ -2689,7 +2689,6 @@ export const Teams = {
     },
     feedIds: getTeamFeedIds("LSU Tigers"),
   },
-} as const;
+} as const satisfies Record<string, NcaamSportSubjectSeed>;
 
-// lint(anti-slop/require-safety-comment-for-type-assertion): generated team record values match seed subject shape.
-export const subjects = Object.values(Teams) as NcaamSportSubjectSeed[];
+export const subjects = Object.values(Teams);
