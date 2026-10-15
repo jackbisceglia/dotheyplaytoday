@@ -248,10 +248,12 @@ Constraints for the data spec:
   The backend thread's `NCAA MBB` is replaced so the pill matches the roster
   and schedule tags.
 
-**API:** no new endpoint. Sports-team membership moves from flat fields to
-`details.league.id` and `details.league.conferenceId`. Sports events and MMA
-subjects retain their existing `leagueId` fields. Shared UI labels use
-`getSubjectLeagueId` to read either subject kind.
+**API:** no new endpoint. Every subject exposes `details.league.id`;
+sports teams additionally require `details.league.conferenceId`. MMA fighter
+and tracking subjects use `league: { id: "ufc" }` without conferences.
+Shared UI labels read `details.league.id` directly. Event details retain
+their existing `leagueId` fields. A broader CombatSports model is deferred
+to [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
 
 ## 5. States
 

@@ -10,7 +10,6 @@ import {
   topRankedGroup,
 } from "../college.js";
 import { getTeams } from "../sports/index.js";
-import { getSubjectLeagueId } from "../index.js";
 import { all } from "@dtpt/core/modules/mma/__tests__/fixtures";
 
 const team = (
@@ -41,9 +40,9 @@ const dayton = team("15", "Dayton Flyers", "a10");
 const teams = getTeams([uconn, miami, dayton, duke, butler]);
 
 describe("college browsing", () => {
-  it("reads nested sports membership and preserves flat MMA league IDs", () => {
-    expect(getSubjectLeagueId(duke.details)).toBe("ncaam");
-    expect(getSubjectLeagueId(all.details)).toBe("ufc");
+  it("reads league IDs consistently across sports and MMA subjects", () => {
+    expect(duke.details.league.id).toBe("ncaam");
+    expect(all.details.league.id).toBe("ufc");
   });
   it("is limited to college leagues", () => {
     expect(isCollegeLeague("ncaam")).toBe(true);
