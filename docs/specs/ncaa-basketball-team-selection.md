@@ -92,7 +92,7 @@ SubjectPicker
   - The 900px breakpoint depends on how wide the pill row is. Recheck it
     whenever a league pill is added, since each pill adds about 80px.
   - Options: `Top 25`, then an `<optgroup label="Conferences">` with each
-    conference's label from web's `lib/catalog/college.ts`, sorted by
+    conference's label from web's `lib/catalog/sports/ncaam.ts`, sorted by
     `localeCompare`: `ACC, American, Atlantic 10, Big 12, Big East, Big Ten,
 MAC, Missouri Valley, Mountain West, SEC, WCC`.
   - Only conferences that have subjects get an option, so the list grows on
@@ -230,7 +230,7 @@ below, `leagueId` means `league.id` and `conferenceId` means
 | `location`                             | School name                                                                                                             | `Miami (OH)`                                                         | Reserved for future use                  |
 | `name`                                 | Nickname                                                                                                                | `RedHawks`                                                           | Roster tile line (`RedHawks · NCAAM`)    |
 | `abbreviation`                         | ≤5 characters and **unique within the league**, enforced by a data test                                                 | `M-OH`, `TA&M`, `CONN`                                               | Card, summary, roster, `?team=` key      |
-| `conferenceId` _(new, backend thread)_ | Required conference ID validated by core; display labels live in web's `lib/catalog/college.ts`                         | `"mac"` → "MAC"                                                      | Dropdown options and grouping            |
+| `conferenceId` _(new, backend thread)_ | Required conference ID validated by core; display labels live in web's `lib/catalog/sports/ncaam.ts`                   | `"mac"` → "MAC"                                                      | Dropdown options and grouping            |
 | `league.apRank` _(NCAAM only)_         | Integer 1–25 from the latest AP poll, or null for unranked/unavailable. Missing encoded keys decode to null.             | `3`                                                                  | Top 25 option, order, and badge          |
 
 Constraints for the data spec:
@@ -295,7 +295,7 @@ I checked the editing APIs in the source; they already exist.
 | Component / module                            | Responsibility                                                                                                                                                                                                                                             | Change |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `lib/ui/SubjectPicker.tsx`                    | Renders the group dropdown while NCAAM is active, and feeds the existing grid the group's teams. Each Top 25 card gets the rank badge.                                                                                                                     | Modify |
-| `lib/catalog/college.ts` _(new)_              | `getCollegeGroups(subjects, leagueId)` returns the Top 25 availability and sorted conferences. `getCollegeTeams(subjects, leagueId, group)` returns the ordered teams. Both are pure and unit-tested. `leagueId` is a parameter so `ncaaw` can reuse them. | New    |
+| `lib/catalog/college.ts` _(new)_              | `isCollegeTeam` uses the generated league guard to narrow teams at the picker boundary. `getCollegeGroups(teams, labels)` returns Top 25 availability and sorted conferences; `getCollegeTeams(teams, group)` returns ordered teams. Labels are owned by the league's web catalog module. | New    |
 | `lib/catalog/sports/index.ts`                 | Adds the `ncaam` entry `{ id, label: "NCAAM", name }` and a `getSportsLogo` branch returning 🏀.                                                                                                                                                           | Modify |
 | `lib/signup/Form.tsx`                         | Phase 2: sticky, removable summary and `data-full`.                                                                                                                                                                                                        | Modify |
 | `lib/dashboard/Form.tsx`                      | Phase 2: count in `dashboard-actions`.                                                                                                                                                                                                                     | Modify |

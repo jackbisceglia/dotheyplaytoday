@@ -1,51 +1,36 @@
-import type { SportTeamSubject } from "@dtpt/core/modules/subjects/variants/sport.schema";
+import { SportLeague } from "@dtpt/core/modules/subjects/variants/sport.schema";
 
 import type { SportsSubject } from "./sports/index.js";
 
-type CollegeConferenceId = Extract<
-  SportTeamSubject["league"],
-  { id: "ncaam" }
->["conferenceId"];
-
-const conferenceLabels = {
-  acc: "ACC",
-  aac: "American",
-  a10: "Atlantic 10",
-  "big-east": "Big East",
-  "big-ten": "Big Ten",
-  "big-12": "Big 12",
-  mac: "MAC",
-  mvc: "Missouri Valley",
-  "mountain-west": "Mountain West",
-  "pac-12": "Pac-12",
-  sec: "SEC",
-  wcc: "WCC",
-} satisfies Record<CollegeConferenceId, string>;
+type CollegeLeague = typeof SportLeague.cases.ncaam.Type;
+type CollegeTeam = SportsSubject & {
+  readonly details: { readonly league: CollegeLeague };
+};
 
 // College leagues are browsed by AP Top 25 or conference instead of as one
 // grid. Teams arrive filtered to the league and sorted by display name.
-export const isCollegeLeague = (leagueId: string | undefined) =>
-  leagueId === "ncaam";
+export const isCollegeTeam = (team: SportsSubject): team is CollegeTeam =>
+  SportLeague.guards.ncaam(team.details.league);
 
+// [SLOP: TO FIX] Group selection mixes "top-25" and conference IDs as plain
+// strings, losing the schema-derived conference type. Use tagged top25/conference
+// variants and preserve typed conference IDs through groups and selection.
 export const topRankedGroup = "top-25";
 
 export type CollegeGroup = { readonly id: string; readonly label: string };
 
-export function getCollegeGroups(teams: readonly SportsSubject[]) {
+export function getCollegeGroups(
+  teams: readonly CollegeTeam[],
+  labels: Readonly<Record<CollegeLeague["conferenceId"], string>>,
+) {
   const conferences = new Map<string, string>();
   for (const team of teams) {
-    if (team.details.league.id === "ncaam") {
-      const id = team.details.league.conferenceId;
-      conferences.set(id, conferenceLabels[id]);
-    }
+    const id = team.details.league.conferenceId;
+    conferences.set(id, labels[id]);
   }
 
   return {
-    ranked: teams.some(
-      (team) =>
-        team.details.league.id === "ncaam" &&
-        team.details.league.apRank !== null,
-    ),
+    ranked: teams.some((team) => team.details.league.apRank !== null),
     conferences: [...conferences]
       .map(([id, label]): CollegeGroup => ({ id, label }))
       .toSorted((a, b) => a.label.localeCompare(b.label)),
@@ -53,16 +38,14 @@ export function getCollegeGroups(teams: readonly SportsSubject[]) {
 }
 
 export const getCollegeTeams = (
-  teams: readonly SportsSubject[],
+  teams: readonly CollegeTeam[],
   groupId: string,
 ) =>
   groupId === topRankedGroup
     ? teams
         .flatMap((team) => {
           const league = team.details.league;
-          return league.id === "ncaam" && league.apRank !== null
-            ? [{ team, rank: league.apRank }]
-            : [];
+          return league.apRank !== null ? [{ team, rank: league.apRank }] : [];
         })
         .toSorted((a, b) => a.rank - b.rank)
         .map(({ team }) => team)

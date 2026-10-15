@@ -6,11 +6,11 @@ import { Subject } from "@dtpt/core/modules/subjects/schema";
 import {
   getCollegeGroups,
   getCollegeTeams,
-  isCollegeLeague,
+  isCollegeTeam,
   topRankedGroup,
 } from "../college.js";
 import { getTeams } from "../sports/index.js";
-import { all } from "@dtpt/core/modules/mma/__tests__/fixtures";
+import { conferenceLabels } from "../sports/ncaam.js";
 
 const team = (
   suffix: string,
@@ -40,28 +40,40 @@ const miami = team("12", "Miami Hurricanes", "acc");
 const uconn = team("13", "UConn Huskies", "big-east", 3);
 const butler = team("14", "Butler Bulldogs", "big-east", 3);
 const dayton = team("15", "Dayton Flyers", "a10");
-const teams = getTeams([uconn, miami, dayton, duke, butler]);
+const teams = getTeams([uconn, miami, dayton, duke, butler]).filter(
+  isCollegeTeam,
+);
 
 describe("college browsing", () => {
-  it("reads league IDs consistently across sports and MMA subjects", () => {
-    expect(duke.details.league.id).toBe("ncaam");
-    expect(all.details.league.id).toBe("ufc");
-  });
-  it("is limited to college leagues", () => {
-    expect(isCollegeLeague("ncaam")).toBe(true);
-    expect(isCollegeLeague("nba")).toBe(false);
-    expect(isCollegeLeague(undefined)).toBe(false);
-  });
-
   it("lists only conferences with teams, sorted by label", () => {
-    expect(getCollegeGroups(teams).conferences).toEqual([
+    expect(getCollegeGroups(teams, conferenceLabels).conferences).toEqual([
       { id: "acc", label: "ACC" },
       { id: "a10", label: "Atlantic 10" },
       { id: "big-east", label: "Big East" },
     ]);
   });
 
-  it("does not include pro conferences in college browsing", () => {
+  it("uses the labels supplied by the league catalog", () => {
+    expect(
+      getCollegeGroups(teams, {
+        ...conferenceLabels,
+        acc: "Atlantic Coast",
+      }).conferences,
+    ).toEqual([
+      { id: "a10", label: "Atlantic 10" },
+      { id: "acc", label: "Atlantic Coast" },
+      { id: "big-east", label: "Big East" },
+    ]);
+  });
+
+  it("has no groups or rankings without college teams", () => {
+    expect(getCollegeGroups([], conferenceLabels)).toEqual({
+      ranked: false,
+      conferences: [],
+    });
+  });
+
+  it("narrows college teams at the picker boundary", () => {
     const celtics = Schema.decodeUnknownSync(Subject)({
       id: "20000000-0000-4000-8000-000000000099",
       _tag: "sports_team",
@@ -74,14 +86,17 @@ describe("college browsing", () => {
         abbreviation: "BOS",
       },
     });
-    expect(getCollegeGroups(getTeams([duke, celtics])).conferences).toEqual([
-      { id: "acc", label: "ACC" },
-    ]);
+    expect(getTeams([duke, celtics]).filter(isCollegeTeam)).toEqual([duke]);
   });
 
   it("offers the Top 25 only once a team is ranked", () => {
-    expect(getCollegeGroups(teams).ranked).toBe(true);
-    expect(getCollegeGroups(getTeams([miami, dayton])).ranked).toBe(false);
+    expect(getCollegeGroups(teams, conferenceLabels).ranked).toBe(true);
+    expect(
+      getCollegeGroups(
+        getTeams([miami, dayton]).filter(isCollegeTeam),
+        conferenceLabels,
+      ).ranked,
+    ).toBe(false);
   });
 
   it("orders the Top 25 by rank, keeping real gaps and breaking ties by name", () => {

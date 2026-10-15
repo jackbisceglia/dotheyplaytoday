@@ -2,11 +2,12 @@ import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import type { ParentProps } from "solid-js";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { getTeams, getSportsLogo } from "../catalog/sports/index.js";
+import { conferenceLabels } from "../catalog/sports/ncaam.js";
 import { leagues as catalogLeagues } from "../catalog/index.js";
 import {
   getCollegeGroups,
   getCollegeTeams,
-  isCollegeLeague,
+  isCollegeTeam,
   topRankedGroup,
 } from "../catalog/college.js";
 import { UfcPicker } from "./UfcPicker.jsx";
@@ -44,9 +45,10 @@ export function SubjectPicker(props: {
 
   // College leagues narrow the grid to the Top 25 or one conference.
   const [selectedGroup, setSelectedGroup] = createSignal<string>();
+  const collegeTeams = createMemo(() => leagueTeams().filter(isCollegeTeam));
   const collegeGroups = createMemo(() =>
-    isCollegeLeague(activeLeague())
-      ? getCollegeGroups(leagueTeams())
+    collegeTeams().length > 0
+      ? getCollegeGroups(collegeTeams(), conferenceLabels)
       : undefined,
   );
   const activeGroup = createMemo(() => {
@@ -68,7 +70,7 @@ export function SubjectPicker(props: {
 
     return group === undefined
       ? leagueTeams()
-      : getCollegeTeams(leagueTeams(), group);
+      : getCollegeTeams(collegeTeams(), group);
   });
 
   return (
@@ -170,7 +172,7 @@ export function SubjectPicker(props: {
                   <Show
                     when={
                       activeGroup() === topRankedGroup &&
-                      team.details.league.id === "ncaam" &&
+                      isCollegeTeam(team) &&
                       team.details.league.apRank
                     }
                   >
