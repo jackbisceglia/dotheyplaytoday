@@ -11,7 +11,6 @@ import { Database } from "../../lib/database/service.js";
 import type { EventId } from "../events/schema.js";
 import { SubjectEventInsert, subjectEventsTable } from "./feed/schema.js";
 import { Subject, SubjectInsert, subjectsTable } from "./schema.js";
-import { decodeStoredSubject } from "./persistence.js";
 
 export class SubjectNotFound extends Schema.TaggedError<SubjectNotFound>()(
   "SubjectNotFound",
@@ -49,6 +48,7 @@ export class Subjects extends Context.Service<
 >()("@dtpt/core/Subjects") {}
 
 const decodeSubject = Schema.decodeUnknownEffect(Subject);
+const decodeSubjects = Schema.decodeUnknownEffect(Schema.Array(Subject));
 const encodeSubject = Schema.encodeEffect(SubjectInsert);
 const encodeSubjectEvent = Schema.encodeEffect(SubjectEventInsert);
 
@@ -101,7 +101,7 @@ export const SubjectsLayer = Layer.effect(
           return yield* new SubjectNotFound({ key: "id", value: subjectId });
         }
 
-        const subject = yield* decodeStoredSubject(row);
+        const subject = yield* decodeSubject(row);
 
         return subject;
       },
@@ -115,7 +115,7 @@ export const SubjectsLayer = Layer.effect(
           })
           .pipe(mapToReadError("Subjects.list"));
 
-        const subjects = yield* Effect.forEach(rows, decodeStoredSubject);
+        const subjects = yield* decodeSubjects(rows);
 
         return subjects;
       },

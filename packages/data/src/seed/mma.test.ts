@@ -247,19 +247,14 @@ describe("UFC PostgreSQL integration", () => {
               for (const filename of readdirSync(directory)
                 .filter((name) => name.endsWith(".sql"))
                 .sort()) {
-                // These migrations contain plain SQL statements, with no
-                // procedural bodies or semicolons inside string literals.
-                // The PostgreSQL driver accepts one command per query.
-                const statements = readFileSync(
-                  new URL(filename, directory),
-                  "utf8",
-                )
-                  .replace(/^\s*--.*$/gm, "")
-                  .split(";");
+                const sql = readFileSync(new URL(filename, directory), "utf8");
+                // Preserve procedural bodies at the explicit Alchemy boundaries.
+                // Older migrations contain only plain, semicolon-delimited SQL.
+                const statements = sql.includes("--> statement-breakpoint")
+                  ? sql.split("--> statement-breakpoint")
+                  : sql.replace(/^\s*--.*$/gm, "").split(";");
                 for (const statement of statements) {
-                  if (statement.trim()) {
-                    yield* database.execute(statement);
-                  }
+                  if (statement.trim()) yield* database.execute(statement);
                 }
               }
               yield* seedCatalog({
