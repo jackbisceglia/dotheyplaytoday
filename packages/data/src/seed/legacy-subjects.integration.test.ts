@@ -45,9 +45,13 @@ const migration = readFileSync(
   new URL(migrationName, migrationsDirectory),
   "utf8",
 );
-const migrateMembership = Effect.fn(function* () {
+const cleanup = readFileSync(
+  new URL("0007_remove_legacy_subject_membership.sql", migrationsDirectory),
+  "utf8",
+);
+const applyMigration = Effect.fn(function* (sql: string) {
   const database = yield* Database;
-  for (const statement of migration.split("--> statement-breakpoint")) {
+  for (const statement of sql.split("--> statement-breakpoint")) {
     if (statement.trim()) yield* database.execute(statement);
   }
 });
@@ -94,7 +98,7 @@ if (databaseUrl) {
 
 describe("subject league SQL migration", () => {
   it.live.skipIf(!databaseUrl)(
-    "expands all existing pro affiliations and MMA rows before the separate catalog seed",
+    "expands existing membership, then cleans legacy fields before the separate catalog seed",
     () => {
       const services = Layer.merge(EventsLayer, SubjectsLayer).pipe(
         Layer.provideMerge(Layer.merge(UsersLayer, SubscriptionsLayer)),
@@ -193,7 +197,7 @@ describe("subject league SQL migration", () => {
               ]) {
                 yield* insertLegacy(invalidId, "sports_team", invalid);
                 const failed = yield* database
-                  .transaction(() => migrateMembership())
+                  .transaction(() => applyMigration(migration))
                   .pipe(Effect.exit);
                 expect(Exit.isFailure(failed)).toBe(true);
                 if (Exit.isFailure(failed)) {
@@ -211,7 +215,7 @@ describe("subject league SQL migration", () => {
                 ).toEqual(legacyRows);
               }
 
-              yield* migrateMembership();
+              yield* applyMigration(migration);
               const expanded = yield* database.query.subjectsTable.findMany({
                 orderBy: { id: "asc" },
               });
@@ -224,7 +228,7 @@ describe("subject league SQL migration", () => {
                   }),
                 ),
               ).toEqual(legacyRows);
-              yield* migrateMembership();
+              yield* applyMigration(migration);
               expect(
                 yield* database.query.subjectsTable.findMany({
                   orderBy: { id: "asc" },
@@ -253,7 +257,64 @@ describe("subject league SQL migration", () => {
                   .pipe(Effect.flip),
               ).toMatchObject({ _tag: "SubjectNotFound" });
 
-              // Simulate the later version-bump deployment after old workers retire.
+              // The contract migration must also clean rows outside the catalog.
+              const uncatalogId = "40000000-0000-4000-8000-000000000098";
+              yield* insertLegacy(uncatalogId, "sports_team", {
+                ...team.details,
+                leagueId: team.details.league.id,
+                conferenceId: team.details.league.conferenceId,
+              });
+              const beforeCleanup =
+                yield* database.query.subjectsTable.findMany({
+                  orderBy: { id: "asc" },
+                });
+              const canonicalBeforeCleanup = yield* subjects.list();
+
+              // Refuse to erase the only membership on a still-flat row.
+              yield* insertLegacy(invalidId, "sports_team", {
+                ...teamDetails,
+                leagueId: "nba",
+              });
+              const failedCleanup = yield* database
+                .transaction(() => applyMigration(cleanup))
+                .pipe(Effect.exit);
+              expect(Exit.isFailure(failedCleanup)).toBe(true);
+              if (Exit.isFailure(failedCleanup)) {
+                expect(Cause.pretty(failedCleanup.cause)).toContain(
+                  "cleanup requires valid nested membership",
+                );
+              }
+              yield* database.execute(
+                `DELETE FROM subjects WHERE id = ${sqlString(invalidId)}`,
+              );
+              expect(
+                yield* database.query.subjectsTable.findMany({
+                  orderBy: { id: "asc" },
+                }),
+              ).toEqual(beforeCleanup);
+
+              // Simulate the later deployment only after old workers retire.
+              yield* applyMigration(cleanup);
+              const cleaned = yield* database.query.subjectsTable.findMany({
+                orderBy: { id: "asc" },
+              });
+              for (const row of cleaned) {
+                expect(row.details).not.toHaveProperty("leagueId");
+                expect(row.details).not.toHaveProperty("conferenceId");
+              }
+              expect(yield* subjects.list()).toEqual(canonicalBeforeCleanup);
+              yield* applyMigration(cleanup);
+              expect(
+                yield* database.query.subjectsTable.findMany({
+                  orderBy: { id: "asc" },
+                }),
+              ).toEqual(cleaned);
+              expect(
+                (yield* events.listBySubject(SubjectId.make(team.id)))[0]
+                  ?.details,
+              ).toEqual({ _tag: "sports_game", leagueId: "nba" });
+
+              // The version bump refreshes the catalog after SQL cleanup.
               const collections = [
                 {
                   id: ufcCollection.id,
@@ -266,7 +327,11 @@ describe("subject league SQL migration", () => {
               ];
               yield* seedCatalog({ collections, strategy: "all" });
               yield* seedCatalog({ collections, strategy: "all" });
-              expect(yield* subjects.list()).toHaveLength(fixtures.length + 1);
+              expect(yield* subjects.list()).toHaveLength(fixtures.length + 2);
+              expect(
+                (yield* subjects.get(SubjectId.make(uncatalogId))).details
+                  .league,
+              ).toEqual(team.details.league);
               for (const row of yield* database.query.subjectsTable.findMany()) {
                 expect(row.details).toHaveProperty("league");
                 expect(row.details).not.toHaveProperty("leagueId");
