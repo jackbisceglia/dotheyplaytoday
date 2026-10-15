@@ -5,6 +5,13 @@ import { getSportsLogo, leagues as sportsLeagues } from "./sports/index.js";
 
 export const leagues = [...sportsLeagues, { id: "ufc", label: "UFC" }] as const;
 
+export const getSubjectLeagueId = (details: SubjectDetails) =>
+  Match.value(details).pipe(
+    Match.tag("sports_team", (team) => team.league.id),
+    Match.tag("mma_fighter", "mma_tracking", (mma) => mma.leagueId),
+    Match.exhaustive,
+  );
+
 export const getSubjectLogo = (details: SubjectDetails) =>
   Match.value(details).pipe(
     Match.tag("sports_team", getSportsLogo),

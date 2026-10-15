@@ -44,6 +44,9 @@ const ncaam = createLeague({
   ],
 });
 
+// The latest AP Top 25 position; absent when the team is unranked.
+const ApRank = Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 25 }));
+
 const createLeagueSchema = <
   const Id extends string,
   const ConferenceId extends string,
@@ -74,6 +77,7 @@ export const SportTeamSubject = Schema.TaggedStruct("sports_team", {
   name: Schema.NonEmptyString,
   abbreviation: Schema.NonEmptyString,
   slug: Schema.optional(Schema.NonEmptyString),
+  apRank: Schema.optionalKey(ApRank),
 });
 
 export type SportTeamSubject = typeof SportTeamSubject.Type;

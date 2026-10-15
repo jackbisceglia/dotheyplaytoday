@@ -282,7 +282,7 @@ export function scheduleRows(
             const participantName = (title: string) =>
               teams.find(
                 (team) =>
-                  team.details.leagueId === game.details.leagueId &&
+                  team.details.league.id === game.details.leagueId &&
                   normalizeName(team.details.display) === normalizeName(title),
               )?.details.name ?? title.trim();
             const own = participants.find(

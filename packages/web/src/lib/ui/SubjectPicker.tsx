@@ -2,7 +2,10 @@ import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import type { ParentProps } from "solid-js";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { getTeams, getSportsLogo } from "../catalog/sports/index.js";
-import { leagues as catalogLeagues } from "../catalog/index.js";
+import {
+  getSubjectLeagueId,
+  leagues as catalogLeagues,
+} from "../catalog/index.js";
 import { UfcPicker } from "./UfcPicker.jsx";
 import { ComingSoon } from "./ComingSoon.jsx";
 
@@ -18,7 +21,9 @@ export function SubjectPicker(props: {
 }) {
   const leagues = createMemo(() =>
     catalogLeagues.filter((league) =>
-      props.subjects.some((subject) => subject.details.leagueId === league.id),
+      props.subjects.some(
+        (subject) => getSubjectLeagueId(subject.details) === league.id,
+      ),
     ),
   );
   const teams = createMemo(() => getTeams(props.subjects));
@@ -74,7 +79,7 @@ export function SubjectPicker(props: {
           <div class="team-grid">
             <For
               each={teams().filter(
-                (team) => team.details.leagueId === activeLeague(),
+                (team) => team.details.league.id === activeLeague(),
               )}
             >
               {(team) => (

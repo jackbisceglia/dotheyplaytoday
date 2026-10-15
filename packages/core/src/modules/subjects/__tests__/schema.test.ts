@@ -139,6 +139,22 @@ describe("Subject model", () => {
     ).toThrow();
   });
 
+  it("accepts AP ranks from 1 to 25 and treats a missing rank as unranked", () => {
+    expect(
+      decode(SportTeamSubject)(subjectInput.details).apRank,
+    ).toBeUndefined();
+    for (const apRank of [1, 13, 25]) {
+      expect(
+        decode(SportTeamSubject)({ ...subjectInput.details, apRank }).apRank,
+      ).toBe(apRank);
+    }
+    for (const apRank of [0, 26, 1.5, "1", null]) {
+      expect(() =>
+        decode(SportTeamSubject)({ ...subjectInput.details, apRank }),
+      ).toThrow();
+    }
+  });
+
   it("accepts each league's schema-defined conferences without duplicate IDs", () => {
     expect(SportLeague.discriminants).toEqual(SportLeagueId.literals);
     for (const leagueId of SportLeague.discriminants) {

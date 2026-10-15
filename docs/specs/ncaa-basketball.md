@@ -5,7 +5,7 @@ Implementation status: implemented in worktree. Women's support remains future s
 ## 1. Current implementation and gaps
 
 - NCAA men's basketball is supported via `SportLeagueId = "ncaam"` (`packages/core/src/modules/subjects/variants/sport.schema.ts`).
-- Web integration is the second PR in the stack; the backend/base PR has no web changes.
+- The base PR includes mechanical web compatibility updates and NCAAM league/logo metadata so it typechecks independently. Conference and Top 25 browsing are the second PR in the stack.
 - Data lives in `packages/data/src/sports/ncaam/`: 158 subjects and 1,604 confirmed event seeds.
 - Seed collections: `packages/data/src/seed/index.ts` includes `ncaamCollection`. Development retains all catalog subjects and trims events/feed edges to the existing development window.
 - `CatalogSeedVersion` in `packages/data/src/seed/config.ts` is `2026-10-14.1`.
