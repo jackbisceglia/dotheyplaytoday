@@ -23,12 +23,15 @@ const team = (
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      league: { id: "ncaam", conferenceId },
+      league: {
+        id: "ncaam",
+        conferenceId,
+        ...exactOptional(apRank, (rank) => ({ apRank: rank })),
+      },
       display,
       location: display,
       name: display,
       abbreviation: suffix,
-      ...exactOptional(apRank, (rank) => ({ apRank: rank })),
     },
   });
 

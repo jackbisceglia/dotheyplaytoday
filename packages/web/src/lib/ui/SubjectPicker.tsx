@@ -169,7 +169,9 @@ export function SubjectPicker(props: {
                 >
                   <Show
                     when={
-                      activeGroup() === topRankedGroup && team.details.apRank
+                      activeGroup() === topRankedGroup &&
+                      team.details.league.id === "ncaam" &&
+                      team.details.league.apRank
                     }
                   >
                     {(rank) => (

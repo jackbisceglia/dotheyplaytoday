@@ -41,7 +41,11 @@ export function getCollegeGroups(teams: readonly SportsSubject[]) {
   }
 
   return {
-    ranked: teams.some((team) => team.details.apRank !== undefined),
+    ranked: teams.some(
+      (team) =>
+        team.details.league.id === "ncaam" &&
+        team.details.league.apRank !== null,
+    ),
     conferences: [...conferences]
       .map(([id, label]): CollegeGroup => ({ id, label }))
       .toSorted((a, b) => a.label.localeCompare(b.label)),
@@ -54,9 +58,12 @@ export const getCollegeTeams = (
 ) =>
   groupId === topRankedGroup
     ? teams
-        .filter((team) => team.details.apRank !== undefined)
-        .toSorted(
-          (a, b) =>
-            (a.details.apRank ?? Infinity) - (b.details.apRank ?? Infinity),
-        )
+        .flatMap((team) => {
+          const league = team.details.league;
+          return league.id === "ncaam" && league.apRank !== null
+            ? [{ team, rank: league.apRank }]
+            : [];
+        })
+        .toSorted((a, b) => a.rank - b.rank)
+        .map(({ team }) => team)
     : teams.filter((team) => team.details.league.conferenceId === groupId);

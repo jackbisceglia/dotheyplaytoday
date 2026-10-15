@@ -4,9 +4,8 @@ Status: Phase 1 is implemented on branch `t3/spec-team-selection-ui`, built on
 the backend thread's schema. Phase 2 is not started.
 Date: 2026-10-14.
 
-Companion spec: the backend/data spec, `docs/specs/ncaa-basketball.md`, on the
-`spec-ncaa-basketball-20261013` worktree. It settles three things this spec
-relies on and doesn't revisit:
+Current behavior and backend ownership are documented in `docs/product.md`
+and `docs/architecture.md`. This UI design relies on these decisions:
 
 - The league ID is `ncaam`, with `ncaaw` reserved.
 - Conferences are browse metadata only.
@@ -218,8 +217,9 @@ count in the action bar.
 
 Every sports team uses required `league: { id, conferenceId }` membership,
 including pro teams. Core validates each league's conference IDs; web owns
-their labels. Only `apRank` is additive and optional. The versioned catalog
-seed updates existing records before readers use the new shape. In the table
+their labels. NCAAM alone has nullable `league.apRank`; a missing encoded
+rank defaults to null on decoding. The versioned catalog seed updates records.
+The legacy-row migration must also be satisfied before rollout. In the table
 below, `leagueId` means `league.id` and `conferenceId` means
 `league.conferenceId` for sports-team subjects.
 
@@ -231,7 +231,7 @@ below, `leagueId` means `league.id` and `conferenceId` means
 | `name`                                 | Nickname                                                                                                                | `RedHawks`                                                           | Roster tile line (`RedHawks · NCAAM`)    |
 | `abbreviation`                         | ≤5 characters and **unique within the league**, enforced by a data test                                                 | `M-OH`, `TA&M`, `CONN`                                               | Card, summary, roster, `?team=` key      |
 | `conferenceId` _(new, backend thread)_ | Required conference ID validated by core; display labels live in web's `lib/catalog/college.ts`                         | `"mac"` → "MAC"                                                      | Dropdown options and grouping            |
-| `apRank` _(new)_                       | Optional integer key, 1–25, from the latest AP poll. An absent key means unranked                                       | `3`                                                                  | Top 25 option, order, and badge          |
+| `league.apRank` _(NCAAM only)_         | Integer 1–25 from the latest AP poll, or null for unranked/unavailable. Missing encoded keys decode to null.             | `3`                                                                  | Top 25 option, order, and badge          |
 
 Constraints for the data spec:
 
