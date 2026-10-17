@@ -212,7 +212,7 @@ const element = {
 </table>`,
 
   groupTitle: (value: string) =>
-    `<p class="email-muted" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 13px; line-height: 1.4; letter-spacing: 0.06em; text-transform: uppercase; color: ${color.muted};">${value}</p>`,
+    `<p class="email-muted" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 14px; line-height: 1.4; color: ${color.muted};">${value}</p>`,
 
   separator: (value: string) =>
     `<span class="email-muted" style="font-weight: 400; color: ${color.muted};">${value}</span>`,
@@ -281,7 +281,7 @@ const blockHtml = (block: Block): string => {
 
       return block.title === undefined
         ? items
-        : stack([element.groupTitle(escapeHtml(block.title)), items], 8);
+        : stack([element.groupTitle(escapeHtml(block.title)), items], 2);
     }
     case "note":
       return element.note(escapeHtml(block.value));
