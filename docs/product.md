@@ -129,7 +129,13 @@ main card, then the prelims, each beside its local start time. Time, emoji,
 and league badge sit on the matchup line, including expanded cards.
 Emails retain subject-scoped sports behavior: following both opponents and card
 coverage can send three emails, while multiple same-day cards for one subject
-share one email. Successful subscriptions are sent at most once per local date
+share one email. Every UFC email uses the generic “UFC is on today.”
+headline tile. Each card leads with its full title (“UFC Fight Night: Buckley vs
+Malott”) and its main-card start (“8:00 PM EDT, main card”); coverage emails stop
+there. A fighter's email adds only that fighter's bout as a smaller, regular-weight bullet beneath
+the card, followed fighter first, naming its segment (“Main card”, or “Prelims”
+with the earlier prelims start), even when they headline.
+The rest of the card is never listed. Successful subscriptions are sent at most once per local date
 under ordinary scheduling. Rescheduling to a later local date can send again.
 Post-send correction alerts are outside this version.
 

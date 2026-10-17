@@ -35,6 +35,12 @@ export const List = Schema.TaggedStruct("list", {
 export const Matchups = Schema.TaggedStruct("matchups", {
   items: Schema.Array(EmailMatchup),
 });
+/** An event led by its own title and times, with related matchups as bullets. */
+export const EventSummary = Schema.TaggedStruct("event", {
+  title: Schema.String,
+  detail: Schema.String,
+  bullets: Schema.Array(EmailMatchup),
+});
 export const Note = Schema.TaggedStruct("note", { value: Schema.String });
 export const Entry = Schema.TaggedStruct("entry", {
   label: Schema.String,
@@ -52,6 +58,7 @@ export const Blocks = TaggedUnion([
   Text,
   List,
   Matchups,
+  EventSummary,
   Note,
   Entry,
   Link,
@@ -114,6 +121,8 @@ const blockPreview = (block: Block): string => {
       return block.items.join(", ");
     case "matchups":
       return block.items.map(matchupText).join(" • ");
+    case "event":
+      return `${block.title} - ${block.detail}`;
   }
 };
 
@@ -125,6 +134,12 @@ const blockText = (block: Block): readonly string[] => {
       return block.items.map((item) => `- ${item}`);
     case "matchups":
       return block.items.map(matchupText);
+    case "event":
+      return [
+        block.title,
+        block.detail,
+        ...block.bullets.map((bullet) => `  - ${matchupText(bullet)}`),
+      ];
     case "note":
       return [block.value];
     case "entry":
@@ -177,6 +192,17 @@ const element = {
     `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 16px; line-height: 1.4; color: ${color.ink}; word-break: break-word;">${matchup}</p>
 <p class="email-muted" style="margin: 4px 0 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 14px; line-height: 1.4; color: ${color.muted};">${time}</p>`,
 
+  bullet: (matchup: string, time: string) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td class="email-muted" valign="top" width="16" style="width: 16px; font-family: ${font.body}; font-size: 14px; line-height: 1.45; color: ${color.muted};">&bull;</td>
+<td>
+<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 14px; line-height: 1.45; color: ${color.ink}; word-break: break-word;">${matchup}</p>
+<p class="email-muted" style="margin: 2px 0 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 13px; line-height: 1.4; color: ${color.muted};">${time}</p>
+</td>
+</tr>
+</table>`,
+
   separator: (value: string) =>
     `<span class="email-muted" style="font-weight: 400; color: ${color.muted};">${value}</span>`,
 
@@ -218,6 +244,9 @@ const ruled = (parts: readonly string[]) =>
     `\n${element.spacer(16)}\n${element.rule()}\n${element.spacer(16)}\n`,
   );
 
+const pairingHtml = (matchup: EmailMatchup) =>
+  `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`;
+
 const blockHtml = (block: Block): string => {
   switch (block._tag) {
     case "text":
@@ -227,11 +256,18 @@ const blockHtml = (block: Block): string => {
     case "matchups":
       return ruled(
         block.items.map((matchup) =>
-          element.matchup(
-            `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`,
-            escapeHtml(matchup.detail),
-          ),
+          element.matchup(pairingHtml(matchup), escapeHtml(matchup.detail)),
         ),
+      );
+    case "event":
+      return stack(
+        [
+          element.matchup(escapeHtml(block.title), escapeHtml(block.detail)),
+          ...block.bullets.map((bullet) =>
+            element.bullet(pairingHtml(bullet), escapeHtml(bullet.detail)),
+          ),
+        ],
+        12,
       );
     case "note":
       return element.note(escapeHtml(block.value));

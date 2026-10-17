@@ -1,5 +1,7 @@
 import { Schema } from "effect";
 
+import { EventWithParticipants } from "../../events/joined.js";
+import { Subject } from "../../subjects/schema.js";
 import { Notification } from "../notification.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -184,3 +186,60 @@ export const nflNotification = decode(Notification)({
     },
   ],
 });
+
+export const fighter = (display: string) =>
+  decode(Subject)({
+    id: "10000000-0000-4000-8000-000000000101",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display,
+      profileUrl: "https://www.ufc.com/athlete/test",
+    },
+  });
+
+const ufcFights = [
+  ["main", ["Joaquin Buckley", "Mike Malott"]],
+  ["main", ["Erin Blanchfield", "Jasmine Jasudavicius"]],
+  ["prelims", ["Cristian Perez Gonzalez", "Kyle Nelson"]],
+  ["prelims", ["Louis Jourdain"]],
+] as const;
+
+/** A Fight Night with prelims at 7:00 PM and the main card at 10:00 PM EDT. */
+export const ufcCard = ({
+  id = "20000000-0000-4000-8000-000000000011",
+  title = "UFC Fight Night: Buckley vs Malott",
+  timings = {
+    prelims: "2026-10-03T23:00:00.000Z",
+    main: "2026-10-04T02:00:00.000Z",
+  },
+} = {}) =>
+  decode(EventWithParticipants)({
+    id,
+    sourceId: `mma_card:ufc:${id}`,
+    _tag: "mma_card",
+    startsAt: timings.prelims,
+    availability: "active",
+    participants: ufcFights.flatMap(([placement, fighters], fight) =>
+      fighters.map((title, index) => ({
+        id: `${id.slice(0, -2)}${fight.toString()}${index.toString()}`,
+        eventId: id,
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title,
+          fightId: `fight-${(fight + 1).toString()}`,
+          placement,
+        },
+      })),
+    ),
+    details: {
+      _tag: "mma_card",
+      leagueId: "ufc",
+      title,
+      category: "fight_night",
+      venue: { title: "Test Arena", location: "Test City" },
+      timings,
+    },
+  });

@@ -13,7 +13,11 @@ import {
   signInCodeLines,
   signInLines,
 } from "@dtpt/core/modules/email/transactional/sign-in";
-import { gameDayLines, kickoffLines } from "@dtpt/core/modules/notifier/email";
+import {
+  gameDayLines,
+  kickoffLines,
+  ufcLines,
+} from "@dtpt/core/modules/notifier/email";
 import { SeedCollections } from "@dtpt/data/seed/index";
 import { Predicate } from "effect";
 import { mkdir, rm, writeFile } from "node:fs/promises";
@@ -146,6 +150,7 @@ const headlines = [
       signInCodeLines,
       confirmationLines,
       kickoffLines,
+      ufcLines,
       ...teams,
     ].map((lines) => [buildHeadlineImagePath(lines), lines]),
   ),

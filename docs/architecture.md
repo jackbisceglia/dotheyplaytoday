@@ -206,7 +206,7 @@ brand sets in kelly, and passes `EmailView` a `Headline` from `core`'s
 live-text `TextHeadline` like the feedback digest's. `buildHeadlineImagePath`
 names each image after its copy, so the email and the renderer agree on the
 file. `pnpm @web assets:generate` collects every tiled headline's lines,
-including one per catalog team, and renders them into the web app's
+including one per catalog team and the generic UFC tile, and renders them into the web app's
 `public/email/headlines/`, which is committed and served with the site. Rerun
 it after building core and data whenever headline copy, the catalog, or the
 artwork changes. Body copy uses each platform's system UI font.

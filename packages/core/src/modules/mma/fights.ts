@@ -1,6 +1,13 @@
-import { Array } from "effect";
+import { Array, Order } from "effect";
 
 import type { MmaParticipant } from "../events/participants/variants/mma.schema.js";
+
+export type MmaFight = ReturnType<typeof mmaFights>[number];
+
+const byTitle = Order.make<MmaParticipant>((a, b) => {
+  const compared = a.title.localeCompare(b.title);
+  return compared < 0 ? -1 : compared > 0 ? 1 : 0;
+});
 
 export const mmaFights = (participants: readonly MmaParticipant[]) =>
   Object.entries(Array.groupBy(participants, (fighter) => fighter.fightId))
@@ -8,5 +15,5 @@ export const mmaFights = (participants: readonly MmaParticipant[]) =>
     .map(([id, fighters]) => ({
       id,
       placement: fighters[0].placement,
-      fighters: fighters.toSorted((a, b) => a.title.localeCompare(b.title)),
+      fighters: Array.sort(fighters, byTitle),
     }));
