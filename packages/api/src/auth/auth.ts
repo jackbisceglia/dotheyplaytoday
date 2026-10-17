@@ -11,7 +11,6 @@ import {
   sendConfirmationLink,
 } from "@dtpt/core/modules/email/transactional/confirmation";
 import {
-  EmailAddress,
   EmailAddressFromString,
   usersTable,
 } from "@dtpt/core/modules/users/schema";
@@ -35,14 +34,22 @@ import {
   Schema,
 } from "effect";
 import type { Headers } from "effect/unstable/http/Headers";
-import { type User as BetterAuthUser } from "better-auth";
 import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
 
-type MagicLinkContext = { readonly user: BetterAuthUser | null };
-type SignInCodeContext = { readonly user: BetterAuthUser };
-type SignInCodeRedemptionContext = { readonly confirmsEmail: boolean };
+const decodeRecipientContext = Schema.decodeUnknownOption(
+  Schema.Struct({
+    user: Schema.Struct({
+      email: EmailAddressFromString,
+      emailVerified: Schema.Boolean,
+    }),
+  }),
+);
+
+const confirmsEmail = Schema.is(
+  Schema.Struct({ confirmsEmail: Schema.Literal(true) }),
+);
 
 const decodeEmailBody = Schema.decodeUnknownOption(
   Schema.Struct({ email: EmailAddressFromString }),
@@ -93,11 +100,8 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           verification: authVerificationsTable,
         },
       }),
-      // Profile editing belongs to the deferred account experience. In particular,
-      // the shared users table intentionally has no Better Auth image column.
       disabledPaths: [
         "/update-user",
-        // Sign-in codes are the only OTP flow; redemption also confirms.
         "/email-otp/check-verification-otp",
         "/email-otp/verify-email",
         "/email-otp/request-password-reset",
@@ -138,13 +142,12 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
               await ctx.context.internalAdapter.findUserByEmail(email);
             const user = account?.user;
 
-            // Unknown addresses get the same response, with no stored code.
             if (!user) return ctx.json({ success: true });
 
             return {
               context: {
                 body: { email },
-                context: { user } satisfies SignInCodeContext,
+                context: { user },
               },
             };
           }
@@ -163,7 +166,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
                 body: { email: body.value.email },
                 context: {
                   confirmsEmail: account?.user.emailVerified === false,
-                } satisfies SignInCodeRedemptionContext,
+                },
               },
             };
           }
@@ -191,20 +194,16 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
                 // TODO: surface the failed-link message as a toast, mirroring the confirmation marker.
                 errorCallbackURL: webUrl.href,
               },
-              context: { user } satisfies MagicLinkContext,
+              context: { user },
             },
           };
         }),
-        // Report confirmation only after a code proves mailbox ownership, so
-        // Web can show the same confirmation as a redeemed link.
         after: createAuthMiddleware(async (ctx) => {
           if (ctx.path !== "/sign-in/email-otp") return;
 
-          // lint(anti-slop/require-safety-comment-for-type-assertion): The redemption before hook sets confirmsEmail from the stored user; no request body fields enter this context.
-          const context = ctx.context as Partial<SignInCodeRedemptionContext>;
           const returned = ctx.context.returned;
 
-          if (!context.confirmsEmail || isAPIError(returned)) return;
+          if (!confirmsEmail(ctx.context) || isAPIError(returned)) return;
           if (typeof returned !== "object" || returned === null) return;
 
           return ctx.json({ ...returned, confirmation: true });
@@ -218,15 +217,12 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           sendMagicLink: (options, endpoint) => {
             if (!endpoint) return;
 
-            // lint(anti-slop/require-safety-comment-for-type-assertion): The before hook above attaches this context; other callers may omit user.
-            const context = endpoint.context as Partial<MagicLinkContext>;
-            const user = context.user;
+            const recipient = decodeRecipientContext(endpoint.context);
 
-            if (!user) return;
+            if (Option.isNone(recipient)) return;
 
-            const email = EmailAddress.make(user.email);
-
-            const send = user.emailVerified
+            const { email, emailVerified } = recipient.value.user;
+            const send = emailVerified
               ? sendSignInLink(email, options.url)
               : sendConfirmationLink(email, options.url);
 
@@ -239,16 +235,11 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
           storeOTP: "hashed",
           allowedAttempts: 3,
           sendVerificationOTP: ({ otp }, endpoint) => {
-            // lint(anti-slop/require-safety-comment-for-type-assertion): The issuance before hook attaches the stored user; server callers may omit the endpoint context.
-            const context = endpoint?.context as
-              | Partial<SignInCodeContext>
-              | undefined;
-            const user = context?.user;
+            const recipient = decodeRecipientContext(endpoint?.context);
 
-            if (user) {
-              const email = EmailAddress.make(user.email);
-
-              const send = user.emailVerified
+            if (Option.isSome(recipient)) {
+              const { email, emailVerified } = recipient.value.user;
+              const send = emailVerified
                 ? sendSignInCode(email, otp)
                 : sendConfirmationCode(email, otp);
 

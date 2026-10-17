@@ -57,7 +57,6 @@ describe("email sign-in codes", () => {
       expect(other).not.toHaveBeenCalled();
       expect(f.sendSignInLink).not.toHaveBeenCalled();
       expect(f.sendConfirmationLink).not.toHaveBeenCalled();
-      // The code is hashed at rest.
       const [stored] = await f.rows("auth_verifications");
       expect(stored?.identifier).toBe("sign-in-otp-user@example.com");
       expect(stored?.value).not.toContain(code);

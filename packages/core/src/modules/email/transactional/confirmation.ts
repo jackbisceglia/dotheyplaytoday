@@ -1,10 +1,12 @@
 import { Effect } from "effect";
 
+import { Id } from "../../../lib/id/service.js";
+import { Email } from "../service.js";
+import { EmailLayerResend } from "../resend.js";
 import { WebUrl } from "../../../lib/config/web.js";
 import { type Lines, makeTiledHeadline } from "../headline.js";
 import { Code, EmailView, Link, Note, Text } from "../render.js";
 import type { EmailAddress } from "../../users/schema.js";
-import { deliverTransactional } from "./delivery.js";
 
 export const confirmationLines: Lines = ["Confirm your", "updates."];
 
@@ -54,24 +56,28 @@ export const renderConfirmationCode = Effect.fn("ConfirmationCode.render")(
   },
 );
 
-export const sendConfirmationLink = Effect.fn("ConfirmationLink.send")(
-  function* (recipient: EmailAddress, url: string) {
-    const rendered = yield* renderConfirmationLink(url).pipe(Effect.orDie);
-    yield* deliverTransactional(recipient, rendered);
-  },
-  Effect.tap(() => Effect.logInfo("confirmation link: delivered")),
-  Effect.tapCause((cause) =>
-    Effect.logError("confirmation link: delivery failed", { cause }),
-  ),
-);
+const createSendConfirmation = (render: typeof renderConfirmationLink) =>
+  Effect.fn("Confirmation.send")(
+    function* (recipient: EmailAddress, value: string) {
+      const rendered = yield* render(value).pipe(Effect.orDie);
+      const email = yield* Email;
+      const id = yield* Id;
 
-export const sendConfirmationCode = Effect.fn("ConfirmationCode.send")(
-  function* (recipient: EmailAddress, code: string) {
-    const rendered = yield* renderConfirmationCode(code).pipe(Effect.orDie);
-    yield* deliverTransactional(recipient, rendered);
-  },
-  Effect.tap(() => Effect.logInfo("confirmation code: delivered")),
-  Effect.tapCause((cause) =>
-    Effect.logError("confirmation code: delivery failed", { cause }),
-  ),
+      yield* email.send(
+        { recipient, idempotencyKey: yield* id.generate() },
+        rendered,
+      );
+    },
+    Effect.tap(() => Effect.logInfo("confirmation: delivered")),
+    Effect.tapCause((cause) =>
+      Effect.logError("confirmation: delivery failed", { cause }),
+    ),
+    Effect.provide(EmailLayerResend),
+  );
+
+export const sendConfirmationLink = createSendConfirmation(
+  renderConfirmationLink,
+);
+export const sendConfirmationCode = createSendConfirmation(
+  renderConfirmationCode,
 );

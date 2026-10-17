@@ -100,7 +100,6 @@ const escapeHtml = (value: string) =>
 const matchupText = (matchup: EmailMatchup) =>
   `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
 
-/** One-line summary of a block, used for inbox preview text. */
 const blockPreview = (block: Block): string => {
   switch (block._tag) {
     case "text":

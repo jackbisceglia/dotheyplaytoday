@@ -1,10 +1,12 @@
 import { Effect } from "effect";
 
+import { Id } from "../../../lib/id/service.js";
+import { Email } from "../service.js";
+import { EmailLayerResend } from "../resend.js";
 import { WebUrl } from "../../../lib/config/web.js";
 import { type Lines, makeTiledHeadline } from "../headline.js";
 import { Code, EmailView, Link, Note, Text } from "../render.js";
 import type { EmailAddress } from "../../users/schema.js";
-import { deliverTransactional } from "./delivery.js";
 
 export const signInLines: Lines = ["Your sign-in", "link."];
 export const signInCodeLines: Lines = ["Your sign-in", "code."];
@@ -49,24 +51,24 @@ export const renderSignInCode = Effect.fn("SignInCode.render")(function* (
   });
 });
 
-export const sendSignInLink = Effect.fn("SignInLink.send")(
-  function* (recipient: EmailAddress, url: string) {
-    const rendered = yield* renderSignInLink(url).pipe(Effect.orDie);
-    yield* deliverTransactional(recipient, rendered);
-  },
-  Effect.tap(() => Effect.logInfo("sign-in link: delivered")),
-  Effect.tapCause((cause) =>
-    Effect.logError("sign-in link: delivery failed", { cause }),
-  ),
-);
+const createSendSignIn = (render: typeof renderSignInLink) =>
+  Effect.fn("SignIn.send")(
+    function* (recipient: EmailAddress, value: string) {
+      const rendered = yield* render(value).pipe(Effect.orDie);
+      const email = yield* Email;
+      const id = yield* Id;
 
-export const sendSignInCode = Effect.fn("SignInCode.send")(
-  function* (recipient: EmailAddress, code: string) {
-    const rendered = yield* renderSignInCode(code).pipe(Effect.orDie);
-    yield* deliverTransactional(recipient, rendered);
-  },
-  Effect.tap(() => Effect.logInfo("sign-in code: delivered")),
-  Effect.tapCause((cause) =>
-    Effect.logError("sign-in code: delivery failed", { cause }),
-  ),
-);
+      yield* email.send(
+        { recipient, idempotencyKey: yield* id.generate() },
+        rendered,
+      );
+    },
+    Effect.tap(() => Effect.logInfo("sign-in: delivered")),
+    Effect.tapCause((cause) =>
+      Effect.logError("sign-in: delivery failed", { cause }),
+    ),
+    Effect.provide(EmailLayerResend),
+  );
+
+export const sendSignInLink = createSendSignIn(renderSignInLink);
+export const sendSignInCode = createSendSignIn(renderSignInCode);

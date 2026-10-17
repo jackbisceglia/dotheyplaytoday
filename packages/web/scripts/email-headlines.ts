@@ -139,7 +139,6 @@ const teams = SeedCollections.flatMap((collection) =>
   ),
 );
 
-// Teams that share a name ("Kings", "Giants") share one image.
 const headlines = [
   ...new Map(
     [

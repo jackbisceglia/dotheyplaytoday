@@ -95,7 +95,6 @@ describe("sign-in code email", () => {
         "/email/headlines/your-sign-in-code.png",
       );
       expect(rendered.body.html).not.toContain('href="https://api');
-      // Keep the code out of inbox previews and lock-screen notifications.
       expect(rendered.body.html).not.toMatch(
         new RegExp(`display: none[^>]*>[^<]*${code}`),
       );

@@ -10,7 +10,6 @@ import { auth } from "../auth.js";
 import { useApplicationPath } from "../paths.js";
 
 const decodeEmail = Schema.decodeUnknownResult(EmailAddressFromString);
-// Present only after a code that confirmed the address was redeemed.
 const decodeConfirmation = Schema.decodeUnknownOption(
   Schema.Struct({ confirmation: Schema.Literal(true) }),
 );
@@ -132,7 +131,6 @@ export function Login() {
       },
     );
 
-    // Success keeps the pending state; Landing moves to /home with the session.
     if (!result.error) return;
 
     setIsPending(false);
