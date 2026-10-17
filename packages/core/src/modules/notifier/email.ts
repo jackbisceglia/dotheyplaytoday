@@ -55,7 +55,7 @@ type SportsGameEvents = Array.NonEmptyReadonlyArray<SportsGameEvent>;
 type SportsGameEvent = NarrowedEventWithParticipants<"sports_game">;
 type SportsGameParticipant = SportsGameEvent["participants"][number];
 
-type MmaEvents = Array.NonEmptyReadonlyArray<MmaCardEvent>;
+type MmaCardEvents = Array.NonEmptyReadonlyArray<MmaCardEvent>;
 type MmaCardEvent = NarrowedEventWithParticipants<"mma_card">;
 
 function createFeedCases() {
@@ -73,7 +73,7 @@ function createFeedCases() {
         details: SubjectDetails.isAnyOf(["mma_fighter", "mma_tracking"]),
       },
 
-      events: (events: Notification["events"]): events is MmaEvents =>
+      events: (events: Notification["events"]): events is MmaCardEvents =>
         Array.isReadonlyArrayNonEmpty(events) &&
         events.every(isEventWithParticipants("mma_card")),
     },
