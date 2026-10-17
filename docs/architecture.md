@@ -206,7 +206,7 @@ brand sets in kelly, and passes `EmailView` a `Headline` from `core`'s
 live-text `TextHeadline` like the feedback digest's. `buildHeadlineImagePath`
 names each image after its copy, so the email and the renderer agree on the
 file. `pnpm @web assets:generate` collects every tiled headline's lines,
-including one per catalog team, and renders them into the web app's
+including one per catalog team and the generic UFC tile, and renders them into the web app's
 `public/email/headlines/`, which is committed and served with the site. Rerun
 it after building core and data whenever headline copy, the catalog, or the
 artwork changes. Body copy uses each platform's system UI font.
@@ -490,6 +490,9 @@ Participant details contain display title, fightId, and required placement (prel
 Subject-event feed associations determine subscription matches, as with sports.
 Only publish fight participants after UFC confirms their segment assignment.
 Within a card, opponents share a fightId; renderers group those rows for display.
+`mma/fights.ts` also owns main-event detection: the card title's surnames
+select the main event, so the dashboard row and the notification email agree on
+the headliner regardless of fight IDs or query order.
 Event and participant row schemas require each row tag to match its details tag
 on reads and writes, including joined event decoding.
 There is no fights table or event-level fights array. The importer validates

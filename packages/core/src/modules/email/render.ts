@@ -32,7 +32,9 @@ export const Text = Schema.TaggedStruct("text", { value: Schema.String });
 export const List = Schema.TaggedStruct("list", {
   items: Schema.Array(Schema.String),
 });
+/** Matchups, optionally under a group title such as a UFC card's event name. */
 export const Matchups = Schema.TaggedStruct("matchups", {
+  title: Schema.optional(Schema.String),
   items: Schema.Array(EmailMatchup),
 });
 export const Note = Schema.TaggedStruct("note", { value: Schema.String });
@@ -112,8 +114,11 @@ const blockPreview = (block: Block): string => {
       return block.text;
     case "list":
       return block.items.join(", ");
-    case "matchups":
-      return block.items.map(matchupText).join(" • ");
+    case "matchups": {
+      const items = block.items.map(matchupText).join(" • ");
+
+      return block.title === undefined ? items : `${block.title}: ${items}`;
+    }
   }
 };
 
@@ -124,7 +129,10 @@ const blockText = (block: Block): readonly string[] => {
     case "list":
       return block.items.map((item) => `- ${item}`);
     case "matchups":
-      return block.items.map(matchupText);
+      return [
+        ...(block.title === undefined ? [] : [block.title]),
+        ...block.items.map(matchupText),
+      ];
     case "note":
       return [block.value];
     case "entry":
@@ -177,6 +185,9 @@ const element = {
     `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 16px; line-height: 1.4; color: ${color.ink}; word-break: break-word;">${matchup}</p>
 <p class="email-muted" style="margin: 4px 0 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 14px; line-height: 1.4; color: ${color.muted};">${time}</p>`,
 
+  groupTitle: (value: string) =>
+    `<p class="email-muted" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 13px; line-height: 1.4; letter-spacing: 0.06em; text-transform: uppercase; color: ${color.muted};">${value}</p>`,
+
   separator: (value: string) =>
     `<span class="email-muted" style="font-weight: 400; color: ${color.muted};">${value}</span>`,
 
@@ -224,8 +235,8 @@ const blockHtml = (block: Block): string => {
       return element.paragraph(escapeHtml(block.value));
     case "list":
       return ruled(block.items.map((item) => element.item(escapeHtml(item))));
-    case "matchups":
-      return ruled(
+    case "matchups": {
+      const items = ruled(
         block.items.map((matchup) =>
           element.matchup(
             `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`,
@@ -233,6 +244,11 @@ const blockHtml = (block: Block): string => {
           ),
         ),
       );
+
+      return block.title === undefined
+        ? items
+        : stack([element.groupTitle(escapeHtml(block.title)), items], 8);
+    }
     case "note":
       return element.note(escapeHtml(block.value));
     case "entry":

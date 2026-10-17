@@ -6,9 +6,9 @@ import { beforeEach, vi } from "vitest";
 import { EmailResponseError } from "../../email/errors.js";
 import { NotifierLayerEmail, EmailRenderError } from "../email.js";
 import { NotifierError } from "../errors.js";
-import { nflNotification, notification } from "./fixtures.js";
+import { fighter, nflNotification, notification, ufcCard } from "./fixtures.js";
 import type { Notification } from "../notification.js";
-import { card, fighterA, all } from "../../mma/__tests__/fixtures.js";
+import { card, all } from "../../mma/__tests__/fixtures.js";
 import { Notifier } from "../service.js";
 
 const resendMock = vi.hoisted(() => ({
@@ -71,66 +71,164 @@ describe("email rendering", () => {
     resendMock.send.mockResolvedValue(successResponse);
   });
 
+  it.effect("sums up a covered card as its event name and main event", () =>
+    Effect.gen(function* () {
+      yield* send({ ...notification, subject: all, events: [ufcCard()] });
+
+      const payload = lastPayload();
+      expect(payload.subject).toBe("UFC is on today");
+      expect(payload.text).toBe(
+        [
+          "UFC is on today.",
+          "",
+          "UFC Fight Night",
+          "Prelims 7:00 PM EDT · Main card 10:00 PM EDT - Joaquin Buckley vs. Mike Malott",
+          "",
+          "Unsubscribe: https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
+        ].join("\n"),
+      );
+      expect(payload.html).toContain(
+        'src="https://example.com:8080/email/headlines/ufc-is-on-today.png"',
+      );
+      expect(payload.html).toContain('alt="UFC is on today."');
+      for (const undercard of ["Blanchfield", "Nelson", "Jourdain"]) {
+        expect(payload.html).not.toContain(undercard);
+      }
+    }),
+  );
+
   it.effect(
-    "renders fighter and coverage cards with explicit segment times and unknown opponents",
+    "adds only a followed fighter's own bout beneath the main event",
     () =>
       Effect.gen(function* () {
-        yield* send({ ...notification, subject: fighterA, events: [card] });
-        expect(lastPayload().subject).toBe("Fighter A fights today");
-        expect(lastPayload().text).toContain("Starts: 7:00 PM EDT");
-        expect(lastPayload().text).toContain(
-          "Following Fighter A: Fighter A vs Fighter B (main)",
-        );
-        expect(lastPayload().text).not.toContain(
-          "Individual fight times are not scheduled",
-        );
-        resendMock.send.mockClear();
-        if (card.details._tag !== "mma_card") throw new Error("Expected card");
         yield* send({
           ...notification,
-          subject: all,
-          events: [
-            {
-              ...card,
-              participants: card.participants.slice(0, 1),
-            },
-          ],
+          subject: fighter("Kyle Nelson"),
+          events: [ufcCard()],
         });
-        expect(lastPayload().subject).toBe("UFC cards today");
-        expect(lastPayload().text).toContain("vs Opponent TBD");
-        expect(lastPayload().text).toContain("Main card: Oct 3, 10:00 PM EDT");
-        expect(lastPayload().text).toContain(
-          "Prelims: Oct 3, 7:00 PM EDT",
+
+        const payload = lastPayload();
+        expect(payload.subject).toBe("Kyle Nelson fights today");
+        expect(payload.html).toContain(
+          'src="https://example.com:8080/email/headlines/ufc-is-on-today.png"',
         );
+        expect(payload.text).toContain(
+          [
+            "UFC Fight Night",
+            "Prelims 7:00 PM EDT · Main card 10:00 PM EDT - Joaquin Buckley vs. Mike Malott",
+            "Prelims 7:00 PM EDT - Kyle Nelson vs. Cristian Perez Gonzalez",
+          ].join("\n"),
+        );
+        expect(payload.html).not.toContain("Blanchfield");
+        expect(payload.html).not.toContain("Jourdain");
       }),
   );
 
   it.effect(
-    "groups UFC participant rows by fight, independent of query order",
+    "leads the main event with a followed headliner instead of repeating it",
     () =>
       Effect.gen(function* () {
-        if (card.details._tag !== "mma_card") throw new Error("Expected card");
+        yield* send({
+          ...notification,
+          subject: fighter("Mike Malott"),
+          events: [ufcCard()],
+        });
+
+        const { text } = lastPayload();
+        expect(text).toContain(
+          "UFC Fight Night\nPrelims 7:00 PM EDT · Main card 10:00 PM EDT - Mike Malott vs. Joaquin Buckley\n\nUnsubscribe",
+        );
+        expect(text?.match(/Buckley/g)).toHaveLength(1);
+      }),
+  );
+
+  it.effect(
+    "keeps each subscription's email to its own subject on a shared card",
+    () =>
+      Effect.gen(function* () {
+        const bodies = [];
+        for (const subject of [
+          all,
+          fighter("Kyle Nelson"),
+          fighter("Erin Blanchfield"),
+        ]) {
+          resendMock.send.mockClear();
+          yield* send({ ...notification, subject, events: [ufcCard()] });
+          bodies.push(lastPayload().text);
+        }
+
+        const [coverage, nelson, blanchfield] = bodies;
+        expect(coverage).not.toContain("Nelson");
+        expect(coverage).not.toContain("Blanchfield");
+        expect(nelson).not.toContain("Blanchfield");
+        expect(blanchfield).not.toContain("Nelson");
+        expect(blanchfield).toContain(
+          "Main card 10:00 PM EDT - Erin Blanchfield vs. Jasmine Jasudavicius",
+        );
+      }),
+  );
+
+  it.effect("marks a followed fighter's missing opponent as TBD", () =>
+    Effect.gen(function* () {
+      yield* send({
+        ...notification,
+        subject: fighter("Louis Jourdain"),
+        events: [ufcCard()],
+      });
+
+      expect(lastPayload().text).toContain(
+        "Prelims 7:00 PM EDT - Louis Jourdain vs. Opponent TBD",
+      );
+    }),
+  );
+
+  it.effect(
+    "finds the main event from the card title, independent of fight ids and query order",
+    () =>
+      Effect.gen(function* () {
+        // The main event bills last and rows arrive in reverse.
+        const card = ufcCard({
+          fightIds: ["fight-4", "fight-2", "fight-3", "fight-1"],
+        });
+        yield* send({
+          ...notification,
+          subject: all,
+          events: [{ ...card, participants: card.participants.toReversed() }],
+        });
+
+        expect(lastPayload().text).toContain(
+          "Main card 10:00 PM EDT - Joaquin Buckley vs. Mike Malott",
+        );
+        expect(lastPayload().text).not.toContain("Jourdain");
+      }),
+  );
+
+  it.effect(
+    "titles each same-day card and falls back to the full title and first bout",
+    () =>
+      Effect.gen(function* () {
         yield* send({
           ...notification,
           subject: all,
           events: [
-            {
-              ...card,
-              participants: card.participants
-                .map((participant, fightIndex) => ({
-                  ...participant,
-                  details: {
-                    ...participant.details,
-                    fightId: `fight-${String(fightIndex + 1)}`,
-                  },
-                }))
-                .toReversed(),
-            },
+            ufcCard(),
+            ufcCard({
+              id: "20000000-0000-4000-8000-000000000099",
+              title: "UFC Freedom 250",
+              timings: {
+                prelims: "2026-11-01T05:30:00.000Z",
+                main: "2026-11-01T06:30:00.000Z",
+              },
+            }),
           ],
         });
-        expect(lastPayload().text).toContain("Fighter A vs Opponent TBD");
-        expect(lastPayload().text).toContain("Fighter B vs Opponent TBD");
-        expect(lastPayload().text).not.toContain("Fighter A vs Fighter B");
+
+        const { text } = lastPayload();
+        expect(text).toContain("UFC Fight Night\n");
+        // Segment times convert independently across the DST fallback.
+        expect(text).toContain(
+          "UFC Freedom 250\nPrelims 1:30 AM EDT · Main card 1:30 AM EST - Joaquin Buckley vs. Mike Malott",
+        );
       }),
   );
 

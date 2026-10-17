@@ -10,8 +10,7 @@ import {
   hasConflictingSelections,
   toggleSubscriptionSelection,
 } from "../../subscriptions/selection.js";
-import { mmaTimingText } from "../time.js";
-import { all, card, fighterA, fighterB, numbered, ny } from "./fixtures.js";
+import { all, card, fighterA, fighterB, numbered } from "./fixtures.js";
 
 if (card.details._tag !== "mma_card") throw new Error("Expected MMA fixture");
 const details = card.details;
@@ -31,13 +30,7 @@ describe("MMA selection and timing", () => {
     expect(hasConflictingSelections([numbered, all])).toBe(true);
     expect(hasConflictingSelections([fighterA, all])).toBe(false);
   });
-  it("uses earliest known broadcast start, never an individual fight time", () => {
-    expect(mmaTimingText(details, ny)).toContain(
-      "Main card: Oct 3, 10:00 PM EDT",
-    );
-    expect(mmaTimingText(details, ny)).not.toContain(
-      "Individual fight times are not scheduled",
-    );
+  it("dates cards by their earliest broadcast start", () => {
     expect(
       SubscriptionTiming.formatLocalDate(
         card.startsAt,
@@ -127,19 +120,5 @@ describe("MMA selection and timing", () => {
     ]) {
       expect(() => Schema.decodeUnknownSync(MmaParticipant)(invalid)).toThrow();
     }
-  });
-  it("formats broadcast segments across the DST fallback independently", () => {
-    const text = mmaTimingText(
-      {
-        ...details,
-        timings: {
-          prelims: DateTime.makeUnsafe("2026-11-01T05:30:00Z"),
-          main: DateTime.makeUnsafe("2026-11-01T06:30:00Z"),
-        },
-      },
-      ny,
-    );
-    expect(text).toContain("Prelims: Nov 1, 1:30 AM EDT");
-    expect(text).toContain("Main card: Nov 1, 1:30 AM EST");
   });
 });
