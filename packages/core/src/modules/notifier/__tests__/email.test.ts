@@ -71,7 +71,7 @@ describe("email rendering", () => {
     resendMock.send.mockResolvedValue(successResponse);
   });
 
-  it.effect("sums up a covered card as its title and broadcast starts", () =>
+  it.effect("sums up a covered card as its title and main-card start", () =>
     Effect.gen(function* () {
       yield* send({ ...notification, subject: all, events: [ufcCard()] });
 
@@ -82,7 +82,7 @@ describe("email rendering", () => {
           "UFC is on today.",
           "",
           "UFC Fight Night: Buckley vs Malott",
-          "Prelims 7:00 PM EDT · Main card 10:00 PM EDT",
+          "10:00 PM EDT, main card",
           "",
           "Unsubscribe: https://example.com:8080/unsubscribe/00000000-0000-4000-8000-000000000201",
         ].join("\n"),
@@ -114,8 +114,8 @@ describe("email rendering", () => {
       expect(payload.text).toContain(
         [
           "UFC Fight Night: Buckley vs Malott",
-          "Prelims 7:00 PM EDT · Main card 10:00 PM EDT",
-          "  - Prelims 7:00 PM EDT - Kyle Nelson vs. Cristian Perez Gonzalez",
+          "10:00 PM EDT, main card",
+          "  - Prelims, 7:00 PM EDT - Kyle Nelson vs. Cristian Perez Gonzalez",
         ].join("\n"),
       );
       expect(payload.html).toContain("&bull;");
@@ -136,8 +136,8 @@ describe("email rendering", () => {
       expect(lastPayload().text).toContain(
         [
           "UFC Fight Night: Buckley vs Malott",
-          "Prelims 7:00 PM EDT · Main card 10:00 PM EDT",
-          "  - Main card 10:00 PM EDT - Mike Malott vs. Joaquin Buckley",
+          "10:00 PM EDT, main card",
+          "  - Main card - Mike Malott vs. Joaquin Buckley",
           "",
           "Unsubscribe",
         ].join("\n"),
@@ -165,7 +165,7 @@ describe("email rendering", () => {
         expect(nelson).not.toContain("Blanchfield");
         expect(blanchfield).not.toContain("Nelson");
         expect(blanchfield).toContain(
-          "  - Main card 10:00 PM EDT - Erin Blanchfield vs. Jasmine Jasudavicius",
+          "  - Main card - Erin Blanchfield vs. Jasmine Jasudavicius",
         );
       }),
   );
@@ -179,7 +179,7 @@ describe("email rendering", () => {
       });
 
       expect(lastPayload().text).toContain(
-        "  - Prelims 7:00 PM EDT - Louis Jourdain vs. Opponent TBD",
+        "  - Prelims, 7:00 PM EDT - Louis Jourdain vs. Opponent TBD",
       );
     }),
   );
@@ -194,7 +194,7 @@ describe("email rendering", () => {
       });
 
       expect(lastPayload().text).toContain(
-        "  - Prelims 7:00 PM EDT - Kyle Nelson vs. Cristian Perez Gonzalez",
+        "  - Prelims, 7:00 PM EDT - Kyle Nelson vs. Cristian Perez Gonzalez",
       );
     }),
   );
@@ -219,11 +219,11 @@ describe("email rendering", () => {
 
       const { text } = lastPayload();
       expect(text).toContain(
-        "UFC Fight Night: Buckley vs Malott\nPrelims 7:00 PM EDT · Main card 10:00 PM EDT\n  - Prelims",
+        "UFC Fight Night: Buckley vs Malott\n10:00 PM EDT, main card\n  - Prelims, 7:00 PM EDT",
       );
       // Segment times convert independently across the DST fallback.
       expect(text).toContain(
-        "UFC Freedom 250\nPrelims 1:30 AM EDT · Main card 1:30 AM EST\n  - Prelims 1:30 AM EDT - Kyle Nelson",
+        "UFC Freedom 250\n1:30 AM EST, main card\n  - Prelims, 1:30 AM EDT - Kyle Nelson",
       );
     }),
   );

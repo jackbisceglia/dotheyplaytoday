@@ -229,11 +229,6 @@ const formatStartTime = (startsAt: DateTime.Utc, tz: User["timezone"]) => {
   });
 };
 
-const segments = {
-  prelims: "Prelims",
-  main: "Main card",
-} satisfies Record<MmaFight["placement"], string>;
-
 /** The followed fighter comes first; a lone fighter's opponent is TBD. */
 const fightMatchup = (
   fight: MmaFight,
@@ -254,8 +249,9 @@ const fightMatchup = (
 };
 
 /**
- * The card leads with its own title and broadcast starts. A followed fighter's
- * bouts are bullets beneath it; the rest of the card is omitted.
+ * The card leads with its title and main-card start, which is all a coverage
+ * subscriber needs. A followed fighter's bouts are bullets beneath it, naming
+ * their segment; prelims add their own, earlier start.
  */
 const mmaCardSummary = (
   event: MmaCardEvent,
@@ -263,8 +259,10 @@ const mmaCardSummary = (
   timezone: User["timezone"],
 ) => {
   const card = event.details;
-  const segmentTime = (placement: MmaFight["placement"]) =>
-    `${segments[placement]} ${formatStartTime(card.timings[placement], timezone)}`;
+  const startTime = (placement: MmaFight["placement"]) =>
+    formatStartTime(card.timings[placement], timezone);
+  const segment = (placement: MmaFight["placement"]) =>
+    placement === "main" ? "Main card" : `Prelims, ${startTime("prelims")}`;
 
   const followedFights = mmaFights(
     event.participants.map((participant) => participant.details),
@@ -274,9 +272,9 @@ const mmaCardSummary = (
 
   return EventSummary.make({
     title: card.title,
-    detail: `${segmentTime("prelims")} · ${segmentTime("main")}`,
+    detail: `${startTime("main")}, main card`,
     bullets: followedFights.map((fight) =>
-      fightMatchup(fight, followed, segmentTime(fight.placement)),
+      fightMatchup(fight, followed, segment(fight.placement)),
     ),
   });
 };
