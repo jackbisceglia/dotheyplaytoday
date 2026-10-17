@@ -197,7 +197,7 @@ const element = {
 <tr>
 <td class="email-muted" valign="top" width="16" style="width: 16px; font-family: ${font.body}; font-size: 14px; line-height: 1.45; color: ${color.muted};">&bull;</td>
 <td>
-<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 600; font-size: 14px; line-height: 1.45; color: ${color.ink}; word-break: break-word;">${matchup}</p>
+<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 14px; line-height: 1.45; color: ${color.ink}; word-break: break-word;">${matchup}</p>
 <p class="email-muted" style="margin: 2px 0 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 13px; line-height: 1.4; color: ${color.muted};">${time}</p>
 </td>
 </tr>
