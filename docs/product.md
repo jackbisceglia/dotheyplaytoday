@@ -66,15 +66,18 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
 - Duplicate signup shows: “You already have an account. We’ve emailed you a link to sign in. Your existing teams and schedule haven’t changed.”
 - Magic links expire after 15 minutes and can be redeemed once. Redemption verifies email ownership and creates a session. Saved subscriptions become eligible under ordinary scheduling rules; confirmation does not send an immediate notification or reset last-sent state.
 - Link issuance follows the signup transaction; email delivery runs in the API Worker's background execution lifetime. Issuance or delivery failures leave saved preferences intact, and the user can request a replacement link.
-- Migration 0005 grants notification eligibility to exactly ten owner-trusted existing subscribers identified in the [production rollout audit](./runbooks/production-deploy.md#notification-eligibility-and-grandfathering-rollout). This deliberate delivery decision is not evidence of mailbox ownership and creates no sessions; these users still redeem a magic link to sign in.
+- Migration 0005 grants notification eligibility to exactly ten owner-trusted existing subscribers identified in the [production rollout audit](./runbooks/production-deploy.md#notification-eligibility-and-grandfathering-rollout). This deliberate delivery decision is not evidence of mailbox ownership and creates no sessions; these users still redeem a magic link or email code to sign in.
 - Pending registration, the recipient filter, and the fixed-cohort migration must reach production together.
 
 ## Authentication
 
 - Authentication is passwordless and available only to notification users who already exist under their normalized email address.
-- Requesting a magic link returns the same success response for known and unknown addresses; unknown addresses do not receive email and cannot create users.
-- A valid magic link verifies the existing user and creates a persistent server-side session. Authentication cookies remain host-only to the API origin.
-- Successful registration and sign-in links return to Web `/home`. Links requested while unverified include `confirmation=1`; already-verified users return without it. Failed or expired links return to `/` without the confirmation marker.
+- Signup requests a magic link. Signing in from the Web sign-in modal requests a six-digit email code; the magic-link API remains available.
+- Requesting a magic link or a sign-in code returns the same success response for known, unknown, and unconfirmed addresses; unknown addresses do not receive email and cannot create users.
+- Existing unconfirmed users receive “Confirm your updates” email with the requested code or link. Confirmed users receive sign-in email with the requested code or link. Redeeming either confirms email ownership if needed and signs in.
+- Sign-in codes expire after 10 minutes and can be redeemed once. Three incorrect attempts invalidate a code. Requesting a new code replaces the previous one.
+- A valid magic link verifies the existing user and creates a persistent server-side session; a valid email code verifies ownership and creates the same session. Authentication cookies remain host-only to the API origin.
+- Successful registration and sign-in links return to Web `/home`. Links requested while unverified include `confirmation=1`; already-verified users return without it. Failed or expired links return to `/` without the confirmation marker. Successful code sign-in also returns to `/home`, with `confirmation=1` only when the address was unconfirmed before redemption. Code requests and failed redemptions never expose confirmation status; the confirmation message appears only after proof of ownership.
 
 ## Feedback
 

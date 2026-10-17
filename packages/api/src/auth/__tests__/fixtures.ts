@@ -1,8 +1,14 @@
 import { exactOptional } from "@dtpt/core/lib/utils";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Id } from "@dtpt/core/lib/id/service";
-import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
-import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
+import {
+  sendConfirmationCode,
+  sendConfirmationLink,
+} from "@dtpt/core/modules/email/transactional/confirmation";
+import {
+  sendSignInCode,
+  sendSignInLink,
+} from "@dtpt/core/modules/email/transactional/sign-in";
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
@@ -21,9 +27,11 @@ vi.mock("drizzle-orm/node-postgres", () => ({
 }));
 vi.mock("@dtpt/core/modules/email/transactional/confirmation", () => ({
   sendConfirmationLink: vi.fn(() => Effect.void),
+  sendConfirmationCode: vi.fn(() => Effect.void),
 }));
 vi.mock("@dtpt/core/modules/email/transactional/sign-in", () => ({
   sendSignInLink: vi.fn(() => Effect.void),
+  sendSignInCode: vi.fn(() => Effect.void),
 }));
 
 let client = 0;
@@ -61,6 +69,10 @@ export const makeAuthFixture = async () => {
   confirmation.mockImplementation(() => Effect.void);
   const signIn = vi.mocked(sendSignInLink).mockReset();
   signIn.mockImplementation(() => Effect.void);
+  const signInCode = vi.mocked(sendSignInCode).mockReset();
+  signInCode.mockImplementation(() => Effect.void);
+  const confirmationCode = vi.mocked(sendConfirmationCode).mockReset();
+  confirmationCode.mockImplementation(() => Effect.void);
   const pending: Promise<unknown>[] = [];
   const layer = Layer.mergeAll(
     ConfigProvider.layer(
@@ -120,6 +132,8 @@ export const makeAuthFixture = async () => {
     rows,
     sendConfirmationLink: confirmation,
     sendSignInLink: signIn,
+    sendSignInCode: signInCode,
+    sendConfirmationCode: confirmationCode,
     pending,
     request,
   };

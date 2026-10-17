@@ -9,7 +9,10 @@ import {
   type Lines,
 } from "@dtpt/core/modules/email/headline";
 import { confirmationLines } from "@dtpt/core/modules/email/transactional/confirmation";
-import { signInLines } from "@dtpt/core/modules/email/transactional/sign-in";
+import {
+  signInCodeLines,
+  signInLines,
+} from "@dtpt/core/modules/email/transactional/sign-in";
 import { gameDayLines, kickoffLines } from "@dtpt/core/modules/notifier/email";
 import { SeedCollections } from "@dtpt/data/seed/index";
 import { Predicate } from "effect";
@@ -139,10 +142,13 @@ const teams = SeedCollections.flatMap((collection) =>
 // Teams that share a name ("Kings", "Giants") share one image.
 const headlines = [
   ...new Map(
-    [signInLines, confirmationLines, kickoffLines, ...teams].map((lines) => [
-      buildHeadlineImagePath(lines),
-      lines,
-    ]),
+    [
+      signInLines,
+      signInCodeLines,
+      confirmationLines,
+      kickoffLines,
+      ...teams,
+    ].map((lines) => [buildHeadlineImagePath(lines), lines]),
   ),
 ];
 

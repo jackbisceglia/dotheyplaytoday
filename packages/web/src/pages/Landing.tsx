@@ -27,12 +27,15 @@ export function Landing() {
   const loginHref = useApplicationPath("login");
   const [search] = useSearchParams();
 
-  // Signed-in visitors upgrade to /home after the session settles.
+  // Signed-in visitors upgrade to /home after the session settles. Code sign-in
+  // sets the confirmation marker when that code confirmed the address.
   createEffect(
     () => getSessionStatus(session()),
     (state) => {
       if (state === "authenticated") {
-        navigate(homeHref(), { replace: true });
+        const confirmation =
+          search.confirmation === "1" ? "?confirmation=1" : "";
+        navigate(`${homeHref()}${confirmation}`, { replace: true });
       }
     },
   );

@@ -78,8 +78,9 @@ CORS middleware and Worker entry point. Better Auth owns endpoint validation and
 only declares the wildcard transport routes.
 The stack supplies the resolved API and Web URLs through `bindApiUrl` and
 `bindWebUrl` helpers, keeping URL bindings outside resource construction.
-Only magic-link authentication is enabled, Better Auth's own signup is disabled, tokens are
-hashed at rest, and sessions are persisted in `auth_sessions`. Cookies remain
+Magic-link and email-OTP authentication are enabled, Better Auth's own signup is
+disabled in both plugins, tokens and codes are hashed at rest, and sessions are
+persisted in `auth_sessions`. Cookies remain
 host-only to the API origin and secure on HTTPS. API and Web origins are trusted.
 
 The existing `users` table is Better Auth's user model. Its normalized email
@@ -95,7 +96,7 @@ Its `created_at` default assigns preexisting rows the migration timestamp, not
 their original signup dates; grandfathering must not infer signup dates from it.
 Migration 0005 grants notification eligibility only to a fixed, owner-trusted
 cohort; this is not proof of mailbox ownership and creates no sessions. New
-rows retain the false default. Existing users still redeem a magic link to sign
+rows retain the false default. Existing users still redeem a magic link or email code to sign
 in. The magic-link before hook normalizes the address and looks up the user once
 through Better Auth's internal adapter. It carries the user with a normalized
 email in request context; the sender silently skips unknown recipients. Better
@@ -124,9 +125,31 @@ Both reads validate the session user ID through `UserId.makeEffect` and delegate
 persistence and decoding to `Users.get` and `Subscriptions.listForUser`.
 Responses, including errors, set `Cache-Control: no-store`.
 
+Email OTP is restricted to the sign-in endpoint, which also confirms existing
+unverified users through Better Auth's supported redemption flow. A before hook
+on `/email-otp/send-verification-otp` normalizes the address, rejects every OTP
+type except `sign-in`, and looks up the user once. The sender uses that
+server-owned user snapshot to choose confirmation or sign-in code copy and
+registers delivery through `waitUntil`. Unknown addresses return the same
+success response before a code is stored; neither plugin can create accounts.
+There is no verification gate or magic-link fallback for code requests.
+The plugin's other routes (email verification, OTP check, password reset, and
+email change) are listed in `disabledPaths`. Codes are six digits, expire
+after 10 minutes, and are consumed atomically. Three incorrect attempts
+invalidate a code. A resend rotates the code, and redemption checks only the
+newest one.
+
+The code redemption before hook normalizes the email and records whether the
+existing user is unconfirmed. Only after successful redemption does the after
+hook add `confirmation: true` to the response for that user. Requests and failed
+redemptions do not reveal verification status. Web sets the confirmation query
+marker in the sign-in success callback, before Better Auth notifies session
+listeners; Landing then carries it to `/home` for the existing confirmation
+message. Signup continues to request magic links.
+
 Auth rate limiting uses Better Auth's in-memory store, shared across auth
-instances within a Worker isolate. It allows five magic-link requests and ten
-verification attempts per client IP per minute, using Cloudflare's
+instances within a Worker isolate. It allows five magic-link or sign-in-code requests and ten
+verification or code sign-in attempts per client IP per minute, using Cloudflare's
 `cf-connecting-ip` header. These are per-isolate limits, not a global quota;
 multiple isolates and isolate restarts do not share counters. A distributed
 limit would require shared storage or an edge rate-limiting rule.
@@ -155,7 +178,7 @@ response, so a later request can issue a replacement.
 
 The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to
-`Email`. Separate transactional confirmation and sign-in views bypass
+`Email`. Separate transactional confirmation and sign-in link/code views bypass
 `Notifier` and provide the same concrete Resend email layer internally. Better
 Auth's magic-link callback reuses the recipient from request context to select
 the view by `emailVerified`, without another lookup or email normalization. It
@@ -431,7 +454,7 @@ uses that hint to replace-navigate root visits to `/home` before the SSR landing
 page paints; the authenticated route still verifies the real session and clears
 stale hints. In-app visits never paint the landing page for a signed-in session
 either: the landing route renders nothing once the session is authenticated,
-and the header wordmark links signed-in visitors to `/home`. The root route exposes sign-in through a query-driven modal, and
+and the header wordmark links signed-in visitors to `/home`. The root route exposes code sign-in through a query-driven modal, and
 `/home` provides confirmation, sign-out, and unsubscribe entry points. The dashboard loads private preferences in the browser and shares its team
 picker with signup. Its edit draft supports save/cancel, team removal, and send
 time changes; account email/timezone editing remains separate work. Existing

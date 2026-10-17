@@ -2,8 +2,14 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 import type { Id } from "@dtpt/core/lib/id/service";
-import { sendSignInLink } from "@dtpt/core/modules/email/transactional/sign-in";
-import { sendConfirmationLink } from "@dtpt/core/modules/email/transactional/confirmation";
+import {
+  sendSignInCode,
+  sendSignInLink,
+} from "@dtpt/core/modules/email/transactional/sign-in";
+import {
+  sendConfirmationCode,
+  sendConfirmationLink,
+} from "@dtpt/core/modules/email/transactional/confirmation";
 import {
   EmailAddress,
   EmailAddressFromString,
@@ -15,10 +21,10 @@ import {
   authVerificationsTable,
 } from "@dtpt/core/modules/auth/schema";
 import { betterAuth } from "better-auth";
-import { createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { magicLink } from "better-auth/plugins";
+import { emailOTP, magicLink } from "better-auth/plugins";
 import {
   Boolean,
   Context,
@@ -35,9 +41,18 @@ import { Pool } from "pg";
 import { AuthConfig } from "./config.js";
 
 type MagicLinkContext = { readonly user: BetterAuthUser | null };
+type SignInCodeContext = { readonly user: BetterAuthUser };
+type SignInCodeRedemptionContext = { readonly confirmsEmail: boolean };
 
-const decodeMagicLinkBody = Schema.decodeUnknownOption(
+const decodeEmailBody = Schema.decodeUnknownOption(
   Schema.Struct({ email: EmailAddressFromString }),
+);
+
+const decodeSignInCodeBody = Schema.decodeUnknownOption(
+  Schema.Struct({
+    email: EmailAddressFromString,
+    type: Schema.Literal("sign-in"),
+  }),
 );
 
 const createAuthPool = (connectionString: string) =>
@@ -80,7 +95,17 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
       }),
       // Profile editing belongs to the deferred account experience. In particular,
       // the shared users table intentionally has no Better Auth image column.
-      disabledPaths: ["/update-user"],
+      disabledPaths: [
+        "/update-user",
+        // Sign-in codes are the only OTP flow; redemption also confirms.
+        "/email-otp/check-verification-otp",
+        "/email-otp/verify-email",
+        "/email-otp/request-password-reset",
+        "/email-otp/reset-password",
+        "/forget-password/email-otp",
+        "/email-otp/request-email-change",
+        "/email-otp/change-email",
+      ],
       rateLimit: {
         enabled: true,
         window: 60,
@@ -88,6 +113,8 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
         customRules: {
           "/sign-in/magic-link": { window: 60, max: 5 },
           "/magic-link/verify": { window: 60, max: 10 },
+          "/email-otp/send-verification-otp": { window: 60, max: 5 },
+          "/sign-in/email-otp": { window: 60, max: 10 },
         },
       },
       advanced: {
@@ -97,9 +124,53 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
       },
       hooks: {
         before: createAuthMiddleware(async (ctx) => {
+          if (ctx.path === "/email-otp/send-verification-otp") {
+            const body = decodeSignInCodeBody(ctx.body);
+
+            if (Option.isNone(body)) {
+              throw APIError.fromStatus("BAD_REQUEST", {
+                message: "Invalid OTP type",
+              });
+            }
+
+            const email = body.value.email;
+            const account =
+              await ctx.context.internalAdapter.findUserByEmail(email);
+            const user = account?.user;
+
+            // Unknown addresses get the same response, with no stored code.
+            if (!user) return ctx.json({ success: true });
+
+            return {
+              context: {
+                body: { email },
+                context: { user } satisfies SignInCodeContext,
+              },
+            };
+          }
+
+          if (ctx.path === "/sign-in/email-otp") {
+            const body = decodeEmailBody(ctx.body);
+
+            if (Option.isNone(body)) return;
+
+            const account = await ctx.context.internalAdapter.findUserByEmail(
+              body.value.email,
+            );
+
+            return {
+              context: {
+                body: { email: body.value.email },
+                context: {
+                  confirmsEmail: account?.user.emailVerified === false,
+                } satisfies SignInCodeRedemptionContext,
+              },
+            };
+          }
+
           if (ctx.path !== "/sign-in/magic-link") return;
 
-          const body = decodeMagicLinkBody(ctx.body);
+          const body = decodeEmailBody(ctx.body);
 
           if (Option.isNone(body)) return;
 
@@ -124,6 +195,20 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
             },
           };
         }),
+        // Report confirmation only after a code proves mailbox ownership, so
+        // Web can show the same confirmation as a redeemed link.
+        after: createAuthMiddleware(async (ctx) => {
+          if (ctx.path !== "/sign-in/email-otp") return;
+
+          // lint(anti-slop/require-safety-comment-for-type-assertion): The redemption before hook sets confirmsEmail from the stored user; no request body fields enter this context.
+          const context = ctx.context as Partial<SignInCodeRedemptionContext>;
+          const returned = ctx.context.returned;
+
+          if (!context.confirmsEmail || isAPIError(returned)) return;
+          if (typeof returned !== "object" || returned === null) return;
+
+          return ctx.json({ ...returned, confirmation: true });
+        }),
       },
       plugins: [
         magicLink({
@@ -146,6 +231,31 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
               : sendConfirmationLink(email, options.url);
 
             cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
+          },
+        }),
+        emailOTP({
+          disableSignUp: true,
+          expiresIn: 10 * 60,
+          storeOTP: "hashed",
+          allowedAttempts: 3,
+          sendVerificationOTP: ({ otp }, endpoint) => {
+            // lint(anti-slop/require-safety-comment-for-type-assertion): The issuance before hook attaches the stored user; server callers may omit the endpoint context.
+            const context = endpoint?.context as
+              | Partial<SignInCodeContext>
+              | undefined;
+            const user = context?.user;
+
+            if (user) {
+              const email = EmailAddress.make(user.email);
+
+              const send = user.emailVerified
+                ? sendSignInCode(email, otp)
+                : sendConfirmationCode(email, otp);
+
+              cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
+            }
+
+            return Promise.resolve();
           },
         }),
       ],
