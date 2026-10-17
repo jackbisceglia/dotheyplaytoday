@@ -29500,7 +29500,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000849817",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849817",
-    startsAt: "2026-10-17T00:00:00Z",
+    startsAt: "2026-10-18T21:00:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
