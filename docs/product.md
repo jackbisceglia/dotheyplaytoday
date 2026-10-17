@@ -133,8 +133,8 @@ share one email. Every UFC email uses the generic “UFC is on today.”
 headline tile and reads like a sports email: each card shows its event name
 (“UFC 333”, “UFC Fight Night”) above its main event, with the prelims and
 main-card start times. Coverage emails stop there. A fighter's email adds only
-that fighter's own bout and segment start beneath the main event, led by the
-followed fighter; when the fighter headlines, the main event leads with them and
+that fighter's own bout and segment start as a bullet beneath the main event,
+led by the followed fighter; when the fighter headlines, the main event leads with them and
 is not repeated. The rest of the card is never listed. Successful subscriptions are sent at most once per local date
 under ordinary scheduling. Rescheduling to a later local date can send again.
 Post-send correction alerts are outside this version.

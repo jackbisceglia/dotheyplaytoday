@@ -91,6 +91,7 @@ describe("email rendering", () => {
         'src="https://example.com:8080/email/headlines/ufc-is-on-today.png"',
       );
       expect(payload.html).toContain('alt="UFC is on today."');
+      expect(payload.html).not.toContain("&bull;");
       for (const undercard of ["Blanchfield", "Nelson", "Jourdain"]) {
         expect(payload.html).not.toContain(undercard);
       }
@@ -98,7 +99,7 @@ describe("email rendering", () => {
   );
 
   it.effect(
-    "adds only a followed fighter's own bout beneath the main event",
+    "bullets only a followed fighter's own bout beneath the main event",
     () =>
       Effect.gen(function* () {
         yield* send({
@@ -116,9 +117,11 @@ describe("email rendering", () => {
           [
             "UFC Fight Night",
             "Prelims 7:00 PM EDT · Main card 10:00 PM EDT - Joaquin Buckley vs. Mike Malott",
-            "Prelims 7:00 PM EDT - Kyle Nelson vs. Cristian Perez Gonzalez",
+            "  - Prelims 7:00 PM EDT - Kyle Nelson vs. Cristian Perez Gonzalez",
           ].join("\n"),
         );
+        expect(payload.html).toContain("&bull;");
+        expect(payload.html).not.toContain(`class="email-rule"`);
         expect(payload.html).not.toContain("Blanchfield");
         expect(payload.html).not.toContain("Jourdain");
       }),
@@ -163,7 +166,7 @@ describe("email rendering", () => {
         expect(nelson).not.toContain("Blanchfield");
         expect(blanchfield).not.toContain("Nelson");
         expect(blanchfield).toContain(
-          "Main card 10:00 PM EDT - Erin Blanchfield vs. Jasmine Jasudavicius",
+          "  - Main card 10:00 PM EDT - Erin Blanchfield vs. Jasmine Jasudavicius",
         );
       }),
   );
@@ -177,7 +180,7 @@ describe("email rendering", () => {
       });
 
       expect(lastPayload().text).toContain(
-        "Prelims 7:00 PM EDT - Louis Jourdain vs. Opponent TBD",
+        "  - Prelims 7:00 PM EDT - Louis Jourdain vs. Opponent TBD",
       );
     }),
   );

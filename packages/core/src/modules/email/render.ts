@@ -19,13 +19,22 @@ export type EmailRendered = {
 };
 
 // TODO: Move sports-specific matchup rendering into an email/render/sports module.
-/** One matchup entry: "leading <separator> trailing", plus its start time. */
-export type EmailMatchup = typeof EmailMatchup.Type;
-export const EmailMatchup = Schema.Struct({
+const matchupFields = {
   leading: Schema.String,
   separator: Schema.String,
   trailing: Schema.String,
   detail: Schema.String,
+};
+
+/**
+ * One matchup entry: "leading <separator> trailing", plus its start time.
+ * Bullets are related matchups nested beneath it, such as a followed
+ * fighter's bout under a UFC card's main event.
+ */
+export type EmailMatchup = typeof EmailMatchup.Type;
+export const EmailMatchup = Schema.Struct({
+  ...matchupFields,
+  bullets: Schema.optional(Schema.Array(Schema.Struct(matchupFields))),
 });
 
 export const Text = Schema.TaggedStruct("text", { value: Schema.String });
@@ -99,8 +108,14 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-const matchupText = (matchup: EmailMatchup) =>
+const matchupLine = (matchup: Omit<EmailMatchup, "bullets">) =>
   `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
+
+const matchupText = (matchup: EmailMatchup) =>
+  [
+    matchupLine(matchup),
+    ...(matchup.bullets ?? []).map((bullet) => `  - ${matchupLine(bullet)}`),
+  ].join("\n");
 
 const blockPreview = (block: Block): string => {
   switch (block._tag) {
@@ -115,7 +130,7 @@ const blockPreview = (block: Block): string => {
     case "list":
       return block.items.join(", ");
     case "matchups": {
-      const items = block.items.map(matchupText).join(" • ");
+      const items = block.items.map(matchupLine).join(" • ");
 
       return block.title === undefined ? items : `${block.title}: ${items}`;
     }
@@ -185,6 +200,17 @@ const element = {
     `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 16px; line-height: 1.4; color: ${color.ink}; word-break: break-word;">${matchup}</p>
 <p class="email-muted" style="margin: 4px 0 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 14px; line-height: 1.4; color: ${color.muted};">${time}</p>`,
 
+  bullet: (matchup: string, time: string) =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td class="email-muted" valign="top" width="16" style="width: 16px; font-family: ${font.body}; font-size: 15px; line-height: 1.4; color: ${color.muted};">&bull;</td>
+<td>
+<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 600; font-size: 15px; line-height: 1.4; color: ${color.ink}; word-break: break-word;">${matchup}</p>
+<p class="email-muted" style="margin: 2px 0 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 13px; line-height: 1.4; color: ${color.muted};">${time}</p>
+</td>
+</tr>
+</table>`,
+
   groupTitle: (value: string) =>
     `<p class="email-muted" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-weight: 700; font-size: 13px; line-height: 1.4; letter-spacing: 0.06em; text-transform: uppercase; color: ${color.muted};">${value}</p>`,
 
@@ -236,11 +262,19 @@ const blockHtml = (block: Block): string => {
     case "list":
       return ruled(block.items.map((item) => element.item(escapeHtml(item))));
     case "matchups": {
+      const pairing = (matchup: Omit<EmailMatchup, "bullets">) =>
+        `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`;
+
       const items = ruled(
         block.items.map((matchup) =>
-          element.matchup(
-            `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`,
-            escapeHtml(matchup.detail),
+          stack(
+            [
+              element.matchup(pairing(matchup), escapeHtml(matchup.detail)),
+              ...(matchup.bullets ?? []).map((bullet) =>
+                element.bullet(pairing(bullet), escapeHtml(bullet.detail)),
+              ),
+            ],
+            12,
           ),
         ),
       );

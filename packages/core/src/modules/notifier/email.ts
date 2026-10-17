@@ -263,8 +263,9 @@ const fightMatchup = (
 
 /**
  * A card reads like a sports matchup: its event name over the main event, with
- * both broadcast starts. A followed fighter's own bout follows, unless it is
- * the main event, which then leads with them. The rest of the card is omitted.
+ * both broadcast starts. A followed fighter's own bout is a bullet beneath it,
+ * unless it is the main event, which then leads with them. The rest of the
+ * card is omitted.
  */
 const mmaCardMatchups = (
   event: MmaCardEvent,
@@ -291,20 +292,21 @@ const mmaCardMatchups = (
 
   return Matchups.make({
     title: title?.event ?? card.title,
-    items: [
-      ...(headliner === undefined
+    items:
+      headliner === undefined
         ? []
         : [
-            fightMatchup(
-              headliner,
-              [followed, ...mainEvent.titles],
-              `${segmentTime("prelims")} · ${segmentTime("main")}`,
-            ),
-          ]),
-      ...followedFights.map((fight) =>
-        fightMatchup(fight, [followed], segmentTime(fight.placement)),
-      ),
-    ],
+            {
+              ...fightMatchup(
+                headliner,
+                [followed, ...mainEvent.titles],
+                `${segmentTime("prelims")} · ${segmentTime("main")}`,
+              ),
+              bullets: followedFights.map((fight) =>
+                fightMatchup(fight, [followed], segmentTime(fight.placement)),
+              ),
+            },
+          ],
   });
 };
 
