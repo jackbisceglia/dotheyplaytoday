@@ -19,32 +19,27 @@ export type EmailRendered = {
 };
 
 // TODO: Move sports-specific matchup rendering into an email/render/sports module.
-const matchupFields = {
+/** One matchup entry: "leading <separator> trailing", plus its start time. */
+export type EmailMatchup = typeof EmailMatchup.Type;
+export const EmailMatchup = Schema.Struct({
   leading: Schema.String,
   separator: Schema.String,
   trailing: Schema.String,
   detail: Schema.String,
-};
-
-/**
- * One matchup entry: "leading <separator> trailing", plus its start time.
- * Bullets are related matchups nested beneath it, such as a followed
- * fighter's bout under a UFC card's main event.
- */
-export type EmailMatchup = typeof EmailMatchup.Type;
-export const EmailMatchup = Schema.Struct({
-  ...matchupFields,
-  bullets: Schema.optional(Schema.Array(Schema.Struct(matchupFields))),
 });
 
 export const Text = Schema.TaggedStruct("text", { value: Schema.String });
 export const List = Schema.TaggedStruct("list", {
   items: Schema.Array(Schema.String),
 });
-/** Matchups, optionally under a group title such as a UFC card's event name. */
 export const Matchups = Schema.TaggedStruct("matchups", {
-  title: Schema.optional(Schema.String),
   items: Schema.Array(EmailMatchup),
+});
+/** An event led by its own title and times, with related matchups as bullets. */
+export const EventSummary = Schema.TaggedStruct("event", {
+  title: Schema.String,
+  detail: Schema.String,
+  bullets: Schema.Array(EmailMatchup),
 });
 export const Note = Schema.TaggedStruct("note", { value: Schema.String });
 export const Entry = Schema.TaggedStruct("entry", {
@@ -63,6 +58,7 @@ export const Blocks = TaggedUnion([
   Text,
   List,
   Matchups,
+  EventSummary,
   Note,
   Entry,
   Link,
@@ -108,14 +104,8 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-const matchupLine = (matchup: Omit<EmailMatchup, "bullets">) =>
-  `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
-
 const matchupText = (matchup: EmailMatchup) =>
-  [
-    matchupLine(matchup),
-    ...(matchup.bullets ?? []).map((bullet) => `  - ${matchupLine(bullet)}`),
-  ].join("\n");
+  `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
 
 const blockPreview = (block: Block): string => {
   switch (block._tag) {
@@ -129,11 +119,10 @@ const blockPreview = (block: Block): string => {
       return block.text;
     case "list":
       return block.items.join(", ");
-    case "matchups": {
-      const items = block.items.map(matchupLine).join(" • ");
-
-      return block.title === undefined ? items : `${block.title}: ${items}`;
-    }
+    case "matchups":
+      return block.items.map(matchupText).join(" • ");
+    case "event":
+      return `${block.title} - ${block.detail}`;
   }
 };
 
@@ -144,9 +133,12 @@ const blockText = (block: Block): readonly string[] => {
     case "list":
       return block.items.map((item) => `- ${item}`);
     case "matchups":
+      return block.items.map(matchupText);
+    case "event":
       return [
-        ...(block.title === undefined ? [] : [block.title]),
-        ...block.items.map(matchupText),
+        block.title,
+        block.detail,
+        ...block.bullets.map((bullet) => `  - ${matchupText(bullet)}`),
       ];
     case "note":
       return [block.value];
@@ -211,9 +203,6 @@ const element = {
 </tr>
 </table>`,
 
-  groupTitle: (value: string) =>
-    `<p class="email-muted" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.body}; font-size: 14px; line-height: 1.4; color: ${color.muted};">${value}</p>`,
-
   separator: (value: string) =>
     `<span class="email-muted" style="font-weight: 400; color: ${color.muted};">${value}</span>`,
 
@@ -255,34 +244,31 @@ const ruled = (parts: readonly string[]) =>
     `\n${element.spacer(16)}\n${element.rule()}\n${element.spacer(16)}\n`,
   );
 
+const pairingHtml = (matchup: EmailMatchup) =>
+  `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`;
+
 const blockHtml = (block: Block): string => {
   switch (block._tag) {
     case "text":
       return element.paragraph(escapeHtml(block.value));
     case "list":
       return ruled(block.items.map((item) => element.item(escapeHtml(item))));
-    case "matchups": {
-      const pairing = (matchup: Omit<EmailMatchup, "bullets">) =>
-        `${escapeHtml(matchup.leading)} ${element.separator(escapeHtml(matchup.separator))} ${escapeHtml(matchup.trailing)}`;
-
-      const items = ruled(
+    case "matchups":
+      return ruled(
         block.items.map((matchup) =>
-          stack(
-            [
-              element.matchup(pairing(matchup), escapeHtml(matchup.detail)),
-              ...(matchup.bullets ?? []).map((bullet) =>
-                element.bullet(pairing(bullet), escapeHtml(bullet.detail)),
-              ),
-            ],
-            12,
-          ),
+          element.matchup(pairingHtml(matchup), escapeHtml(matchup.detail)),
         ),
       );
-
-      return block.title === undefined
-        ? items
-        : stack([element.groupTitle(escapeHtml(block.title)), items], 2);
-    }
+    case "event":
+      return stack(
+        [
+          element.matchup(escapeHtml(block.title), escapeHtml(block.detail)),
+          ...block.bullets.map((bullet) =>
+            element.bullet(pairingHtml(bullet), escapeHtml(bullet.detail)),
+          ),
+        ],
+        12,
+      );
     case "note":
       return element.note(escapeHtml(block.value));
     case "entry":

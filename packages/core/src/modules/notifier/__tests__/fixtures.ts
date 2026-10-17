@@ -214,7 +214,6 @@ export const ufcCard = ({
     prelims: "2026-10-03T23:00:00.000Z",
     main: "2026-10-04T02:00:00.000Z",
   },
-  fightIds = ["fight-1", "fight-2", "fight-3", "fight-4"],
 } = {}) =>
   decode(EventWithParticipants)({
     id,
@@ -230,7 +229,7 @@ export const ufcCard = ({
         details: {
           _tag: "mma_card",
           title,
-          fightId: fightIds[fight],
+          fightId: `fight-${(fight + 1).toString()}`,
           placement,
         },
       })),

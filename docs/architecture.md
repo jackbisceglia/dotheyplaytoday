@@ -490,9 +490,6 @@ Participant details contain display title, fightId, and required placement (prel
 Subject-event feed associations determine subscription matches, as with sports.
 Only publish fight participants after UFC confirms their segment assignment.
 Within a card, opponents share a fightId; renderers group those rows for display.
-`mma/fights.ts` also owns main-event detection: the card title's surnames
-select the main event, so the dashboard row and the notification email agree on
-the headliner regardless of fight IDs or query order.
 Event and participant row schemas require each row tag to match its details tag
 on reads and writes, including joined event decoding.
 There is no fights table or event-level fights array. The importer validates

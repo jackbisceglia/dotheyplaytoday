@@ -5,11 +5,7 @@ import {
 } from "@dtpt/core/modules/events/joined";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionTiming } from "@dtpt/core/modules/subscriptions/time";
-import {
-  mmaCardTitle,
-  mmaFights,
-  mmaMainEvent,
-} from "@dtpt/core/modules/mma/fights";
+import { mmaFights } from "@dtpt/core/modules/mma/fights";
 import type { MmaEvent } from "@dtpt/core/modules/events/variants/mma.schema";
 import { Array, DateTime, Match } from "effect";
 
@@ -53,6 +49,10 @@ type Fighter = { readonly name: string; readonly followed: boolean };
 
 const normalizeName = (value: string) => value.trim().toLowerCase();
 
+// Card titles name fighters by surname: "Volkanovski" names Alexander Volkanovski.
+const matchesName = (fullName: string, name: string) =>
+  ` ${normalizeName(fullName)}`.endsWith(` ${normalizeName(name)}`);
+
 const followedFighters = (subjects: readonly Subject[]) =>
   subjects.flatMap((subject) =>
     subject._tag === "mma_fighter"
@@ -62,6 +62,27 @@ const followedFighters = (subjects: readonly Subject[]) =>
 
 type Fights = ReturnType<typeof mmaFights>;
 
+// A card title's surnames stand for its main event's fighters, so a followed
+// undercard namesake never matches a headliner. The main event is the bout
+// matching the most of them, first in billing order, so one whose opponent
+// withdrew still counts.
+const titleFighters = (names: readonly string[], fights: Fights) => {
+  const matched = (fight: Fights[number]) =>
+    names.filter((name) =>
+      fight.fighters.some((fighter) => matchesName(fighter.title, name)),
+    ).length;
+  const mainEvent = fights.reduce<Fights[number] | undefined>(
+    (best, fight) =>
+      matched(fight) > (best ? matched(best) : 0) ? fight : best,
+    undefined,
+  );
+  return names.map(
+    (name) =>
+      mainEvent?.fighters.find((fighter) => matchesName(fighter.title, name))
+        ?.title,
+  );
+};
+
 // "UFC 333: Volkanovski vs Evloev" labels the row "UFC 333" and headlines the
 // matchup; the badge already says UFC, so Fight Nights drop it.
 const cardHeading = (
@@ -69,16 +90,17 @@ const cardHeading = (
   fights: Fights,
   followed: readonly string[],
 ) => {
-  const parsed = mmaCardTitle(card.title);
-  if (!parsed) {
+  const [event, matchup] = card.title.split(/:\s*(.*)/s);
+  if (!event || !matchup) {
     return { title: card.title, label: undefined, headliners: [] };
   }
 
-  const { titles } = mmaMainEvent(parsed.names, fights);
+  const names = matchup.split(/\s+vs\.?\s+/i);
+  const titles = titleFighters(names, fights);
   return {
-    title: parsed.matchup,
-    label: card.category === "fight_night" ? "Fight Night" : parsed.event,
-    headliners: parsed.names.map((name, index) => {
+    title: matchup,
+    label: card.category === "fight_night" ? "Fight Night" : event.trim(),
+    headliners: names.map((name, index) => {
       const title = titles[index];
       return {
         name,
@@ -125,10 +147,10 @@ const cardSections = (
   headliners: readonly Fighter[],
   timeFormat: Intl.DateTimeFormat,
 ) => {
-  const billed = mmaMainEvent(
+  const billed = titleFighters(
     headliners.map(({ name }) => name),
     fights,
-  ).titles;
+  );
   const billing = (title: string) => {
     const index = billed.indexOf(title);
     return index === -1 ? billed.length : index;

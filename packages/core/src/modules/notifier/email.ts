@@ -16,18 +16,14 @@ import { Email, type EmailDelivery } from "../email/service.js";
 import { type Lines, makeTiledHeadline } from "../email/headline.js";
 import {
   EmailView,
+  EventSummary,
   Link,
   Matchups,
   type EmailMatchup,
   type EmailRendered,
   type EmailViewProps,
 } from "../email/render.js";
-import {
-  type MmaFight,
-  mmaCardTitle,
-  mmaFights,
-  mmaMainEvent,
-} from "../mma/fights.js";
+import { type MmaFight, mmaFights } from "../mma/fights.js";
 import { EventId } from "../events/schema.js";
 import {
   isEventWithParticipants,
@@ -238,19 +234,15 @@ const segments = {
   main: "Main card",
 } satisfies Record<MmaFight["placement"], string>;
 
-/** Fighters named in `leading` come first, in that order; a lone fighter's opponent is TBD. */
+/** The followed fighter comes first; a lone fighter's opponent is TBD. */
 const fightMatchup = (
   fight: MmaFight,
-  leading: readonly (string | undefined)[],
+  followed: string | undefined,
   detail: string,
 ): EmailMatchup => {
-  const rank = (title: string) => {
-    const index = leading.indexOf(title);
-    return index === -1 ? leading.length : index;
-  };
   const [first, second] = Array.sort(
     Array.map(fight.fighters, (fighter) => fighter.title),
-    Order.mapInput(Order.Number, rank),
+    Order.mapInput(Order.Boolean, (title: string) => title !== followed),
   );
 
   return {
@@ -262,51 +254,30 @@ const fightMatchup = (
 };
 
 /**
- * A card reads like a sports matchup: its event name over the main event, with
- * both broadcast starts. A followed fighter's own bout is a bullet beneath it,
- * unless it is the main event, which then leads with them. The rest of the
- * card is omitted.
+ * The card leads with its own title and broadcast starts. A followed fighter's
+ * bouts are bullets beneath it; the rest of the card is omitted.
  */
-const mmaCardMatchups = (
+const mmaCardSummary = (
   event: MmaCardEvent,
   followed: string | undefined,
   timezone: User["timezone"],
 ) => {
   const card = event.details;
-  const fights = mmaFights(
-    event.participants.map((participant) => participant.details),
-  );
-  const title = mmaCardTitle(card.title);
-  const mainEvent = mmaMainEvent(title?.names ?? [], fights);
-  // Fight ids follow billing order, so the first fight stands in for an
-  // unparseable title's main event.
-  const headliner = mainEvent.fight ?? fights[0];
   const segmentTime = (placement: MmaFight["placement"]) =>
     `${segments[placement]} ${formatStartTime(card.timings[placement], timezone)}`;
 
-  const followedFights = fights.filter(
-    (fight) =>
-      fight.id !== headliner?.id &&
-      fight.fighters.some((fighter) => fighter.title === followed),
+  const followedFights = mmaFights(
+    event.participants.map((participant) => participant.details),
+  ).filter((fight) =>
+    fight.fighters.some((fighter) => fighter.title === followed),
   );
 
-  return Matchups.make({
-    title: title?.event ?? card.title,
-    items:
-      headliner === undefined
-        ? []
-        : [
-            {
-              ...fightMatchup(
-                headliner,
-                [followed, ...mainEvent.titles],
-                `${segmentTime("prelims")} · ${segmentTime("main")}`,
-              ),
-              bullets: followedFights.map((fight) =>
-                fightMatchup(fight, [followed], segmentTime(fight.placement)),
-              ),
-            },
-          ],
+  return EventSummary.make({
+    title: card.title,
+    detail: `${segmentTime("prelims")} · ${segmentTime("main")}`,
+    bullets: followedFights.map((fight) =>
+      fightMatchup(fight, followed, segmentTime(fight.placement)),
+    ),
   });
 };
 
@@ -386,7 +357,7 @@ const getEmailViewProps = Effect.fn("NotifierLayerEmail.getEmailViewProps")(
           headline: makeTiledHeadline(home, ufcLines),
           blocks: [
             ...notification.events.map((event) =>
-              mmaCardMatchups(event, followed, timezone),
+              mmaCardSummary(event, followed, timezone),
             ),
             Link.make({ href: unsubscribeUrl, text: "Unsubscribe" }),
           ],
