@@ -270,8 +270,21 @@ button {
   padding: 14px 16px;
 }
 
-.login-reset {
+.login-form .login-code {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  font-variant-numeric: tabular-nums;
+}
+
+.login-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
   margin-top: 28px;
+}
+
+.login-reset {
   border: 0;
   background: transparent;
   color: var(--muted);

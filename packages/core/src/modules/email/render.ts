@@ -45,9 +45,18 @@ export const Link = Schema.TaggedStruct("link", {
   href: Schema.String,
   text: Schema.String,
 });
+export const Code = Schema.TaggedStruct("code", { value: Schema.String });
 
 export type Block = typeof Blocks.Type;
-export const Blocks = TaggedUnion([Text, List, Matchups, Note, Entry, Link]);
+export const Blocks = TaggedUnion([
+  Text,
+  List,
+  Matchups,
+  Note,
+  Entry,
+  Link,
+  Code,
+]);
 
 export type EmailViewProps = {
   readonly subject: string;
@@ -91,11 +100,11 @@ const escapeHtml = (value: string) =>
 const matchupText = (matchup: EmailMatchup) =>
   `${matchup.detail} - ${matchup.leading} ${matchup.separator} ${matchup.trailing}`;
 
-/** One-line summary of a block, used for inbox preview text. */
 const blockPreview = (block: Block): string => {
   switch (block._tag) {
     case "text":
     case "note":
+    case "code":
       return block.value;
     case "entry":
       return `${block.label}: ${block.value}`;
@@ -122,6 +131,8 @@ const blockText = (block: Block): readonly string[] => {
       return [block.label, block.detail, block.value];
     case "link":
       return [`${block.text}: ${block.href}`];
+    case "code":
+      return [block.value];
   }
 };
 
@@ -191,6 +202,9 @@ ${element.paragraph(value)}
 </tr>
 </table>`,
 
+  code: (value: string) =>
+    `<p class="email-ink" style="margin: 0; mso-line-height-rule: exactly; font-family: ${font.display}; font-weight: 900; font-size: 32px; line-height: 1.1; letter-spacing: 0.24em; color: ${color.ink};">${value}</p>`,
+
   link: (href: string, label: string) =>
     `<a href="${escapeHtml(href)}" class="email-muted" style="display: inline-block; padding: 8px 0; font-family: ${font.body}; font-size: 12px; color: ${color.muted}; text-decoration: underline;">${escapeHtml(label)}</a>`,
 };
@@ -229,6 +243,8 @@ const blockHtml = (block: Block): string => {
       );
     case "link":
       return element.link(block.href, block.text);
+    case "code":
+      return element.code(escapeHtml(block.value));
   }
 };
 

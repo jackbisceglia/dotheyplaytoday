@@ -60,3 +60,4 @@ export const recipient = Schema.decodeUnknownSync(EmailAddressFromString)(
 );
 export const url =
   "https://api.example.com/api/auth/magic-link/verify?token=secret&callbackURL=https%3A%2F%2Fexample.com&errorCallbackURL=https%3A%2F%2Fexample.com";
+export const code = "042719";
