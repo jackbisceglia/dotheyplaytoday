@@ -1,0 +1,59 @@
+name: iOS
+
+on:
+  pull_request:
+    paths:
+      - "packages/ios/**"
+      - "packages/core/src/contracts/**"
+      - "packages/core/src/modules/**/schema.ts"
+      - ".github/workflows/ios.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/ios/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native:
+    runs-on: macos-15
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: packages/ios
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Test portable Swift core
+        run: swift test
+      - name: Select an available iPhone
+        id: simulator
+        run: |
+          xcrun simctl list devices available -j > /tmp/ios-devices.json
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          data = json.load(open('/tmp/ios-devices.json'))
+          phones = [d for runtime, devices in data['devices'].items() if 'iOS' in runtime for d in devices if d['name'].startswith('iPhone')]
+          if not phones:
+              raise SystemExit('No iPhone simulator available')
+          print('id=' + phones[0]['udid'])
+          PY
+      - name: Build and test native app
+        run: |
+          xcodebuild -project DoTheyPlayToday.xcodeproj -scheme DoTheyPlayToday \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}' \
+            -derivedDataPath build -resultBundlePath build/UITests.xcresult \
+            CODE_SIGNING_ALLOWED=NO test
+      - name: Save simulator test results and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: packages/ios/build/UITests.xcresult
+          if-no-files-found: ignore

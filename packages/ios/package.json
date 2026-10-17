@@ -1,0 +1,19 @@
+{
+  "name": "@dtpt/ios",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "ios:build": "bash scripts/build.sh",
+    "ios:test": "swift test",
+    "ios:check": "swift build && swift test",
+    "ios:open": "open DoTheyPlayToday.xcodeproj",
+    "ios:assets": "node scripts/sync-assets.mjs"
+  },
+  "devDependencies": {
+    "@dtpt/core": "workspace:*",
+    "effect": "catalog:"
+  }
+}

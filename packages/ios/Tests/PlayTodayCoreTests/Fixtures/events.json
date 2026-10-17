@@ -1,0 +1,382 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000009000",
+    "userId": "00000000-0000-4000-8000-000000008999",
+    "subjectId": "00000000-0000-4000-8000-000000000102",
+    "subject": {
+      "id": "00000000-0000-4000-8000-000000000102",
+      "_tag": "sports_team",
+      "details": {
+        "_tag": "sports_team",
+        "leagueId": "nba",
+        "location": "Boston",
+        "name": "Celtics",
+        "display": "Boston Celtics",
+        "abbreviation": "BOS",
+        "slug": "boston-celtics"
+      }
+    },
+    "schedule": {
+      "_tag": "fixed_local_time",
+      "sendAtSecondsLocal": 32400
+    },
+    "lastSentAt": null,
+    "events": [
+      {
+        "id": "00000000-0000-4000-8000-000000010000",
+        "_tag": "sports_game",
+        "sourceId": "sports_game:manual:00000000-0000-4000-8000-000000010000",
+        "startsAt": "2026-10-07T23:30:00.000Z",
+        "availability": "active",
+        "details": {
+          "_tag": "sports_game",
+          "leagueId": "nba"
+        },
+        "demoDayOffset": 0,
+        "demoHour": 19,
+        "participants": [
+          {
+            "id": "00000000-0000-4000-8000-000000020000",
+            "eventId": "00000000-0000-4000-8000-000000010000",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "home",
+              "title": "Boston Celtics"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000020001",
+            "eventId": "00000000-0000-4000-8000-000000010000",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "away",
+              "title": "New York Knicks"
+            }
+          }
+        ]
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000010001",
+        "_tag": "sports_game",
+        "sourceId": "sports_game:manual:00000000-0000-4000-8000-000000010001",
+        "startsAt": "2026-10-12T23:30:00.000Z",
+        "availability": "active",
+        "details": {
+          "_tag": "sports_game",
+          "leagueId": "nba"
+        },
+        "demoDayOffset": 5,
+        "demoHour": 19,
+        "participants": [
+          {
+            "id": "00000000-0000-4000-8000-000000020010",
+            "eventId": "00000000-0000-4000-8000-000000010001",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "home",
+              "title": "Boston Celtics"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000020011",
+            "eventId": "00000000-0000-4000-8000-000000010001",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "away",
+              "title": "New York Knicks"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000009001",
+    "userId": "00000000-0000-4000-8000-000000008999",
+    "subjectId": "00000000-0000-4000-8000-200000000147",
+    "subject": {
+      "id": "00000000-0000-4000-8000-200000000147",
+      "_tag": "sports_team",
+      "details": {
+        "_tag": "sports_team",
+        "leagueId": "mlb",
+        "location": "Bronx",
+        "name": "Yankees",
+        "display": "New York Yankees",
+        "abbreviation": "NYY",
+        "slug": "new-york-yankees"
+      }
+    },
+    "schedule": {
+      "_tag": "fixed_local_time",
+      "sendAtSecondsLocal": 32400
+    },
+    "lastSentAt": null,
+    "events": [
+      {
+        "id": "00000000-0000-4000-8000-000000010010",
+        "_tag": "sports_game",
+        "sourceId": "sports_game:manual:00000000-0000-4000-8000-000000010010",
+        "startsAt": "2026-10-08T23:30:00.000Z",
+        "availability": "active",
+        "details": {
+          "_tag": "sports_game",
+          "leagueId": "mlb"
+        },
+        "demoDayOffset": 0,
+        "demoHour": 16,
+        "participants": [
+          {
+            "id": "00000000-0000-4000-8000-000000020100",
+            "eventId": "00000000-0000-4000-8000-000000010010",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "home",
+              "title": "New York Yankees"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000020101",
+            "eventId": "00000000-0000-4000-8000-000000010010",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "away",
+              "title": "Boston Red Sox"
+            }
+          }
+        ]
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000010011",
+        "_tag": "sports_game",
+        "sourceId": "sports_game:manual:00000000-0000-4000-8000-000000010011",
+        "startsAt": "2026-10-13T23:30:00.000Z",
+        "availability": "active",
+        "details": {
+          "_tag": "sports_game",
+          "leagueId": "mlb"
+        },
+        "demoDayOffset": 5,
+        "demoHour": 16,
+        "participants": [
+          {
+            "id": "00000000-0000-4000-8000-000000020110",
+            "eventId": "00000000-0000-4000-8000-000000010011",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "home",
+              "title": "New York Yankees"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000020111",
+            "eventId": "00000000-0000-4000-8000-000000010011",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "away",
+              "title": "Boston Red Sox"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000009002",
+    "userId": "00000000-0000-4000-8000-000000008999",
+    "subjectId": "00000000-0000-4000-8000-000000000226",
+    "subject": {
+      "id": "00000000-0000-4000-8000-000000000226",
+      "_tag": "sports_team",
+      "details": {
+        "_tag": "sports_team",
+        "leagueId": "nfl",
+        "location": "Philadelphia",
+        "name": "Eagles",
+        "display": "Philadelphia Eagles",
+        "abbreviation": "PHI",
+        "slug": "philadelphia-eagles"
+      }
+    },
+    "schedule": {
+      "_tag": "fixed_local_time",
+      "sendAtSecondsLocal": 32400
+    },
+    "lastSentAt": null,
+    "events": [
+      {
+        "id": "00000000-0000-4000-8000-000000010020",
+        "_tag": "sports_game",
+        "sourceId": "sports_game:manual:00000000-0000-4000-8000-000000010020",
+        "startsAt": "2026-10-09T23:30:00.000Z",
+        "availability": "active",
+        "details": {
+          "_tag": "sports_game",
+          "leagueId": "nfl"
+        },
+        "demoDayOffset": 2,
+        "demoHour": 19,
+        "participants": [
+          {
+            "id": "00000000-0000-4000-8000-000000020200",
+            "eventId": "00000000-0000-4000-8000-000000010020",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "home",
+              "title": "Philadelphia Eagles"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000020201",
+            "eventId": "00000000-0000-4000-8000-000000010020",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "away",
+              "title": "New York Giants"
+            }
+          }
+        ]
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000010021",
+        "_tag": "sports_game",
+        "sourceId": "sports_game:manual:00000000-0000-4000-8000-000000010021",
+        "startsAt": "2026-10-14T23:30:00.000Z",
+        "availability": "active",
+        "details": {
+          "_tag": "sports_game",
+          "leagueId": "nfl"
+        },
+        "demoDayOffset": 7,
+        "demoHour": 19,
+        "participants": [
+          {
+            "id": "00000000-0000-4000-8000-000000020210",
+            "eventId": "00000000-0000-4000-8000-000000010021",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "home",
+              "title": "Philadelphia Eagles"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000020211",
+            "eventId": "00000000-0000-4000-8000-000000010021",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "away",
+              "title": "New York Giants"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000009003",
+    "userId": "00000000-0000-4000-8000-000000008999",
+    "subjectId": "00000000-0000-4000-8000-000000000302",
+    "subject": {
+      "id": "00000000-0000-4000-8000-000000000302",
+      "_tag": "sports_team",
+      "details": {
+        "_tag": "sports_team",
+        "leagueId": "nhl",
+        "location": "Boston",
+        "name": "Bruins",
+        "display": "Boston Bruins",
+        "abbreviation": "BOS",
+        "slug": "boston-bruins"
+      }
+    },
+    "schedule": {
+      "_tag": "fixed_local_time",
+      "sendAtSecondsLocal": 32400
+    },
+    "lastSentAt": null,
+    "events": [
+      {
+        "id": "00000000-0000-4000-8000-000000010030",
+        "_tag": "sports_game",
+        "sourceId": "sports_game:manual:00000000-0000-4000-8000-000000010030",
+        "startsAt": "2026-10-10T23:30:00.000Z",
+        "availability": "active",
+        "details": {
+          "_tag": "sports_game",
+          "leagueId": "nhl"
+        },
+        "demoDayOffset": 3,
+        "demoHour": 19,
+        "participants": [
+          {
+            "id": "00000000-0000-4000-8000-000000020300",
+            "eventId": "00000000-0000-4000-8000-000000010030",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "home",
+              "title": "Boston Bruins"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000020301",
+            "eventId": "00000000-0000-4000-8000-000000010030",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "away",
+              "title": "New York Rangers"
+            }
+          }
+        ]
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000010031",
+        "_tag": "sports_game",
+        "sourceId": "sports_game:manual:00000000-0000-4000-8000-000000010031",
+        "startsAt": "2026-10-15T23:30:00.000Z",
+        "availability": "active",
+        "details": {
+          "_tag": "sports_game",
+          "leagueId": "nhl"
+        },
+        "demoDayOffset": 8,
+        "demoHour": 19,
+        "participants": [
+          {
+            "id": "00000000-0000-4000-8000-000000020310",
+            "eventId": "00000000-0000-4000-8000-000000010031",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "home",
+              "title": "Boston Bruins"
+            }
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000020311",
+            "eventId": "00000000-0000-4000-8000-000000010031",
+            "_tag": "sports_game",
+            "details": {
+              "_tag": "sports_game",
+              "role": "away",
+              "title": "New York Rangers"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
