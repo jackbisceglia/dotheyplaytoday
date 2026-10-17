@@ -2,7 +2,7 @@ import { EmailAddressFromString } from "@dtpt/core";
 import { Config } from "effect";
 
 // Bump when checked-in production catalog data changes.
-export const CatalogSeedVersion = "2026-10-16.1";
+export const CatalogSeedVersion = "2026-10-17.1";
 
 export const SeedConfig = Config.all({
   email: Config.schema(EmailAddressFromString, "SEED_EMAIL").pipe(
