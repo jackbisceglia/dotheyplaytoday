@@ -5,13 +5,19 @@ import { DatabaseReadError } from "@dtpt/core/lib/database/errors";
 import { Email } from "@dtpt/core/modules/email/service";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { Events } from "@dtpt/core/modules/events/service";
+import type { EventWithParticipants } from "@dtpt/core/modules/events/joined";
+import { Subject } from "@dtpt/core/modules/subjects/schema";
 import {
   Subscriptions,
   NotificationRecipient,
 } from "@dtpt/core/modules/subscriptions/service";
 import { SubscriptionId } from "@dtpt/core/modules/subscriptions/schema";
 import { UserId, EmailAddress } from "@dtpt/core/modules/users/schema";
-import { notification } from "@dtpt/core/modules/notifier/__tests__/fixtures";
+import {
+  notification,
+  fighter,
+  ufcCard,
+} from "@dtpt/core/modules/notifier/__tests__/fixtures";
 import { digest } from "@dtpt/core/modules/weekly-digest/__tests__/fixtures";
 import { weeklyDigest } from "../index.js";
 
@@ -49,6 +55,7 @@ type HarnessOptions = {
   readonly quiet?: boolean;
   readonly send?: Email["Service"]["send"];
   readonly readFailure?: boolean;
+  readonly events?: readonly EventWithParticipants[];
 };
 const makeHarness = (opts: HarnessOptions = {}) => {
   const sends: {
@@ -76,6 +83,7 @@ const makeHarness = (opts: HarnessOptions = {}) => {
       Events,
       Events.of({
         get: () => Effect.die("unused"),
+        listForUser: () => Effect.die("unused"),
         upsert: () => Effect.die("unused"),
         setParticipants: () => Effect.die("unused"),
         listBySubject: (subjectId, options) =>
@@ -85,6 +93,7 @@ const makeHarness = (opts: HarnessOptions = {}) => {
               return yield* new DatabaseReadError({
                 operation: "test.listBySubject",
               });
+            if (opts.events) return opts.events;
             return opts.quiet
               ? []
               : (digest.teams.find((team) => team.subject.id === subjectId)
@@ -110,6 +119,77 @@ const makeHarness = (opts: HarnessOptions = {}) => {
 };
 
 describe("weekly digest orchestration", () => {
+  it.effect(
+    "keeps UFC and NCAA out of the weekly batch, including mixed rosters",
+    () =>
+      Effect.gen(function* () {
+        const unsupported = [
+          fighter("Test Fighter"),
+          Subject.make({
+            ...otherRecipient.subscription.subject,
+            _tag: "mma_tracking",
+            details: {
+              _tag: "mma_tracking",
+              league: { id: "ufc" },
+              display: "All UFC",
+              scope: "all",
+            },
+          }),
+          Subject.make({
+            ...otherRecipient.subscription.subject,
+            details: {
+              _tag: "sports_team",
+              league: { id: "ncaam", conferenceId: "sec", apRank: null },
+              display: "Test College",
+              name: "College",
+              location: "Test",
+              abbreviation: "TC",
+            },
+          }),
+        ];
+        const picks = unsupported.map((subject) => ({
+          ...otherRecipient,
+          subscription: {
+            ...otherRecipient.subscription,
+            subject,
+            subjectId: subject.id,
+          },
+        }));
+        const excluded = makeHarness({ recipients: picks });
+        yield* weeklyDigest({ now, force: true, dryRun: true }).pipe(
+          Effect.provide(excluded.layer),
+        );
+        expect(excluded.queries).toHaveLength(0);
+        expect(excluded.sends).toHaveLength(0);
+
+        const mixed = makeHarness({
+          recipients: [otherRecipient, ...picks],
+          quiet: true,
+        });
+        yield* weeklyDigest({ now }).pipe(Effect.provide(mixed.layer));
+        expect(mixed.sends).toHaveLength(1);
+        expect(mixed.queries.map((query) => query.subjectId)).toEqual([
+          otherRecipient.subscription.subjectId,
+        ]);
+        expect(mixed.sends[0]?.rendered.body.text).not.toMatch(
+          /Test Fighter|All UFC|Test College/,
+        );
+      }),
+  );
+
+  it.effect(
+    "logs a malformed event without sending an incomplete digest or aborting other users",
+    () =>
+      Effect.gen(function* () {
+        const harness = makeHarness({
+          recipients: [...recipients, otherRecipient],
+          events: [ufcCard()],
+        });
+        yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
+        expect(harness.queries).toHaveLength(5);
+        expect(harness.sends).toHaveLength(0);
+      }),
+  );
   it.effect(
     "sends in one batch regardless of daily time preferences or recipient timezone",
     () =>

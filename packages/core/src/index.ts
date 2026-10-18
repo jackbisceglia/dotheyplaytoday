@@ -85,11 +85,15 @@ export {
 } from "./modules/email/resend.js";
 export { Notification } from "./modules/notifier/notification.js";
 export {
+  renderConfirmationCode,
   renderConfirmationLink,
+  sendConfirmationCode,
   sendConfirmationLink,
 } from "./modules/email/transactional/confirmation.js";
 export {
+  renderSignInCode,
   renderSignInLink,
+  sendSignInCode,
   sendSignInLink,
 } from "./modules/email/transactional/sign-in.js";
 export {

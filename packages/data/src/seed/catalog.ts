@@ -7,12 +7,13 @@ import {
   StringParts,
   Subjects,
 } from "@dtpt/core";
-import { Effect, HashMap, Option, Schema } from "effect";
+import { DateTime, Effect, HashMap, Option, Predicate, Schema } from "effect";
 
-import { SportsSeed } from "../schema/sports.js";
+import { SeedCollection, type SeedCollectionInput } from "../schema/catalog.js";
+import { validateMmaSubject, validateMmaEvent } from "./mma.js";
 import { SeedCollections } from "./index.js";
 
-export class SeedEventResolutionError extends Schema.TaggedErrorClass<SeedEventResolutionError>()(
+export class SeedEventResolutionError extends Schema.TaggedError<SeedEventResolutionError>()(
   "SeedEventResolutionError",
   {
     collectionId: Schema.String,
@@ -21,7 +22,7 @@ export class SeedEventResolutionError extends Schema.TaggedErrorClass<SeedEventR
   },
 ) {}
 
-export class SeedDuplicateEventSourceIdError extends Schema.TaggedErrorClass<SeedDuplicateEventSourceIdError>()(
+export class SeedDuplicateEventSourceIdError extends Schema.TaggedError<SeedDuplicateEventSourceIdError>()(
   "SeedDuplicateEventSourceIdError",
   {
     sourceId: Schema.String,
@@ -30,18 +31,14 @@ export class SeedDuplicateEventSourceIdError extends Schema.TaggedErrorClass<See
   },
 ) {}
 
-export type SportsSeedInput = Schema.Codec.Encoded<typeof SportsSeed>;
-export type SportsSeedCollection = SportsSeed;
-type SportsSeedSubject = SportsSeed["subjects"][number];
-type SportsEventIndex = HashMap.HashMap<EventSourceId, EventId>;
+type SeedSubject = SeedCollection["subjects"][number];
+type EventIndex = HashMap.HashMap<EventSourceId, EventId>;
 
-export const decodeSportsSeedCollections = Schema.decodeUnknownEffect(
-  Schema.Array(SportsSeed),
+export const decodeSeedCollections = Schema.decodeUnknownEffect(
+  Schema.Array(SeedCollection),
 );
 
-export const summarizeCatalog = (
-  collections: readonly SportsSeedCollection[],
-) => {
+export const summarizeCatalog = (collections: readonly SeedCollection[]) => {
   const summary = {
     collections: collections.length,
     subjects: collections.reduce(
@@ -83,7 +80,7 @@ export const summarizeCatalog = (
 };
 
 const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
-  collections: readonly SportsSeedCollection[],
+  collections: readonly SeedCollection[],
 ) {
   const buildEventIdsBySourceId = Effect.fn(function* () {
     const eventIdsBySourceId = new Map<EventSourceId, EventId>();
@@ -131,14 +128,62 @@ const validateFeedIds = Effect.fn("DataSeed.validateFeedIds")(function* (
   yield* validateSubjectFeedIds(eventIdsBySourceId);
 });
 
+const selectFutureEvents = (
+  collections: readonly SeedCollection[],
+  cutoff: DateTime.Utc,
+) => {
+  const skippedSourceIds = new Set<EventSourceId>();
+
+  // If catalogs guarantee startsAt ordering, find the cutoff with an O(log n)
+  // binary search. Filtering feed references would still require a linear scan.
+  const selected = collections.map((collection) => {
+    const events = collection.events.filter((event) => {
+      if (DateTime.isGreaterThanOrEqualTo(event.startsAt, cutoff)) return true;
+
+      skippedSourceIds.add(event.sourceId);
+      return false;
+    });
+
+    return { ...collection, events };
+  });
+
+  return selected.map((collection) => {
+    const subjects = collection.subjects.map((subject) => {
+      const feedIds = subject.feedIds.filter(
+        (sourceId) => !skippedSourceIds.has(sourceId),
+      );
+
+      return { ...subject, feedIds };
+    });
+
+    return { ...collection, subjects };
+  });
+};
+
+export type CatalogSeedOptions = {
+  readonly collections?: readonly SeedCollectionInput[];
+  readonly strategy?: "future" | "all";
+};
+
 export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
-  input?: readonly SportsSeedInput[],
+  options?: CatalogSeedOptions,
 ) {
-  const collections = yield* decodeSportsSeedCollections(
-    input ?? SeedCollections,
+  const decoded = yield* decodeSeedCollections(
+    options?.collections ?? SeedCollections,
   );
 
-  yield* validateFeedIds(collections);
+  yield* validateFeedIds(decoded);
+
+  const strategy = options?.strategy ?? "future";
+  let collections = decoded;
+
+  if (strategy === "future") {
+    const now = yield* DateTime.now;
+    const today = DateTime.startOf(now, "day");
+    const cutoff = DateTime.subtract(today, { days: 1 });
+
+    collections = selectFutureEvents(decoded, cutoff);
+  }
 
   const subjects = yield* Subjects;
   const events = yield* Events;
@@ -149,11 +194,16 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
       Effect.gen(function* () {
         yield* Effect.forEach(
           collections.flatMap((collection) => collection.subjects),
-          (subjectSeed) => {
-            const { feedIds: _feedIds, ...subject } = subjectSeed;
+          (subjectSeed) =>
+            Effect.gen(function* () {
+              if (!Predicate.isTagged(subjectSeed, "sports_team")) {
+                yield* validateMmaSubject(subjectSeed);
+              }
 
-            return subjects.upsert(subject);
-          },
+              const { feedIds: _feedIds, ...subject } = subjectSeed;
+
+              yield* subjects.upsert(subject);
+            }),
           { discard: true },
         );
 
@@ -165,6 +215,14 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
               const event = yield* events.upsert(eventInput);
 
               yield* events.setParticipants(event.id, participants);
+
+              if (Predicate.isTagged(eventSeed, "mma_card")) {
+                yield* validateMmaEvent(eventSeed, event.id);
+                yield* subjects.removeEventFromFeeds(event.id, [
+                  "mma_fighter",
+                  "mma_tracking",
+                ]);
+              }
 
               return [event.sourceId, event.id] as const;
             }),
@@ -205,9 +263,9 @@ export const seedCatalog = Effect.fn("DataSeed.seedCatalog")(function* (
 const resolveEventSource = Effect.fn("DataSeed.resolveEventSource")(
   function* (input: {
     readonly collectionId: string;
-    readonly eventIndex: SportsEventIndex;
+    readonly eventIndex: EventIndex;
     readonly sourceId: EventSourceId;
-    readonly subjectId: SportsSeedSubject["id"];
+    readonly subjectId: SeedSubject["id"];
   }) {
     const eventId = HashMap.get(input.eventIndex, input.sourceId);
 

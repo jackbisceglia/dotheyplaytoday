@@ -17,6 +17,7 @@ import { NotifierLayerEmail } from "@dtpt/core/modules/notifier/email";
 import { EmailLayerResend } from "@dtpt/core/modules/email/resend";
 import { Email } from "@dtpt/core/modules/email/service";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
+import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { isWeeklyDigestBatchTime } from "@dtpt/core/modules/weekly-digest/time";
 import { weeklyDigest } from "../weekly-digest/index.js";
@@ -35,7 +36,8 @@ export const Trigger = {
 } as const;
 
 const NotifyDomainsLayer = pipe(
-  Layer.mergeAll(SubscriptionsLayer, EventsLayer),
+  EventsLayer,
+  Layer.provideMerge(Layer.mergeAll(UsersLayer, SubscriptionsLayer)),
   Layer.provide(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );
@@ -44,7 +46,6 @@ const getJobsDomain = (stage: string) => getManagedServiceDomain("jobs", stage);
 
 export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>()(
   "NotifyJobWorker",
-  // TODO: Remove this typecast when upgrading Alchemy to beta.72 or later.
   Effect.gen(function* () {
     const stack = yield* Stack;
     const domain = getJobsDomain(stack.stage);
@@ -55,7 +56,7 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
       dev: { port: Trigger.port, strictPort: true },
       ...exactOptional(domain, (domain) => ({ domain })),
     };
-  }) as unknown as Cloudflare.WorkerProps,
+  }),
   Effect.gen(function* () {
     // Resources
     const stack = yield* Stack;
@@ -131,7 +132,7 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
 
         const body = bodyResult.success;
         if (pathname === Trigger.weeklyPath) {
-          // Dry runs never build the provider layer or require its configuration.
+          // Dry runs never build or call the provider layer.
           const run = weeklyDigest(body);
           yield* body.dryRun
             ? run.pipe(

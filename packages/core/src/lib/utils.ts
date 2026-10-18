@@ -1,3 +1,7 @@
+import { Option, Schema } from "effect";
+
+const decodeString = Schema.decodeUnknownOption(Schema.String);
+
 /**
  * Naively serializes a value for diagnostics and falls back when JSON stringification fails.
  *
@@ -7,9 +11,10 @@ export const serialize = (value: unknown, fallback?: string): string => {
   const fallbackValue = fallback ?? "<unserializable>";
 
   try {
-    const serialized = JSON.stringify(value) as string | undefined;
-
-    return serialized ?? fallbackValue;
+    return Option.getOrElse(
+      decodeString(JSON.stringify(value)),
+      () => fallbackValue,
+    );
   } catch {
     return fallbackValue;
   }

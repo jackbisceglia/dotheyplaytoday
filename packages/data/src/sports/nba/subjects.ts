@@ -9,7 +9,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Atlanta",
       name: "Hawks",
       display: "Atlanta Hawks",
@@ -23,7 +26,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Brooklyn",
       name: "Nets",
       display: "Brooklyn Nets",
@@ -37,7 +43,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Boston",
       name: "Celtics",
       display: "Boston Celtics",
@@ -51,7 +60,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Charlotte",
       name: "Hornets",
       display: "Charlotte Hornets",
@@ -65,7 +77,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Chicago",
       name: "Bulls",
       display: "Chicago Bulls",
@@ -79,7 +94,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Cleveland",
       name: "Cavaliers",
       display: "Cleveland Cavaliers",
@@ -93,7 +111,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Dallas",
       name: "Mavericks",
       display: "Dallas Mavericks",
@@ -107,7 +128,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Denver",
       name: "Nuggets",
       display: "Denver Nuggets",
@@ -121,7 +145,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Detroit",
       name: "Pistons",
       display: "Detroit Pistons",
@@ -135,7 +162,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Golden State",
       name: "Warriors",
       display: "Golden State Warriors",
@@ -149,7 +179,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Houston",
       name: "Rockets",
       display: "Houston Rockets",
@@ -163,7 +196,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Indiana",
       name: "Pacers",
       display: "Indiana Pacers",
@@ -177,7 +213,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "LA",
       name: "Clippers",
       display: "LA Clippers",
@@ -191,7 +230,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Los Angeles",
       name: "Lakers",
       display: "Los Angeles Lakers",
@@ -205,7 +247,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Memphis",
       name: "Grizzlies",
       display: "Memphis Grizzlies",
@@ -219,7 +264,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Miami",
       name: "Heat",
       display: "Miami Heat",
@@ -233,7 +281,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Milwaukee",
       name: "Bucks",
       display: "Milwaukee Bucks",
@@ -247,7 +298,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Minnesota",
       name: "Timberwolves",
       display: "Minnesota Timberwolves",
@@ -261,7 +315,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "New Orleans",
       name: "Pelicans",
       display: "New Orleans Pelicans",
@@ -275,7 +332,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "New York",
       name: "Knicks",
       display: "New York Knicks",
@@ -289,7 +349,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Oklahoma City",
       name: "Thunder",
       display: "Oklahoma City Thunder",
@@ -303,7 +366,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Orlando",
       name: "Magic",
       display: "Orlando Magic",
@@ -317,7 +383,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Philadelphia",
       name: "76ers",
       display: "Philadelphia 76ers",
@@ -331,7 +400,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Phoenix",
       name: "Suns",
       display: "Phoenix Suns",
@@ -345,7 +417,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Portland",
       name: "Trail Blazers",
       display: "Portland Trail Blazers",
@@ -359,7 +434,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Sacramento",
       name: "Kings",
       display: "Sacramento Kings",
@@ -373,7 +451,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "San Antonio",
       name: "Spurs",
       display: "San Antonio Spurs",
@@ -387,7 +468,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Toronto",
       name: "Raptors",
       display: "Toronto Raptors",
@@ -401,7 +485,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "west",
+      },
       location: "Utah",
       name: "Jazz",
       display: "Utah Jazz",
@@ -415,7 +502,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nba",
+      league: {
+        id: "nba",
+        conferenceId: "east",
+      },
       location: "Washington",
       name: "Wizards",
       display: "Washington Wizards",

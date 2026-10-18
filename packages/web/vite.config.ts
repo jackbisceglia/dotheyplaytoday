@@ -1,4 +1,4 @@
-import cloudflare from "@distilled.cloud/cloudflare-vite-plugin";
+import cloudflare from "@alchemy.run/cloudflare-runtime/vite";
 import solid from "@solidjs/vite-plugin";
 import { defineConfig } from "vite";
 

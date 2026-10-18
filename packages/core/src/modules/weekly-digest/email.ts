@@ -5,13 +5,17 @@ import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
 import { type Lines, makeTiledHeadline } from "../email/headline.js";
 import { EmailView, Link, Links, TeamSchedule, Text } from "../email/render.js";
 import { EventId } from "../events/schema.js";
-import type { EventWithParticipants } from "../events/service.js";
+import {
+  isEventWithParticipants,
+  type EventWithParticipants,
+} from "../events/joined.js";
 import type { Subject } from "../subjects/schema.js";
 import type { WeeklyDigest } from "./schema.js";
+import { supportsWeeklyDigest } from "./scope.js";
 
 export const weeklyDigestLines: Lines = ["Your teams.", "This week."];
 
-export class WeeklyDigestRenderError extends Schema.TaggedErrorClass<WeeklyDigestRenderError>()(
+export class WeeklyDigestRenderError extends Schema.TaggedError<WeeklyDigestRenderError>()(
   "WeeklyDigestRenderError",
   { eventId: EventId, message: Schema.String },
 ) {}
@@ -20,6 +24,15 @@ const matchup = Effect.fn("WeeklyDigest.matchup")(function* (
   subject: Subject,
   event: EventWithParticipants,
 ) {
+  if (
+    !supportsWeeklyDigest(subject) ||
+    !isEventWithParticipants("sports_game")(event)
+  ) {
+    return yield* new WeeklyDigestRenderError({
+      eventId: event.id,
+      message: "Unsupported weekly subject/event combination",
+    });
+  }
   const home = event.participants.filter(
     (participant) => participant.details.role === "home",
   );

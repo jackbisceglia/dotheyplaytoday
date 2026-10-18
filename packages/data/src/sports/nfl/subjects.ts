@@ -10,7 +10,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Arizona",
       name: "Cardinals",
       display: "Arizona Cardinals",
@@ -42,7 +45,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Atlanta",
       name: "Falcons",
       display: "Atlanta Falcons",
@@ -74,7 +80,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Baltimore",
       name: "Ravens",
       display: "Baltimore Ravens",
@@ -106,7 +115,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Buffalo",
       name: "Bills",
       display: "Buffalo Bills",
@@ -138,7 +150,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Carolina",
       name: "Panthers",
       display: "Carolina Panthers",
@@ -170,7 +185,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Chicago",
       name: "Bears",
       display: "Chicago Bears",
@@ -202,7 +220,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Cincinnati",
       name: "Bengals",
       display: "Cincinnati Bengals",
@@ -234,7 +255,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Cleveland",
       name: "Browns",
       display: "Cleveland Browns",
@@ -266,7 +290,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Dallas",
       name: "Cowboys",
       display: "Dallas Cowboys",
@@ -298,7 +325,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Denver",
       name: "Broncos",
       display: "Denver Broncos",
@@ -330,7 +360,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Detroit",
       name: "Lions",
       display: "Detroit Lions",
@@ -362,7 +395,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Green Bay",
       name: "Packers",
       display: "Green Bay Packers",
@@ -394,7 +430,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Houston",
       name: "Texans",
       display: "Houston Texans",
@@ -426,7 +465,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Indianapolis",
       name: "Colts",
       display: "Indianapolis Colts",
@@ -458,7 +500,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Jacksonville",
       name: "Jaguars",
       display: "Jacksonville Jaguars",
@@ -490,7 +535,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Kansas City",
       name: "Chiefs",
       display: "Kansas City Chiefs",
@@ -522,7 +570,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Las Vegas",
       name: "Raiders",
       display: "Las Vegas Raiders",
@@ -554,7 +605,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Los Angeles",
       name: "Chargers",
       display: "Los Angeles Chargers",
@@ -586,7 +640,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Los Angeles",
       name: "Rams",
       display: "Los Angeles Rams",
@@ -618,7 +675,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Miami",
       name: "Dolphins",
       display: "Miami Dolphins",
@@ -650,7 +710,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Minnesota",
       name: "Vikings",
       display: "Minnesota Vikings",
@@ -682,7 +745,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "New England",
       name: "Patriots",
       display: "New England Patriots",
@@ -714,7 +780,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "New Orleans",
       name: "Saints",
       display: "New Orleans Saints",
@@ -746,7 +815,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "New York",
       name: "Giants",
       display: "New York Giants",
@@ -778,7 +850,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "New York",
       name: "Jets",
       display: "New York Jets",
@@ -810,7 +885,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Philadelphia",
       name: "Eagles",
       display: "Philadelphia Eagles",
@@ -842,7 +920,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Pittsburgh",
       name: "Steelers",
       display: "Pittsburgh Steelers",
@@ -874,7 +955,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "San Francisco",
       name: "49ers",
       display: "San Francisco 49ers",
@@ -906,7 +990,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Seattle",
       name: "Seahawks",
       display: "Seattle Seahawks",
@@ -938,7 +1025,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Tampa Bay",
       name: "Buccaneers",
       display: "Tampa Bay Buccaneers",
@@ -970,7 +1060,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "afc",
+      },
       location: "Tennessee",
       name: "Titans",
       display: "Tennessee Titans",
@@ -1002,7 +1095,10 @@ export const Teams = {
     _tag: "sports_team",
     details: {
       _tag: "sports_team",
-      leagueId: "nfl",
+      league: {
+        id: "nfl",
+        conferenceId: "nfc",
+      },
       location: "Washington",
       name: "Commanders",
       display: "Washington Commanders",

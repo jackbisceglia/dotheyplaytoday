@@ -4,6 +4,9 @@ import {
   ParticipantInsert,
   SubjectInsert,
 } from "@dtpt/core";
+import { SportTeamSubject } from "@dtpt/core/modules/subjects/variants/sport.schema";
+import { SportParticipant } from "@dtpt/core/modules/events/participants/variants/sport.schema";
+import { SportEvent } from "@dtpt/core/modules/events/variants/sport.schema";
 import { HashSet, Schema } from "effect";
 
 import { SeedCollectionId } from "./seed.js";
@@ -11,15 +14,23 @@ import { SeedCollectionId } from "./seed.js";
 export type SportSubjectSeed = typeof SportSubjectSeed.Type;
 export const SportSubjectSeed = Schema.Struct({
   ...SubjectInsert.fields,
+  _tag: SportTeamSubject.fields._tag,
+  details: SportTeamSubject,
   feedIds: Schema.Array(EventSourceId),
 });
 
 export type SportEventSeed = typeof SportEventSeed.Type;
 export const SportEventSeed = Schema.Struct({
   ...EventInsert.fields,
+  _tag: SportEvent.fields._tag,
+  details: SportEvent,
   participants: Schema.Array(
     ParticipantInsert.mapFields(
-      ({ eventId: _eventId, id: _id, ...fields }) => fields,
+      ({ eventId: _eventId, id: _id, ...fields }) => ({
+        ...fields,
+        _tag: SportParticipant.fields._tag,
+        details: SportParticipant,
+      }),
     ),
   ).check(
     Schema.isLengthBetween(2, 2),

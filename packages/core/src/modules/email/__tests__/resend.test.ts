@@ -20,7 +20,12 @@ import {
 
 const resendMock = vi.hoisted(() => ({
   constructor: vi.fn(),
-  send: vi.fn(),
+  send: vi.fn<
+    (
+      payload: CreateEmailOptions,
+      options?: CreateEmailRequestOptions,
+    ) => Promise<CreateEmailResponse>
+  >(),
 }));
 
 vi.mock("resend", () => ({
@@ -178,7 +183,9 @@ describe("EmailLayerResend", () => {
         },
       );
 
-      const [payload] = resendMock.send.mock.calls[0] as [CreateEmailOptions];
+      const payload = resendMock.send.mock.calls[0]?.[0];
+
+      if (!payload) throw new Error("Expected an email send call");
       expect(payload).not.toHaveProperty("headers");
     }).pipe(Effect.provide(EmailLayerStaticTest)),
   );

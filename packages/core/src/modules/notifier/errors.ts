@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-export class NotifierError extends Schema.TaggedErrorClass<NotifierError>()(
+export class NotifierError extends Schema.TaggedError<NotifierError>()(
   "NotifierError",
   {
     layer: Schema.String,

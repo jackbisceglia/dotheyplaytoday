@@ -1,10 +1,16 @@
+import { exactOptional } from "@dtpt/core/lib/utils";
+import { EventsResponse } from "@dtpt/core/contracts/events";
 import { makeAuthFixture } from "../auth/__tests__/fixtures.js";
 import { RuntimeContext } from "alchemy/RuntimeContext";
 import {
   DatabaseReadError,
   DatabaseWriteError,
 } from "@dtpt/core/lib/database/errors";
-import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import { Platform } from "alchemy/Http/Platform";
+import {
+  Events,
+  EventWithParticipants,
+} from "@dtpt/core/modules/events/service";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { Subjects } from "@dtpt/core/modules/subjects/service";
 import {
@@ -19,7 +25,7 @@ import {
   UserNotFound,
   Users,
 } from "@dtpt/core/modules/users/service";
-import { Context, Effect, FileSystem, Layer, Path, Schema } from "effect";
+import { Context, Effect, Layer, Schema } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { Pool } from "pg";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
@@ -45,7 +51,7 @@ const subject = Schema.decodeUnknownSync(Subject)({
   _tag: "sports_team",
   details: {
     _tag: "sports_team",
-    leagueId: "nba",
+    league: { id: "nba", conferenceId: "east" },
     display: "Boston Celtics",
     location: "Boston",
     name: "Celtics",
@@ -86,6 +92,9 @@ const makeFixture = async () => {
   const subjects = vi.fn<Subjects["Service"]["list"]>(() =>
     Effect.succeed([subject]),
   );
+  const listEvents = vi.fn<Events["Service"]["listForUser"]>(() =>
+    Effect.succeed([]),
+  );
   const check = vi.fn<RateLimiter["Service"]["check"]>(() => Effect.void);
   const transactions: ("begin" | "commit" | "rollback")[] = [];
   const pool = new Pool();
@@ -109,13 +118,12 @@ const makeFixture = async () => {
           replaceForUser: replace,
         }),
         Layer.mock(Subjects, { list: subjects }),
+        Layer.mock(Events, { listForUser: listEvents }),
         Layer.succeed(RateLimiter, { check }),
         mockTransactions(Effect.succeed(pool), (event) =>
           transactions.push(event),
         ),
-        CloudflareHttpApiPlatformLayer,
-        FileSystem.layerNoop({}),
-        Path.layer,
+        Platform,
       ]),
       Layer.provide(fixture.layer),
     ),
@@ -129,9 +137,11 @@ const makeFixture = async () => {
         headers: {
           "content-type": "application/json",
           origin: "https://www.example.com",
-          ...(cookie ? { cookie } : {}),
+          ...exactOptional(cookie === "" ? undefined : cookie, (cookie) => ({
+            cookie,
+          })),
         },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        ...exactOptional(body, (body) => ({ body: JSON.stringify(body) })),
       }),
       Context.make(RuntimeContext, {
         Type: "test",
@@ -159,6 +169,7 @@ const makeFixture = async () => {
     transactions,
     signIn,
     subjects,
+    listEvents,
     get,
     create,
     getByToken,
@@ -169,7 +180,7 @@ const makeFixture = async () => {
   };
 };
 
-const reads = ["/user", "/user/subscription"];
+const reads = ["/user", "/user/subscription", "/user/events"];
 
 describe("assembled HTTP API", () => {
   it("requires a session to update picks", async () => {
@@ -310,6 +321,7 @@ describe("assembled HTTP API", () => {
     }
     expect(f.get).not.toHaveBeenCalled();
     expect(f.list).not.toHaveBeenCalled();
+    expect(f.listEvents).not.toHaveBeenCalled();
   });
 
   it("uses only the session identity and returns domain projections with credentialed CORS", async () => {
@@ -362,6 +374,7 @@ describe("assembled HTTP API", () => {
       [new DatabaseReadError({ operation: "Users.get" }), 500],
     ] as const) {
       f.get.mockReturnValue(Effect.fail(error));
+      f.listEvents.mockReturnValue(Effect.fail(error));
       for (const path of reads) {
         const response = await f.request(path, undefined, cookie);
         expect(response.status).toBe(status);
@@ -651,5 +664,73 @@ describe("assembled HTTP API", () => {
     expect((await f.request("/account")).status).toBe(404);
     expect((await f.request("/ping")).status).toBe(200);
     expect((await f.request("/subjects")).status).toBe(200);
+  });
+});
+
+describe("user events", () => {
+  it("returns the signed-in user's subscription events with participants", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    const game = Schema.decodeUnknownSync(EventWithParticipants)({
+      id: "00000000-0000-4000-8000-000000000010",
+      _tag: "sports_game",
+      sourceId: "sports_game:manual:00000000-0000-4000-8000-000000000010",
+      startsAt: "2026-03-08T23:30:00.000Z",
+      availability: "active",
+      details: { _tag: "sports_game", leagueId: "nba" },
+      participants: [
+        {
+          id: "00000000-0000-4000-8000-000000000011",
+          eventId: "00000000-0000-4000-8000-000000000010",
+          _tag: "sports_game",
+          details: {
+            _tag: "sports_game",
+            role: "home",
+            title: "Boston Celtics",
+          },
+        },
+      ],
+    });
+    f.listEvents.mockReturnValue(
+      Effect.succeed([{ ...subscription, events: [game] }]),
+    );
+    const response = await f.request(
+      "/user/events?userId=other&timezone=Asia/Tokyo",
+      undefined,
+      cookie,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true",
+    );
+    const body = Schema.decodeUnknownSync(EventsResponse)(
+      await response.json(),
+    );
+    expect(Schema.encodeSync(EventsResponse)(body)).toEqual([
+      {
+        ...Schema.encodeSync(SubscriptionWithSubject)(subscription),
+        events: [Schema.encodeSync(EventWithParticipants)(game)],
+      },
+    ]);
+    expect(f.listEvents).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(f.get).not.toHaveBeenCalled();
+    expect(f.list).not.toHaveBeenCalled();
+  });
+
+  it("supports empty subscriptions and maps event failures to uncached errors", async () => {
+    const f = await makeFixture();
+    const cookie = await f.signIn();
+    f.listEvents.mockReturnValue(Effect.succeed([]));
+    const empty = await f.request("/user/events", undefined, cookie);
+    expect(empty.status).toBe(200);
+    expect(await empty.json()).toEqual([]);
+    expect(f.listEvents).toHaveBeenCalledExactlyOnceWith(user.id);
+    f.listEvents.mockReturnValue(
+      Effect.fail(new DatabaseReadError({ operation: "Events.listBySubject" })),
+    );
+    const failed = await f.request("/user/events", undefined, cookie);
+    expect(failed.status).toBe(500);
+    expect(failed.headers.get("cache-control")).toBe("no-store");
   });
 });

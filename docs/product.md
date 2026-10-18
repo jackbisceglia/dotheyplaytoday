@@ -6,9 +6,11 @@
 
 **Subject** and **Event** are intentionally reusable domain terms. Sports teams and games are the current production implementation, but the model can support other event-driven subjects without redefining the core behavior.
 
-Registration uses `POST /api/user`. Users can subscribe to up to four teams. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
+Registration uses `POST /api/user`. Users can select up to four picks shared across teams, UFC fighters, and UFC card coverage. New registration saves the user, timezone, teams, and schedule together. Submitting signup again preserves all existing preferences and returns `DuplicateSignup` (HTTP 409), while requesting another magic link.
 
 ## Dashboard
+
+The `/home` heading reads “Welcome back.”
 
 Signed-in users see their selected teams on `/home` as a fixed set of roster
 tiles, one per allowed pick, under a sentence naming the send time. Edit, or the
@@ -19,11 +21,36 @@ remaining teams. The send time applies to all selected teams. Cancel discards
 the draft; Save persists the picks and time together. Retained teams keep their
 delivery history. Email and timezone are not shown.
 
+In view mode, the schedule below the roster shows today plus the next thirteen
+local calendar days, grouped by day and ordered by game start, with quiet
+“Today” or “Monday, Oct 5” group headings and light row separators. Each row
+puts a neutral, medium-weight local start time beside the teams and home/away
+matchup, and ends with a light grey league tag. Matching participant sets at the same start time appear once, including
+when both teams are subscribed; the first subscription supplies the row’s order.
+Both subscribed sides show their emoji and bold nickname within that one row.
+Rematches and doubleheaders at different start times have separate rows.
+Cancelled games are excluded. An empty window reads “No events in the next 14 days.” Editing replaces the list with the
+picker while keeping the heading, send-time sentence, and roster anchored.
+
+Hovering a roster tile with a mouse previews that team's games: the tile
+takes the picker's selected fill, and every other row, and any day heading
+without one of its games, fades and loses its color. Clicking or tapping a tile
+filters the schedule to that team instead: the other rows and days collapse so
+its games slide up together, reading “No Saints games in the next 14 days.” if
+it has none. The filter holds until the same tile is pressed again, which is how
+touch screens get it, and outranks hovering another tile. It's recorded in the
+URL as `?team=mlb-mil` (league and abbreviation). A link for a team that isn't
+picked shows the full schedule, and Edit clears the filter.
+
+Supported sports subjects include NBA, NFL, MLB, NHL, and NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences). Only provider-confirmed game starts become notification-capable events.
+
+Conferences organize team browsing; they are not separate subscriptions. UFC offers fighter and event-coverage subscriptions. Broader support for combat sports such as boxing and Muay Thai is tracked in [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
+
 ## Notifications
 
 - Only subscriptions whose user has `emailVerified: true` enter notification processing. Pending users are excluded at the database query, including forced and dry runs.
 - A schedule is a fixed local wall-clock time interpreted in the user's IANA timezone.
-- Event start times are stored as UTC instants. An event matches when its instant falls on the current calendar date in the user's timezone.
+- Event start times are required UTC instants for all sports, including UFC. An event matches when its instant falls on the current calendar date in the user's timezone.
 - Normal notification reads exclude cancelled events.
 - Notifications are scoped to one subscription and therefore one subject.
 - Multiple matching events for the same subscribed subject on the same day are combined into one notification.
@@ -34,7 +61,7 @@ delivery history. Email and timezone are not shown.
 
 ## Weekly digest
 
-- Verified users with followed teams receive one weekly email by default,
+- Verified users following NBA, NFL, MLB, or NHL teams receive one weekly email by default,
   alongside their existing game-day reminders. Separate weekly preferences are
   deferred; changing the daily send time does not change weekly delivery.
 - Delivery is one Monday 9:00 AM Eastern (`America/New_York`) batch for all
@@ -44,7 +71,11 @@ delivery history. Email and timezone are not shown.
   before delivery. All recipients cover the same dates. Queries include each
   recipient's local Monday midnight and exclude the next Monday midnight,
   using calendar arithmetic across daylight saving changes.
-- The By team email includes every followed team, chronological dates,
+- Weekly coverage remains NBA, NFL, MLB, and NHL. NCAA and UFC picks are
+  excluded, including on mixed rosters; users with only those picks receive no
+  weekly email. Extending weekly coverage to these sports is a separate product
+  decision.
+- The By team email includes every followed team in weekly scope, chronological dates,
   opponents, `vs.` / `@`, and local start times. A fixture between two followed
   teams appears in both sections. Cancelled games are excluded.
 - Quiet weeks still produce an email. Each team with no matching fixtures shows
@@ -75,15 +106,18 @@ delivery history. Email and timezone are not shown.
 - Duplicate signup shows: “You already have an account. We’ve emailed you a link to sign in. Your existing teams and schedule haven’t changed.”
 - Magic links expire after 15 minutes and can be redeemed once. Redemption verifies email ownership and creates a session. Saved subscriptions become eligible under ordinary scheduling rules; confirmation does not send an immediate notification or reset last-sent state.
 - Link issuance follows the signup transaction; email delivery runs in the API Worker's background execution lifetime. Issuance or delivery failures leave saved preferences intact, and the user can request a replacement link.
-- Migration 0005 grants notification eligibility to exactly ten owner-trusted existing subscribers identified in the [production rollout audit](./runbooks/production-deploy.md#notification-eligibility-and-grandfathering-rollout). This deliberate delivery decision is not evidence of mailbox ownership and creates no sessions; these users still redeem a magic link to sign in.
+- Migration 0005 grants notification eligibility to exactly ten owner-trusted existing subscribers identified in the [production rollout audit](./runbooks/production-deploy.md#notification-eligibility-and-grandfathering-rollout). This deliberate delivery decision is not evidence of mailbox ownership and creates no sessions; these users still redeem a magic link or email code to sign in.
 - Pending registration, the recipient filter, and the fixed-cohort migration must reach production together.
 
 ## Authentication
 
 - Authentication is passwordless and available only to notification users who already exist under their normalized email address.
-- Requesting a magic link returns the same success response for known and unknown addresses; unknown addresses do not receive email and cannot create users.
-- A valid magic link verifies the existing user and creates a persistent server-side session. Authentication cookies remain host-only to the API origin.
-- Successful registration and sign-in links return to Web `/home`. Links requested while unverified include `confirmation=1`; already-verified users return without it. Failed or expired links return to `/` without the confirmation marker.
+- Signup requests a magic link. Signing in from the Web sign-in modal requests a six-digit email code; the magic-link API remains available.
+- Requesting a magic link or a sign-in code returns the same success response for known, unknown, and unconfirmed addresses; unknown addresses do not receive email and cannot create users.
+- Existing unconfirmed users receive “Confirm your updates” email with the requested code or link. Confirmed users receive sign-in email with the requested code or link. Redeeming either confirms email ownership if needed and signs in.
+- Sign-in codes expire after 10 minutes and can be redeemed once. Three incorrect attempts invalidate a code. Requesting a new code replaces the previous one.
+- A valid magic link verifies the existing user and creates a persistent server-side session; a valid email code verifies ownership and creates the same session. Authentication cookies remain host-only to the API origin.
+- Successful registration and sign-in links return to Web `/home`. Links requested while unverified include `confirmation=1`; already-verified users return without it. Failed or expired links return to `/` without the confirmation marker. Successful code sign-in also returns to `/home`, with `confirmation=1` only when the address was unconfirmed before redemption. Code requests and failed redemptions never expose confirmation status; the confirmation message appears only after proof of ownership.
 
 ## Feedback
 
@@ -98,8 +132,8 @@ delivery history. Email and timezone are not shown.
 | Term                | Meaning                                                                                                  |
 | ------------------- | -------------------------------------------------------------------------------------------------------- |
 | User                | A notification recipient identified by email, timezone, and unsubscribe identity.                        |
-| Subject             | Something a user can follow; currently a supported sports team.                                          |
-| Event               | A time-bound occurrence that may cause a notification; currently a game.                                 |
+| Subject             | Something a user can follow; a supported sports team, UFC fighter, or UFC coverage choice.               |
+| Event               | A time-bound occurrence that may cause a notification; a game or UFC card.                               |
 | Subject Event       | The association that says an event is relevant to a subject.                                             |
 | Participant         | An entity taking part in an event, used to describe the event independently of subscriptions.            |
 | Subscription        | A user's choice to follow one subject on a schedule, including its last successful send state.           |
@@ -108,3 +142,79 @@ delivery history. Email and timezone are not shown.
 | Notifier            | The notification-specific boundary that renders and sends a `Notification`.                              |
 | Email               | The provider-neutral transport boundary that sends a complete outbound email.                            |
 | Transactional Email | An application workflow that owns its input, rendering, and delivery through `Email`.                    |
+
+## UFC
+
+Fighters are independent subjects. Card coverage is a single Off / Numbered /
+All UFC events choice; All includes numbered events and Fight Nights, excluding
+Contender Series and standalone Ultimate Fighter events/exhibitions. Each fighter
+and each enabled coverage choice uses one pick. Coverage changes preserve fighters.
+
+The UFC picker offers compact PPVs (numbered events) and All tiles, in that
+order. Tap the selected tile again to turn coverage off. With an empty fighter
+search, the list shows the men's P4P top 15 in rank order. Typing searches all
+supported fighters, including women and unranked fighters, alphabetically.
+Search transliterates names and queries to ASCII and ignores case, spaces, and
+punctuation; an empty search key shows the P4P top 15. Long results scroll
+inside the list, and the page keeps its length while filtering so the search box
+stays put.
+Each fighter's nullable `p4p` field records the men's ranking; missing values in
+older records decode as null.
+
+Cards match coverage or participating fighters. The dashboard merges
+matches by card ID. Each card's row labels it with its event name (“UFC 333”,
+or “Fight Night”) above the main-event matchup, bolding only followed
+fighters. Tapping the row expands its lineup by surname in billing order: the
+main card, then the prelims, each beside its local start time. Time, emoji,
+and league badge sit on the matchup line, including expanded cards.
+Emails retain subject-scoped sports behavior: following both opponents and card
+coverage can send three emails, while multiple same-day cards for one subject
+share one email. Every UFC email uses the generic “UFC is on today.”
+headline tile. Each card leads with its full title (“UFC Fight Night: Buckley vs
+Malott”) and its main-card start (“8:00 PM EDT, main card”); coverage emails stop
+there. A fighter's email adds only that fighter's bout as a smaller, regular-weight bullet beneath
+the card, followed fighter first, naming its segment (“Main card”, or “Prelims”
+with the earlier prelims start), even when they headline.
+The rest of the card is never listed. Successful subscriptions are sent at most once per local date
+under ordinary scheduling. Rescheduling to a later local date can send again.
+Post-send correction alerts are outside this version.
+
+Every card has a required event start instant, chosen as the earliest confirmed
+broadcast start. This is the sole anchor for local dates, schedules, and ordinary
+reminders, exactly as for sports games. The MMA variant adds a timings object
+with required prelims and main timestamps. Early prelims belong to prelims, whose
+start is the earliest confirmed preliminary broadcast. Cards without both
+confirmed broadcast times remain outside the published catalog.
+Emails and schedules use those fields for enrichment, never individual fight
+start estimates. Do not invent missing segment times. Do not import a new card
+until its event and main-card starts are confirmed. Incomplete source updates
+retain previously confirmed timings; a confirmed postponement with no replacement
+time must explicitly deactivate the card until a new start is confirmed.
+Cancelled cards don't qualify. A card's fights and participant rows describe its current
+lineup; withdrawals remove a fight or update its participants. New fights enter
+the catalog only after UFC confirms their prelims/main placement. Keep existing
+confirmed placement when an incomplete source update omits it. The checked-in
+card and participant snapshot is authoritative. When reviewing incomplete source data, retain known fights and
+metadata unless a change is confirmed. Catalog publication is a separate rollout
+step; coverage choices apply to catalogued UFC events.
+
+See the [UFC catalog runbook](./runbooks/update-ufc-catalog.md) for timing,
+reconciliation, source authority, and rollout details.
+
+## NCAA men's basketball
+
+The `NCAAM` picker uses the same team cards as the pro leagues, narrowed by a
+pill-styled dropdown with no visible label. It offers Top 25 first, then a
+Conferences group listing each conference that has teams, sorted by name. Top
+25 is the default and shows ranked teams in rank order with each card's rank in
+its corner; ranked teams outside our coverage leave real gaps rather than
+renumbering. Before any team has a rank, the Top 25 option is absent and the
+first conference is selected. Choosing another league resets the dropdown.
+There is no school search.
+
+From 900px wide the dropdown sits right-aligned on the league-pill line; below
+that it takes its own line, and on phones it spans the full width.
+
+A team's optional `apRank` records its latest AP Top 25 position; an absent key
+means unranked. Conferences only filter the picker; teams remain the only
+NCAAM subjects.

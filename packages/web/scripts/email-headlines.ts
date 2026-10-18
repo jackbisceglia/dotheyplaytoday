@@ -9,14 +9,22 @@ import {
   type Lines,
 } from "@dtpt/core/modules/email/headline";
 import { confirmationLines } from "@dtpt/core/modules/email/transactional/confirmation";
-import { signInLines } from "@dtpt/core/modules/email/transactional/sign-in";
-import { gameDayLines, kickoffLines } from "@dtpt/core/modules/notifier/email";
+import {
+  signInCodeLines,
+  signInLines,
+} from "@dtpt/core/modules/email/transactional/sign-in";
+import {
+  gameDayLines,
+  kickoffLines,
+  ufcLines,
+} from "@dtpt/core/modules/notifier/email";
 import { weeklyDigestLines } from "@dtpt/core/modules/weekly-digest/email";
 import { SeedCollections } from "@dtpt/data/seed/index";
+import { Predicate } from "effect";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import satori from "satori";
+import satori, { type Font } from "satori";
 
 import { el, INK, loadFont, mascot, type Node } from "./brand.ts";
 
@@ -40,9 +48,9 @@ const publicDir = fileURLToPath(new URL("../public/", import.meta.url));
 const font = await loadFont("ArchivoCondensed-Black.ttf");
 const fonts = [
   { name: "Archivo Condensed", data: font, weight: 900, style: "normal" },
-] as never;
+] satisfies Font[];
 
-const line = (children: unknown): Node =>
+const line = (children: Node): Node =>
   el(
     "div",
     {
@@ -129,16 +137,21 @@ if (contentHeight !== HEIGHT) {
 }
 
 const teams = SeedCollections.flatMap((collection) =>
-  collection.subjects.map((subject) => gameDayLines(subject.details)),
+  collection.subjects.flatMap((subject) =>
+    Predicate.isTagged(subject.details, "sports_team")
+      ? [gameDayLines(subject.details)]
+      : [],
+  ),
 );
 
-// Teams that share a name ("Kings", "Giants") share one image.
 const headlines = [
   ...new Map(
     [
       signInLines,
+      signInCodeLines,
       confirmationLines,
       kickoffLines,
+      ufcLines,
       weeklyDigestLines,
       ...teams,
     ].map((lines) => [buildHeadlineImagePath(lines), lines]),
@@ -154,7 +167,7 @@ await rm(path.join(publicDir, "email/headlines"), {
 for (const [file, lines] of headlines) {
   await assertFits(lines);
 
-  const svg = await satori(tile(lines) as never, {
+  const svg = await satori(tile(lines), {
     width: WIDTH * SCALE,
     height: HEIGHT * SCALE,
     fonts,

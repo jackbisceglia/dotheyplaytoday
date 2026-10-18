@@ -46,12 +46,12 @@ const isRetriableError = (error: EmailError) =>
     Match.exhaustive,
   );
 
-export class ResendInstantiationError extends Schema.TaggedErrorClass<ResendInstantiationError>()(
+export class ResendInstantiationError extends Schema.TaggedError<ResendInstantiationError>()(
   "ResendInstantiationError",
   { cause: Schema.Defect() },
 ) {}
 
-export class ResendRequestError extends Schema.TaggedErrorClass<ResendRequestError>()(
+export class ResendRequestError extends Schema.TaggedError<ResendRequestError>()(
   "ResendRequestError",
   { cause: Schema.Defect() },
 ) {}

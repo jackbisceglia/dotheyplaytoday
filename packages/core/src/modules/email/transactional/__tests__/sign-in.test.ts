@@ -4,13 +4,19 @@ import {
   resendMock,
   resetEmailMock,
   url,
+  code,
 } from "./fixtures.js";
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
 import { beforeEach } from "vitest";
 
 import { EmailResponseError } from "../../errors.js";
-import { renderSignInLink, sendSignInLink } from "../sign-in.js";
+import {
+  renderSignInCode,
+  renderSignInLink,
+  sendSignInCode,
+  sendSignInLink,
+} from "../sign-in.js";
 
 describe("sign-in email", () => {
   beforeEach(resetEmailMock);
@@ -70,4 +76,47 @@ describe("sign-in email", () => {
       expect(resendMock.send).toHaveBeenCalledOnce();
     }).pipe(Effect.provide(EmailTestLayer));
   });
+});
+
+describe("sign-in code email", () => {
+  beforeEach(resetEmailMock);
+
+  it.effect("renders the code in text and HTML without a link", () =>
+    Effect.gen(function* () {
+      const rendered = yield* renderSignInCode(code);
+      expect(rendered.subject).toBe("Your dotheyplaytoday sign-in code");
+      expect(rendered.body.text).toContain(
+        `Enter this code to sign in:\n\n${code}`,
+      );
+      expect(rendered.body.text).toContain("10 minutes");
+      expect(rendered.body.text).toContain("only be used once");
+      expect(rendered.body.html).toContain(`>${code}</p>`);
+      expect(rendered.body.html).toContain(
+        "/email/headlines/your-sign-in-code.png",
+      );
+      expect(rendered.body.html).not.toContain('href="https://api');
+      expect(rendered.body.html).not.toMatch(
+        new RegExp(`display: none[^>]*>[^<]*${code}`),
+      );
+      expect(rendered.metadata).toBeUndefined();
+    }).pipe(Effect.provide(EmailTestLayer)),
+  );
+
+  it.effect(
+    "sends one email with the recipient, code, and idempotency key",
+    () =>
+      Effect.gen(function* () {
+        yield* sendSignInCode(recipient, code);
+        expect(resendMock.send).toHaveBeenCalledOnce();
+        expect(resendMock.send.mock.calls[0]?.[0]).toMatchObject({
+          from: "dotheyplaytoday <sender@example.com>",
+          to: recipient,
+          subject: "Your dotheyplaytoday sign-in code",
+        });
+        expect(resendMock.send.mock.calls[0]?.[0].text).toContain(code);
+        expect(resendMock.send.mock.calls[0]?.[1]).toEqual({
+          idempotencyKey: "delivery-id",
+        });
+      }).pipe(Effect.provide(EmailTestLayer)),
+  );
 });

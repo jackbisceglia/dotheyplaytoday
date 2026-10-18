@@ -1,22 +1,37 @@
+import { toggleSubscriptionSelection } from "@dtpt/core/modules/subscriptions/selection";
 import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import { SubscriptionPolicy } from "@dtpt/core/modules/subscriptions/policy";
-import { createMemo, createStore, Show } from "solid-js";
+import { Match } from "effect";
+import { useSearchParams } from "@solidjs/router";
+import { createSignal, createStore, Show } from "solid-js";
 import type { ParentProps } from "solid-js";
 
+import type { SubjectsResult } from "../subjects.js";
 import { withApiClient } from "../api.js";
 import { useSelectionRejection } from "../ui/useSelectionRejection.js";
-import { getSubjects } from "../subjects.js";
 import { isValidSendTime, sendTime } from "../time.js";
 import { CatalogPicker } from "./CatalogPicker.jsx";
 import type { Preferences } from "./preferences.js";
 import { Roster } from "./Roster.jsx";
+import { Schedule } from "./Schedule.jsx";
+import type { ScheduleRow } from "./schedule.js";
 import { SendTimeSentence } from "./SendTimeSentence.jsx";
 
 const capacity = SubscriptionPolicy.subject.constraints.max;
 
+const subjectKey = (subject: Subject) =>
+  Match.value(subject.details).pipe(
+    Match.tag(
+      "sports_team",
+      (team) => `${team.league.id}-${team.abbreviation.toLowerCase()}`,
+    ),
+    Match.tag("mma_fighter", "mma_tracking", () => subject.id),
+    Match.exhaustive,
+  );
+
 type FormState = {
   mode: "view" | "editing" | "saving";
-  teams: readonly Subject[];
+  picks: readonly Subject[];
   seconds: number;
   error: string | undefined;
   message: string | undefined;
@@ -24,9 +39,11 @@ type FormState = {
 
 export function Form(props: {
   readonly preferences: Preferences;
+  readonly subjects: SubjectsResult;
+  readonly scheduleRows: readonly ScheduleRow[];
   readonly onSaved: () => void;
 }) {
-  const savedTeams = () =>
+  const savedSubjects = () =>
     props.preferences.subscriptions.map((subscription) => subscription.subject);
   const savedTimes = () => [
     ...new Set(
@@ -35,31 +52,39 @@ export function Form(props: {
       ),
     ),
   ];
-  // Read here rather than in the picker, which only mounts while editing: the
-  // form lives as long as the page, so the router keeps the preloaded catalog
-  // cached and Edit opens without fetching it again.
-  const subjects = createMemo(() => getSubjects());
   const [state, setState] = createStore<FormState>({
     mode: "view",
-    teams: [],
+    picks: [],
     seconds: sendTime.default,
     error: undefined,
     message: undefined,
   });
   const rejection = useSelectionRejection(
-    `You can pick up to ${capacity.toString()} teams. Remove one to make room.`,
+    `You can make up to ${capacity.toString()} picks. Remove one to make room.`,
   );
   let editButton: HTMLButtonElement | undefined;
   let editorTitle: HTMLHeadingElement | undefined;
   const isEditing = () => state.mode !== "view";
   const isSaving = () => state.mode === "saving";
-  const teams = () => (isEditing() ? state.teams : savedTeams());
-  const isEmptyDraft = () => isEditing() && state.teams.length === 0;
+  const picks = () => (isEditing() ? state.picks : savedSubjects());
+  const isEmptyDraft = () => isEditing() && state.picks.length === 0;
+  // Hover previews matching events; a pin filters to them and takes precedence.
+  // Ignore a URL pin when that subject is no longer selected.
+  const [search, setSearch] = useSearchParams();
+  const [hoveredId, setHoveredId] = createSignal<string>();
+  const pinnedSubject = () =>
+    savedSubjects().find((subject) => subjectKey(subject) === search.team);
+  const pinnedId = () => pinnedSubject()?.id;
+  const setPinnedSubject = (subject: Subject | undefined) => {
+    setSearch({ team: subject && subjectKey(subject) }, { replace: true });
+  };
 
   const beginEdit = () => {
+    setHoveredId(undefined);
+    setPinnedSubject(undefined);
     setState((draft) => {
       draft.mode = "editing";
-      draft.teams = savedTeams();
+      draft.picks = savedSubjects();
       draft.seconds = savedTimes()[0] ?? sendTime.default;
       draft.error = undefined;
       draft.message = undefined;
@@ -75,17 +100,15 @@ export function Form(props: {
     rejection.clearRejection();
     queueMicrotask(() => editButton?.focus());
   };
-  const toggle = (team: Subject) => {
+  const toggle = (subject: Subject) => {
     if (state.mode !== "editing") return;
-    const isSelected = state.teams.some((picked) => picked.id === team.id);
-    if (!isSelected && state.teams.length >= capacity) {
-      rejection.rejectSelection(team.id);
+    const next = toggleSubscriptionSelection(state.picks, subject);
+    if (next.length > capacity) {
+      rejection.rejectSelection(subject.id);
       return;
     }
     setState((draft) => {
-      draft.teams = isSelected
-        ? draft.teams.filter((picked) => picked.id !== team.id)
-        : [...draft.teams, team];
+      draft.picks = next;
       draft.error = undefined;
     });
     rejection.clearRejection();
@@ -93,7 +116,7 @@ export function Form(props: {
   const save = async (event: SubmitEvent) => {
     event.preventDefault();
     if (state.mode !== "editing") return;
-    const subjectIds = state.teams.map((team) => team.id);
+    const subjectIds = state.picks.map((subject) => subject.id);
     const [first, ...rest] = subjectIds;
     // Save is disabled for an empty draft; this narrows the tuple.
     if (first === undefined) return;
@@ -138,16 +161,16 @@ export function Form(props: {
       onSubmit={(event) => void save(event)}
     >
       <DashboardHeading>
-        <Show when={!isEditing()}>
-          <button
-            ref={editButton}
-            class="dashboard-edit"
-            type="button"
-            onClick={beginEdit}
-          >
-            Edit
-          </button>
-        </Show>
+        <button
+          ref={editButton}
+          class="dashboard-edit"
+          type="button"
+          disabled={isEditing()}
+          aria-hidden={isEditing() ? "true" : undefined}
+          onClick={beginEdit}
+        >
+          Edit
+        </button>
       </DashboardHeading>
       <SendTimeSentence
         savedTimes={savedTimes()}
@@ -161,20 +184,34 @@ export function Form(props: {
         }}
       />
       <p class="form-hint">
-        Your weekly schedule arrives every Monday, including weeks with no
-        games.
+        Weekly schedules for NBA, NFL, MLB, and NHL arrive every Monday,
+        including weeks with no games.
       </p>
       <p class="visually-hidden" aria-live="polite">
-        {teams().length} of {capacity} teams picked
+        {picks().length} of {capacity} picks selected
       </p>
       <Roster
-        teams={teams()}
+        subjects={picks()}
         capacity={capacity}
         editing={isEditing()}
         saving={isSaving()}
         onAdd={beginEdit}
         onRemove={toggle}
+        focusedId={pinnedId() ?? hoveredId()}
+        pinnedId={pinnedId()}
+        onPreview={setHoveredId}
+        onPin={(subject) => {
+          setPinnedSubject(pinnedId() === subject.id ? undefined : subject);
+        }}
       />
+
+      <Show when={!isEditing()}>
+        <Schedule
+          rows={props.scheduleRows}
+          previewId={hoveredId()}
+          pinnedSubject={pinnedSubject()}
+        />
+      </Show>
 
       <Show when={isEditing()}>
         <section class="dashboard-section" aria-labelledby="editor-heading">
@@ -190,11 +227,11 @@ export function Form(props: {
           <fieldset
             class="dashboard-picker"
             disabled={isSaving()}
-            data-full={state.teams.length >= capacity ? "true" : undefined}
+            data-full={state.picks.length >= capacity ? "true" : undefined}
           >
             <CatalogPicker
-              subjects={subjects()}
-              selected={new Set(state.teams.map((team) => team.id))}
+              subjects={props.subjects}
+              selected={new Set(state.picks.map((subject) => subject.id))}
               rejectedSelectionId={rejection.rejectedSelectionId()}
               onToggle={toggle}
             />
@@ -250,7 +287,7 @@ export function Form(props: {
   );
 }
 
-// Rendered by the error state too, so the title never shifts.
+// Shared by the form and its load-error state.
 export function DashboardHeading(props: ParentProps) {
   return (
     <div class="dashboard-heading">

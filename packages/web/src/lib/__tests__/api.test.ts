@@ -20,6 +20,7 @@ it("sends the typed user operations to their new URLs with browser credentials",
       }),
     )
     .mockResolvedValueOnce(Response.json([]))
+    .mockResolvedValueOnce(Response.json([]))
     .mockResolvedValueOnce(Response.json({ ok: true }))
     .mockResolvedValueOnce(Response.json({ ok: true }));
   vi.stubGlobal("fetch", fetch);
@@ -33,6 +34,7 @@ it("sends the typed user operations to their new URLs with browser credentials",
     expect(await withApiClient((client) => client.subscription.list())).toEqual(
       [],
     );
+    expect(await withApiClient((client) => client.events.list())).toEqual([]);
     const create = () =>
       withApiClient((client) =>
         client.user.create({
@@ -66,6 +68,7 @@ it("sends the typed user operations to their new URLs with browser credentials",
     ).toEqual([
       ["https://api.example.com/api/user", "GET", "include"],
       ["https://api.example.com/api/user/subscription", "GET", "include"],
+      ["https://api.example.com/api/user/events", "GET", "include"],
       ["https://api.example.com/api/user", "POST", "include"],
       ["https://api.example.com/api/user/unsubscribe", "POST", "include"],
     ]);

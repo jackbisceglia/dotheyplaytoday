@@ -7,9 +7,9 @@
     "node": ">=24.18.0"
   },
   "scripts": {
-    "dev": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy dev alchemy.run.ts",
-    "dev:seed": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy destroy alchemy.run.ts --yes && alchemy dev alchemy.run.ts",
-    "dev:destroy": "stage=\"$(pnpm -s alchemy:stage)\" && export stage && alchemy destroy alchemy.run.ts",
+    "dev": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy dev alchemy.run.ts --env-file .env",
+    "dev:seed": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy destroy alchemy.run.ts --yes --env-file .env && alchemy dev alchemy.run.ts --env-file .env",
+    "dev:destroy": "ALCHEMY_STAGE=\"$(pnpm -s alchemy:stage)\" && export ALCHEMY_STAGE && alchemy destroy alchemy.run.ts",
     "alchemy:stage": "node scripts/get-stage.ts",
     "deploy": "alchemy deploy alchemy.run.ts",
     "destroy": "alchemy destroy alchemy.run.ts",
@@ -18,37 +18,40 @@
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
     "test": "pnpm @core build && vitest run",
+    "test:oxlint": "vitest run --config vitest.oxlint.config.ts",
     "test:watch": "vitest",
     "@core": "pnpm -F @dtpt/core",
     "@data": "pnpm -F @dtpt/data",
     "@web": "pnpm -F @dtpt/web",
     "@api": "pnpm -F @dtpt/api",
     "@jobs": "pnpm -F @dtpt/jobs",
-    "prepare": "pnpm exec effect-language-service patch"
+    "prepare": "pnpm exec effect-tsgo patch --typescript"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "4.20260626.1",
-    "@effect/language-service": "catalog:",
     "@effect/platform-node": "catalog:",
-    "@effect/vitest": "catalog:",
-    "@eslint/js": "^9.36.0",
+    "@effect/tsgo": "catalog:",
+    "@oxlint/plugins": "1.87.0",
     "@tsconfig/bun": "^1.0.7",
     "@tsconfig/strictest": "^2.0.6",
     "@types/bun": "^1.2.16",
+    "@types/node": "^24.19.1",
     "alchemy": "catalog:",
     "effect": "catalog:",
-    "eslint": "^9.36.0",
-    "eslint-config-prettier": "^10.1.8",
+    "oxlint": "1.87.0",
+    "oxlint-tsgolint": "7.0.2003",
     "prettier": "3.6.2",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.44.1",
-    "vite": "8.1.5",
-    "vitest": "^3.2.4",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "5.0.3",
     "ws": "^8.21.0"
   },
   "pnpm": {
     "overrides": {
-      "@distilled.cloud/planetscale@0.29.1": "0.30.1"
+      "effect": "4.0.0-rc.117",
+      "@effect/platform-node-shared": "4.0.0-rc.117",
+      "vite": "8.2.1",
+      "vitest": "5.0.3"
     },
     "onlyBuiltDependencies": [
       "esbuild"

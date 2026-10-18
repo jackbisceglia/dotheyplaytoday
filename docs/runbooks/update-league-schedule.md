@@ -66,6 +66,10 @@ notes on other leagues are at the end.
    for corrections) describing the source query and which games were
    deliberately left out.
 
+## UFC
+
+UFC cards, fights, and fighters use a separate [catalog update workflow](./update-ufc-catalog.md). UFC uses fighter participants and requires confirmed broadcast start times.
+
 ## Other leagues
 
 NBA and NHL events are generated from ESPN schedule entries and have

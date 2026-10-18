@@ -1,4 +1,16 @@
-import { Array, pipe, Schema } from "effect";
+import { Array, Effect, pipe, Schema, SchemaIssue } from "effect";
+
+export const hasMatchingDetailsTag = Schema.makeFilter(
+  (row: {
+    readonly _tag: string;
+    readonly details: { readonly _tag: string };
+  }) => row._tag === row.details._tag || "Row tag must match details tag",
+);
+
+export const whenSchemaIssue =
+  <A, E, R>(callback: (issue: SchemaIssue.Issue) => Effect.Effect<A, E, R>) =>
+  (error: unknown) =>
+    SchemaIssue.isIssue(error) ? callback(error) : Effect.void;
 
 type TaggedMember<TTag extends PropertyKey, TLiteral extends string> =
   Schema.Top & {
@@ -58,6 +70,7 @@ export function tagsFromTaggedUnion<
   >,
 >(
   union: Schema.Union<TMembers>,
+  // lint(anti-slop/require-safety-comment-for-type-assertion): Only the overload for _tag permits callers to omit this argument.
   tag: TTag = "_tag" as TTag,
 ): Array.NonEmptyArray<TMembers[number]["fields"][TTag]["schema"]["literal"]> {
   return pipe(

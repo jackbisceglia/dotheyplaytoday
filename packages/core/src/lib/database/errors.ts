@@ -25,7 +25,7 @@ const fields = {
   metadata: Schema.optional(Schema.Record(Schema.String, Schema.Unknown)),
 };
 
-export class DatabaseReadError extends Schema.TaggedErrorClass<DatabaseReadError>()(
+export class DatabaseReadError extends Schema.TaggedError<DatabaseReadError>()(
   "DatabaseReadError",
   fields,
 ) {
@@ -34,7 +34,7 @@ export class DatabaseReadError extends Schema.TaggedErrorClass<DatabaseReadError
   }
 }
 
-export class DatabaseWriteError extends Schema.TaggedErrorClass<DatabaseWriteError>()(
+export class DatabaseWriteError extends Schema.TaggedError<DatabaseWriteError>()(
   "DatabaseWriteError",
   fields,
 ) {
@@ -43,7 +43,7 @@ export class DatabaseWriteError extends Schema.TaggedErrorClass<DatabaseWriteErr
   }
 }
 
-export class DatabaseDeleteError extends Schema.TaggedErrorClass<DatabaseDeleteError>()(
+export class DatabaseDeleteError extends Schema.TaggedError<DatabaseDeleteError>()(
   "DatabaseDeleteError",
   fields,
 ) {
@@ -52,7 +52,7 @@ export class DatabaseDeleteError extends Schema.TaggedErrorClass<DatabaseDeleteE
   }
 }
 
-export class DatabaseTransactionError extends Schema.TaggedErrorClass<DatabaseTransactionError>()(
+export class DatabaseTransactionError extends Schema.TaggedError<DatabaseTransactionError>()(
   "DatabaseTransactionError",
   fields,
 ) {
@@ -103,6 +103,7 @@ export const mapToTransactionError =
 
     return effect.pipe(
       Effect.mapError(
+        // lint(anti-slop/require-safety-comment-for-type-assertion): isSqlError excludes SQL errors in the false branch; generic E cannot be narrowed by TS.
         (cause): Exclude<E, SqlError.SqlError> | DatabaseTransactionError =>
           SqlError.isSqlError(cause)
             ? makeError(cause)

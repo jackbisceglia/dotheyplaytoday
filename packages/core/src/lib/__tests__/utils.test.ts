@@ -16,9 +16,12 @@ describe("serialize", () => {
     expect(serialize(circular)).toBe("<unserializable>");
   });
 
-  it("uses the fallback when JSON stringification returns undefined", () => {
-    expect(serialize(undefined)).toBe("<unserializable>");
-  });
+  it.each([undefined, () => "ignored", Symbol("ignored")])(
+    "uses the fallback when JSON stringification returns undefined for %s",
+    (value) => {
+      expect(serialize(value)).toBe("<unserializable>");
+    },
+  );
 
   it("uses a custom fallback when provided", () => {
     const circular: Record<string, unknown> = {};
@@ -30,10 +33,17 @@ describe("serialize", () => {
 });
 
 describe("exactOptional", () => {
+  it.each([null, false, 0, ""])("preserves the defined value %s", (value) => {
+    expect(exactOptional(value, (value) => ({ key: value }))).toStrictEqual({
+      key: value,
+    });
+  });
+
   it("constructs an object only for a defined value", () => {
     expect(exactOptional("value", (value) => ({ key: value }))).toEqual({
       key: "value",
     });
-    expect(exactOptional(undefined, (value) => ({ key: value }))).toEqual({});
+    const omitted = exactOptional(undefined, (value) => ({ key: value }));
+    expect(Object.hasOwn(omitted, "key")).toBe(false);
   });
 });

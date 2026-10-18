@@ -3,19 +3,19 @@ import { revalidate } from "@solidjs/router";
 import { Result } from "effect";
 
 import { getSubjects, type SubjectsResult } from "../subjects.js";
-import { TeamPicker } from "../ui/TeamPicker.jsx";
+import { SubjectPicker } from "../ui/SubjectPicker.jsx";
 
 export function CatalogPicker(props: {
   readonly subjects: SubjectsResult;
   readonly selected: ReadonlySet<string>;
   readonly rejectedSelectionId: string | undefined;
-  readonly onToggle: (team: Subject) => void;
+  readonly onToggle: (subject: Subject) => void;
 }) {
   return (
     <>
       {Result.match(props.subjects, {
         onSuccess: (subjects) => (
-          <TeamPicker
+          <SubjectPicker
             subjects={subjects}
             selected={props.selected}
             rejectedSelectionId={props.rejectedSelectionId}
@@ -24,7 +24,7 @@ export function CatalogPicker(props: {
         ),
         onFailure: () => (
           <p class="form-error dashboard-load-error" role="alert">
-            We couldn't load the teams.{" "}
+            We couldn't load the available picks.{" "}
             <button
               type="button"
               class="btn btn-secondary"

@@ -127,6 +127,7 @@ export function Feedback() {
                 name="type"
                 value={type()}
                 onChange={(event) =>
+                  // lint(anti-slop/require-safety-comment-for-type-assertion): The select renders only the two FeedbackType options below.
                   setType(event.currentTarget.value as FeedbackType)
                 }
               >

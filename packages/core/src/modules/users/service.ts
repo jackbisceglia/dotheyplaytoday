@@ -12,12 +12,12 @@ import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import { User, UserInsert, usersTable } from "./schema.js";
 
-export class UserAlreadyExists extends Schema.TaggedErrorClass<UserAlreadyExists>()(
+export class UserAlreadyExists extends Schema.TaggedError<UserAlreadyExists>()(
   "UserAlreadyExists",
   {},
 ) {}
 
-export class UserNotFound extends Schema.TaggedErrorClass<UserNotFound>()(
+export class UserNotFound extends Schema.TaggedError<UserNotFound>()(
   "UserNotFound",
   {
     key: Schema.Literals(["id", "email", "unsubscribeToken"]),

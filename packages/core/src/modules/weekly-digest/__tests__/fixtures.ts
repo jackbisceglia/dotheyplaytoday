@@ -1,42 +1,60 @@
 import { DateTime } from "effect";
 
 import { EventId } from "../../events/schema.js";
-import { EventWithParticipants } from "../../events/service.js";
+import {
+  EventWithParticipants,
+  isEventWithParticipants,
+} from "../../events/joined.js";
 import { notification } from "../../notifier/__tests__/fixtures.js";
-import { Subject, SubjectId } from "../../subjects/schema.js";
+import { SubjectId } from "../../subjects/schema.js";
+import { SportTeamSubject } from "../../subjects/variants/sport.schema.js";
 import { WeeklyDigest } from "../schema.js";
+
+const baseSubject = notification.subject;
+const baseEvent = notification.events[0];
+if (
+  baseSubject.details._tag !== "sports_team" ||
+  !isEventWithParticipants("sports_game")(baseEvent)
+) {
+  throw new Error("Weekly fixtures require a sports team and game");
+}
+const details = baseSubject.details;
+const game = baseEvent;
 
 const team = (
   name: string,
-  leagueId: Subject["details"]["leagueId"],
+  league: SportTeamSubject["league"],
   index: number,
-) =>
-  Subject.make({
-    ...notification.subject,
-    id: SubjectId.make(
-      `00000000-0000-4000-8000-${index.toString().padStart(12, "0")}`,
-    ),
-    details: {
-      ...notification.subject.details,
-      name,
-      display: `New York ${name}`,
-      location: "New York",
-      leagueId,
-    },
-  });
-export const mets = team("Mets", "mlb", 310);
-export const knicks = team("Knicks", "nba", 311);
-export const giants = team("Giants", "nfl", 312);
-export const rangers = team("Rangers", "nhl", 313);
+) => ({
+  ...baseSubject,
+  id: SubjectId.make(
+    `00000000-0000-4000-8000-${index.toString().padStart(12, "0")}`,
+  ),
+  details: {
+    ...details,
+    name,
+    display: `New York ${name}`,
+    location: "New York",
+    league,
+  },
+});
+export const mets = team("Mets", { id: "mlb", conferenceId: "nl" }, 310);
+export const knicks = team("Knicks", { id: "nba", conferenceId: "east" }, 311);
+export const giants = team("Giants", { id: "nfl", conferenceId: "nfc" }, 312);
+export const rangers = team(
+  "Rangers",
+  { id: "nhl", conferenceId: "east" },
+  313,
+);
 
 export const makeGame = (
-  subject: Subject,
+  subject: ReturnType<typeof team>,
   opponent: string,
   startsAt: string,
   index: number,
   home = true,
 ) => {
-  const base = notification.events[0];
+  const base = game;
   const id = EventId.make(
     `00000000-0000-4000-8000-${index.toString().padStart(12, "0")}`,
   );
@@ -44,7 +62,7 @@ export const makeGame = (
     ...base,
     id,
     startsAt: DateTime.makeUnsafe(startsAt),
-    details: { ...base.details, leagueId: subject.details.leagueId },
+    details: { ...base.details, leagueId: subject.details.league.id },
     participants: base.participants.map((participant) => ({
       ...participant,
       eventId: id,

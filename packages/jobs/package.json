@@ -17,7 +17,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start:notify": "node dist/notify/cli.js",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "oxlint .",
     "format": "prettier --write .",
     "test": "pnpm --filter @dtpt/core build && pnpm -w exec vitest run packages/jobs/src"
   },

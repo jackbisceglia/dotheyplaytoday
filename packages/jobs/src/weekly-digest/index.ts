@@ -7,6 +7,7 @@ import {
 import { renderWeeklyDigest } from "@dtpt/core/modules/weekly-digest/email";
 import { WeeklyDigest } from "@dtpt/core/modules/weekly-digest/schema";
 import { weeklyDigestWindow } from "@dtpt/core/modules/weekly-digest/time";
+import { supportsWeeklyDigest } from "@dtpt/core/modules/weekly-digest/scope";
 import { Array, DateTime, Effect } from "effect";
 
 import { NotifyOptions } from "../notify/index.js";
@@ -51,6 +52,7 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
   const selected = recipients.filter(
     (recipient) =>
       recipient.user.emailVerified &&
+      supportsWeeklyDigest(recipient.subscription.subject) &&
       (!opts.userEmail || recipient.user.email === opts.userEmail),
   );
   const groups = Array.groupBy(selected, (recipient) => recipient.user.id);

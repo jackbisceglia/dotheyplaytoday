@@ -1,41 +1,42 @@
 import { Effect, Option } from "effect";
 import { Command, Flag } from "effect/unstable/cli";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
+import { exactOptional } from "@dtpt/core/lib/utils";
 
 import { JobsCliRuntime } from "../runtime.js";
 import { NotifyOptions } from "./index.js";
 import { Trigger } from "./worker.js";
 
-const DryRunFlag = Flag.boolean("dry-run").pipe(
+const DryRunFlag = Flag.Boolean("dry-run").pipe(
   Flag.withSchema(NotifyOptions.fields.dryRun),
   Flag.withDefault(false),
 );
-const ForceFlag = Flag.boolean("force").pipe(
+const ForceFlag = Flag.Boolean("force").pipe(
   Flag.withSchema(NotifyOptions.fields.force),
   Flag.withDefault(false),
   Flag.withDescription(
     "Bypass daily due-time and already-sent checks; unnecessary for weekly runs",
   ),
 );
-const NowFlag = Flag.string("now").pipe(
+const NowFlag = Flag.String("now").pipe(
   Flag.withSchema(NotifyOptions.fields.now),
   Flag.optional,
   Flag.withDescription("Run as if the job started at this ISO UTC instant"),
 );
-const UserFlag = Flag.string("user").pipe(
+const UserFlag = Flag.String("user").pipe(
   Flag.withSchema(NotifyOptions.fields.userEmail),
   Flag.optional,
   Flag.withDescription("Process only recipients for this email address"),
 );
 
-const NotifyCommand = Command.make(
+export const NotifyCommand = Command.make(
   "notify",
   {
     dryRun: DryRunFlag,
     force: ForceFlag,
     now: NowFlag,
     user: UserFlag,
-    weekly: Flag.boolean("weekly").pipe(
+    weekly: Flag.Boolean("weekly").pipe(
       Flag.withDefault(false),
       Flag.withDescription("Run the weekly digest instead of daily reminders"),
     ),
@@ -51,8 +52,8 @@ const NotifyCommand = Command.make(
       HttpClientRequest.schemaBodyJson(NotifyOptions)({
         dryRun: opts.dryRun,
         force: opts.force,
-        ...(now && { now }),
-        ...(userEmail && { userEmail }),
+        ...exactOptional(now, (now) => ({ now })),
+        ...exactOptional(userEmail, (userEmail) => ({ userEmail })),
       }),
     );
 
@@ -68,9 +69,11 @@ const NotifyCommand = Command.make(
 const NotifyCli = Command.run(NotifyCommand, { version: "0.0.0" });
 
 export async function main() {
-  await JobsCliRuntime.runPromise(NotifyCli).finally(() =>
-    JobsCliRuntime.dispose(),
-  );
+  try {
+    await JobsCliRuntime.runPromise(NotifyCli);
+  } finally {
+    await JobsCliRuntime.dispose();
+  }
 }
 
 if (import.meta.main) {

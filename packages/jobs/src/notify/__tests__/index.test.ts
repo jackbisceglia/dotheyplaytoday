@@ -14,6 +14,12 @@ import {
 } from "@dtpt/core";
 import { DateTime, Effect, Exit, Layer, Schema } from "effect";
 
+import {
+  card,
+  fighterA,
+  fighterB,
+  all,
+} from "@dtpt/core/modules/mma/__tests__/fixtures";
 import { notify } from "../index.js";
 
 const decode = Schema.decodeUnknownSync;
@@ -74,7 +80,7 @@ const makeRecipient = (
         _tag: "sports_team",
         details: {
           _tag: "sports_team",
-          leagueId: "nba",
+          league: { id: "nba", conferenceId: "east" },
           location: "Boston",
           name: opts.subjectName ?? "Celtics",
           display: `Boston ${opts.subjectName ?? "Celtics"}`,
@@ -173,6 +179,7 @@ const makeHarness = (opts: HarnessOptions) => {
   const EventsLayerTest = Layer.succeed(
     Events,
     Events.of({
+      listForUser: () => Effect.die("unused"),
       get: () => Effect.die("unused"),
       upsert: () => Effect.die("unused"),
       setParticipants: () => Effect.die("unused"),
@@ -501,4 +508,79 @@ describe("notify orchestration", () => {
       expect(harness.markSentCalls).toHaveLength(0);
     });
   });
+});
+
+describe("UFC uses ordinary subject delivery rules", () => {
+  it.effect(
+    "sends separate emails for both fighters and coverage, grouping same-day cards per subject",
+    () => {
+      const recipients = [fighterA, fighterB, all].map((subject) => {
+        const recipient = makeRecipient({
+          subscriptionId: subject.id,
+          subjectId: subject.id,
+        });
+        return {
+          ...recipient,
+          user: { ...recipient.user, emailVerified: true },
+          subscription: { ...recipient.subscription, subject },
+        };
+      });
+      const secondCard = { ...card, id: makeEvent({ id: ids.eventB }).id };
+      const harness = makeHarness({
+        recipients,
+        eventsBySubject: new Map(
+          recipients.map((recipient) => [
+            recipient.subscription.subjectId,
+            [card, secondCard],
+          ]),
+        ),
+      });
+      return Effect.gen(function* () {
+        yield* notify({ now }).pipe(Effect.provide(harness.layer));
+        expect(harness.deliveries).toHaveLength(3);
+        expect(
+          harness.deliveries.every((delivery) => delivery.events.length === 2),
+        ).toBe(true);
+        expect(
+          new Set(harness.deliveries.map(Notifier.createDeliveryHash)).size,
+        ).toBe(3);
+        expect(harness.markSentCalls).toHaveLength(3);
+      });
+    },
+  );
+  it.effect(
+    "retries a failed fighter send with the same key and leaves dry runs unmarked",
+    () => {
+      const base = makeRecipient({ subjectId: fighterA.id });
+      const recipient = {
+        ...base,
+        subscription: { ...base.subscription, subject: fighterA },
+      };
+      const failed = makeHarness({
+        recipients: [recipient],
+        eventsBySubject: new Map([[fighterA.id, [card]]]),
+        send: () =>
+          Effect.fail(new NotifierError({ layer: "test", message: "failed" })),
+      });
+      const retried = makeHarness({
+        recipients: [recipient],
+        eventsBySubject: new Map([[fighterA.id, [card]]]),
+      });
+      return Effect.gen(function* () {
+        yield* notify({ now }).pipe(Effect.provide(failed.layer));
+        yield* notify({ now }).pipe(Effect.provide(retried.layer));
+        expect(failed.markSentCalls).toHaveLength(0);
+        expect(failed.deliveries.map(Notifier.createDeliveryHash)).toEqual(
+          retried.deliveries.map(Notifier.createDeliveryHash),
+        );
+        expect(retried.markSentCalls).toHaveLength(1);
+        const dry = makeHarness({
+          recipients: [recipient],
+          eventsBySubject: new Map([[fighterA.id, [card]]]),
+        });
+        yield* notify({ now, dryRun: true }).pipe(Effect.provide(dry.layer));
+        expect(dry.markSentCalls).toHaveLength(0);
+      });
+    },
+  );
 });

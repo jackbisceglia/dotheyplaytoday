@@ -1,9 +1,10 @@
 import { Api } from "@dtpt/core/contracts/api";
 import { UpdateSubscriptionsRateLimited } from "@dtpt/core/contracts/subscription";
+import { whenSchemaIssue } from "@dtpt/core/lib/effect/index";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect } from "effect";
+import { Effect, SchemaIssue } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -49,8 +50,18 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
 
             return yield* subscriptions.listForUser(user.id);
           },
+          Effect.tapError(
+            whenSchemaIssue((error) =>
+              Effect.logError("user subscription: unexpected failure", {
+                error,
+              }),
+            ),
+          ),
           Effect.tapErrorTag(UnexpectedErrorTags, (error) =>
             Effect.logError("user subscription: unexpected failure", { error }),
+          ),
+          Effect.catchIf(SchemaIssue.isIssue, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
           ),
           Effect.catchTags({
             UserNotFound: () => Effect.fail(new HttpApiError.Unauthorized({})),
@@ -81,6 +92,11 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
 
             return { ok: true as const };
           },
+          Effect.tapError(
+            whenSchemaIssue((error) =>
+              Effect.logError("update subscriptions failed", { error }),
+            ),
+          ),
           Effect.catchTags({
             UserNotFound: () => Effect.fail(new HttpApiError.Unauthorized({})),
             InvalidSubjectSelection: () =>
@@ -92,6 +108,9 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
           }),
           Effect.tapErrorTag(UnexpectedUpdateErrorTags, (error) =>
             Effect.logError("update subscriptions failed", { error }),
+          ),
+          Effect.catchIf(SchemaIssue.isIssue, () =>
+            Effect.fail(new HttpApiError.InternalServerError({})),
           ),
           Effect.catchTag(UnexpectedUpdateErrorTags, () =>
             Effect.fail(new HttpApiError.InternalServerError({})),

@@ -4,10 +4,11 @@ import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
 import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
 import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
-import { CloudflareHttpApiPlatformLayer } from "@dtpt/core/lib/effect/http/cloudflare";
+import { Platform } from "alchemy/Http/Platform";
 import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
 import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
+import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
@@ -19,7 +20,10 @@ import { HttpApiLayer } from "./index.js";
 import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
 
 const ApiBaseLayer = pipe(
-  Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
+  EventsLayer,
+  Layer.provideMerge(
+    Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
+  ),
   Layer.provideMerge(IdLayer),
   Layer.provide(CloudflareCryptoLayer),
 );
@@ -33,7 +37,6 @@ const getApiDomain = (stage: string) => getManagedServiceDomain("api", stage);
 
 export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
   "ApiWorker",
-  // TODO: Remove this typecast when upgrading Alchemy to beta.72 or later.
   Effect.gen(function* () {
     const stack = yield* Stack;
     const domain = getApiDomain(stack.stage);
@@ -44,7 +47,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
       dev: { port: 8080, strictPort: true },
       ...exactOptional(domain, (domain) => ({ domain })),
     };
-  }) as unknown as Cloudflare.WorkerProps,
+  }),
   Effect.gen(function* () {
     // Resources
     const hyperdrive = yield* Cloudflare.Hyperdrive.Connect(DatabaseHyperdrive);
@@ -63,7 +66,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     );
 
     const ApiWorkerLayer = HttpApiLayer.pipe(
-      Layer.provide([ApiServicesLayer, CloudflareHttpApiPlatformLayer]),
+      Layer.provide([ApiServicesLayer, Platform]),
     );
 
     const rateLimiter = yield* RateLimiter;

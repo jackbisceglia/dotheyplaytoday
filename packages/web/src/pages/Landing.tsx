@@ -27,18 +27,17 @@ export function Landing() {
   const loginHref = useApplicationPath("login");
   const [search] = useSearchParams();
 
-  // Signed-in visitors upgrade to /home after the session settles.
   createEffect(
     () => getSessionStatus(session()),
     (state) => {
       if (state === "authenticated") {
-        navigate(homeHref(), { replace: true });
+        const confirmation =
+          search.confirmation === "1" ? "?confirmation=1" : "";
+        navigate(`${homeHref()}${confirmation}`, { replace: true });
       }
     },
   );
 
-  // Render nothing once the session is known to be signed in, so the redirect
-  // above never paints the landing page first.
   return (
     <Show when={getSessionStatus(session()) !== "authenticated"}>
       <Layout

@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "oxlint .",
     "format": "prettier --write .",
     "test": "pnpm --filter @dtpt/core build && pnpm -w exec vitest run packages/api/src"
   },

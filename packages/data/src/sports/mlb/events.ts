@@ -28195,7 +28195,7 @@ export const Games = {
     id: "00000000-0000-4000-8000-100000823408",
     _tag: "sports_game",
     sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000823408",
-    startsAt: "2026-09-27T19:05:00Z",
+    startsAt: "2026-09-27T18:30:00Z",
     availability: "active",
     details: {
       _tag: "sports_game",
@@ -28796,6 +28796,789 @@ export const Games = {
           _tag: "sports_game",
           role: "away",
           title: "Chicago Cubs",
+        },
+      },
+    ],
+  },
+  _849844: {
+    id: "00000000-0000-4000-8000-100000849844",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849844",
+    startsAt: "2026-10-02T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Atlanta Braves",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Philadelphia Phillies",
+        },
+      },
+    ],
+  },
+  _849829: {
+    id: "00000000-0000-4000-8000-100000849829",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849829",
+    startsAt: "2026-10-03T17:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Cleveland Guardians",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago White Sox",
+        },
+      },
+    ],
+  },
+  _849835: {
+    id: "00000000-0000-4000-8000-100000849835",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849835",
+    startsAt: "2026-10-03T22:30:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Tampa Bay Rays",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "New York Yankees",
+        },
+      },
+    ],
+  },
+  _849830: {
+    id: "00000000-0000-4000-8000-100000849830",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849830",
+    startsAt: "2026-10-04T00:30:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Milwaukee Brewers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "San Diego Padres",
+        },
+      },
+    ],
+  },
+  _849825: {
+    id: "00000000-0000-4000-8000-100000849825",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849825",
+    startsAt: "2026-10-04T20:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Milwaukee Brewers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "San Diego Padres",
+        },
+      },
+    ],
+  },
+  _849834: {
+    id: "00000000-0000-4000-8000-100000849834",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849834",
+    startsAt: "2026-10-05T21:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Cleveland Guardians",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago White Sox",
+        },
+      },
+    ],
+  },
+  _849839: {
+    id: "00000000-0000-4000-8000-100000849839",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849839",
+    startsAt: "2026-10-06T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Tampa Bay Rays",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "New York Yankees",
+        },
+      },
+    ],
+  },
+  _849828: {
+    id: "00000000-0000-4000-8000-100000849828",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849828",
+    startsAt: "2026-10-03T20:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Los Angeles Dodgers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Atlanta Braves",
+        },
+      },
+    ],
+  },
+  _849823: {
+    id: "00000000-0000-4000-8000-100000849823",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849823",
+    startsAt: "2026-10-05T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Los Angeles Dodgers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Atlanta Braves",
+        },
+      },
+    ],
+  },
+  _849819: {
+    id: "00000000-0000-4000-8000-100000849819",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849819",
+    startsAt: "2026-10-06T22:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Atlanta Braves",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Los Angeles Dodgers",
+        },
+      },
+    ],
+  },
+  _849826: {
+    id: "00000000-0000-4000-8000-100000849826",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849826",
+    startsAt: "2026-10-07T01:30:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "San Diego Padres",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Milwaukee Brewers",
+        },
+      },
+    ],
+  },
+  _849833: {
+    id: "00000000-0000-4000-8000-100000849833",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849833",
+    startsAt: "2026-10-07T20:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Chicago White Sox",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Cleveland Guardians",
+        },
+      },
+    ],
+  },
+  _849838: {
+    id: "00000000-0000-4000-8000-100000849838",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849838",
+    startsAt: "2026-10-08T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "New York Yankees",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Tampa Bay Rays",
+        },
+      },
+    ],
+  },
+  _849822: {
+    id: "00000000-0000-4000-8000-100000849822",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849822",
+    startsAt: "2026-10-07T22:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Atlanta Braves",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Los Angeles Dodgers",
+        },
+      },
+    ],
+  },
+  _849827: {
+    id: "00000000-0000-4000-8000-100000849827",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849827",
+    startsAt: "2026-10-08T02:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "San Diego Padres",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Milwaukee Brewers",
+        },
+      },
+    ],
+  },
+  _849832: {
+    id: "00000000-0000-4000-8000-100000849832",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849832",
+    startsAt: "2026-10-09T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Chicago White Sox",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Cleveland Guardians",
+        },
+      },
+    ],
+  },
+  _849809: {
+    id: "00000000-0000-4000-8000-100000849809",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849809",
+    startsAt: "2026-10-12T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Milwaukee Brewers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Los Angeles Dodgers",
+        },
+      },
+    ],
+  },
+  _849812: {
+    id: "00000000-0000-4000-8000-100000849812",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849812",
+    startsAt: "2026-10-12T21:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Milwaukee Brewers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Los Angeles Dodgers",
+        },
+      },
+    ],
+  },
+  _849811: {
+    id: "00000000-0000-4000-8000-100000849811",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849811",
+    startsAt: "2026-10-15T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Los Angeles Dodgers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Milwaukee Brewers",
+        },
+      },
+    ],
+  },
+  _849810: {
+    id: "00000000-0000-4000-8000-100000849810",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849810",
+    startsAt: "2026-10-16T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Los Angeles Dodgers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Milwaukee Brewers",
+        },
+      },
+    ],
+  },
+  _849831: {
+    id: "00000000-0000-4000-8000-100000849831",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849831",
+    startsAt: "2026-10-11T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Cleveland Guardians",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago White Sox",
+        },
+      },
+    ],
+  },
+  _849820: {
+    id: "00000000-0000-4000-8000-100000849820",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849820",
+    startsAt: "2026-10-13T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Tampa Bay Rays",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Cleveland Guardians",
+        },
+      },
+    ],
+  },
+  _849813: {
+    id: "00000000-0000-4000-8000-100000849813",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849813",
+    startsAt: "2026-10-14T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Tampa Bay Rays",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Cleveland Guardians",
+        },
+      },
+    ],
+  },
+  _849818: {
+    id: "00000000-0000-4000-8000-100000849818",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849818",
+    startsAt: "2026-10-15T17:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Cleveland Guardians",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Tampa Bay Rays",
+        },
+      },
+    ],
+  },
+  _849817: {
+    id: "00000000-0000-4000-8000-100000849817",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849817",
+    startsAt: "2026-10-18T21:08:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Cleveland Guardians",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Tampa Bay Rays",
+        },
+      },
+    ],
+  },
+  _849816: {
+    id: "00000000-0000-4000-8000-100000849816",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849816",
+    startsAt: "2026-10-18T00:00:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Cleveland Guardians",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Tampa Bay Rays",
+        },
+      },
+    ],
+  },
+  _849815: {
+    id: "00000000-0000-4000-8000-100000849815",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000849815",
+    startsAt: "2026-10-20T00:08:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Tampa Bay Rays",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Cleveland Guardians",
         },
       },
     ],

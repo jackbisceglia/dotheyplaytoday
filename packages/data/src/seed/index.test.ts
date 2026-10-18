@@ -49,10 +49,12 @@ describe("development seed collections", () => {
     for (const collection of collections) {
       for (const event of collection.events) {
         expect(productionSourceIds.has(event.sourceId)).toBe(true);
-        expect(DateTime.toEpochMillis(DateTime.makeUnsafe(event.startsAt)))
-          .toBeGreaterThanOrEqual(DateTime.toEpochMillis(window.from));
-        expect(DateTime.toEpochMillis(DateTime.makeUnsafe(event.startsAt)))
-          .toBeLessThan(DateTime.toEpochMillis(window.to));
+        expect(
+          DateTime.toEpochMillis(DateTime.makeUnsafe(event.startsAt)),
+        ).toBeGreaterThanOrEqual(DateTime.toEpochMillis(window.from));
+        expect(
+          DateTime.toEpochMillis(DateTime.makeUnsafe(event.startsAt)),
+        ).toBeLessThan(DateTime.toEpochMillis(window.to));
       }
     }
   });
@@ -71,9 +73,43 @@ describe("development seed collections", () => {
     }
   });
 
+  it("includes UFC through the same development window and feed filtering", () => {
+    const collections = buildDevSeed(new Date("2026-10-10T12:00:00Z"));
+    const ufc = collections.find((collection) => collection.id === "mma.ufc");
+    expect(ufc?.events).toHaveLength(1);
+    expect(ufc?.subjects).toHaveLength(262);
+    expect(ufc?.subjects.flatMap((subject) => subject.feedIds)).toHaveLength(
+      25,
+    );
+
+    const later = buildDevSeed(new Date("2026-10-12T12:00:00Z"));
+    const past = later.find((collection) => collection.id === "mma.ufc");
+    expect(past?.events).toEqual([]);
+    expect(past?.subjects).toHaveLength(262);
+    expect(past?.subjects.flatMap((subject) => subject.feedIds)).toEqual([]);
+  });
+
   it("derives the window from the provided instant", () => {
     const later = buildDevSeed(new Date("2026-10-28T12:00:00Z"));
 
     expect(sourceIds(collections)).not.toEqual(sourceIds(later));
+  });
+});
+
+describe("production seed total uniqueness", () => {
+  it("has globally unique subject and event identifiers across collections", () => {
+    const subjectIds = SeedCollections.flatMap((collection) =>
+      collection.subjects.map((subject) => subject.id),
+    );
+    const eventIds = SeedCollections.flatMap((collection) =>
+      collection.events.map((event) => event.id),
+    );
+    const sourceIds = SeedCollections.flatMap((collection) =>
+      collection.events.map((event) => event.sourceId),
+    );
+
+    expect(new Set(subjectIds).size).toBe(subjectIds.length);
+    expect(new Set(eventIds).size).toBe(eventIds.length);
+    expect(new Set(sourceIds).size).toBe(sourceIds.length);
   });
 });

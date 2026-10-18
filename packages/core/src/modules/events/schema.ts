@@ -3,12 +3,13 @@ import {
   createSelectSchema,
 } from "drizzle-orm/effect-schema";
 import { index, jsonb, text, uniqueIndex } from "drizzle-orm/pg-core";
-import { Schema } from "effect";
+import { DateTime, Predicate, Schema } from "effect";
 
 import { postgresTable } from "../../lib/database/drizzle/index.js";
 import type { Check, TableSchemasMatch } from "../../lib/database/utils.js";
 import { Id } from "../../lib/id/service.js";
-import { TaggedUnion } from "../../lib/effect/index.js";
+import { hasMatchingDetailsTag, TaggedUnion } from "../../lib/effect/index.js";
+import { MmaEvent } from "./variants/mma.schema.js";
 import { SportEvent } from "./variants/sport.schema.js";
 
 export type EventSchemasMatchTable = Check<
@@ -30,7 +31,7 @@ export const EventSourceId = Schema.String.check(
 ).pipe(Schema.brand("EventSourceId"));
 
 export type EventDetails = typeof EventDetails.Type;
-export const EventDetails = TaggedUnion([SportEvent]);
+export const EventDetails = TaggedUnion([SportEvent, MmaEvent]);
 
 export type EventAvailability = typeof EventAvailability.Type;
 export const EventAvailability = Schema.Literals(["active", "cancelled"]);
@@ -62,8 +63,25 @@ export const eventsTable = postgresTable(
   ],
 );
 
+export const hasMatchingStart = Schema.makeFilter(
+  (event: {
+    readonly startsAt: DateTime.Utc;
+    readonly details: EventDetails;
+  }) =>
+    !Predicate.isTagged(event.details, "mma_card") ||
+    DateTime.toEpochMillis(event.startsAt) ===
+      DateTime.toEpochMillis(event.details.timings.prelims) ||
+    "Event start must match the earliest broadcast timing",
+);
+
 export type Event = typeof Event.Type;
-export const Event = createSelectSchema(eventsTable, overrides);
+export const Event = createSelectSchema(eventsTable, overrides).check(
+  hasMatchingDetailsTag,
+  hasMatchingStart,
+);
 
 export type EventInsert = typeof EventInsert.Type;
-export const EventInsert = createInsertSchema(eventsTable, overrides);
+export const EventInsert = createInsertSchema(eventsTable, overrides).check(
+  hasMatchingDetailsTag,
+  hasMatchingStart,
+);

@@ -19,6 +19,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  touch-action: manipulation;
 }
 
 html {
@@ -36,6 +37,7 @@ body {
 }
 
 .site-page {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   min-height: 100svh;
@@ -268,8 +270,21 @@ button {
   padding: 14px 16px;
 }
 
-.login-reset {
+.login-form .login-code {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  font-variant-numeric: tabular-nums;
+}
+
+.login-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
   margin-top: 28px;
+}
+
+.login-reset {
   border: 0;
   background: transparent;
   color: var(--muted);
@@ -357,8 +372,10 @@ button {
 .skip-link:focus-visible,
 .form-input:focus-visible,
 .team-card:focus-visible,
+.ufc-fighter-row:focus-visible,
 .btn:focus-visible,
 .league-pill:focus-visible,
+.group-select:focus-visible,
 .signup-success-title:focus-visible,
 .unsubscribe-title:focus-visible {
   outline: 3px solid var(--kelly);
@@ -564,11 +581,14 @@ button {
   scrollbar-color: var(--rule) transparent;
 }
 
-.league-row::-webkit-scrollbar {
+.league-row::-webkit-scrollbar,
+.ufc-fighter-list::-webkit-scrollbar {
+  width: 6px;
   height: 6px;
 }
 
-.league-row::-webkit-scrollbar-thumb {
+.league-row::-webkit-scrollbar-thumb,
+.ufc-fighter-list::-webkit-scrollbar-thumb {
   background: var(--rule);
   border-radius: 3px;
 }
@@ -604,6 +624,60 @@ button {
 
 .coming-soon {
   display: inline-flex;
+}
+
+/* The league pills and, for college leagues, the Top 25/conference select
+   share a line once both fit; narrower screens give the select its own. */
+.picker-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px 12px;
+}
+
+.picker-header .league-row {
+  flex: 1;
+}
+
+/* A native select dressed as a league pill. */
+.group-select {
+  flex: none;
+  padding: 8px 40px 8px 18px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 55%,
+    calc(100% - 16px) 55%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font-weight: 900;
+  font-stretch: 70%;
+  font-size: 0.92rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  appearance: none;
+}
+
+@media (max-width: 899px) {
+  .picker-header {
+    flex-wrap: wrap;
+  }
+
+  .picker-header .league-row {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .group-select {
+    width: 100%;
+  }
 }
 
 /* Fixed, with top/left set by the component: the league row scrolls, and any
@@ -709,6 +783,7 @@ button {
 }
 
 .team-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -725,6 +800,18 @@ button {
     box-shadow 0.12s;
 }
 
+/* Top 25 rank, in the corner so ranked cards keep the standard layout. */
+.team-rank {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-weight: 900;
+  font-stretch: 70%;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
 .team-card:hover {
   border-color: var(--ink);
   transform: translateY(-2px);
@@ -736,7 +823,8 @@ button {
   box-shadow: var(--shadow);
 }
 
-.team-card[data-rejected="true"] {
+.team-card[data-rejected="true"],
+.ufc-fighter-row[data-rejected="true"] {
   border-color: var(--error);
   animation: team-card-reject 280ms ease-in-out;
 }
@@ -755,6 +843,114 @@ button {
   75% {
     transform: translateX(-2px);
   }
+}
+
+/* UFC picks use compact coverage tiles and a single column of fighter names. */
+.ufc-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Legends sit outside the fieldset flex layout, so gap does not apply. */
+.ufc-cards > legend {
+  margin-bottom: 12px;
+}
+
+.ufc-coverage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ufc-coverage-tile {
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+/* Long results scroll inside; seven and a half rows show that the list
+   continues. The stable gutter keeps rows from narrowing when it scrolls, and
+   x is hidden so the reject shake cannot add a horizontal scrollbar. */
+.ufc-fighter-list {
+  max-height: calc(7.5 * 44px + 4px);
+  overflow: hidden auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule) transparent;
+  border: 2px solid var(--rule);
+  background: #fff;
+}
+
+.ufc-fighter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.ufc-fighter-row[data-rejected="true"] {
+  outline: 2px solid var(--error);
+  outline-offset: -2px;
+}
+
+/* The list clips, so the focus ring sits inside the row. */
+.ufc-fighter-row:focus-visible {
+  outline-offset: -3px;
+}
+
+.ufc-fighter-row:last-child {
+  border-bottom: none;
+}
+
+.ufc-fighter-row:hover {
+  background: var(--kelly-wash);
+}
+
+.ufc-fighter-row[aria-pressed="true"] {
+  background: var(--kelly-wash);
+  color: var(--kelly-deep);
+  box-shadow: inset 4px 0 var(--kelly);
+}
+
+.ufc-fighter-rank {
+  flex: 0 0 14px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.ufc-fighter-row[aria-pressed="true"] .ufc-fighter-rank {
+  color: inherit;
+}
+
+.ufc-fighter-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.ufc-fighter-check {
+  flex: 0 0 16px;
+  text-align: center;
+}
+
+.ufc-empty {
+  margin: 0;
+  padding: 12px;
+  color: var(--muted);
 }
 
 .team-glyph {
@@ -1290,6 +1486,7 @@ select.form-input {
   .header-cta,
   .skip-link,
   .team-card,
+  .ufc-fighter-row,
   .coming-soon-tooltip {
     transition: none;
   }
@@ -1306,6 +1503,7 @@ select.form-input {
   }
 
   .team-card[data-rejected="true"],
+  .ufc-fighter-row[data-rejected="true"],
   .app-toast,
   .login-modal {
     animation: none;
@@ -1414,6 +1612,10 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   text-transform: uppercase;
 }
 
+.dashboard-form[data-editing="true"] .dashboard-edit {
+  visibility: hidden;
+}
+
 .dashboard-edit:hover {
   color: var(--ink);
   text-decoration: underline;
@@ -1501,6 +1703,9 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   padding: 0 12px;
   border: 2px solid var(--rule);
   background: #fff;
+  transition:
+    border-color 0.16s,
+    background 0.16s;
 }
 
 .roster-team-text {
@@ -1520,6 +1725,22 @@ body:has(.dashboard-form[data-editing="true"]) .dev-catalog-notice {
   font-size: 0.74rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* The picker's selected state, minus the green shadow. */
+.roster-team[data-focused="true"] {
+  border-color: var(--ink);
+  background: var(--kelly-wash);
+}
+
+/* Outside editing, the tile is the button that highlights its games. */
+button.roster-team {
+  text-align: left;
+}
+
+button.roster-team:focus-visible {
+  outline: 3px solid var(--kelly);
+  outline-offset: 2px;
 }
 
 /* Unfilled capacity. */
@@ -1637,7 +1858,8 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 }
 
 /* A full roster fades what can't be added; tapping one still shakes. */
-.dashboard-picker[data-full="true"] .team-card[aria-pressed="false"] {
+.dashboard-picker[data-full="true"] .team-card[aria-pressed="false"],
+.dashboard-picker[data-full="true"] .ufc-fighter-row[aria-pressed="false"] {
   opacity: 0.45;
 }
 
@@ -1748,5 +1970,291 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
 
   .roster-team .team-name {
     font-size: 0.7rem;
+  }
+}
+
+/* The schedule ahead shares the dashboard's type and rules. Every day spaces
+   itself from what's above, so collapsed days take their gap with them; the
+   flow root keeps those gaps from merging with the schedule's own. Rows that
+   slide in from below a collapse surface at its edge, not over the footer. */
+.dashboard-schedule {
+  position: relative;
+  isolation: isolate;
+  display: flow-root;
+  margin-top: 8px;
+  overflow: clip;
+}
+
+.dashboard-schedule-group {
+  margin-top: 24px;
+}
+
+.dashboard-schedule-list {
+  list-style: none;
+}
+
+.dashboard-schedule-row {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(19, 23, 17, 0.12);
+  background: var(--paper);
+}
+
+/* Previewing a team fades everything else, rippling down the list; pinning
+   one takes the rest out of the flow, and Schedule slides what moved. Nothing
+   here animates layout, and only a preview greys rows out, since repainting
+   them through a filter as they leave is slow in WebKit. */
+.dashboard-schedule-row {
+  --ripple: calc(min(var(--row-index), 12) * 14ms);
+  transition:
+    opacity 0.2s ease-out var(--ripple),
+    filter 0.2s ease-out var(--ripple),
+    border-color 0.2s ease-out,
+    visibility 0.2s var(--ripple);
+}
+
+.dashboard-schedule-day {
+  background: var(--paper);
+  transition:
+    opacity 0.2s ease-out,
+    visibility 0.2s;
+}
+
+/* The paper backing would grey too, and faded rows don't slide over anything. */
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-row:not([data-focused]) {
+  filter: grayscale(1);
+  background: none;
+}
+
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-row:not([data-focused]),
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-group:not([data-focused])
+  .dashboard-schedule-day {
+  opacity: 0.45;
+}
+
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-row[data-focused] {
+  border-bottom-color: rgba(19, 23, 17, 0.28);
+}
+
+.dashboard-schedule[data-focus="preview"]
+  .dashboard-schedule-row[data-focused]
+  .dashboard-schedule-league {
+  background: rgba(19, 23, 17, 0.14);
+  color: var(--ink);
+}
+
+/* Out of the flow at once; Schedule holds leaving rows and days in place as
+   they fade, beneath the opaque rows sliding over them. */
+.dashboard-schedule[data-focus="pin"]
+  .dashboard-schedule-row:not([data-focused]),
+.dashboard-schedule[data-focus="pin"]
+  .dashboard-schedule-group:not([data-focused])
+  .dashboard-schedule-day {
+  position: absolute;
+  z-index: -1;
+  inset-inline: 0;
+  opacity: 0;
+  visibility: hidden;
+  /* Leaving rows go together; a ripple would trail the collapse. */
+  transition-delay: 0s;
+}
+
+.dashboard-schedule[data-focus="pin"]
+  .dashboard-schedule-group:not([data-focused]) {
+  margin-top: 0;
+}
+
+.dashboard-schedule-time {
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 24px;
+}
+
+.dashboard-schedule-glyph {
+  line-height: 24px;
+  text-align: center;
+}
+
+/* Time, emoji and badge sit on the headline, under any label. */
+.dashboard-schedule-line {
+  display: grid;
+  /* Fits the widest time, "10:00 AM", with a little room to spare. */
+  grid-template-columns: 64px 24px minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.dashboard-schedule-matchup {
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 24px;
+}
+
+.dashboard-schedule-label {
+  display: block;
+  font-weight: 800;
+  font-stretch: 70%;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.dashboard-schedule-matchup strong {
+  font-weight: 700;
+}
+
+.ufc-card-summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.ufc-card-summary::-webkit-details-marker {
+  display: none;
+}
+
+.ufc-card-summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* Each section runs on the row's columns, its start time and name centred
+   on one heading line over the fights. */
+.ufc-card-content {
+  padding: 8px 0;
+  color: var(--muted);
+}
+
+.ufc-card-section {
+  display: grid;
+  grid-template-columns: 64px 24px minmax(0, 1fr);
+  grid-auto-rows: minmax(24px, auto);
+  align-items: center;
+  column-gap: 8px;
+}
+
+.ufc-card-section + .ufc-card-section {
+  margin-top: 16px;
+}
+
+.ufc-card-time {
+  grid-area: 1 / 1;
+  font-weight: 500;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 16px;
+}
+
+.ufc-card-placement {
+  grid-area: 1 / 3;
+  /* Caps sit high in their line; this centres them on the time's figures. */
+  padding-top: 1px;
+  font-weight: 800;
+  font-stretch: 70%;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  line-height: 16px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ufc-card-fights {
+  display: contents;
+  list-style: none;
+}
+
+.ufc-card-fights li {
+  grid-column: 3;
+  font-size: 0.8rem;
+  line-height: 24px;
+}
+
+.ufc-card-empty {
+  padding: 8px 0 8px 104px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 20px;
+}
+
+/* Sized to the widest label so the tags line up down the edge. */
+.dashboard-schedule-league {
+  min-width: 44px;
+  padding: 6px 8px 5px;
+  background: rgba(19, 23, 17, 0.07);
+  color: var(--muted);
+  font-weight: 800;
+  font-stretch: 70%;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-align: center;
+  transition:
+    background 0.2s ease-out,
+    color 0.2s ease-out;
+}
+
+.dashboard-schedule-matchup > span,
+.dashboard-schedule-day,
+.dashboard-schedule-empty {
+  color: var(--muted);
+}
+
+.dashboard-schedule-day {
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 24px;
+}
+
+.dashboard-schedule-empty {
+  margin-top: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(19, 23, 17, 0.12);
+  font-size: 0.9rem;
+  line-height: 24px;
+}
+
+/* A pinned team without games says so, rising as the rows collapse above. */
+.dashboard-schedule[data-focus="pin"] .dashboard-schedule-empty {
+  animation: schedule-empty-in 0.27s ease-out;
+}
+
+@keyframes schedule-empty-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* After the schedule's own transitions, so these win. */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-schedule-row,
+  .dashboard-schedule-day,
+  .dashboard-schedule-league {
+    transition: none;
+  }
+
+  .dashboard-schedule[data-focus="pin"] .dashboard-schedule-empty {
+    animation: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-schedule-row {
+    padding: 8px 0;
+  }
+
+  /* Shorter on phones, so it rises to centre on the headline. */
+  .dashboard-schedule-league {
+    min-width: 36px;
+    margin-bottom: 3px;
+    padding: 4px 6px 3px;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
   }
 }

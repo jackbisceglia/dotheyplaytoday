@@ -7,7 +7,7 @@
 - `packages/jobs` implements notification orchestration and scheduled Workers
   using `core` services and notifiers. Internal operational jobs live under
   `src/ops`, grouped by concern.
-- `packages/data` owns catalog, event, and development seed data and writes through `core` domain services.
+- `packages/data` owns catalog, event, and development seed data and writes through `core` domain services, including NCAA Division I men's basketball snapshots.
 - `packages/web` is the Solid 2 Start-mode frontend and consumes shared `core` contracts.
 
 The feedback write path is intentionally small: its API handler validates the
@@ -17,6 +17,14 @@ UTC window; there is no feedback domain service because neither path has
 reusable domain behavior.
 
 Dependencies point inward toward `core`. The API, jobs, data, and web packages do not provide domain abstractions for `core` or depend on one another for their primary behavior.
+
+Every subject exposes `details.league.id`. Sports-team details are one tagged struct with a required `league: { id, conferenceId }`. Its league field is a discriminated union keyed by `id`, so conference constraints are enforced by the schema and its inferred TypeScript type. MMA fighter and tracking subjects use `league: { id: "ufc" }` without conferences. `SubjectDetails` uses the ordinary project `TaggedUnion` helper with one sports-team member; no suspended schema, custom grouping, or mixed-subject league accessor is needed. Event details retain their existing `leagueId` fields. Generalizing MMA to CombatSports is deferred to [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
+
+Only NCAAM league membership contains `apRank`, an integer from 1 to 25 or null for unranked/unavailable. Decoding a missing rank defaults to null, matching the MMA P4P rank convention. No AP poll data is populated or refreshed automatically.
+
+The NCAAM catalog contains 158 teams across 12 conferences and 1,604 confirmed-time events from the ESPN snapshot fetched on 2026-10-13. The import excluded 1,442 unconfirmed starts before writing the checked-in schedule. The snapshot does not refresh automatically; provider terms/SLA, schedule completeness, and postponement/reschedule semantics remain unverified. Conference rosters were checked against the [NCAA directory](https://web3.ncaa.org/directory/memberList?division=I&sportCode=MBB&type=12) and official conference member pages. Noncatalog opponents remain participant titles without subject/feed edges.
+
+SQL migration `0006_subject_league_membership.sql` adds nested membership to existing subjects before new workers activate, including a hand-authored conference backfill for all 124 professional team IDs. It retains legacy fields so old workers can read rows during deployment, and fails atomically for invalid/unmapped membership. Public schemas and writes remain nested-only; no application compatibility decoder is needed. The first release keeps `CatalogSeedVersion` at `2026-10-14.1`. After that deploy and retirement of old workers, migration `0007_remove_legacy_subject_membership.sql` removes the flat subject fields, including on noncatalog rows; catalog revision `2026-10-15.1` triggers the NCAA catalog refresh. Event `leagueId` fields are unchanged. Follow the [two-stage rollout](./runbooks/subject-league-rollout.md); do not combine or force the second-stage cleanup/seed into the first deployment.
 
 ## Runtime and infrastructure
 
@@ -70,8 +78,9 @@ CORS middleware and Worker entry point. Better Auth owns endpoint validation and
 only declares the wildcard transport routes.
 The stack supplies the resolved API and Web URLs through `bindApiUrl` and
 `bindWebUrl` helpers, keeping URL bindings outside resource construction.
-Only magic-link authentication is enabled, Better Auth's own signup is disabled, tokens are
-hashed at rest, and sessions are persisted in `auth_sessions`. Cookies remain
+Magic-link and email-OTP authentication are enabled, Better Auth's own signup is
+disabled in both plugins, tokens and codes are hashed at rest, and sessions are
+persisted in `auth_sessions`. Cookies remain
 host-only to the API origin and secure on HTTPS. API and Web origins are trusted.
 
 The existing `users` table is Better Auth's user model. Its normalized email
@@ -87,7 +96,7 @@ Its `created_at` default assigns preexisting rows the migration timestamp, not
 their original signup dates; grandfathering must not infer signup dates from it.
 Migration 0005 grants notification eligibility only to a fixed, owner-trusted
 cohort; this is not proof of mailbox ownership and creates no sessions. New
-rows retain the false default. Existing users still redeem a magic link to sign
+rows retain the false default. Existing users still redeem a magic link or email code to sign
 in. The magic-link before hook normalizes the address and looks up the user once
 through Better Auth's internal adapter. It carries the user with a normalized
 email in request context; the sender silently skips unknown recipients. Better
@@ -116,9 +125,31 @@ Both reads validate the session user ID through `UserId.makeEffect` and delegate
 persistence and decoding to `Users.get` and `Subscriptions.listForUser`.
 Responses, including errors, set `Cache-Control: no-store`.
 
+Email OTP is restricted to the sign-in endpoint, which also confirms existing
+unverified users through Better Auth's supported redemption flow. A before hook
+on `/email-otp/send-verification-otp` normalizes the address, rejects every OTP
+type except `sign-in`, and looks up the user once. The sender uses that
+server-owned user snapshot to choose confirmation or sign-in code copy and
+registers delivery through `waitUntil`. Unknown addresses return the same
+success response before a code is stored; neither plugin can create accounts.
+There is no verification gate or magic-link fallback for code requests.
+The plugin's other routes (email verification, OTP check, password reset, and
+email change) are listed in `disabledPaths`. Codes are six digits, expire
+after 10 minutes, and are consumed atomically. Three incorrect attempts
+invalidate a code. A resend rotates the code, and redemption checks only the
+newest one.
+
+The code redemption before hook normalizes the email and records whether the
+existing user is unconfirmed. Only after successful redemption does the after
+hook add `confirmation: true` to the response for that user. Requests and failed
+redemptions do not reveal verification status. Web sets the confirmation query
+marker in the sign-in success callback, before Better Auth notifies session
+listeners; Landing then carries it to `/home` for the existing confirmation
+message. Signup continues to request magic links.
+
 Auth rate limiting uses Better Auth's in-memory store, shared across auth
-instances within a Worker isolate. It allows five magic-link requests and ten
-verification attempts per client IP per minute, using Cloudflare's
+instances within a Worker isolate. It allows five magic-link or sign-in-code requests and ten
+verification or code sign-in attempts per client IP per minute, using Cloudflare's
 `cf-connecting-ip` header. These are per-isolate limits, not a global quota;
 multiple isolates and isolate restarts do not share counters. A distributed
 limit would require shared storage or an edge rate-limiting rule.
@@ -147,7 +178,7 @@ response, so a later request can issue a replacement.
 
 The notification Worker provisions the email notifier, which renders a
 `Notification` and delegates separate delivery metadata and rendered content to
-`Email`. Separate transactional confirmation and sign-in views bypass
+`Email`. Separate transactional confirmation and sign-in link/code views bypass
 `Notifier` and provide the same concrete Resend email layer internally. Better
 Auth's magic-link callback reuses the recipient from request context to select
 the view by `emailVerified`, without another lookup or email normalization. It
@@ -158,8 +189,8 @@ marker. The hook covers both registration's server API calls and standalone HTTP
 sign-in, retaining validation of caller-supplied URLs. The recipient context is
 server-owned and scoped to each issuance, so concurrent requests remain isolated
 and callback selection and email copy use the same verification snapshot. The
-sender reads the typed, server-owned user directly from the endpoint context
-without decoding the internal value again. Tokens are hashed, expire after 15
+sender validates the server-owned recipient email and verification state from
+the endpoint context before choosing the view. Tokens are hashed, expire after 15
 minutes, and are single-use. Issuance is
 awaited while the auth pool is open; `WorkerExecutionContext.waitUntil` owns
 email delivery, which needs no further database access. Delivery failures are
@@ -175,7 +206,7 @@ brand sets in kelly, and passes `EmailView` a `Headline` from `core`'s
 live-text `TextHeadline` like the feedback digest's. `buildHeadlineImagePath`
 names each image after its copy, so the email and the renderer agree on the
 file. `pnpm @web assets:generate` collects every tiled headline's lines,
-including one per catalog team, and renders them into the web app's
+including one per catalog team and the generic UFC tile, and renders them into the web app's
 `public/email/headlines/`, which is committed and served with the site. Rerun
 it after building core and data whenever headline copy, the catalog, or the
 artwork changes. Body copy uses each platform's system UI font.
@@ -235,7 +266,7 @@ prints the current name, `pnpm dev` starts it, `pnpm dev:destroy` interactively
 destroys it, and `pnpm dev:seed` destroys it with `--yes` before recreating and
 starting it. The resolver is an Effect whose Git process, path, and
 configuration capabilities come from Effect Platform. Package lifecycle
-commands export its result through Alchemy's lowercase `stage` environment
+commands export its result through Alchemy's `ALCHEMY_STAGE` environment
 variable; the lookup is case-sensitive and ignores uppercase `STAGE`.
 `alchemy.run.ts` remains an ordinary stack definition. Generic deployment
 commands are unchanged and do not invoke the development-stage resolver.
@@ -258,8 +289,22 @@ data; the current production owner account must be recreated manually.
 ### Dashboard data and editing
 
 The dashboard's user and subscription data is a `getPreferences` router query.
-The `/home` route preloads it on the client only, because the API cookie lives
-in the browser, so it loads alongside the authenticated shell's session check.
+Its schedule is a separate `getEvents` router query backed by authenticated
+`GET /api/user/events`. The endpoint takes identity from the session and
+timezone from the stored user, returns each subscription with its events and
+participants, and sets `Cache-Control: no-store`. Core `Events.listForUser`
+accepts the session's user ID and composes `Users.get`,
+`Subscriptions.listForUser`, and concurrent `Events.listBySubject` calls,
+querying active events from today's local midnight through the exclusive
+midnight fourteen calendar days later. `SubscriptionTiming.localUtcRange` accepts
+a day count and preserves local midnight boundaries across DST;
+`localDayUtcRange` is its one-day wrapper. The UI flattens subscription events
+into rows, deduplicates normalized participant sets within the same league and
+start time, and sorts by start time then event ID, using the timezone already
+loaded by `getPreferences` for dates and times.
+The `/home` route preloads both private queries on the client only, because
+the API cookie lives in the browser, so they load alongside the authenticated
+shell's session check.
 The dashboard has an `Errored` boundary but deliberately no `Loading`: its
 pending read holds the transition, so the authenticated shell keeps its splash
 (or blank screen) until the whole page can render with its data, under the same
@@ -267,11 +312,16 @@ pending read holds the transition, so the authenticated shell keeps its splash
 while something reads it, or for a few seconds after, so private data doesn't
 outlive the signed-in page. The form derives its saved roster and delivery
 times from that data and initializes a separate draft when editing begins. Successful writes
-revalidate the query; cancelled or failed writes never replace it.
+revalidate preferences and events; cancelled or failed writes never replace it.
+The pinned schedule filter is a `team` search param, replaced rather than
+pushed and matched against the saved roster; changing it reuses the cached
+queries. `Schedule` animates a pin change as a FLIP: other rows and days leave
+the flow at once, and only transforms and opacity animate the rest into place,
+since layout transitions stutter in WebKit.
 
 Signup and the dashboard editor share the `getSubjects` router query and the
 presentational `ui/TeamPicker`. The `/home` route preloads the public catalog,
-and the dashboard form reads it from mount, not the picker that only mounts
+and the dashboard reads it from mount, not the picker that only mounts
 while editing, so the entry stays cached and the editor opens without a second
 fetch. Selection feedback lives beside the shared picker rather than under
 signup.
@@ -283,8 +333,10 @@ separate Monday batch at 9:00 AM Eastern. Cloudflare cron fires at both 13:00
 and 14:00 UTC Mondays (`0 13,14 * * 1`); an Eastern-time guard admits exactly
 one candidate across daylight saving changes. The guard and week selection use
 Cloudflare’s scheduled timestamp, so late execution retains the same batch.
-`jobs/src/weekly-digest` groups eligible subscription recipients by user and
-sends one personalized email to each, without consulting daily send times or
+`jobs/src/weekly-digest` filters verified recipients to NBA, NFL, MLB, and NHL
+team subscriptions before grouping by user. NCAA and UFC remain outside weekly
+scope. It sends one personalized email per user, without consulting daily send
+times or
 last-sent timestamps. It uses the existing `Events.listBySubject` active-event
 query with a half-open local-week UTC range and never writes a subscription's
 `lastSentAt`.
@@ -301,7 +353,12 @@ Weekly sending requires no new database schema or saved email snapshots.
 Each send uses `weekly-digest:<user-id>:<Monday-date>` as its provider
 idempotency key. The email adapter retries transient failures within a send;
 recipient-specific render and provider failures are logged while the batch
-continues. There is no durable record of individual batch completion.
+continues. There is no durable record of individual batch completion. Repeated
+or concurrent runs rebuild content under the same key; changed schedules or
+roster edits may
+produce a provider idempotency conflict. [Provider deduplication](https://resend.com/docs/dashboard/emails/idempotency-keys)
+lasts 24 hours, so the key alone does not guarantee once-per-week delivery. Within one send,
+bounded adapter retries reuse the same rendered payload.
 
 `POST /test/weekly-digest` is a development-only trigger using the existing
 notify options and CLI's `--weekly` flag. A dry run logs the rendered email,
@@ -329,13 +386,72 @@ Alchemy-managed PlanetScale branches. They remain opt-in because local database
 substitutes are not representative of the production transaction path.
 
 Catalog imports decode the checked-in data and validate feed references before
-opening one transaction. Event source IDs are resolved into feed edges while
+opening one transaction. By default, seeding skips events whose `startsAt` is
+before yesterday at 00:00 UTC, using one cutoff for the import. Events exactly
+at the cutoff are included. Filtering happens before database calls and also
+removes feed references to skipped events from the import; existing historical
+events, participants, and feed rows remain untouched. Correction imports can
+explicitly use `seedCatalog({ strategy: "all" })` for the checked-in catalog, or
+`seedCatalog({ collections, strategy: "all" })` for supplied data. The default
+strategy is `"future"`. This cutoff applies only to seeding; shared
+`Events.upsert` remains unrestricted. Event source IDs are resolved into feed edges while
 that transaction serializes writes on its reserved PostgreSQL connection. This
 deliberately trades import speed for full-catalog rollback and avoids concurrent
 operations on one transaction connection. Seed Actions use the direct stage
 role rather than a Worker or Hyperdrive connection, and catalog versions should
 remain bounded so the transaction does not become an unbounded deployment
 operation.
+
+### Lint policy
+
+Each package's `oxlint.config.ts` imports and extends the root config with
+`extends: [base]`. `pnpm lint` keeps the recursive package workflow. The root
+config enables `options.typeAware` using `oxlint-tsgolint`, so package scripts
+and direct `oxlint` runs need no flag. Build dependent packages before linting,
+as production CI already does. `pnpm typecheck` runs TypeScript 7 (native `tsc`) patched by `@effect/tsgo`;
+Oxlint's native checker supplies lint diagnostics, not Effect language-service
+diagnostics. The web config omits the obsolete `baseUrl` option while preserving
+its relative `~/*` mapping.
+
+The root config explicitly preserves the previous ESLint recommended and
+TypeScript strict/stylistic type-checked rule policy, including unused `_`
+exemptions and `type` declarations. `no-unnecessary-condition` and
+`prefer-optional-chain` are explicitly enabled despite their nursery status in
+the migration tool. Strict-mode-only `no-dupe-args` and `no-octal` have no Oxlint
+equivalent. Prettier remains the formatter.
+
+Anti-slop is vendored under `tooling/oxlint/anti-slop`, with revision
+and licenses recorded there. Enabled rules reject chained assertions, unexplained
+assertions, known-value widening, unsafe assertion round trips, broad object
+parameters and unknown return/type-alias contracts, reflective property access
+and calls, conditional empty-object spreads, and repeated eager array passes or
+accumulator copying. `as const` does not require a safety comment.
+
+The conditional-spread rule is locally tailored to require `exactOptional` for
+optional field construction. It preserves property omission and expression-based
+construction. `exactOptional` omits only `undefined`; truthy-only conditions must
+still be represented explicitly, such as passing `enabled ? value : undefined`
+to the helper. The rule provides no automatic rewrite because an
+arbitrary condition may have different omission semantics. Local changes are
+recorded in the vendored provenance file.
+
+The adoption deliberately leaves these upstream policies disabled:
+
+- Unknown input parameters, runtime `typeof`, and broad dictionaries require
+  separate decisions about error/I/O boundaries and diagnostic metadata.
+- Module mocking requires reviewing existing auth and Resend test seams.
+- Shape naming requires reviewing exported configuration aliases.
+- Spacing remains a formatting choice; adopting it would create an unrelated
+  repository-wide whitespace diff.
+- Effect-specific rules remain opt-in: tagged literals are legitimate encoded
+  seed data, and constructor naming also matches plain functions such as
+  `makeTiledHeadline`.
+
+Two existing event-service tests retain narrowly suppressed chained assertions
+for deliberately partial database fixtures. All remaining non-const assertions
+must state their specific invariant in a nearby rule-qualified comment:
+`lint(anti-slop/require-safety-comment-for-type-assertion): reason`. Moving those
+tests to a full driver seam is a separate testing refactor.
 
 ## Follow-up work
 
@@ -377,9 +493,73 @@ uses that hint to replace-navigate root visits to `/home` before the SSR landing
 page paints; the authenticated route still verifies the real session and clears
 stale hints. In-app visits never paint the landing page for a signed-in session
 either: the landing route renders nothing once the session is authenticated,
-and the header wordmark links signed-in visitors to `/home`. The root route exposes sign-in through a query-driven modal, and
+and the header wordmark links signed-in visitors to `/home`. The root route exposes code sign-in through a query-driven modal, and
 `/home` provides confirmation, sign-out, and unsubscribe entry points. The dashboard loads private preferences in the browser and shares its team
 picker with signup. Its edit draft supports save/cancel, team removal, and send
 time changes; account email/timezone editing remains separate work. Existing
 emailed links land on Web `/unsubscribe/:token`, whose typed caller uses the
 new endpoint; no legacy API alias is needed.
+
+## Infrastructure dependencies
+
+The infrastructure uses Alchemy beta.78, Effect rc.117,
+and Drizzle rc.5. Platform and SQL packages share the same Effect version.
+Effect rc.118 and stable 4.0 require a newer Drizzle build: the currently
+supported build still references the removed SQL import paths and Schema APIs.
+The Node platform's shared package is pinned to rc.117 because its dependency
+range otherwise accepts the incompatible stable release.
+Alchemy's PostgreSQL bridge uses the `Drizzle/Postgres` entrypoint; the
+production migration ledger retains its existing table name. Standalone Vite
+uses the matching `@alchemy.run/cloudflare-runtime` package. The API uses
+Alchemy's `Http.Platform` layer for its fileless HTTP platform services.
+
+### UFC variants and catalog reconciliation
+
+`SubjectDetails` includes `mma_fighter` and `mma_tracking`; the existing subject
+selection API, subscriptions table, shared four-pick policy, and notification
+orchestrator serve both sports and UFC. The subscription service rejects two
+coverage subjects in one selection. Tracking details use `scope: numbered | all`.
+Fighter details carry a nullable
+men's P4P integer rank (1–15); decoding defaults an absent key to null for existing
+JSON rows. The shared UFC picker uses ranks 1–15 for its empty search state and
+searches the full supported roster otherwise. Each fighter appearance is a
+`mma_card`
+variant row in the existing participants table, linked to its card by eventId.
+Participant details contain display title, fightId, and required placement (prelims or main).
+Subject-event feed associations determine subscription matches, as with sports.
+Only publish fight participants after UFC confirms their segment assignment.
+Within a card, opponents share a fightId; renderers group those rows for display.
+Event and participant row schemas require each row tag to match its details tag
+on reads and writes, including joined event decoding.
+There is no fights table or event-level fights array. The importer validates
+one or two fighters per group and consistent placement. Fight IDs are grouping
+keys within the card; subscription matching uses the existing SQL subject_events
+relationships, independently of these display groups.
+Sports participants retain their home/away roles. Both variants use the existing
+Events.setParticipants replacement and event query relation. Participant row IDs
+are regenerated on replacement; event and fighter subject IDs remain stable.
+There is no per-fight scheduling. Every event retains its
+required startsAt instant and the existing NOT NULL database constraint. UFC
+uses the earliest confirmed broadcast start; the variant's timings struct adds
+required prelims/main timestamps for rendering; both must be
+confirmed before importing a card. Early prelims fold into prelims; startsAt must
+match timings.prelims.
+The existing range queries, local-date handling, and notification scheduler are
+unchanged. No database migration is needed.
+
+UFC follows the sports catalog layout: `mma/ufc/{subjects,events,index}.ts` exports
+a collection registered in `SeedCollections`. The shared catalog importer,
+development subset, summaries, and historical cutoff apply to both families.
+The importer uses existing Subjects/Events services in one transaction, with
+MMA-specific identity validation and reconciliation of MMA feed edges for each
+imported card. Sports feed writes retain their existing additive behavior. Checked-in card snapshots replace the event JSON
+through the ordinary event upsert and participant rows through setParticipants. Omitted cards remain untouched; source review
+preserves known information when upstream listings are incomplete. Delivery
+remains per subscription, including last-send state and provider idempotency keys.
+Dashboard cards deduplicate by event ID and collect all matching subjects.
+Schedule rows share that subject list for focus and match reasons, with separate
+sports-game and MMA-card variants for display. Subject presentation matches on
+the details tag; sports-specific catalog helpers remain sports-only.
+
+See [UFC catalog updates](./runbooks/update-ufc-catalog.md) for source authority,
+broadcast timing, rollout ordering, and the local PostgreSQL integration test.

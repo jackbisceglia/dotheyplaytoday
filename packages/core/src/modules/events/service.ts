@@ -22,8 +22,10 @@ import {
 import { Database } from "../../lib/database/service.js";
 import { Id } from "../../lib/id/service.js";
 import type { WithOptionalKeys } from "../../lib/types.js";
+import { exactOptional } from "../../lib/utils.js";
 import { SubjectId } from "../subjects/schema.js";
 import { EventNotFound } from "./errors.js";
+import { EventWithParticipants } from "./joined.js";
 import {
   Participant,
   ParticipantInsert,
@@ -36,15 +38,15 @@ import {
   EventInsert,
   eventsTable,
 } from "./schema.js";
-import type { Range } from "../subscriptions/time.js";
+import { SubscriptionTiming, type Range } from "../subscriptions/time.js";
+import type { SubscriptionWithEvents } from "../subscriptions/schema.js";
+import { Subscriptions } from "../subscriptions/service.js";
+import type { UserId } from "../users/schema.js";
+import { Users, type UserNotFound } from "../users/service.js";
+
+export { EventWithParticipants } from "./joined.js";
 
 export type DateRangeUtc = Range<DateTime.Utc>;
-
-export type EventWithParticipants = typeof EventWithParticipants.Type;
-export const EventWithParticipants = Schema.Struct({
-  ...Event.fields,
-  participants: Schema.Array(Participant),
-});
 
 export type ListBySubjectOptions = {
   readonly range?: Range<DateTime.Utc>;
@@ -67,6 +69,13 @@ export class Events extends Context.Service<
     ) => Effect.Effect<
       readonly EventWithParticipants[],
       DatabaseReadError | Schema.SchemaError
+    >;
+
+    readonly listForUser: (
+      userId: UserId,
+    ) => Effect.Effect<
+      readonly SubscriptionWithEvents[],
+      UserNotFound | DatabaseReadError | Schema.SchemaError
     >;
 
     readonly upsert: (
@@ -96,6 +105,8 @@ export const EventsLayer = Layer.effect(
   Effect.gen(function* () {
     const database = yield* Database;
     const id = yield* Id;
+    const users = yield* Users;
+    const subscriptions = yield* Subscriptions;
 
     const get: Events["Service"]["get"] = Effect.fn("Events.get")(
       function* (eventId) {
@@ -140,8 +151,10 @@ export const EventsLayer = Layer.effect(
       const rows = yield* database.query.eventsTable
         .findMany({
           where: {
-            availability: availabilityFilter,
-            startsAt,
+            ...exactOptional(availabilityFilter, (availability) => ({
+              availability,
+            })),
+            ...exactOptional(startsAt, (startsAt) => ({ startsAt })),
             subjectEvents: { subjectId },
           },
           with: {
@@ -156,6 +169,31 @@ export const EventsLayer = Layer.effect(
       const eventsWithParticipants = yield* decodeEventWithParticipants(rows);
 
       return eventsWithParticipants;
+    });
+
+    const listForUser: Events["Service"]["listForUser"] = Effect.fn(
+      "Events.listForUser",
+    )(function* (userId) {
+      const user = yield* users.get(userId);
+      const nowUtc = yield* DateTime.now;
+      const range = SubscriptionTiming.localUtcRange({
+        nowUtc,
+        timezone: user.timezone,
+        days: 14,
+      });
+
+      const picks = yield* subscriptions.listForUser(userId);
+
+      return yield* Effect.forEach(
+        picks,
+        Effect.fn(function* (pick) {
+          return {
+            ...pick,
+            events: yield* listBySubject(pick.subjectId, { range }),
+          };
+        }),
+        { concurrency: 4 },
+      );
     });
 
     const upsert: Events["Service"]["upsert"] = Effect.fn("Events.upsert")(
@@ -248,6 +286,7 @@ export const EventsLayer = Layer.effect(
     return Events.of({
       get,
       listBySubject,
+      listForUser,
       setParticipants,
       upsert,
     });

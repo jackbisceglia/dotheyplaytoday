@@ -88,13 +88,13 @@ const card = (): Node =>
 
 const [display, text] = await Promise.all([loadFont(DISPLAY), loadFont(TEXT)]);
 
-const svg = await satori(card() as never, {
+const svg = await satori(card(), {
   width: WIDTH,
   height: HEIGHT,
   fonts: [
     { name: "Archivo Condensed", data: display, weight: 900, style: "normal" },
     { name: "Archivo", data: text, weight: 400, style: "normal" },
-  ] as never,
+  ],
 });
 
 const png = new Resvg(svg, { fitTo: { mode: "width", value: WIDTH } })

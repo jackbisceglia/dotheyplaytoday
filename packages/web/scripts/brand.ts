@@ -1,6 +1,8 @@
 // Shared pieces for the image renderers (`og.ts`, `email-headlines.ts`).
 // Colors mirror `src/styles/global.css`; the mascot mirrors `favicon.svg`.
 
+import type { ReactElement, ReactNode } from "react";
+import { exactOptional } from "@dtpt/core/lib/utils";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -43,12 +45,17 @@ export async function loadFont(file: string): Promise<Buffer> {
 
 // Hand-built element objects: this package's `jsx` config targets Solid.
 export type Style = Record<string, unknown>;
-export type Node = { type: string; key: null; props: Record<string, unknown> };
+export type Node = ReactNode;
+type ElementProps = { style: Style; children?: Node };
 
-export const el = (type: string, style: Style, children?: unknown): Node => ({
+export const el = (
+  type: string,
+  style: Style,
+  children?: Node,
+): ReactElement<ElementProps> => ({
   type,
   key: null,
-  props: { style, ...(children === undefined ? {} : { children }) },
+  props: { style, ...exactOptional(children, (children) => ({ children })) },
 });
 
 export function mascot(size: number): Node {
