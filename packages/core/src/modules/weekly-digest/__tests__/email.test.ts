@@ -20,7 +20,10 @@ describe("weekly digest email", () => {
         const email = yield* render(digest);
 
         expect(email.subject).toBe("Your Weekly Update");
-        expect(email.body.text.match(/October 5–11/g)).toHaveLength(1);
+        expect(email.body.text.match(/Oct 5 – Oct 11/g)).toHaveLength(1);
+        expect(email.body.html).toMatch(
+          /<p class="email-muted"[^>]*>Oct 5 – Oct 11<\/p>/,
+        );
         expect(email.body.text).toContain("New York Mets");
         expect(email.body.text).toContain(
           "- Atlanta Braves at New York Mets\n  Mon, Oct 5 · 7:10 PM",
@@ -77,9 +80,7 @@ describe("weekly digest email", () => {
           to: DateTime.makeUnsafe("2026-10-05T04:00:00Z"),
           groups: [{ subject: mets, events: [] }],
         });
-        expect(
-          september.body.text.match(/September 28 – October 4/g),
-        ).toHaveLength(1);
+        expect(september.body.text.match(/Sep 28 – Oct 4/g)).toHaveLength(1);
         expect(september.body.text).not.toContain("2026");
         expect(september.subject).toBe("Your Weekly Update");
 
@@ -89,9 +90,7 @@ describe("weekly digest email", () => {
           to: DateTime.makeUnsafe("2027-01-04T05:00:00Z"),
           groups: [{ subject: mets, events: [] }],
         });
-        expect(newYear.body.text).toContain(
-          "December 28, 2026 – January 3, 2027",
-        );
+        expect(newYear.body.text).toContain("Dec 28, 2026 – Jan 3, 2027");
       }),
   );
 
@@ -190,7 +189,7 @@ describe("weekly digest email", () => {
 
         expect(email.body.text).toContain("7:00 PM");
         expect(email.body.text).toContain("6:00 PM");
-        expect(email.body.text).toContain("October 26 – November 1");
+        expect(email.body.text).toContain("Oct 26 – Nov 1");
         expect(email.body.text).not.toMatch(/EDT|EST/);
       }),
   );

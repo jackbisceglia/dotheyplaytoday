@@ -8,7 +8,7 @@ import {
   Link,
   Links,
   ScheduleSection,
-  Text,
+  Note,
 } from "../email/render.js";
 import type { WeeklyDigest } from "./schema.js";
 import { sportsSchedule } from "./sports.js";
@@ -26,25 +26,17 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
   const start = local(digest.from);
   const end = DateTime.subtract(local(digest.to), { days: 1 });
 
-  const dates = (date: DateTime.Zoned) =>
+  const includeYear =
+    DateTime.toParts(start).year !== DateTime.toParts(end).year;
+  const formatDate = (date: DateTime.Zoned) =>
     DateTime.format(date, {
       locale: "en-US",
-      month: "long",
+      month: "short",
       day: "numeric",
-      year: "numeric",
+      year: includeYear ? "numeric" : undefined,
     });
 
-  const first = DateTime.toParts(start);
-  const last = DateTime.toParts(end);
-  const month = (date: DateTime.Zoned) =>
-    DateTime.format(date, { locale: "en-US", month: "long" });
-
-  const dateRange =
-    first.year !== last.year
-      ? `${dates(start)} – ${dates(end)}`
-      : first.month === last.month
-        ? `${month(start)} ${first.day.toString()}–${last.day.toString()}`
-        : `${month(start)} ${first.day.toString()} – ${month(end)} ${last.day.toString()}`;
+  const dateRange = `${formatDate(start)} – ${formatDate(end)}`;
 
   const sections = yield* Effect.forEach(digest.groups, (group) =>
     sportsSchedule(group, digest.user.timezone).pipe(
@@ -62,7 +54,7 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
     headline: makeTiledHeadline(web, weeklyDigestLines),
     preheader: "Here's when your teams play.",
     blocks: [
-      Text.make({ value: dateRange }),
+      Note.make({ value: dateRange }),
       ...sections,
       Links.make({
         items: [

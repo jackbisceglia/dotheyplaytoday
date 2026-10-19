@@ -84,9 +84,10 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
 - Quiet weeks still produce an email. Each team with no matching fixtures shows
   “No games this week.”
 - The subject is “Your Weekly Update”. The body starts with the branded image
-  tile “Your teams. This week.”, then one readable date range,
-  such as “September 28 – October 4” or “October 5–11”, followed directly
-  by the team schedules. Years appear only when the range crosses a year boundary.
+  tile “Your teams. This week.”, then one small, muted date range,
+  such as “Sep 28 – Oct 4” or “Oct 5 – Oct 11”, followed directly by the team
+  schedules. Each endpoint includes its month; years appear only when the range
+  crosses a year boundary.
   There are no game counts, summary, timezone labels, or schedule footnote;
   start times still use the recipient's timezone. “Manage teams” and “Unsubscribe”
   share one compact footer. Unsubscribe retains its existing unsubscribe-from-all behavior.
