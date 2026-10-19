@@ -25,7 +25,8 @@ import { notify, NotifyOptions } from "./index.js";
 
 const NotifySchedule = "*/15 * * * *";
 // Cloudflare cron uses UTC; exactly one candidate is 9 AM Eastern in each season.
-const WeeklyDigestSchedule = "0 13,14 * * 1";
+// Use MON: Cloudflare numbers Sunday as 1, unlike Unix cron's Monday as 1.
+export const WeeklyDigestSchedule = "0 13,14 * * MON";
 
 const NotifyPort = 8788;
 

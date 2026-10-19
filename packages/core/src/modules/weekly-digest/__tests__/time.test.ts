@@ -13,6 +13,7 @@ describe("weekly digest timing", () => {
   it("selects exactly one Monday 9 AM Eastern batch across daylight saving changes", () => {
     for (const [chosen, skipped] of [
       ["2026-10-05T13:00:00Z", "2026-10-05T14:00:00Z"],
+      ["2026-10-19T13:00:00Z", "2026-10-19T14:00:00Z"],
       ["2026-11-02T14:00:00Z", "2026-11-02T13:00:00Z"],
       ["2026-03-09T13:00:00Z", "2026-03-09T14:00:00Z"],
     ] as const) {
@@ -25,6 +26,23 @@ describe("weekly digest timing", () => {
     expect(
       isWeeklyDigestBatchTime(DateTime.makeUnsafe("2026-10-05T13:15:00Z")),
     ).toBe(false);
+  });
+
+  it("rejects the Sunday candidates registered by the former numeric weekday", () => {
+    for (const instant of ["2026-10-25T13:00:00Z", "2026-10-25T14:00:00Z"]) {
+      expect(isWeeklyDigestBatchTime(DateTime.makeUnsafe(instant))).toBe(false);
+    }
+  });
+
+  it("accepts runtime epoch milliseconds within the scheduled minute", () => {
+    // ScheduledController uses milliseconds; dashboard telemetry may show seconds.
+    const now = DateTime.makeUnsafe(1792414827481);
+    expect(DateTime.formatIso(now)).toBe("2026-10-19T13:00:27.481Z");
+    expect(isWeeklyDigestBatchTime(now)).toBe(true);
+    expect(
+      weeklyDigestWindow(now, DateTime.zoneMakeNamedUnsafe("America/New_York"))
+        .weekStart,
+    ).toBe("2026-10-19");
   });
 
   it("queries local Monday midnight through next Monday midnight", () => {
