@@ -1,6 +1,6 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Stack } from "alchemy";
-import { Boolean, Effect, Layer, Option, pipe, Result } from "effect";
+import { Boolean, DateTime, Effect, Layer, Option, pipe, Result } from "effect";
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 
@@ -14,18 +14,30 @@ import { exactOptional } from "@dtpt/core/lib/utils";
 import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
 import { NotifierLayerConsole } from "@dtpt/core/modules/notifier/console";
 import { NotifierLayerEmail } from "@dtpt/core/modules/notifier/email";
+import { EmailLayerResend } from "@dtpt/core/modules/email/resend";
+import { Email } from "@dtpt/core/modules/email/service";
 import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
+import { isWeeklyDigestBatchTime } from "@dtpt/core/modules/weekly-digest/time";
+import { weeklyDigest } from "../weekly-digest/index.js";
 import { notify, NotifyOptions } from "./index.js";
 
 const NotifySchedule = "*/15 * * * *";
+// Cloudflare cron uses UTC; exactly one candidate is 9 AM Eastern in each season.
+const WeeklyDigestSchedule = "0 13,14 * * 1";
+
+const NotifyPort = 8788;
+
+const makeTrigger = (path: string) => ({
+  path,
+  getLocalUrl: () => `http://localhost:${NotifyPort.toString()}${path}`,
+});
 
 export const Trigger = {
-  path: "/test/notify",
-  port: 8788,
-  getLocalUrl: () =>
-    `http://localhost:${Trigger.port.toString()}${Trigger.path}`,
+  port: NotifyPort,
+  daily: makeTrigger("/test/notify"),
+  weeklyDigest: makeTrigger("/test/weekly-digest"),
 } as const;
 
 const NotifyDomainsLayer = pipe(
@@ -80,6 +92,25 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
       ),
     );
 
+    yield* Cloudflare.Workers.cron(
+      WeeklyDigestSchedule,
+      Effect.fn(
+        function* (controller) {
+          const now = DateTime.makeUnsafe(controller.scheduledTime);
+
+          if (!isWeeklyDigestBatchTime(now)) return;
+
+          yield* Effect.logInfo("weekly digest: scheduled batch");
+          yield* weeklyDigest({ now }).pipe(
+            Effect.provide(Layer.merge(NotifyLayer, EmailLayerResend)),
+          );
+        },
+        Effect.tapCause((cause) =>
+          Effect.logError("weekly digest: cron failed", cause),
+        ),
+      ),
+    );
+
     return {
       fetch: Effect.gen(function* () {
         const request = yield* HttpServerRequest.HttpServerRequest;
@@ -91,7 +122,11 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
           return HttpServerResponse.empty({ status: 401 });
         }
 
-        if (request.method !== "POST" || pathname !== Trigger.path) {
+        if (
+          request.method !== "POST" ||
+          (pathname !== Trigger.daily.path &&
+            pathname !== Trigger.weeklyDigest.path)
+        ) {
           return HttpServerResponse.empty({ status: 404 });
         }
 
@@ -104,6 +139,27 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
         }
 
         const body = bodyResult.success;
+
+        if (pathname === Trigger.weeklyDigest.path) {
+          // Dry runs never build or call the provider layer.
+          const run = weeklyDigest(body);
+
+          if (body.dryRun) {
+            yield* run.pipe(
+              Effect.provide(NotifyLayer),
+              Effect.provideService(Email, {
+                send: () => Effect.die("Dry runs must not send email"),
+              }),
+            );
+          } else {
+            yield* run.pipe(
+              Effect.provide(Layer.merge(NotifyLayer, EmailLayerResend)),
+            );
+          }
+
+          return yield* HttpServerResponse.json({ ok: true });
+        }
+
         const NotifyRunLayer = Layer.merge(
           NotifyLayer,
           Boolean.match(body.dryRun, {

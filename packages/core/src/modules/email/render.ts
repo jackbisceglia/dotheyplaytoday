@@ -53,6 +53,22 @@ export const Link = Schema.TaggedStruct("link", {
 });
 export const Code = Schema.TaggedStruct("code", { value: Schema.String });
 
+export const Links = Schema.TaggedStruct("links", {
+  items: Schema.Array(Link),
+});
+
+export const ScheduleSection = Schema.TaggedStruct("schedule_section", {
+  title: Schema.String,
+  emptyText: Schema.String,
+  rows: Schema.Array(
+    Schema.Struct({
+      date: Schema.String,
+      label: Schema.String,
+      time: Schema.String,
+    }),
+  ),
+});
+
 export type Block = typeof Blocks.Type;
 export const Blocks = TaggedUnion([
   Text,
@@ -63,6 +79,8 @@ export const Blocks = TaggedUnion([
   Entry,
   Link,
   Code,
+  Links,
+  ScheduleSection,
 ]);
 
 export type EmailViewProps = {
@@ -117,10 +135,14 @@ const blockPreview = (block: Block): string => {
       return `${block.label}: ${block.value}`;
     case "link":
       return block.text;
+    case "links":
+      return block.items.map((link) => link.text).join(" · ");
     case "list":
       return block.items.join(", ");
     case "matchups":
       return block.items.map(matchupText).join(" • ");
+    case "schedule_section":
+      return block.title;
     case "event":
       return `${block.title} - ${block.detail}`;
   }
@@ -146,6 +168,18 @@ const blockText = (block: Block): readonly string[] => {
       return [block.label, block.detail, block.value];
     case "link":
       return [`${block.text}: ${block.href}`];
+    case "links":
+      return block.items.map((link) => `${link.text}: ${link.href}`);
+    case "schedule_section":
+      return [
+        block.title,
+        ...(block.rows.length === 0
+          ? [block.emptyText]
+          : block.rows.flatMap((row) => [
+              `- ${row.label}`,
+              `  ${row.date}, ${row.time}`,
+            ])),
+      ];
     case "code":
       return [block.value];
   }
@@ -279,6 +313,31 @@ const blockHtml = (block: Block): string => {
       );
     case "link":
       return element.link(block.href, block.text);
+    case "links":
+      return block.items
+        .map((link) => element.link(link.href, link.text))
+        .join(
+          ` <span class="email-muted" style="padding: 0 8px; font-size: 12px; color: ${color.muted};">·</span> `,
+        );
+    case "schedule_section":
+      return `<section aria-label="${escapeHtml(block.title)}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td class="email-ink" style="font-size: 16px; font-weight: 700; padding-bottom: 8px;">${escapeHtml(block.title)}</td></tr>
+</table>
+${
+  block.rows.length === 0
+    ? element.note(escapeHtml(block.emptyText))
+    : stack(
+        block.rows.map((row) =>
+          element.bullet(
+            escapeHtml(row.label),
+            escapeHtml(`${row.date}, ${row.time}`),
+          ),
+        ),
+        12,
+      )
+}
+</section>`;
     case "code":
       return element.code(escapeHtml(block.value));
   }

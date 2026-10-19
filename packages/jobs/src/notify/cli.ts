@@ -1,6 +1,7 @@
 import { Effect, Option } from "effect";
 import { Command, Flag } from "effect/unstable/cli";
 import { HttpClient, HttpClientRequest } from "effect/unstable/http";
+import { exactOptional } from "@dtpt/core/lib/utils";
 
 import { JobsCliRuntime } from "../runtime.js";
 import { NotifyOptions } from "./index.js";
@@ -10,42 +11,53 @@ const DryRunFlag = Flag.Boolean("dry-run").pipe(
   Flag.withSchema(NotifyOptions.fields.dryRun),
   Flag.withDefault(false),
 );
+
 const ForceFlag = Flag.Boolean("force").pipe(
   Flag.withSchema(NotifyOptions.fields.force),
   Flag.withDefault(false),
+  Flag.withDescription(
+    "Bypass daily due-time and already-sent checks; unnecessary for weekly runs",
+  ),
 );
+
 const NowFlag = Flag.String("now").pipe(
   Flag.withSchema(NotifyOptions.fields.now),
   Flag.optional,
   Flag.withDescription("Run as if the job started at this ISO UTC instant"),
 );
+
 const UserFlag = Flag.String("user").pipe(
   Flag.withSchema(NotifyOptions.fields.userEmail),
   Flag.optional,
   Flag.withDescription("Process only recipients for this email address"),
 );
 
-const NotifyCommand = Command.make(
+export const NotifyCommand = Command.make(
   "notify",
   {
     dryRun: DryRunFlag,
     force: ForceFlag,
     now: NowFlag,
     user: UserFlag,
+    weekly: Flag.Boolean("weekly").pipe(
+      Flag.withDefault(false),
+      Flag.withDescription("Run the weekly digest instead of daily reminders"),
+    ),
   },
   Effect.fn("Notify.Cli")(function* (opts) {
     const now = Option.getOrUndefined(opts.now);
     const userEmail = Option.getOrUndefined(opts.user);
 
-    const triggerUrl = Trigger.getLocalUrl();
+    const trigger = opts.weekly ? Trigger.weeklyDigest : Trigger.daily;
+    const triggerUrl = trigger.getLocalUrl();
 
     const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
     const request = yield* HttpClientRequest.post(triggerUrl).pipe(
       HttpClientRequest.schemaBodyJson(NotifyOptions)({
         dryRun: opts.dryRun,
         force: opts.force,
-        ...(now && { now }),
-        ...(userEmail && { userEmail }),
+        ...exactOptional(now, (now) => ({ now })),
+        ...exactOptional(userEmail, (userEmail) => ({ userEmail })),
       }),
     );
 

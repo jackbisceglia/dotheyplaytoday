@@ -25,6 +25,7 @@ import {
 } from "../email/render.js";
 import { type MmaFight, mmaFights } from "../mma/fights.js";
 import { EventId } from "../events/schema.js";
+import { sportsSubjectSide } from "../events/variants/sport.js";
 import {
   isEventWithParticipants,
   type NarrowedEventWithParticipants,
@@ -137,32 +138,6 @@ const findSharedParticipantTitle = (
   return sharedTitle;
 };
 
-/**
- * Best-effort guess at which participant is the subscriber's team, used when
- * {@link findSharedParticipantTitle} has nothing to compare across (a single
- * event). Participant titles carry no id back to the subject, so this is a
- * plain string match against the subject's display name — it can miss
- * (differing formatting, renamed teams), in which case callers should treat
- * `undefined` as "ordering doesn't matter".
- */
-const guessSubjectSide = (
-  home: SportsGameParticipant,
-  away: SportsGameParticipant,
-  subjectDisplay: string,
-): SubjectSide | undefined => {
-  const normalize = (value: string) => value.trim().toLowerCase();
-  const target = normalize(subjectDisplay);
-
-  if (normalize(home.details.title) === target) {
-    return { leading: home, trailing: away, separator: "vs." };
-  }
-  if (normalize(away.details.title) === target) {
-    return { leading: away, trailing: home, separator: "@" };
-  }
-
-  return undefined;
-};
-
 const orderBySubject = (
   home: SportsGameParticipant,
   away: SportsGameParticipant,
@@ -177,7 +152,7 @@ const orderBySubject = (
   }
 
   return (
-    guessSubjectSide(home, away, subjectDisplay) ?? {
+    sportsSubjectSide(home, away, subjectDisplay) ?? {
       leading: away,
       trailing: home,
       separator: "@",

@@ -59,6 +59,57 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
 - A dry run renders and sends through the console notifier and does not mark the subscription sent.
 - Production scheduling is performed by the Cloudflare Worker cron. Development triggers and command-line entry points are operational tools, not the production scheduler.
 
+## Weekly digest
+
+- Verified users following sports teams, UFC fighters, or UFC card coverage
+  receive one weekly email by default,
+  alongside their existing game-day reminders. Separate weekly preferences are
+  deferred; changing the daily send time does not change weekly delivery.
+- Delivery is one Monday 9:00 AM Eastern (`America/New_York`) batch for all
+  eligible recipients, following daylight saving time and independent of daily
+  reminder preferences. The emails remain personalized by picks and recipient timezone.
+- Coverage is the batch's Monday–Sunday calendar week, including Monday games
+  before delivery. All recipients cover the same dates. Queries include each
+  recipient's local Monday midnight and exclude the next Monday midnight,
+  using calendar arithmetic across daylight saving changes.
+- Weekly eligibility includes `sports_team` subjects (including NCAA men's
+  basketball), `mma_fighter` subjects, and `mma_tracking` subjects (All or
+  Numbered UFC events). Existing feed links select each fighter’s cards and
+  coverage matches: Numbered includes numbered cards, while All also includes
+  Fight Nights. Each card is listed once per matching pick, under that fighter
+  or coverage heading, with its full title and local
+  main-card date and start time, labeled “Main Card”. No fight lineup is listed.
+  Card selection uses the existing earliest-broadcast event start to determine
+  its local week; the displayed main-card start can fall on the following day.
+  A shared card appears under each matching fighter/coverage pick, just as a
+  shared game appears under each followed team; it is not merged across sections.
+  Both coverage options use “UFC Events” as their email section heading;
+  fighter sections use the fighter's name.
+- The By team email keeps each followed team as a section heading. Games appear
+  as bullets with the followed team first, using `vs` for home games and `@`
+  for away games, then the opponent. The date and local start time appear
+  underneath, separated by a comma. A fixture between two followed teams appears
+  in both sections from each team's perspective. Games stay chronological and
+  cancelled games are excluded.
+- Quiet weeks still produce an email, including for UFC-only subscribers. Every
+  section without matching events uses “No events this week.”
+- The subject is “Your Weekly Update”. The body starts with the branded image
+  tile “Your teams. This week.”, followed directly by the schedules.
+  There is no separate date range, game count, summary, timezone label, or schedule
+  footnote; start times still use the recipient's timezone. “Manage teams” and “Unsubscribe”
+  share one compact footer. Unsubscribe retains its existing unsubscribe-from-all behavior.
+  There is no weekly-only unsubscribe until separate preferences exist.
+- Weekly sends do not write daily subscription history or introduce a delivery
+  table. Each recipient uses `weekly-digest:<user-id>:<Monday-date>` as the
+  provider idempotency key. Transient transport failures use the email
+  adapter's existing bounded retries. There are no saved message snapshots or
+  durable per-recipient completion records.
+- Development supports `pnpm @jobs start:notify --weekly` with `--dry-run`,
+  `--user <email>`, and `--now <ISO-UTC-instant>`. Manual weekly runs execute
+  immediately; `--force` is unnecessary. Dry runs render without sending or
+  writing delivery state. Repeating a week retains its provider key and does
+  not guarantee a fresh delivery.
+
 ## Registration and confirmation rollout
 
 - New users start unverified and receive a “Confirm your updates” magic link. The success message is “Check your email to start your updates.”

@@ -343,6 +343,11 @@ export function Form(props: FormProps) {
             </p>
           </fieldset>
 
+          <p class="form-hint">
+            Reminders at your chosen time, plus your weekly schedule every
+            Monday.
+          </p>
+
           <div class="form-submit-row">
             <button
               class="btn btn-primary"

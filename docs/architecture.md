@@ -326,6 +326,75 @@ while editing, so the entry stays cached and the editor opens without a second
 fetch. Selection feedback lives beside the shared picker rather than under
 signup.
 
+## Weekly digest
+
+The notification Worker keeps its quarter-hour daily reminder cron and adds a
+separate Monday batch at 9:00 AM Eastern. Cloudflare cron fires at both 13:00
+and 14:00 UTC Mondays (`0 13,14 * * 1`); an Eastern-time guard admits exactly
+one candidate across daylight saving changes. The guard and week selection use
+Cloudflare’s scheduled timestamp, so late execution retains the same batch.
+`jobs/src/weekly-digest` filters verified recipients through the team and MMA
+eligibility helpers in `weekly-digest/scope.ts` before grouping by user. The
+helpers use tagged-union guards and require matching subject/detail variants:
+`sports_team` (including NCAA), `mma_fighter`, and `mma_tracking` are supported.
+It sends one personalized email per user, without consulting daily send times
+or last-sent timestamps. It uses the existing `Events.listBySubject` active-event
+query with a half-open local-week UTC range and never writes a subscription's
+`lastSentAt`.
+
+Core's `weekly-digest` model carries subject/event `groups`. Its email
+composition owns the headline, quiet-week copy, and footer, using
+existing headline and link primitives. `weekly-digest/sports.ts` adapts a
+group into a display title and date/label/time rows. It validates subject and
+joined event/participant variants once at that adapter boundary, then uses
+narrow sports types for chronological ordering, local times, home/away roles,
+and full matchup labels with the followed team first (`vs` at home, `@` away).
+Participant titles carry no subject identity, so the adapter uses the shared
+`events/variants/sport.ts` subject-side helper, also used by daily emails, to
+match the normalized subject display title. It returns
+`SportsScheduleRenderError` when the side or roles cannot be resolved.
+
+The shared email module’s `ScheduleSection` only lays out a title, rows, and
+caller-supplied `emptyText`, with matching HTML/plain-text output and escaping.
+Each row is a bullet label with its comma-separated date and time beneath it,
+reusing the existing email bullet layout. The sports adapter supplies both team names;
+section headings still group the subscriber’s teams.
+It has no team/game fields, event tags, eligibility rules, or weekly copy.
+Historical email blocks retain their existing behavior.
+
+`weekly-digest/mma.ts` adapts UFC fighter and coverage picks into the same
+display rows. The adapter validates subject and joined MMA event variants once, then lists
+full card titles ordered by their local main-card starts. It uses the existing
+fighter and All/Numbered feed links; selection remains anchored to the event's earliest
+broadcast start within the local week, while the displayed date/time belongs
+to the main card and may fall on the next day. Invalid variants fail the whole
+recipient digest with `MmaScheduleRenderError`, logged like team render errors.
+There is no fight lineup: fighter and coverage picks both show the full card
+and main start under their own section heading. A shared card appears under
+each matching pick, consistent with team sections; cross-section deduplication
+is intentionally absent. Existing mutual exclusion of All/Numbered coverage
+prevents two coverage picks.
+Composition exhaustively matches the subject detail tag to the team or MMA
+presenter and supplies the same
+“No events this week.” empty text to both. The headline and footer use “teams”, including for UFC subscriptions.
+No registry or sports behavior is added to the shared layout.
+
+Weekly sending requires no new database schema or saved email snapshots.
+Each send uses `weekly-digest:<user-id>:<Monday-date>` as its provider
+idempotency key. The email adapter retries transient failures within a send;
+recipient-specific render and provider failures are logged while the batch
+continues. There is no durable record of individual batch completion. Repeated
+or concurrent runs rebuild content under the same key; changed schedules or
+roster edits may
+produce a provider idempotency conflict. [Provider deduplication](https://resend.com/docs/dashboard/emails/idempotency-keys)
+lasts 24 hours, so the key alone does not guarantee once-per-week delivery. Within one send,
+bounded adapter retries reuse the same rendered payload.
+
+`POST /test/weekly-digest` is a development-only trigger using the existing
+notify options and CLI's `--weekly` flag. A dry run logs the rendered email,
+uses no email provider, and writes no delivery state. Production exposes no
+manual trigger. The Worker and generated weekly headline asset deploy together.
+
 ## Testing and validation
 
 API contract tests live in `packages/core/src/contracts/__tests__`, named for

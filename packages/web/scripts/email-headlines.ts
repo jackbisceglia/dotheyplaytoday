@@ -18,6 +18,7 @@ import {
   kickoffLines,
   ufcLines,
 } from "@dtpt/core/modules/notifier/email";
+import { weeklyDigestLines } from "@dtpt/core/modules/weekly-digest/email";
 import { SeedCollections } from "@dtpt/data/seed/index";
 import { Predicate } from "effect";
 import { mkdir, rm, writeFile } from "node:fs/promises";
@@ -151,6 +152,7 @@ const headlines = [
       confirmationLines,
       kickoffLines,
       ufcLines,
+      weeklyDigestLines,
       ...teams,
     ].map((lines) => [buildHeadlineImagePath(lines), lines]),
   ),
