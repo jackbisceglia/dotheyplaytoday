@@ -113,7 +113,7 @@ describe("weekly digest email", () => {
           /All times|America\/New_York|EDT|EST|games across|\d+ games|Schedule as of|Your week, all in one place/,
         );
         expect(email.body.text).toContain(
-          "Manage picks: https://example.com/home",
+          "Manage teams: https://example.com/home",
         );
         expect(email.metadata?.unsubscribe).toBe(
           `https://example.com/unsubscribe/${digest.user.unsubscribeToken}`,
@@ -121,9 +121,9 @@ describe("weekly digest email", () => {
         expect(email.body.html).toContain("New York Mets vs Atlanta Braves");
         expect(email.body.html.match(/&bull;/g)).toHaveLength(6);
         expect(email.body.html).toContain(
-          'src="https://example.com/email/headlines/your-picks-this-week.png"',
+          'src="https://example.com/email/headlines/your-teams-this-week.png"',
         );
-        expect(email.body.html).toContain('alt="Your picks. This week."');
+        expect(email.body.html).toContain('alt="Your teams. This week."');
       }),
   );
 

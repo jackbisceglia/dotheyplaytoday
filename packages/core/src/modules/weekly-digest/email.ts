@@ -8,7 +8,7 @@ import type { WeeklyDigest } from "./schema.js";
 import { sportsSchedule } from "./sports.js";
 import { mmaSchedule } from "./mma.js";
 
-export const weeklyDigestLines: Lines = ["Your picks.", "This week."];
+export const weeklyDigestLines: Lines = ["Your teams.", "This week."];
 
 export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
   digest: WeeklyDigest,
@@ -40,7 +40,7 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
         items: [
           Link.make({
             href: `${web.replace(/\/+$/, "")}/home`,
-            text: "Manage picks",
+            text: "Manage teams",
           }),
           Link.make({ href: unsubscribe, text: "Unsubscribe" }),
         ],

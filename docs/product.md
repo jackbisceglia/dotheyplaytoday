@@ -94,9 +94,9 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
 - Quiet weeks still produce an email, including for UFC-only subscribers. Every
   section without matching events uses “No events this week.”
 - The subject is “Your Weekly Update”. The body starts with the branded image
-  tile “Your picks. This week.”, followed directly by the schedules.
+  tile “Your teams. This week.”, followed directly by the schedules.
   There is no separate date range, game count, summary, timezone label, or schedule
-  footnote; start times still use the recipient's timezone. “Manage picks” and “Unsubscribe”
+  footnote; start times still use the recipient's timezone. “Manage teams” and “Unsubscribe”
   share one compact footer. Unsubscribe retains its existing unsubscribe-from-all behavior.
   There is no weekly-only unsubscribe until separate preferences exist.
 - Weekly sends do not write daily subscription history or introduce a delivery
