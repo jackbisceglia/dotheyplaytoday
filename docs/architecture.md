@@ -342,20 +342,21 @@ query with a half-open local-week UTC range and never writes a subscription's
 `lastSentAt`.
 
 Core's `weekly-digest` model carries subject/event `groups`. Its email
-composition owns the headline, date range, quiet-week copy, and footer, using
-existing headline, text, and link primitives. `weekly-digest/sports.ts` adapts a
+composition owns the headline, quiet-week copy, and footer, using
+existing headline and link primitives. `weekly-digest/sports.ts` adapts a
 group into a display title and date/label/time rows. It validates subject and
 joined event/participant variants once at that adapter boundary, then uses
 narrow sports types for chronological ordering, local times, home/away roles,
-and full away-team-at-home-team matchup labels. Participant titles carry no
-subject identity, so the adapter uses the shared `events/variants/sport.ts` subject-side helper, also
-used by daily emails, to match the normalized subject display title. It returns
+and full matchup labels with the followed team first (`vs` at home, `@` away).
+Participant titles carry no subject identity, so the adapter uses the shared
+`events/variants/sport.ts` subject-side helper, also used by daily emails, to
+match the normalized subject display title. It returns
 `SportsScheduleRenderError` when the side or roles cannot be resolved.
 
 The shared email module’s `ScheduleSection` only lays out a title, rows, and
 caller-supplied `emptyText`, with matching HTML/plain-text output and escaping.
-Each row is a bullet label with its date and time beneath it, reusing the
-existing email bullet layout. The sports adapter supplies both team names;
+Each row is a bullet label with its comma-separated date and time beneath it,
+reusing the existing email bullet layout. The sports adapter supplies both team names;
 section headings still group the subscriber’s teams.
 It has no team/game fields, event tags, eligibility rules, or weekly copy.
 Historical email blocks retain their existing behavior.

@@ -55,7 +55,9 @@ const matchup = Effect.fn("SportsSchedule.matchup")(function* (
     });
   }
 
-  return `${awayTeam.details.title} at ${homeTeam.details.title}`;
+  const separator = side.separator === "@" ? "@" : "vs";
+
+  return `${side.leading.details.title} ${separator} ${side.trailing.details.title}`;
 });
 
 /** Adapt a domain group into display rows; validate variant identity once here. */

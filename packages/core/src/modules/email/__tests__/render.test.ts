@@ -23,13 +23,13 @@ describe("schedule section layout", () => {
     );
 
     expect(email.body.text).toContain(
-      "Museum <visits>\n- Art & design\n  Wed, Oct 7 · 2:00 PM",
+      "Museum <visits>\n- Art & design\n  Wed, Oct 7, 2:00 PM",
     );
 
     expect(email.body.html).toContain("Museum &lt;visits&gt;");
     expect(email.body.html).toContain("Art &amp; design");
     expect(email.body.html).toContain("&bull;");
-    expect(email.body.html).toContain("Wed, Oct 7 · 2:00 PM");
+    expect(email.body.html).toContain("Wed, Oct 7, 2:00 PM");
     expect(email.body.html).not.toContain("Nothing booked.");
     expect(email.body.text).not.toContain("No games");
   });

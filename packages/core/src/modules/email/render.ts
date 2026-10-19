@@ -177,7 +177,7 @@ const blockText = (block: Block): readonly string[] => {
           ? [block.emptyText]
           : block.rows.flatMap((row) => [
               `- ${row.label}`,
-              `  ${row.date} · ${row.time}`,
+              `  ${row.date}, ${row.time}`,
             ])),
       ];
     case "code":
@@ -331,7 +331,7 @@ ${
         block.rows.map((row) =>
           element.bullet(
             escapeHtml(row.label),
-            escapeHtml(`${row.date} · ${row.time}`),
+            escapeHtml(`${row.date}, ${row.time}`),
           ),
         ),
         12,

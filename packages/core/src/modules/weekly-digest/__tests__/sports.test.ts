@@ -28,12 +28,12 @@ describe("sports schedule presentation", () => {
           rows: [
             {
               date: "Mon, Oct 5",
-              label: "Phillies at New York Mets",
+              label: "New York Mets vs Phillies",
               time: "7:10 PM",
             },
             {
               date: "Wed, Oct 7",
-              label: "New York Mets at Braves",
+              label: "New York Mets @ Braves",
               time: "7:00 PM",
             },
           ],

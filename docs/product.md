@@ -77,19 +77,17 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
   MMA weekly enablement, settle card versus fighter grouping, overlapping picks
   and deduplication, no-fight weeks, and wording that works across sports.
 - The By team email keeps each followed team as a section heading. Games appear
-  as bullets with the full away-team-at-home-team matchup, followed by the date
-  and local start time underneath. A fixture between two followed teams appears
-  in both sections with the same full matchup. Games stay chronological and
+  as bullets with the followed team first, using `vs` for home games and `@`
+  for away games, then the opponent. The date and local start time appear
+  underneath, separated by a comma. A fixture between two followed teams appears
+  in both sections from each team's perspective. Games stay chronological and
   cancelled games are excluded.
 - Quiet weeks still produce an email. Each team with no matching fixtures shows
   “No games this week.”
 - The subject is “Your Weekly Update”. The body starts with the branded image
-  tile “Your teams. This week.”, then one small, muted date range,
-  such as “Sep 28 – Oct 4” or “Oct 5 – Oct 11”, followed directly by the team
-  schedules. Each endpoint includes its month; years appear only when the range
-  crosses a year boundary.
-  There are no game counts, summary, timezone labels, or schedule footnote;
-  start times still use the recipient's timezone. “Manage teams” and “Unsubscribe”
+  tile “Your teams. This week.”, followed directly by the team schedules.
+  There is no separate date range, game count, summary, timezone label, or schedule
+  footnote; start times still use the recipient's timezone. “Manage teams” and “Unsubscribe”
   share one compact footer. Unsubscribe retains its existing unsubscribe-from-all behavior.
   There is no weekly-only unsubscribe until separate preferences exist.
 - Weekly sends do not write daily subscription history or introduce a delivery

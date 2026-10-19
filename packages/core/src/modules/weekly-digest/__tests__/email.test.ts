@@ -20,16 +20,14 @@ describe("weekly digest email", () => {
         const email = yield* render(digest);
 
         expect(email.subject).toBe("Your Weekly Update");
-        expect(email.body.text.match(/Oct 5 – Oct 11/g)).toHaveLength(1);
-        expect(email.body.html).toMatch(
-          /<p class="email-muted"[^>]*>Oct 5 – Oct 11<\/p>/,
-        );
+        expect(email.body.text).not.toContain("Oct 5 – Oct 11");
+        expect(email.body.html).not.toContain("Oct 5 – Oct 11");
         expect(email.body.text).toContain("New York Mets");
         expect(email.body.text).toContain(
-          "- Atlanta Braves at New York Mets\n  Mon, Oct 5 · 7:10 PM",
+          "- New York Mets vs Atlanta Braves\n  Mon, Oct 5, 7:10 PM",
         );
         expect(email.body.text).toContain(
-          "- New York Mets at Philadelphia Phillies\n  Fri, Oct 9 · 7:05 PM",
+          "- New York Mets @ Philadelphia Phillies\n  Fri, Oct 9, 7:05 PM",
         );
         expect(email.body.text).toContain(
           "New York Rangers\nNo games this week.",
@@ -43,7 +41,7 @@ describe("weekly digest email", () => {
         expect(email.metadata?.unsubscribe).toBe(
           `https://example.com/unsubscribe/${digest.user.unsubscribeToken}`,
         );
-        expect(email.body.html).toContain("Atlanta Braves at New York Mets");
+        expect(email.body.html).toContain("New York Mets vs Atlanta Braves");
         expect(email.body.html.match(/&bull;/g)).toHaveLength(6);
         expect(email.body.html).toContain(
           'src="https://example.com/email/headlines/your-teams-this-week.png"',
@@ -71,48 +69,28 @@ describe("weekly digest email", () => {
   );
 
   it.effect(
-    "shows a friendly date range once across month and year boundaries",
+    "shows a shared fixture from each followed team’s home or away perspective",
     () =>
       Effect.gen(function* () {
-        const september = yield* render({
+        const game = makeGame(
+          mets,
+          knicks.details.display,
+          "2026-10-05T23:10:00Z",
+          716,
+        );
+        const email = yield* render({
           ...digest,
-          from: DateTime.makeUnsafe("2026-09-28T04:00:00Z"),
-          to: DateTime.makeUnsafe("2026-10-05T04:00:00Z"),
-          groups: [{ subject: mets, events: [] }],
+          groups: [
+            { subject: mets, events: [game] },
+            { subject: knicks, events: [game] },
+          ],
         });
-        expect(september.body.text.match(/Sep 28 – Oct 4/g)).toHaveLength(1);
-        expect(september.body.text).not.toContain("2026");
-        expect(september.subject).toBe("Your Weekly Update");
 
-        const newYear = yield* render({
-          ...digest,
-          from: DateTime.makeUnsafe("2026-12-28T05:00:00Z"),
-          to: DateTime.makeUnsafe("2027-01-04T05:00:00Z"),
-          groups: [{ subject: mets, events: [] }],
-        });
-        expect(newYear.body.text).toContain("Dec 28, 2026 – Jan 3, 2027");
+        for (const body of [email.body.text, email.body.html]) {
+          expect(body).toContain("New York Mets vs New York Knicks");
+          expect(body).toContain("New York Knicks @ New York Mets");
+        }
       }),
-  );
-
-  it.effect("shows a shared fixture under each followed team", () =>
-    Effect.gen(function* () {
-      const game = makeGame(
-        mets,
-        knicks.details.display,
-        "2026-10-05T23:10:00Z",
-        716,
-      );
-      const email = yield* render({
-        ...digest,
-        groups: [
-          { subject: mets, events: [game] },
-          { subject: knicks, events: [game] },
-        ],
-      });
-      expect(
-        email.body.text.match(/- New York Knicks at New York Mets/g),
-      ).toHaveLength(2);
-    }),
   );
 
   it.effect(
@@ -137,7 +115,7 @@ describe("weekly digest email", () => {
         });
 
         expect(email.body.text).toContain(
-          "- Atlanta Braves at New York Mets\n  Sun, Oct 11 · 11:30 PM",
+          "- New York Mets vs Atlanta Braves\n  Sun, Oct 11, 11:30 PM",
         );
         expect(email.body.text.indexOf("Mon, Oct 5")).toBeLessThan(
           email.body.text.indexOf("Sun, Oct 11"),
@@ -189,7 +167,7 @@ describe("weekly digest email", () => {
 
         expect(email.body.text).toContain("7:00 PM");
         expect(email.body.text).toContain("6:00 PM");
-        expect(email.body.text).toContain("Oct 26 – Nov 1");
+        expect(email.body.text).not.toContain("Oct 26 – Nov 1");
         expect(email.body.text).not.toMatch(/EDT|EST/);
       }),
   );
