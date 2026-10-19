@@ -21,7 +21,7 @@ const renderCurrentDigest = Effect.fn("WeeklyDigestJob.renderCurrentDigest")(
     window: ReturnType<typeof weeklyDigestWindow>,
   ) {
     const events = yield* Events;
-    const teams = yield* Effect.forEach(group, (recipient) =>
+    const groups = yield* Effect.forEach(group, (recipient) =>
       Effect.gen(function* () {
         const subject = recipient.subscription.subject;
         return {
@@ -37,7 +37,7 @@ const renderCurrentDigest = Effect.fn("WeeklyDigestJob.renderCurrentDigest")(
         user: group[0].user,
         from: window.from,
         to: window.to,
-        teams,
+        groups,
       }),
     );
   },
@@ -84,8 +84,8 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
         yield* Effect.logInfo("weekly digest: sent", identity);
       },
       Effect.catchTags({
-        WeeklyDigestRenderError: (error) =>
-          Effect.logError("weekly digest: invalid game", error),
+        SportsScheduleRenderError: (error) =>
+          Effect.logError("weekly digest: invalid schedule", error),
         EmailRequestError: (error) =>
           Effect.logError("weekly digest: delivery failed", error),
         EmailResponseError: (error) =>

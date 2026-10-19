@@ -341,13 +341,28 @@ last-sent timestamps. It uses the existing `Events.listBySubject` active-event
 query with a half-open local-week UTC range and never writes a subscription's
 `lastSentAt`.
 
-Core's `weekly-digest` module owns the digest model, timezone/calendar rules,
-and email assembly. Shared `EmailView` provides the
-branded image tile, single date range, team schedule blocks, and compact footer
-links in HTML and plain text. Participant titles currently carry no subject
-identity; the weekly renderer matches the
-normalized subject display title and returns a typed error when it cannot
-identify the followed team's side or when home/away roles are malformed.
+Core's `weekly-digest` model carries subject/event `groups`. Its email
+composition owns the headline, date range, quiet-week copy, and footer, using
+existing headline, text, and link primitives. `weekly-digest/sports.ts` adapts a
+group into a display title and date/label/time rows. It validates subject and
+joined event/participant variants once at that adapter boundary, then uses
+narrow sports types for chronological ordering, local times, home/away roles,
+and opponent labels. Participant titles carry no subject identity, so the
+adapter matches the normalized subject display title and returns
+`SportsScheduleRenderError` when the side or roles cannot be resolved.
+
+The shared email module’s `ScheduleSection` only lays out a title, rows, and
+caller-supplied `emptyText`, with matching HTML/plain-text output and escaping.
+It has no team/game fields, event tags, eligibility rules, or weekly copy.
+Historical email blocks retain their existing behavior.
+
+A future MMA change can adapt cards/fighters into display sections and select
+that presentation in weekly composition, without adding sport semantics to
+`ScheduleSection`. No registry or speculative MMA adapter is introduced.
+Weekly MMA grouping (per card versus fighter), overlap deduplication, quiet-week
+behavior, and generic headline/footer/empty wording remain product decisions.
+The current NBA/NFL/MLB/NHL eligibility filter remains separate and unchanged;
+MMA and NCAA weekly enablement are outside this PR.
 
 Weekly sending requires no new database schema or saved email snapshots.
 Each send uses `weekly-digest:<user-id>:<Monday-date>` as its provider

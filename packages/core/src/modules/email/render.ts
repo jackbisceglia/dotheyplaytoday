@@ -57,12 +57,13 @@ export const Links = Schema.TaggedStruct("links", {
   items: Schema.Array(Link),
 });
 
-export const TeamSchedule = Schema.TaggedStruct("team_schedule", {
-  team: Schema.String,
-  games: Schema.Array(
+export const ScheduleSection = Schema.TaggedStruct("schedule_section", {
+  title: Schema.String,
+  emptyText: Schema.String,
+  rows: Schema.Array(
     Schema.Struct({
       date: Schema.String,
-      opponent: Schema.String,
+      label: Schema.String,
       time: Schema.String,
     }),
   ),
@@ -79,7 +80,7 @@ export const Blocks = TaggedUnion([
   Link,
   Code,
   Links,
-  TeamSchedule,
+  ScheduleSection,
 ]);
 
 export type EmailViewProps = {
@@ -140,8 +141,8 @@ const blockPreview = (block: Block): string => {
       return block.items.join(", ");
     case "matchups":
       return block.items.map(matchupText).join(" • ");
-    case "team_schedule":
-      return block.team;
+    case "schedule_section":
+      return block.title;
     case "event":
       return `${block.title} - ${block.detail}`;
   }
@@ -169,13 +170,13 @@ const blockText = (block: Block): readonly string[] => {
       return [`${block.text}: ${block.href}`];
     case "links":
       return block.items.map((link) => `${link.text}: ${link.href}`);
-    case "team_schedule":
+    case "schedule_section":
       return [
-        block.team,
-        ...(block.games.length === 0
-          ? ["No games this week."]
-          : block.games.map(
-              (game) => `${game.date} · ${game.opponent} · ${game.time}`,
+        block.title,
+        ...(block.rows.length === 0
+          ? [block.emptyText]
+          : block.rows.map(
+              (row) => `${row.date} · ${row.label} · ${row.time}`,
             )),
       ];
     case "code":
@@ -317,20 +318,20 @@ const blockHtml = (block: Block): string => {
         .join(
           ` <span class="email-muted" style="padding: 0 8px; font-size: 12px; color: ${color.muted};">·</span> `,
         );
-    case "team_schedule":
-      return `<section aria-label="${escapeHtml(block.team)}">
+    case "schedule_section":
+      return `<section aria-label="${escapeHtml(block.title)}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td class="email-ink" style="font-size: 16px; font-weight: 700; padding-bottom: 8px;">${escapeHtml(block.team)}</td></tr>
+<tr><td class="email-ink" style="font-size: 16px; font-weight: 700; padding-bottom: 8px;">${escapeHtml(block.title)}</td></tr>
 </table>
 ${
-  block.games.length === 0
-    ? element.note("No games this week.")
-    : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${block.games
+  block.rows.length === 0
+    ? element.note(escapeHtml(block.emptyText))
+    : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${block.rows
         .map(
-          (game) => `<tr>
-<td class="email-muted digest-date" style="width: 90px; padding: 8px 8px 8px 0; font-size: 13px; vertical-align: top; white-space: nowrap;">${escapeHtml(game.date)}</td>
-<td class="email-ink digest-opponent" style="padding: 8px 8px 8px 0; font-size: 14px; font-weight: 600; vertical-align: top; overflow-wrap: anywhere;">${escapeHtml(game.opponent)}</td>
-<td class="email-ink digest-time" align="right" style="padding: 8px 0; font-size: 13px; white-space: nowrap; vertical-align: top;">${escapeHtml(game.time)}</td>
+          (row) => `<tr>
+<td class="email-muted schedule-date" style="width: 90px; padding: 8px 8px 8px 0; font-size: 13px; vertical-align: top; white-space: nowrap;">${escapeHtml(row.date)}</td>
+<td class="email-ink schedule-label" style="padding: 8px 8px 8px 0; font-size: 14px; font-weight: 600; vertical-align: top; overflow-wrap: anywhere;">${escapeHtml(row.label)}</td>
+<td class="email-ink schedule-time" align="right" style="padding: 8px 0; font-size: 13px; white-space: nowrap; vertical-align: top;">${escapeHtml(row.time)}</td>
 </tr>`,
         )
         .join("\n")}</table>`
@@ -410,9 +411,9 @@ const html = (input: EmailViewProps) => {
       }
 
       @media (max-width: 430px) {
-        .digest-date { width: 86px !important; }
-        .digest-opponent { display: block; padding-bottom: 0 !important; }
-        .digest-time { display: block; text-align: left !important; padding-top: 2px !important; white-space: normal !important; }
+        .schedule-date { width: 86px !important; }
+        .schedule-label { display: block; padding-bottom: 0 !important; }
+        .schedule-time { display: block; text-align: left !important; padding-top: 2px !important; white-space: normal !important; }
       }
 
       /* Keep iOS from turning start times into blue "detected data" links. */

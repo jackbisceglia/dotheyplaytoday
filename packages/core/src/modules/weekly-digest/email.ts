@@ -1,66 +1,19 @@
-import { DateTime, Effect, Schema } from "effect";
+import { DateTime, Effect } from "effect";
 
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
 import { type Lines, makeTiledHeadline } from "../email/headline.js";
-import { EmailView, Link, Links, TeamSchedule, Text } from "../email/render.js";
-import { EventId } from "../events/schema.js";
 import {
-  isEventWithParticipants,
-  type EventWithParticipants,
-} from "../events/joined.js";
-import type { Subject } from "../subjects/schema.js";
+  EmailView,
+  Link,
+  Links,
+  ScheduleSection,
+  Text,
+} from "../email/render.js";
 import type { WeeklyDigest } from "./schema.js";
-import { supportsWeeklyDigest } from "./scope.js";
+import { sportsSchedule } from "./sports.js";
 
 export const weeklyDigestLines: Lines = ["Your teams.", "This week."];
-
-export class WeeklyDigestRenderError extends Schema.TaggedError<WeeklyDigestRenderError>()(
-  "WeeklyDigestRenderError",
-  { eventId: EventId, message: Schema.String },
-) {}
-
-const matchup = Effect.fn("WeeklyDigest.matchup")(function* (
-  subject: Subject,
-  event: EventWithParticipants,
-) {
-  if (
-    !supportsWeeklyDigest(subject) ||
-    !isEventWithParticipants("sports_game")(event)
-  ) {
-    return yield* new WeeklyDigestRenderError({
-      eventId: event.id,
-      message: "Unsupported weekly subject/event combination",
-    });
-  }
-  const home = event.participants.filter(
-    (participant) => participant.details.role === "home",
-  );
-  const away = event.participants.filter(
-    (participant) => participant.details.role === "away",
-  );
-  const homeTeam = home[0];
-  const awayTeam = away[0];
-  if (home.length !== 1 || away.length !== 1 || !homeTeam || !awayTeam) {
-    return yield* new WeeklyDigestRenderError({
-      eventId: event.id,
-      message: "Expected exactly one home and one away participant",
-    });
-  }
-
-  const normalize = (name: string) => name.trim().toLowerCase();
-  const title = normalize(subject.details.display);
-  if (normalize(homeTeam.details.title) === title)
-    return `vs. ${awayTeam.details.title}`;
-  if (normalize(awayTeam.details.title) === title)
-    return `@ ${homeTeam.details.title}`;
-
-  // Participant titles currently have no subject ID. Fail rather than invent a side.
-  return yield* new WeeklyDigestRenderError({
-    eventId: event.id,
-    message: "Followed team does not match either participant title",
-  });
-});
 
 export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
   digest: WeeklyDigest,
@@ -89,35 +42,15 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
         ? `${month(start)} ${first.day.toString()}–${last.day.toString()}`
         : `${month(start)} ${first.day.toString()} – ${month(end)} ${last.day.toString()}`;
 
-  const teams = yield* Effect.forEach(digest.teams, (team) =>
-    Effect.gen(function* () {
-      const events = [...team.events].sort(
-        (a, b) =>
-          DateTime.toEpochMillis(a.startsAt) -
-            DateTime.toEpochMillis(b.startsAt) || a.id.localeCompare(b.id),
-      );
-      const games = yield* Effect.forEach(events, (event) =>
-        Effect.gen(function* () {
-          const start = local(event.startsAt);
-          return {
-            date: DateTime.format(start, {
-              locale: "en-US",
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-            }),
-            opponent: yield* matchup(team.subject, event),
-            time: DateTime.format(start, {
-              locale: "en-US",
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }),
-          };
+  const sections = yield* Effect.forEach(digest.groups, (group) =>
+    sportsSchedule(group, digest.user.timezone).pipe(
+      Effect.map((schedule) =>
+        ScheduleSection.make({
+          ...schedule,
+          emptyText: "No games this week.",
         }),
-      );
-      return TeamSchedule.make({ team: team.subject.details.display, games });
-    }),
+      ),
+    ),
   );
 
   return EmailView({
@@ -126,7 +59,7 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
     preheader: "Here's when your teams play.",
     blocks: [
       Text.make({ value: dateRange }),
-      ...teams,
+      ...sections,
       Links.make({
         items: [
           Link.make({

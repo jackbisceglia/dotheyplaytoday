@@ -82,7 +82,7 @@ export const digest = WeeklyDigest.make({
   user: { ...notification.user, emailVerified: true },
   from: DateTime.makeUnsafe("2026-10-05T04:00:00.000Z"),
   to: DateTime.makeUnsafe("2026-10-12T04:00:00.000Z"),
-  teams: [
+  groups: [
     {
       subject: mets,
       events: [

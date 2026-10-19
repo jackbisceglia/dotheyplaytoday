@@ -22,7 +22,7 @@ import { digest } from "@dtpt/core/modules/weekly-digest/__tests__/fixtures";
 import { weeklyDigest } from "../index.js";
 
 const now = DateTime.makeUnsafe("2026-10-05T13:00:00Z");
-const recipients = digest.teams.map((team, index) =>
+const recipients = digest.groups.map((team, index) =>
   NotificationRecipient.make({
     user: digest.user,
     subscription: {
@@ -44,8 +44,8 @@ const otherRecipient = NotificationRecipient.make({
   subscription: {
     ...notification.subscription,
     id: SubscriptionId.make("00000000-0000-4000-8000-000000000420"),
-    subject: digest.teams[0].subject,
-    subjectId: digest.teams[0].subject.id,
+    subject: digest.groups[0].subject,
+    subjectId: digest.groups[0].subject.id,
     userId: UserId.make("00000000-0000-4000-8000-000000000102"),
   },
 });
@@ -96,7 +96,7 @@ const makeHarness = (opts: HarnessOptions = {}) => {
             if (opts.events) return opts.events;
             return opts.quiet
               ? []
-              : (digest.teams.find((team) => team.subject.id === subjectId)
+              : (digest.groups.find((team) => team.subject.id === subjectId)
                   ?.events ?? []);
           }),
       }),

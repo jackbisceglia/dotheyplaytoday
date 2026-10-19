@@ -8,7 +8,7 @@ export const WeeklyDigest = Schema.Struct({
   user: User,
   from: Schema.DateTimeUtcFromString,
   to: Schema.DateTimeUtcFromString,
-  teams: Schema.NonEmptyArray(
+  groups: Schema.NonEmptyArray(
     Schema.Struct({
       subject: Subject,
       events: Schema.Array(EventWithParticipants),

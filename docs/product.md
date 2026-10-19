@@ -74,7 +74,9 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
 - Weekly coverage remains NBA, NFL, MLB, and NHL. NCAA and UFC picks are
   excluded, including on mixed rosters; users with only those picks receive no
   weekly email. Extending weekly coverage to these sports is a separate product
-  decision.
+  decision. Before MMA weekly enablement, settle card versus fighter grouping,
+  overlapping picks and deduplication, no-fight weeks, and wording that works
+  across sports.
 - The By team email includes every followed team in weekly scope, chronological dates,
   opponents, `vs.` / `@`, and local start times. A fixture between two followed
   teams appears in both sections. Cancelled games are excluded.
