@@ -218,13 +218,13 @@ const normalizeName = (name: string) =>
 
 describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
-    expect(catalog.events).toHaveLength(5);
+    expect(catalog.events).toHaveLength(6);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 18, 2, 2,
+      24, 26, 28, 22, 26, 24,
     ]);
-    expect(catalog.subjects).toHaveLength(262);
+    expect(catalog.subjects).toHaveLength(289);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      262,
+      289,
     );
 
     for (const event of catalog.events) {
@@ -350,11 +350,28 @@ describe("UFC catalog", () => {
         timeZoneName: "short",
       }),
     );
+    const mainStarts = catalog.events.map((event) =>
+      DateTime.format(DateTime.setZone(event.details.timings.main, timezone), {
+        locale: "en-US",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZoneName: "short",
+      }),
+    );
+    expect(mainStarts).toEqual([
+      "8:00 PM EDT",
+      "8:00 PM EDT",
+      "2:00 PM EDT",
+      "8:00 PM EDT",
+      "8:00 PM EST",
+      "9:00 PM EST",
+    ]);
     expect(localStarts).toEqual([
       "5:00 PM EDT",
       "5:00 PM EDT",
       "10:00 AM EDT",
       "5:00 PM EDT",
+      "5:00 PM EST",
       "5:00 PM EST",
     ]);
   });
