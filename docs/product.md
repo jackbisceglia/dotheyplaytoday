@@ -65,9 +65,11 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
   receive one weekly email by default,
   alongside their existing game-day reminders. Separate weekly preferences are
   deferred; changing the daily send time does not change weekly delivery.
-- Delivery is one Monday 9:00 AM Eastern (`America/New_York`) batch for all
+- Delivery is one Monday 11:00 AM Eastern (`America/New_York`) batch for all
   eligible recipients, following daylight saving time and independent of daily
-  reminder preferences. The emails remain personalized by picks and recipient timezone.
+  reminder preferences. This temporary delivery time stays in effect until a
+  separate change restores 9:00 AM; it does not revert automatically. The emails
+  remain personalized by picks and recipient timezone.
 - Coverage is the batch's Monday–Sunday calendar week, including Monday games
   before delivery. All recipients cover the same dates. Queries include each
   recipient's local Monday midnight and exclude the next Monday midnight,

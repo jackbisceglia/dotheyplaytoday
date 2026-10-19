@@ -8,7 +8,7 @@ const batchTimezone = DateTime.zoneMakeNamedUnsafe("America/New_York");
 export const isWeeklyDigestBatchTime = (now: DateTime.Utc) => {
   const parts = DateTime.toParts(DateTime.setZone(now, batchTimezone));
 
-  return parts.weekDay === 1 && parts.hour === 9 && parts.minute === 0;
+  return parts.weekDay === 1 && parts.hour === 11 && parts.minute === 0;
 };
 
 /** All recipients cover the batch's Monday–Sunday dates, at their local midnights. */
