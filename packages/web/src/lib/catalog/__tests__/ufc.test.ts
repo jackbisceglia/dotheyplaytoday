@@ -68,6 +68,6 @@ describe("UFC fighter browsing", () => {
   });
   it("keeps summary labels compact", () => {
     expect(getSubjectAbbreviation(unranked.details)).toBe("B. Allen");
-    expect(getSubjectAbbreviation(all.details)).toBe("All cards");
+    expect(getSubjectAbbreviation(all.details)).toBe("All Cards");
   });
 });
