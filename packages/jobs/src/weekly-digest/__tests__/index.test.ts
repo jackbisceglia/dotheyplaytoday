@@ -191,7 +191,7 @@ describe("weekly digest orchestration", () => {
         expect(mixed.sends[0]?.rendered.body.text).toContain(
           college.details.display,
         );
-        expect(mixed.sends[0]?.rendered.body.text).toContain("All UFC events");
+        expect(mixed.sends[0]?.rendered.body.text).toContain("UFC Events");
         expect(mixed.sends[0]?.rendered.body.text).toContain("Test Fighter");
       }),
   );

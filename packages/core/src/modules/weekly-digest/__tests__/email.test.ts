@@ -37,7 +37,7 @@ describe("weekly digest email", () => {
         for (const body of [email.body.text, email.body.html]) {
           expect(body).toContain("Fighter A");
           expect(body).toContain("Fighter B");
-          expect(body).toContain("All UFC events");
+          expect(body).toContain("UFC Events");
           expect(body.match(/UFC test/g)).toHaveLength(3);
           expect(body.match(/main card/g)).toHaveLength(3);
         }
@@ -62,7 +62,7 @@ describe("weekly digest email", () => {
 
         expect(email.body.text).toContain("New York Mets vs Atlanta Braves");
         expect(email.body.text).toContain(
-          "All UFC events\n- UFC 999: Test <Main> & Event\n  Tue, Oct 6, 8:00 PM, main card",
+          "UFC Events\n- UFC 999: Test <Main> & Event\n  Tue, Oct 6, 8:00 PM, main card",
         );
         expect(email.body.html).toContain(
           "UFC 999: Test &lt;Main&gt; &amp; Event",

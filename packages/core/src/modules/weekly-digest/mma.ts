@@ -77,5 +77,10 @@ export const mmaSchedule = Effect.fn("MmaSchedule.present")(function* (
     };
   });
 
-  return { title: subject.details.display, rows };
+  return {
+    title: Predicate.isTagged(subject, "mma_tracking")
+      ? "UFC Events"
+      : subject.details.display,
+    rows,
+  };
 });

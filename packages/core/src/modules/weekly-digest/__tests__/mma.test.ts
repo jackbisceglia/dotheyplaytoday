@@ -37,7 +37,7 @@ describe("weekly MMA card presentation", () => {
         );
 
         expect(schedule).toEqual({
-          title: "All UFC events",
+          title: "UFC Events",
           rows: [
             {
               date: "Tue, Oct 20",
@@ -78,6 +78,7 @@ describe("weekly MMA card presentation", () => {
     Effect.gen(function* () {
       const quiet = yield* mmaSchedule({ subject: numbered, events: [] }, ny);
 
+      expect(quiet.title).toBe("UFC Events");
       expect(quiet.rows).toEqual([]);
 
       const card = ufcCard({

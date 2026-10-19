@@ -83,6 +83,8 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
   its local week; the displayed main-card start can fall on the following day.
   A shared card appears under each matching fighter/coverage pick, just as a
   shared game appears under each followed team; it is not merged across sections.
+  Both coverage options use “UFC Events” as their email section heading;
+  fighter sections use the fighter's name.
 - The By team email keeps each followed team as a section heading. Games appear
   as bullets with the followed team first, using `vs` for home games and `@`
   for away games, then the opponent. The date and local start time appear
