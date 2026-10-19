@@ -78,7 +78,7 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
   coverage matches: Numbered includes numbered cards, while All also includes
   Fight Nights. Each card is listed once per matching pick, under that fighter
   or coverage heading, with its full title and local
-  main-card date and start time, labeled “main card”. No fight lineup is listed.
+  main-card date and start time, labeled “Main Card”. No fight lineup is listed.
   Card selection uses the existing earliest-broadcast event start to determine
   its local week; the displayed main-card start can fall on the following day.
   A shared card appears under each matching fighter/coverage pick, just as a

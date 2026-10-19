@@ -42,12 +42,12 @@ describe("weekly MMA card presentation", () => {
             {
               date: "Tue, Oct 20",
               label: "UFC Fight Night: Buckley vs Malott",
-              time: "8:00 PM, main card",
+              time: "8:00 PM, Main Card",
             },
             {
               date: "Mon, Oct 26",
               label: "UFC 999: Test <Main> & Event",
-              time: "12:00 AM, main card",
+              time: "12:00 AM, Main Card",
             },
           ],
         });
@@ -89,7 +89,7 @@ describe("weekly MMA card presentation", () => {
       });
       const schedule = yield* mmaSchedule({ subject: all, events: [card] }, ny);
 
-      expect(schedule.rows[0]?.time).toBe("2:00 AM, main card");
+      expect(schedule.rows[0]?.time).toBe("2:00 AM, Main Card");
       expect(schedule.rows[0]?.date).toBe("Sun, Nov 1");
 
       const pacific = yield* mmaSchedule(
@@ -98,7 +98,7 @@ describe("weekly MMA card presentation", () => {
       );
 
       expect(pacific.rows[0]?.date).toBe("Sun, Nov 1");
-      expect(pacific.rows[0]?.time).toBe("12:00 AM, main card");
+      expect(pacific.rows[0]?.time).toBe("12:00 AM, Main Card");
     }),
   );
 

@@ -218,7 +218,7 @@ describe("weekly digest orchestration", () => {
 
           expect(harness.sends).toHaveLength(1);
           expect(harness.sends[0]?.rendered.body.text).toContain("UFC test");
-          expect(harness.sends[0]?.rendered.body.text).toContain("main card");
+          expect(harness.sends[0]?.rendered.body.text).toContain("Main Card");
           expect(harness.sends[0]?.delivery.idempotencyKey).toBe(
             `weekly-digest:${recipient.user.id}:2026-10-05`,
           );

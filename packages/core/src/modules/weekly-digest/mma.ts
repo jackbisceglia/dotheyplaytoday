@@ -73,7 +73,7 @@ export const mmaSchedule = Effect.fn("MmaSchedule.present")(function* (
         day: "numeric",
       }),
       label: card.details.title,
-      time: `${time}, main card`,
+      time: `${time}, Main Card`,
     };
   });
 

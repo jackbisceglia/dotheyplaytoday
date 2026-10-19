@@ -39,7 +39,7 @@ describe("weekly digest email", () => {
           expect(body).toContain("Fighter B");
           expect(body).toContain("UFC Events");
           expect(body.match(/UFC test/g)).toHaveLength(3);
-          expect(body.match(/main card/g)).toHaveLength(3);
+          expect(body.match(/Main Card/g)).toHaveLength(3);
         }
       }),
   );
@@ -62,12 +62,12 @@ describe("weekly digest email", () => {
 
         expect(email.body.text).toContain("New York Mets vs Atlanta Braves");
         expect(email.body.text).toContain(
-          "UFC Events\n- UFC 999: Test <Main> & Event\n  Tue, Oct 6, 8:00 PM, main card",
+          "UFC Events\n- UFC 999: Test <Main> & Event\n  Tue, Oct 6, 8:00 PM, Main Card",
         );
         expect(email.body.html).toContain(
           "UFC 999: Test &lt;Main&gt; &amp; Event",
         );
-        expect(email.body.html).toContain("Tue, Oct 6, 8:00 PM, main card");
+        expect(email.body.html).toContain("Tue, Oct 6, 8:00 PM, Main Card");
         expect(email.body.text).not.toContain("Prelims");
         expect(email.body.text).not.toContain("Joaquin Buckley");
       }),
