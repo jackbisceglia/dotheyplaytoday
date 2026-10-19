@@ -333,11 +333,11 @@ separate Monday batch at 9:00 AM Eastern. Cloudflare cron fires at both 13:00
 and 14:00 UTC Mondays (`0 13,14 * * 1`); an Eastern-time guard admits exactly
 one candidate across daylight saving changes. The guard and week selection use
 Cloudflare’s scheduled timestamp, so late execution retains the same batch.
-`jobs/src/weekly-digest` filters verified recipients to NBA, NFL, MLB, and NHL
-team subscriptions before grouping by user. NCAA and UFC remain outside weekly
-scope. It sends one personalized email per user, without consulting daily send
-times or
-last-sent timestamps. It uses the existing `Events.listBySubject` active-event
+`jobs/src/weekly-digest` filters verified recipients by the `sports_team`
+subject tag using tagged-union guards before grouping by user. This includes
+NCAA teams without a league allowlist; UFC remains outside weekly scope.
+It sends one personalized email per user, without consulting daily send times
+or last-sent timestamps. It uses the existing `Events.listBySubject` active-event
 query with a half-open local-week UTC range and never writes a subscription's
 `lastSentAt`.
 
@@ -348,7 +348,8 @@ group into a display title and date/label/time rows. It validates subject and
 joined event/participant variants once at that adapter boundary, then uses
 narrow sports types for chronological ordering, local times, home/away roles,
 and opponent labels. Participant titles carry no subject identity, so the
-adapter matches the normalized subject display title and returns
+adapter uses the shared `events/variants/sport.ts` subject-side helper, also
+used by daily emails, to match the normalized subject display title. It returns
 `SportsScheduleRenderError` when the side or roles cannot be resolved.
 
 The shared email module’s `ScheduleSection` only lays out a title, rows, and
@@ -361,8 +362,8 @@ that presentation in weekly composition, without adding sport semantics to
 `ScheduleSection`. No registry or speculative MMA adapter is introduced.
 Weekly MMA grouping (per card versus fighter), overlap deduplication, quiet-week
 behavior, and generic headline/footer/empty wording remain product decisions.
-The current NBA/NFL/MLB/NHL eligibility filter remains separate and unchanged;
-MMA and NCAA weekly enablement are outside this PR.
+The subject-tag eligibility filter remains separate from presentation;
+MMA weekly enablement is outside this PR.
 
 Weekly sending requires no new database schema or saved email snapshots.
 Each send uses `weekly-digest:<user-id>:<Monday-date>` as its provider

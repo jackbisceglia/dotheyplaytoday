@@ -27,12 +27,17 @@ const NotifySchedule = "*/15 * * * *";
 // Cloudflare cron uses UTC; exactly one candidate is 9 AM Eastern in each season.
 const WeeklyDigestSchedule = "0 13,14 * * 1";
 
+const NotifyPort = 8788;
+
+const makeTrigger = (path: string) => ({
+  path,
+  getLocalUrl: () => `http://localhost:${NotifyPort.toString()}${path}`,
+});
+
 export const Trigger = {
-  path: "/test/notify",
-  weeklyPath: "/test/weekly-digest",
-  port: 8788,
-  getLocalUrl: (weekly = false) =>
-    `http://localhost:${Trigger.port.toString()}${weekly ? Trigger.weeklyPath : Trigger.path}`,
+  port: NotifyPort,
+  daily: makeTrigger("/test/notify"),
+  weeklyDigest: makeTrigger("/test/weekly-digest"),
 } as const;
 
 const NotifyDomainsLayer = pipe(
@@ -92,7 +97,9 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
       Effect.fn(
         function* (controller) {
           const now = DateTime.makeUnsafe(controller.scheduledTime);
+
           if (!isWeeklyDigestBatchTime(now)) return;
+
           yield* Effect.logInfo("weekly digest: scheduled batch");
           yield* weeklyDigest({ now }).pipe(
             Effect.provide(Layer.merge(NotifyLayer, EmailLayerResend)),
@@ -117,7 +124,8 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
 
         if (
           request.method !== "POST" ||
-          (pathname !== Trigger.path && pathname !== Trigger.weeklyPath)
+          (pathname !== Trigger.daily.path &&
+            pathname !== Trigger.weeklyDigest.path)
         ) {
           return HttpServerResponse.empty({ status: 404 });
         }
@@ -131,21 +139,27 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
         }
 
         const body = bodyResult.success;
-        if (pathname === Trigger.weeklyPath) {
+
+        if (pathname === Trigger.weeklyDigest.path) {
           // Dry runs never build or call the provider layer.
           const run = weeklyDigest(body);
-          yield* body.dryRun
-            ? run.pipe(
-                Effect.provide(NotifyLayer),
-                Effect.provideService(Email, {
-                  send: () => Effect.die("Dry runs must not send email"),
-                }),
-              )
-            : run.pipe(
-                Effect.provide(Layer.merge(NotifyLayer, EmailLayerResend)),
-              );
+
+          if (body.dryRun) {
+            yield* run.pipe(
+              Effect.provide(NotifyLayer),
+              Effect.provideService(Email, {
+                send: () => Effect.die("Dry runs must not send email"),
+              }),
+            );
+          } else {
+            yield* run.pipe(
+              Effect.provide(Layer.merge(NotifyLayer, EmailLayerResend)),
+            );
+          }
+
           return yield* HttpServerResponse.json({ ok: true });
         }
+
         const NotifyRunLayer = Layer.merge(
           NotifyLayer,
           Boolean.match(body.dryRun, {

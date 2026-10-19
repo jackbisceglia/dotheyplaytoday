@@ -7,6 +7,7 @@ const batchTimezone = DateTime.zoneMakeNamedUnsafe("America/New_York");
 /** Cloudflare supplies the scheduled instant, so late execution keeps the same batch. */
 export const isWeeklyDigestBatchTime = (now: DateTime.Utc) => {
   const parts = DateTime.toParts(DateTime.setZone(now, batchTimezone));
+
   return parts.weekDay === 1 && parts.hour === 9 && parts.minute === 0;
 };
 
@@ -22,10 +23,12 @@ export const weeklyDigestWindow = (
       weekStartsOn: 1,
     },
   );
+
   const fromLocal = DateTime.makeZonedUnsafe(DateTime.toParts(monday), {
     timeZone: timezone,
     adjustForTimeZone: true,
   });
+
   return {
     from: DateTime.toUtc(fromLocal),
     to: DateTime.toUtc(DateTime.add(fromLocal, { days: 7 })),

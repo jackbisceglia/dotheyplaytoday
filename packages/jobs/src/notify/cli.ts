@@ -11,6 +11,7 @@ const DryRunFlag = Flag.Boolean("dry-run").pipe(
   Flag.withSchema(NotifyOptions.fields.dryRun),
   Flag.withDefault(false),
 );
+
 const ForceFlag = Flag.Boolean("force").pipe(
   Flag.withSchema(NotifyOptions.fields.force),
   Flag.withDefault(false),
@@ -18,11 +19,13 @@ const ForceFlag = Flag.Boolean("force").pipe(
     "Bypass daily due-time and already-sent checks; unnecessary for weekly runs",
   ),
 );
+
 const NowFlag = Flag.String("now").pipe(
   Flag.withSchema(NotifyOptions.fields.now),
   Flag.optional,
   Flag.withDescription("Run as if the job started at this ISO UTC instant"),
 );
+
 const UserFlag = Flag.String("user").pipe(
   Flag.withSchema(NotifyOptions.fields.userEmail),
   Flag.optional,
@@ -45,7 +48,8 @@ export const NotifyCommand = Command.make(
     const now = Option.getOrUndefined(opts.now);
     const userEmail = Option.getOrUndefined(opts.user);
 
-    const triggerUrl = Trigger.getLocalUrl(opts.weekly);
+    const trigger = opts.weekly ? Trigger.weeklyDigest : Trigger.daily;
+    const triggerUrl = trigger.getLocalUrl();
 
     const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
     const request = yield* HttpClientRequest.post(triggerUrl).pipe(

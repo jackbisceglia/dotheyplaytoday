@@ -18,6 +18,7 @@ describe("weekly digest email", () => {
     () =>
       Effect.gen(function* () {
         const email = yield* render(digest);
+
         expect(email.subject).toBe("Your Weekly Update");
         expect(email.body.text.match(/October 5–11/g)).toHaveLength(1);
         expect(email.body.text).toContain("New York Mets");
@@ -58,6 +59,7 @@ describe("weekly digest email", () => {
             ...digest.groups.slice(1).map((team) => ({ ...team, events: [] })),
           ],
         });
+
         for (const team of digest.groups)
           expect(email.body.text).toContain(team.subject.details.display);
         expect(email.body.text.match(/No games this week\./g)).toHaveLength(4);
@@ -79,6 +81,7 @@ describe("weekly digest email", () => {
         ).toHaveLength(1);
         expect(september.body.text).not.toContain("2026");
         expect(september.subject).toBe("Your Weekly Update");
+
         const newYear = yield* render({
           ...digest,
           from: DateTime.makeUnsafe("2026-12-28T05:00:00Z"),
@@ -131,6 +134,7 @@ describe("weekly digest email", () => {
           ...digest,
           groups: [{ subject: mets, events: [lateSunday, earlyMonday] }],
         });
+
         expect(email.body.text).toContain(
           "Sun, Oct 11 · vs. Atlanta Braves · 11:30 PM",
         );
@@ -181,6 +185,7 @@ describe("weekly digest email", () => {
             },
           ],
         });
+
         expect(email.body.text).toContain("7:00 PM");
         expect(email.body.text).toContain("6:00 PM");
         expect(email.body.text).toContain("October 26 – November 1");
@@ -206,6 +211,7 @@ describe("weekly digest email", () => {
           }).pipe(Effect.flip);
           expect(error).toBeInstanceOf(SportsScheduleRenderError);
         }
+
         const error = yield* render({
           ...digest,
           groups: [{ subject: knicks, events: [game] }],

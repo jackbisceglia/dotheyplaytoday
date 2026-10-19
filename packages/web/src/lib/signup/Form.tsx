@@ -344,8 +344,8 @@ export function Form(props: FormProps) {
           </fieldset>
 
           <p class="form-hint">
-            Game-day reminders at your chosen time. NBA, NFL, MLB, and NHL picks
-            also get a weekly schedule every Monday.
+            Game-day reminders at your chosen time, plus your teams’ weekly
+            schedule every Monday.
           </p>
 
           <div class="form-submit-row">

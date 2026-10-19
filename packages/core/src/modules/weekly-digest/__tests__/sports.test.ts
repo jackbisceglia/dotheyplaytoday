@@ -22,6 +22,7 @@ describe("sports schedule presentation", () => {
           },
           timezone,
         );
+
         expect(schedule).toEqual({
           title: "New York Mets",
           rows: [
@@ -43,6 +44,7 @@ describe("sports schedule presentation", () => {
           const error = yield* sportsSchedule(group, timezone).pipe(
             Effect.flip,
           );
+
           expect(error).toBeInstanceOf(SportsScheduleRenderError);
           expect(error.subjectId).toBe(group.subject.id);
         }

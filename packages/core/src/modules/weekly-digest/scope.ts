@@ -1,7 +1,7 @@
-import type { Subject } from "../subjects/schema.js";
+import { Predicate } from "effect";
 
-/** Keep the initial weekly scope explicit as the daily catalog grows. */
+import { type Subject, SubjectDetails } from "../subjects/schema.js";
+
 export const supportsWeeklyDigest = (subject: Subject): boolean =>
-  subject._tag === "sports_team" &&
-  subject.details._tag === "sports_team" &&
-  ["nba", "nfl", "mlb", "nhl"].includes(subject.details.league.id);
+  Predicate.isTagged(subject, "sports_team") &&
+  SubjectDetails.guards.sports_team(subject.details);

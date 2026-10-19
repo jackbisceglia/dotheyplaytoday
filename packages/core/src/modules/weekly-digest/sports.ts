@@ -1,11 +1,12 @@
-import { DateTime, Effect, Schema } from "effect";
+import { DateTime, Effect, Predicate, Schema } from "effect";
 
 import { EventId } from "../events/schema.js";
+import { sportsSubjectSide } from "../events/variants/sport.js";
 import {
   isEventWithParticipants,
   type NarrowedEventWithParticipants,
 } from "../events/joined.js";
-import { SubjectId } from "../subjects/schema.js";
+import { SubjectDetails, SubjectId } from "../subjects/schema.js";
 import type { SportTeamSubject } from "../subjects/variants/sport.schema.js";
 import type { User } from "../users/schema.js";
 import type { WeeklyDigest } from "./schema.js";
@@ -34,6 +35,7 @@ const matchup = Effect.fn("SportsSchedule.matchup")(function* (
   );
   const homeTeam = home[0];
   const awayTeam = away[0];
+
   if (home.length !== 1 || away.length !== 1 || !homeTeam || !awayTeam) {
     return yield* new SportsScheduleRenderError({
       subjectId,
@@ -42,19 +44,18 @@ const matchup = Effect.fn("SportsSchedule.matchup")(function* (
     });
   }
 
-  const normalize = (name: string) => name.trim().toLowerCase();
-  const title = normalize(team.display);
-  if (normalize(homeTeam.details.title) === title)
-    return `vs. ${awayTeam.details.title}`;
-  if (normalize(awayTeam.details.title) === title)
-    return `@ ${homeTeam.details.title}`;
+  const side = sportsSubjectSide(homeTeam, awayTeam, team.display);
 
   // Participants have no subject ID; fail rather than invent a side.
-  return yield* new SportsScheduleRenderError({
-    subjectId,
-    eventId: event.id,
-    message: "Followed team does not match either participant title",
-  });
+  if (!side) {
+    return yield* new SportsScheduleRenderError({
+      subjectId,
+      eventId: event.id,
+      message: "Followed team does not match either participant title",
+    });
+  }
+
+  return `${side.separator} ${side.trailing.details.title}`;
 });
 
 /** Adapt a domain group into display rows; validate variant identity once here. */
@@ -63,15 +64,17 @@ export const sportsSchedule = Effect.fn("SportsSchedule.present")(function* (
   timezone: User["timezone"],
 ) {
   const { subject } = group;
+
   if (
-    subject._tag !== "sports_team" ||
-    subject.details._tag !== "sports_team"
+    !Predicate.isTagged(subject, "sports_team") ||
+    !SubjectDetails.guards.sports_team(subject.details)
   ) {
     return yield* new SportsScheduleRenderError({
       subjectId: subject.id,
       message: "Expected a sports team subject",
     });
   }
+
   const team = subject.details;
   const games = yield* Effect.forEach(group.events, (event) => {
     if (!isEventWithParticipants("sports_game")(event)) {
@@ -83,16 +86,20 @@ export const sportsSchedule = Effect.fn("SportsSchedule.present")(function* (
         }),
       );
     }
+
     return Effect.succeed(event);
   });
+
   const ordered = [...games].sort(
     (a, b) =>
       DateTime.toEpochMillis(a.startsAt) - DateTime.toEpochMillis(b.startsAt) ||
       a.id.localeCompare(b.id),
   );
+
   const rows = yield* Effect.forEach(ordered, (game) =>
     Effect.gen(function* () {
       const start = DateTime.setZone(game.startsAt, timezone);
+
       return {
         date: DateTime.format(start, {
           locale: "en-US",
@@ -110,5 +117,6 @@ export const sportsSchedule = Effect.fn("SportsSchedule.present")(function* (
       };
     }),
   );
+
   return { title: team.display, rows };
 });

@@ -20,10 +20,12 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
 ) {
   const web = yield* WebUrl;
   const unsubscribe = yield* buildUnsubscribeUrl(digest.user.unsubscribeToken);
+
   const local = (instant: DateTime.Utc) =>
     DateTime.setZone(instant, digest.user.timezone);
   const start = local(digest.from);
   const end = DateTime.subtract(local(digest.to), { days: 1 });
+
   const dates = (date: DateTime.Zoned) =>
     DateTime.format(date, {
       locale: "en-US",
@@ -31,10 +33,12 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
       day: "numeric",
       year: "numeric",
     });
+
   const first = DateTime.toParts(start);
   const last = DateTime.toParts(end);
   const month = (date: DateTime.Zoned) =>
     DateTime.format(date, { locale: "en-US", month: "long" });
+
   const dateRange =
     first.year !== last.year
       ? `${dates(start)} – ${dates(end)}`

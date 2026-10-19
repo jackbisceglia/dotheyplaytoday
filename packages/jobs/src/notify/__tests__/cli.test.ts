@@ -15,15 +15,19 @@ describe("notify CLI", () => {
         const client = HttpClient.make((request) => {
           if (request.body._tag !== "Uint8Array")
             return Effect.die("Expected JSON body");
+
           requests.push({
             url: request.url,
             body: new TextDecoder().decode(request.body.body),
           });
+
           return Effect.succeed(
             HttpClientResponse.fromWeb(request, Response.json({ ok: true })),
           );
         });
+
         const run = Command.runWith(NotifyCommand, { version: "test" });
+
         yield* run([
           "--weekly",
           "--dry-run",
@@ -35,6 +39,7 @@ describe("notify CLI", () => {
         yield* run(["--dry-run", "--force"]).pipe(
           Effect.provideService(HttpClient.HttpClient, client),
         );
+
         expect(requests.map((request) => request.url)).toEqual([
           "http://localhost:8788/test/weekly-digest",
           "http://localhost:8788/test/notify",

@@ -184,8 +184,8 @@ export function Form(props: {
         }}
       />
       <p class="form-hint">
-        Weekly schedules for NBA, NFL, MLB, and NHL arrive every Monday,
-        including weeks with no games.
+        Your teams’ weekly schedule arrives every Monday, including weeks with
+        no games.
       </p>
       <p class="visually-hidden" aria-live="polite">
         {picks().length} of {capacity} picks selected

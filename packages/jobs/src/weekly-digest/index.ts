@@ -21,9 +21,11 @@ const renderCurrentDigest = Effect.fn("WeeklyDigestJob.renderCurrentDigest")(
     window: ReturnType<typeof weeklyDigestWindow>,
   ) {
     const events = yield* Events;
+
     const groups = yield* Effect.forEach(group, (recipient) =>
       Effect.gen(function* () {
         const subject = recipient.subscription.subject;
+
         return {
           subject,
           events: yield* events.listBySubject(subject.id, {
@@ -32,6 +34,7 @@ const renderCurrentDigest = Effect.fn("WeeklyDigestJob.renderCurrentDigest")(
         };
       }),
     );
+
     return yield* renderWeeklyDigest(
       WeeklyDigest.make({
         user: group[0].user,
@@ -48,6 +51,7 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
 ) {
   const subscriptions = yield* Subscriptions;
   const now = opts.now ?? (yield* DateTime.now);
+
   const recipients = yield* subscriptions.listNotificationRecipients();
   const selected = recipients.filter(
     (recipient) =>
@@ -64,16 +68,20 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
         const user = group[0].user;
         const window = weeklyDigestWindow(now, user.timezone);
         const identity = { userId: user.id, weekStart: window.weekStart };
+
         const rendered = yield* renderCurrentDigest(group, window);
+
         if (opts.dryRun) {
           yield* Effect.logInfo("weekly digest: dry-run", {
             ...identity,
             rendered,
           });
+
           return;
         }
 
         const email = yield* Email;
+
         yield* email.send(
           {
             recipient: user.email,
@@ -81,6 +89,7 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
           },
           rendered,
         );
+
         yield* Effect.logInfo("weekly digest: sent", identity);
       },
       Effect.catchTags({

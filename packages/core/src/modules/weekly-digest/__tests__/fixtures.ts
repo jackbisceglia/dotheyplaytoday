@@ -12,12 +12,14 @@ import { WeeklyDigest } from "../schema.js";
 
 const baseSubject = notification.subject;
 const baseEvent = notification.events[0];
+
 if (
   baseSubject.details._tag !== "sports_team" ||
   !isEventWithParticipants("sports_game")(baseEvent)
 ) {
   throw new Error("Weekly fixtures require a sports team and game");
 }
+
 const details = baseSubject.details;
 const game = baseEvent;
 
@@ -38,6 +40,7 @@ const team = (
     league,
   },
 });
+
 export const mets = team("Mets", { id: "mlb", conferenceId: "nl" }, 310);
 export const knicks = team("Knicks", { id: "nba", conferenceId: "east" }, 311);
 export const giants = team("Giants", { id: "nfl", conferenceId: "nfc" }, 312);
@@ -45,6 +48,12 @@ export const rangers = team(
   "Rangers",
   { id: "nhl", conferenceId: "east" },
   313,
+);
+
+export const college = team(
+  "College",
+  { id: "ncaam", conferenceId: "sec", apRank: null },
+  314,
 );
 
 export const makeGame = (
@@ -58,6 +67,7 @@ export const makeGame = (
   const id = EventId.make(
     `00000000-0000-4000-8000-${index.toString().padStart(12, "0")}`,
   );
+
   return EventWithParticipants.make({
     ...base,
     id,

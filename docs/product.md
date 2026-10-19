@@ -61,7 +61,7 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
 
 ## Weekly digest
 
-- Verified users following NBA, NFL, MLB, or NHL teams receive one weekly email by default,
+- Verified users following sports teams receive one weekly email by default,
   alongside their existing game-day reminders. Separate weekly preferences are
   deferred; changing the daily send time does not change weekly delivery.
 - Delivery is one Monday 9:00 AM Eastern (`America/New_York`) batch for all
@@ -71,12 +71,11 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
   before delivery. All recipients cover the same dates. Queries include each
   recipient's local Monday midnight and exclude the next Monday midnight,
   using calendar arithmetic across daylight saving changes.
-- Weekly coverage remains NBA, NFL, MLB, and NHL. NCAA and UFC picks are
-  excluded, including on mixed rosters; users with only those picks receive no
-  weekly email. Extending weekly coverage to these sports is a separate product
-  decision. Before MMA weekly enablement, settle card versus fighter grouping,
-  overlapping picks and deduplication, no-fight weeks, and wording that works
-  across sports.
+- Weekly eligibility follows the `sports_team` subject tag, including NCAA
+  men's basketball and any other supported team league. UFC fighter and card
+  picks remain excluded; mixed rosters include their team picks only. Before
+  MMA weekly enablement, settle card versus fighter grouping, overlapping picks
+  and deduplication, no-fight weeks, and wording that works across sports.
 - The By team email includes every followed team in weekly scope, chronological dates,
   opponents, `vs.` / `@`, and local start times. A fixture between two followed
   teams appears in both sections. Cancelled games are excluded.

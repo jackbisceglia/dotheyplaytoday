@@ -21,9 +21,11 @@ describe("schedule section layout", () => {
         rows: [{ date: "Wed, Oct 7", label: "Art & design", time: "2:00 PM" }],
       }),
     );
+
     expect(email.body.text).toContain(
       "Museum <visits>\nWed, Oct 7 · Art & design · 2:00 PM",
     );
+
     expect(email.body.html).toContain("Museum &lt;visits&gt;");
     expect(email.body.html).toContain("Art &amp; design");
     expect(email.body.html).not.toContain("Nothing booked.");
@@ -38,12 +40,15 @@ describe("schedule section layout", () => {
         rows: [],
       }),
     );
+
     expect(email.body.text).toContain(
       "Museum visits\nNothing <booked> & no reservations.",
     );
+
     expect(email.body.html).toContain(
       "Nothing &lt;booked&gt; &amp; no reservations.",
     );
+
     expect(email.body.text).not.toContain("No games");
   });
 });

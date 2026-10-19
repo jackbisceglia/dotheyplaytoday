@@ -15,4 +15,5 @@ export const WeeklyDigest = Schema.Struct({
     }),
   ),
 });
+
 export type WeeklyDigest = typeof WeeklyDigest.Type;
