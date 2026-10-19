@@ -329,8 +329,8 @@ signup.
 ## Weekly digest
 
 The notification Worker keeps its quarter-hour daily reminder cron and adds a
-separate Monday batch at 9:00 AM Eastern. Cloudflare cron fires at both 13:00
-and 14:00 UTC Mondays (`0 13,14 * * MON`); an Eastern-time guard admits exactly
+separate Monday batch at 11:00 AM Eastern. Cloudflare cron fires at both 15:00
+and 16:00 UTC Mondays (`0 15,16 * * MON`); an Eastern-time guard admits exactly
 one candidate across daylight saving changes. Use the named weekday because
 [Cloudflare numbers Sunday as 1](https://developers.cloudflare.com/workers/configuration/cron-triggers/#supported-cron-expressions),
 unlike Unix cron. Alchemy passes the cron expression through unchanged.

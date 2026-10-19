@@ -30,7 +30,7 @@ import {
 } from "@dtpt/core/modules/weekly-digest/__tests__/fixtures";
 import { weeklyDigest } from "../index.js";
 
-const now = DateTime.makeUnsafe("2026-10-05T13:00:00Z");
+const now = DateTime.makeUnsafe("2026-10-05T15:00:00Z");
 
 const recipients = digest.groups.map((team, index) =>
   NotificationRecipient.make({
@@ -526,7 +526,7 @@ describe("weekly digest orchestration", () => {
       const harness = makeHarness({ quiet: true });
       yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
       yield* weeklyDigest({
-        now: DateTime.makeUnsafe("2026-10-12T13:00:00Z"),
+        now: DateTime.makeUnsafe("2026-10-12T15:00:00Z"),
       }).pipe(Effect.provide(harness.layer));
 
       expect(harness.sends).toHaveLength(2);
