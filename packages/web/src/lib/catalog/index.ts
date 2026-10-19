@@ -23,7 +23,7 @@ export const getSubjectAbbreviation = (details: SubjectDetails) =>
     Match.tag("mma_tracking", (tracking) =>
       Match.value(tracking.scope).pipe(
         Match.when("numbered", () => "PPVs"),
-        Match.when("all", () => "All cards"),
+        Match.when("all", () => "All Cards"),
         Match.exhaustive,
       ),
     ),
