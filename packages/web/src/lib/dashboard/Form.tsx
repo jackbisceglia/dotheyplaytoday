@@ -184,8 +184,7 @@ export function Form(props: {
         }}
       />
       <p class="form-hint">
-        Your teams’ weekly schedule arrives every Monday, including weeks with
-        no games.
+        Your weekly schedule arrives every Monday, including quiet weeks.
       </p>
       <p class="visually-hidden" aria-live="polite">
         {picks().length} of {capacity} picks selected

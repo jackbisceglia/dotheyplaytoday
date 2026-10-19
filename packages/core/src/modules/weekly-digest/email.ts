@@ -18,9 +18,9 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
 
   const sections = yield* Effect.forEach(digest.groups, (group) =>
     Effect.gen(function* () {
-      const present = Predicate.isTagged(group.subject, "mma_tracking")
-        ? mmaSchedule
-        : sportsSchedule;
+      const present = Predicate.isTagged(group.subject, "sports_team")
+        ? sportsSchedule
+        : mmaSchedule;
       const schedule = yield* present(group, digest.user.timezone);
 
       return ScheduleSection.make({

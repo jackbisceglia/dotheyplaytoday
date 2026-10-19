@@ -15,7 +15,7 @@ export class MmaScheduleRenderError extends Schema.TaggedError<MmaScheduleRender
   },
 ) {}
 
-/** Coverage links select cards; fighter-specific weekly presentation is separate. */
+/** Fighter and coverage feed links select cards for the same presentation. */
 export const mmaSchedule = Effect.fn("MmaSchedule.present")(function* (
   group: WeeklyDigest["groups"][number],
   timezone: User["timezone"],
@@ -23,12 +23,16 @@ export const mmaSchedule = Effect.fn("MmaSchedule.present")(function* (
   const { subject } = group;
 
   if (
-    !Predicate.isTagged(subject, "mma_tracking") ||
-    !SubjectDetails.guards.mma_tracking(subject.details)
+    !(
+      (Predicate.isTagged(subject, "mma_tracking") &&
+        SubjectDetails.guards.mma_tracking(subject.details)) ||
+      (Predicate.isTagged(subject, "mma_fighter") &&
+        SubjectDetails.guards.mma_fighter(subject.details))
+    )
   ) {
     return yield* new MmaScheduleRenderError({
       subjectId: subject.id,
-      message: "Expected UFC card coverage",
+      message: "Expected a UFC fighter or card coverage subject",
     });
   }
 

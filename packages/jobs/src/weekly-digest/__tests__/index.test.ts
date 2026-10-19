@@ -6,7 +6,12 @@ import { Email } from "@dtpt/core/modules/email/service";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { Events } from "@dtpt/core/modules/events/service";
 import type { EventWithParticipants } from "@dtpt/core/modules/events/joined";
-import { all, numbered, card } from "@dtpt/core/modules/mma/__tests__/fixtures";
+import {
+  all,
+  numbered,
+  card,
+  fighterA,
+} from "@dtpt/core/modules/mma/__tests__/fixtures";
 import {
   Subscriptions,
   NotificationRecipient,
@@ -142,25 +147,18 @@ const makeHarness = (opts: HarnessOptions = {}) => {
 
 describe("weekly digest orchestration", () => {
   it.effect(
-    "excludes fighter-only picks while including teams and card coverage on mixed rosters",
+    "includes teams, fighters, and card coverage on mixed rosters",
     () =>
       Effect.gen(function* () {
-        const unsupported = [fighter("Test Fighter")];
-        const picks = unsupported.map((subject) => ({
+        const followedFighter = fighter("Test Fighter");
+        const fighterPick = {
           ...otherRecipient,
           subscription: {
             ...otherRecipient.subscription,
-            subject,
-            subjectId: subject.id,
+            subject: followedFighter,
+            subjectId: followedFighter.id,
           },
-        }));
-        const excluded = makeHarness({ recipients: picks });
-        yield* weeklyDigest({ now, force: true, dryRun: true }).pipe(
-          Effect.provide(excluded.layer),
-        );
-
-        expect(excluded.queries).toHaveLength(0);
-        expect(excluded.sends).toHaveLength(0);
+        };
 
         const collegePick = {
           ...otherRecipient,
@@ -176,7 +174,7 @@ describe("weekly digest orchestration", () => {
             otherRecipient,
             collegePick,
             coverageRecipient,
-            ...picks,
+            fighterPick,
           ],
           quiet: true,
         });
@@ -188,22 +186,21 @@ describe("weekly digest orchestration", () => {
           otherRecipient.subscription.subjectId,
           college.id,
           all.id,
+          followedFighter.id,
         ]);
         expect(mixed.sends[0]?.rendered.body.text).toContain(
           college.details.display,
         );
         expect(mixed.sends[0]?.rendered.body.text).toContain("All UFC events");
-        expect(mixed.sends[0]?.rendered.body.text).not.toContain(
-          "Test Fighter",
-        );
+        expect(mixed.sends[0]?.rendered.body.text).toContain("Test Fighter");
       }),
   );
 
   it.effect(
-    "sends card-only users their covered UFC events, including quiet weeks",
+    "sends fighter-only and coverage-only users their UFC cards, including quiet weeks",
     () =>
       Effect.gen(function* () {
-        for (const subject of [all, numbered]) {
+        for (const subject of [all, numbered, fighterA]) {
           const recipient = {
             ...coverageRecipient,
             subscription: {

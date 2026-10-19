@@ -61,7 +61,8 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
 
 ## Weekly digest
 
-- Verified users following sports teams or UFC card coverage receive one weekly email by default,
+- Verified users following sports teams, UFC fighters, or UFC card coverage
+  receive one weekly email by default,
   alongside their existing game-day reminders. Separate weekly preferences are
   deferred; changing the daily send time does not change weekly delivery.
 - Delivery is one Monday 9:00 AM Eastern (`America/New_York`) batch for all
@@ -72,15 +73,16 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
   recipient's local Monday midnight and exclude the next Monday midnight,
   using calendar arithmetic across daylight saving changes.
 - Weekly eligibility includes `sports_team` subjects (including NCAA men's
-  basketball) and `mma_tracking` subjects (All or Numbered UFC events).
-  Fighter-only picks remain excluded; mixed rosters include teams and card
-  coverage only. Coverage uses its existing feed links: Numbered includes
-  numbered cards, while All also includes Fight Nights. Each card is listed
-  once under the selected coverage heading, with its full title and local
+  basketball), `mma_fighter` subjects, and `mma_tracking` subjects (All or
+  Numbered UFC events). Existing feed links select each fighter’s cards and
+  coverage matches: Numbered includes numbered cards, while All also includes
+  Fight Nights. Each card is listed once per matching pick, under that fighter
+  or coverage heading, with its full title and local
   main-card date and start time, labeled “main card”. No fight lineup is listed.
   Card selection uses the existing earliest-broadcast event start to determine
   its local week; the displayed main-card start can fall on the following day.
-  Fighter-specific weekly grouping and overlap deduplication remain separate work.
+  A shared card appears under each matching fighter/coverage pick, just as a
+  shared game appears under each followed team; it is not merged across sections.
 - The By team email keeps each followed team as a section heading. Games appear
   as bullets with the followed team first, using `vs` for home games and `@`
   for away games, then the opponent. The date and local start time appear

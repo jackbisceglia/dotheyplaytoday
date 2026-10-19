@@ -1,7 +1,13 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Effect } from "effect";
 
-import { all, numbered, fighterA, ny } from "../../mma/__tests__/fixtures.js";
+import {
+  all,
+  numbered,
+  fighterA,
+  card,
+  ny,
+} from "../../mma/__tests__/fixtures.js";
 import { ufcCard } from "../../notifier/__tests__/fixtures.js";
 import { mmaSchedule, MmaScheduleRenderError } from "../mma.js";
 import { digest } from "./fixtures.js";
@@ -48,6 +54,26 @@ describe("weekly MMA card presentation", () => {
       }),
   );
 
+  it.effect(
+    "presents a fighter’s matched cards using the same full-card rows",
+    () =>
+      Effect.gen(function* () {
+        const coverage = yield* mmaSchedule(
+          { subject: all, events: [card] },
+          ny,
+        );
+        const fighter = yield* mmaSchedule(
+          { subject: fighterA, events: [card] },
+          ny,
+        );
+        const quiet = yield* mmaSchedule({ subject: fighterA, events: [] }, ny);
+
+        expect(fighter.title).toBe(fighterA.details.display);
+        expect(fighter.rows).toEqual(coverage.rows);
+        expect(quiet.rows).toEqual([]);
+      }),
+  );
+
   it.effect("handles quiet coverage and daylight saving changes", () =>
     Effect.gen(function* () {
       const quiet = yield* mmaSchedule({ subject: numbered, events: [] }, ny);
@@ -75,18 +101,16 @@ describe("weekly MMA card presentation", () => {
     }),
   );
 
-  it.effect(
-    "rejects fighter-only subjects and non-MMA events at its boundary",
-    () =>
-      Effect.gen(function* () {
-        for (const group of [
-          { subject: fighterA, events: [] },
-          { subject: all, events: digest.groups[0].events },
-        ]) {
-          const error = yield* mmaSchedule(group, ny).pipe(Effect.flip);
+  it.effect("rejects team subjects and non-MMA events at its boundary", () =>
+    Effect.gen(function* () {
+      for (const group of [
+        { subject: digest.groups[0].subject, events: [] },
+        { subject: all, events: digest.groups[0].events },
+      ]) {
+        const error = yield* mmaSchedule(group, ny).pipe(Effect.flip);
 
-          expect(error).toBeInstanceOf(MmaScheduleRenderError);
-        }
-      }),
+        expect(error).toBeInstanceOf(MmaScheduleRenderError);
+      }
+    }),
   );
 });

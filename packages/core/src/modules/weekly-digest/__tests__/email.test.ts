@@ -1,7 +1,13 @@
 import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, DateTime, Effect } from "effect";
 
-import { all, numbered } from "../../mma/__tests__/fixtures.js";
+import {
+  all,
+  numbered,
+  fighterA,
+  fighterB,
+  card,
+} from "../../mma/__tests__/fixtures.js";
 import { ufcCard } from "../../notifier/__tests__/fixtures.js";
 import { renderWeeklyDigest } from "../email.js";
 import { SportsScheduleRenderError } from "../sports.js";
@@ -15,6 +21,29 @@ const render = (input: WeeklyDigest) =>
   renderWeeklyDigest(input).pipe(Effect.provide(config));
 
 describe("weekly digest email", () => {
+  it.effect(
+    "keeps a shared UFC card under each matching fighter and coverage pick",
+    () =>
+      Effect.gen(function* () {
+        const email = yield* render({
+          ...digest,
+          groups: [
+            { subject: fighterA, events: [card] },
+            { subject: fighterB, events: [card] },
+            { subject: all, events: [card] },
+          ],
+        });
+
+        for (const body of [email.body.text, email.body.html]) {
+          expect(body).toContain("Fighter A");
+          expect(body).toContain("Fighter B");
+          expect(body).toContain("All UFC events");
+          expect(body.match(/UFC test/g)).toHaveLength(3);
+          expect(body.match(/main card/g)).toHaveLength(3);
+        }
+      }),
+  );
+
   it.effect(
     "combines teams and UFC coverage without listing the card lineup",
     () =>
