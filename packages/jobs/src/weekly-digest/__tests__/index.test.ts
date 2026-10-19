@@ -6,7 +6,7 @@ import { Email } from "@dtpt/core/modules/email/service";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { Events } from "@dtpt/core/modules/events/service";
 import type { EventWithParticipants } from "@dtpt/core/modules/events/joined";
-import { Subject } from "@dtpt/core/modules/subjects/schema";
+import { all, numbered, card } from "@dtpt/core/modules/mma/__tests__/fixtures";
 import {
   Subscriptions,
   NotificationRecipient,
@@ -53,6 +53,16 @@ const otherRecipient = NotificationRecipient.make({
     subject: digest.groups[0].subject,
     subjectId: digest.groups[0].subject.id,
     userId: UserId.make("00000000-0000-4000-8000-000000000102"),
+  },
+});
+
+const coverageRecipient = NotificationRecipient.make({
+  ...otherRecipient,
+  subscription: {
+    ...otherRecipient.subscription,
+    id: SubscriptionId.make("00000000-0000-4000-8000-000000000425"),
+    subject: all,
+    subjectId: all.id,
   },
 });
 
@@ -132,22 +142,10 @@ const makeHarness = (opts: HarnessOptions = {}) => {
 
 describe("weekly digest orchestration", () => {
   it.effect(
-    "keeps UFC out of the weekly batch while including all team tags on mixed rosters",
+    "excludes fighter-only picks while including teams and card coverage on mixed rosters",
     () =>
       Effect.gen(function* () {
-        const unsupported = [
-          fighter("Test Fighter"),
-          Subject.make({
-            ...otherRecipient.subscription.subject,
-            _tag: "mma_tracking",
-            details: {
-              _tag: "mma_tracking",
-              league: { id: "ufc" },
-              display: "All UFC",
-              scope: "all",
-            },
-          }),
-        ];
+        const unsupported = [fighter("Test Fighter")];
         const picks = unsupported.map((subject) => ({
           ...otherRecipient,
           subscription: {
@@ -174,7 +172,12 @@ describe("weekly digest orchestration", () => {
         };
 
         const mixed = makeHarness({
-          recipients: [otherRecipient, collegePick, ...picks],
+          recipients: [
+            otherRecipient,
+            collegePick,
+            coverageRecipient,
+            ...picks,
+          ],
           quiet: true,
         });
 
@@ -184,13 +187,89 @@ describe("weekly digest orchestration", () => {
         expect(mixed.queries.map((query) => query.subjectId)).toEqual([
           otherRecipient.subscription.subjectId,
           college.id,
+          all.id,
         ]);
         expect(mixed.sends[0]?.rendered.body.text).toContain(
           college.details.display,
         );
-        expect(mixed.sends[0]?.rendered.body.text).not.toMatch(
-          /Test Fighter|All UFC/,
+        expect(mixed.sends[0]?.rendered.body.text).toContain("All UFC events");
+        expect(mixed.sends[0]?.rendered.body.text).not.toContain(
+          "Test Fighter",
         );
+      }),
+  );
+
+  it.effect(
+    "sends card-only users their covered UFC events, including quiet weeks",
+    () =>
+      Effect.gen(function* () {
+        for (const subject of [all, numbered]) {
+          const recipient = {
+            ...coverageRecipient,
+            subscription: {
+              ...coverageRecipient.subscription,
+              subject,
+              subjectId: subject.id,
+            },
+          };
+          const harness = makeHarness({
+            recipients: [recipient],
+            events: [card],
+          });
+
+          yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
+
+          expect(harness.sends).toHaveLength(1);
+          expect(harness.sends[0]?.rendered.body.text).toContain("UFC test");
+          expect(harness.sends[0]?.rendered.body.text).toContain("main card");
+          expect(harness.sends[0]?.delivery.idempotencyKey).toBe(
+            `weekly-digest:${recipient.user.id}:2026-10-05`,
+          );
+
+          const quiet = makeHarness({ recipients: [recipient], quiet: true });
+
+          yield* weeklyDigest({ now }).pipe(Effect.provide(quiet.layer));
+
+          expect(quiet.sends).toHaveLength(1);
+          expect(quiet.sends[0]?.rendered.body.text).toContain(
+            "No events this week.",
+          );
+        }
+      }),
+  );
+
+  it.effect(
+    "keeps unverified card subscribers ineligible and card dry runs send-free",
+    () =>
+      Effect.gen(function* () {
+        const pending = makeHarness({
+          recipients: [
+            {
+              ...coverageRecipient,
+              user: { ...coverageRecipient.user, emailVerified: false },
+            },
+          ],
+          events: [card],
+        });
+
+        yield* weeklyDigest({ now, force: true }).pipe(
+          Effect.provide(pending.layer),
+        );
+
+        expect(pending.queries).toHaveLength(0);
+        expect(pending.sends).toHaveLength(0);
+
+        const preview = makeHarness({
+          recipients: [coverageRecipient],
+          events: [card],
+        });
+
+        yield* weeklyDigest({ now, dryRun: true }).pipe(
+          Effect.provide(preview.layer),
+        );
+
+        expect(preview.queries).toHaveLength(1);
+        expect(preview.sends).toHaveLength(0);
       }),
   );
 
@@ -236,6 +315,22 @@ describe("weekly digest orchestration", () => {
 
         expect(harness.queries).toHaveLength(5);
         expect(harness.sends).toHaveLength(0);
+      }),
+  );
+
+  it.effect(
+    "continues team recipients after a malformed UFC coverage group",
+    () =>
+      Effect.gen(function* () {
+        const harness = makeHarness({
+          recipients: [coverageRecipient, ...recipients.slice(0, 1)],
+          events: digest.groups[0].events,
+        });
+
+        yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
+
+        expect(harness.sends).toHaveLength(1);
+        expect(harness.sends[0]?.delivery.recipient).toBe(digest.user.email);
       }),
   );
 
@@ -313,7 +408,7 @@ describe("weekly digest orchestration", () => {
 
       expect(harness.sends).toHaveLength(1);
       expect(harness.sends[0]?.rendered.body.text).toContain(
-        "No games this week.",
+        "No events this week.",
       );
     }),
   );

@@ -95,6 +95,8 @@ export const weeklyDigest = Effect.fn("WeeklyDigestJob")(function* (
       Effect.catchTags({
         SportsScheduleRenderError: (error) =>
           Effect.logError("weekly digest: invalid schedule", error),
+        MmaScheduleRenderError: (error) =>
+          Effect.logError("weekly digest: invalid schedule", error),
         EmailRequestError: (error) =>
           Effect.logError("weekly digest: delivery failed", error),
         EmailResponseError: (error) =>

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
 import { ConfigProvider, DateTime, Effect } from "effect";
 
+import { all, numbered } from "../../mma/__tests__/fixtures.js";
+import { ufcCard } from "../../notifier/__tests__/fixtures.js";
 import { renderWeeklyDigest } from "../email.js";
 import { SportsScheduleRenderError } from "../sports.js";
 import { type WeeklyDigest } from "../schema.js";
@@ -13,6 +15,52 @@ const render = (input: WeeklyDigest) =>
   renderWeeklyDigest(input).pipe(Effect.provide(config));
 
 describe("weekly digest email", () => {
+  it.effect(
+    "combines teams and UFC coverage without listing the card lineup",
+    () =>
+      Effect.gen(function* () {
+        const card = ufcCard({
+          title: "UFC 999: Test <Main> & Event",
+          timings: {
+            prelims: "2026-10-06T21:00:00Z",
+            main: "2026-10-07T00:00:00Z",
+          },
+        });
+        const email = yield* render({
+          ...digest,
+          groups: [...digest.groups, { subject: all, events: [card] }],
+        });
+
+        expect(email.body.text).toContain("New York Mets vs Atlanta Braves");
+        expect(email.body.text).toContain(
+          "All UFC events\n- UFC 999: Test <Main> & Event\n  Tue, Oct 6, 8:00 PM, main card",
+        );
+        expect(email.body.html).toContain(
+          "UFC 999: Test &lt;Main&gt; &amp; Event",
+        );
+        expect(email.body.html).toContain("Tue, Oct 6, 8:00 PM, main card");
+        expect(email.body.text).not.toContain("Prelims");
+        expect(email.body.text).not.toContain("Joaquin Buckley");
+      }),
+  );
+
+  it.effect("uses the same quiet-week copy for card coverage and teams", () =>
+    Effect.gen(function* () {
+      const email = yield* render({
+        ...digest,
+        groups: [
+          { subject: mets, events: [] },
+          { subject: numbered, events: [] },
+        ],
+      });
+
+      for (const body of [email.body.text, email.body.html]) {
+        expect(body.match(/No events this week\./g)).toHaveLength(2);
+        expect(body).not.toContain("No UFC cards");
+      }
+    }),
+  );
+
   it.effect(
     "renders the agreed By team format with quiet teams and working links",
     () =>
@@ -30,13 +78,13 @@ describe("weekly digest email", () => {
           "- New York Mets @ Philadelphia Phillies\n  Fri, Oct 9, 7:05 PM",
         );
         expect(email.body.text).toContain(
-          "New York Rangers\nNo games this week.",
+          "New York Rangers\nNo events this week.",
         );
         expect(email.body.text).not.toMatch(
           /All times|America\/New_York|EDT|EST|games across|\d+ games|Schedule as of|Your week, all in one place/,
         );
         expect(email.body.text).toContain(
-          "Manage teams: https://example.com/home",
+          "Manage picks: https://example.com/home",
         );
         expect(email.metadata?.unsubscribe).toBe(
           `https://example.com/unsubscribe/${digest.user.unsubscribeToken}`,
@@ -44,9 +92,9 @@ describe("weekly digest email", () => {
         expect(email.body.html).toContain("New York Mets vs Atlanta Braves");
         expect(email.body.html.match(/&bull;/g)).toHaveLength(6);
         expect(email.body.html).toContain(
-          'src="https://example.com/email/headlines/your-teams-this-week.png"',
+          'src="https://example.com/email/headlines/your-picks-this-week.png"',
         );
-        expect(email.body.html).toContain('alt="Your teams. This week."');
+        expect(email.body.html).toContain('alt="Your picks. This week."');
       }),
   );
 
@@ -64,7 +112,7 @@ describe("weekly digest email", () => {
 
         for (const team of digest.groups)
           expect(email.body.text).toContain(team.subject.details.display);
-        expect(email.body.text.match(/No games this week\./g)).toHaveLength(4);
+        expect(email.body.text.match(/No events this week\./g)).toHaveLength(4);
       }),
   );
 

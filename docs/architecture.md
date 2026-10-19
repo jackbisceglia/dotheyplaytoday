@@ -333,9 +333,9 @@ separate Monday batch at 9:00 AM Eastern. Cloudflare cron fires at both 13:00
 and 14:00 UTC Mondays (`0 13,14 * * 1`); an Eastern-time guard admits exactly
 one candidate across daylight saving changes. The guard and week selection use
 Cloudflare’s scheduled timestamp, so late execution retains the same batch.
-`jobs/src/weekly-digest` filters verified recipients by the `sports_team`
-subject tag using tagged-union guards before grouping by user. This includes
-NCAA teams without a league allowlist; UFC remains outside weekly scope.
+`jobs/src/weekly-digest` filters verified recipients by the `sports_team` and
+`mma_tracking` subject tags using tagged-union guards before grouping by user.
+This includes NCAA teams and UFC card coverage; fighter-only picks are excluded.
 It sends one personalized email per user, without consulting daily send times
 or last-sent timestamps. It uses the existing `Events.listBySubject` active-event
 query with a half-open local-week UTC range and never writes a subscription's
@@ -361,13 +361,19 @@ section headings still group the subscriber’s teams.
 It has no team/game fields, event tags, eligibility rules, or weekly copy.
 Historical email blocks retain their existing behavior.
 
-A future MMA change can adapt cards/fighters into display sections and select
-that presentation in weekly composition, without adding sport semantics to
-`ScheduleSection`. No registry or speculative MMA adapter is introduced.
-Weekly MMA grouping (per card versus fighter), overlap deduplication, quiet-week
-behavior, and generic headline/footer/empty wording remain product decisions.
-The subject-tag eligibility filter remains separate from presentation;
-MMA weekly enablement is outside this PR.
+`weekly-digest/mma.ts` adapts UFC card coverage into the same display rows.
+The adapter validates coverage and joined MMA event variants once, then lists
+full card titles ordered by their local main-card starts. It uses the existing
+All/Numbered feed links; selection remains anchored to the event's earliest
+broadcast start within the local week, while the displayed date/time belongs
+to the main card and may fall on the next day. Invalid variants fail the whole
+recipient digest with `MmaScheduleRenderError`, logged like team render errors.
+There is no fight lineup or fighter-specific weekly section. Existing mutual
+exclusion of All/Numbered coverage prevents duplicate coverage sections.
+Composition chooses the team or card presenter and supplies the same
+“No events this week.” empty text to both. The headline and footer use “picks”.
+No registry or sports behavior is added to the shared layout. Fighter-specific
+weekly grouping and overlap deduplication remain separate product work.
 
 Weekly sending requires no new database schema or saved email snapshots.
 Each send uses `weekly-digest:<user-id>:<Monday-date>` as its provider
