@@ -1,4 +1,4 @@
-import { Effect, Predicate } from "effect";
+import { Effect, Match } from "effect";
 
 import { WebUrl } from "../../lib/config/web.js";
 import { buildUnsubscribeUrl } from "../../lib/unsubscribe.js";
@@ -18,9 +18,12 @@ export const renderWeeklyDigest = Effect.fn("WeeklyDigest.render")(function* (
 
   const sections = yield* Effect.forEach(digest.groups, (group) =>
     Effect.gen(function* () {
-      const present = Predicate.isTagged(group.subject, "sports_team")
-        ? sportsSchedule
-        : mmaSchedule;
+      const present = Match.value(group.subject.details).pipe(
+        Match.tag("sports_team", () => sportsSchedule),
+        Match.tag("mma_fighter", "mma_tracking", () => mmaSchedule),
+        Match.exhaustive,
+      );
+
       const schedule = yield* present(group, digest.user.timezone);
 
       return ScheduleSection.make({

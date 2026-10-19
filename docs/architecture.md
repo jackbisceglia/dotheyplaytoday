@@ -374,7 +374,8 @@ and main start under their own section heading. A shared card appears under
 each matching pick, consistent with team sections; cross-section deduplication
 is intentionally absent. Existing mutual exclusion of All/Numbered coverage
 prevents two coverage picks.
-Composition chooses the team or card presenter and supplies the same
+Composition exhaustively matches the subject detail tag to the team or MMA
+presenter and supplies the same
 “No events this week.” empty text to both. The headline and footer use “teams”, including for UFC subscriptions.
 No registry or sports behavior is added to the shared layout.
 
