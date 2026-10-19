@@ -26,8 +26,16 @@ describe("sports schedule presentation", () => {
         expect(schedule).toEqual({
           title: "New York Mets",
           rows: [
-            { date: "Mon, Oct 5", label: "vs. Phillies", time: "7:10 PM" },
-            { date: "Wed, Oct 7", label: "@ Braves", time: "7:00 PM" },
+            {
+              date: "Mon, Oct 5",
+              label: "Phillies at New York Mets",
+              time: "7:10 PM",
+            },
+            {
+              date: "Wed, Oct 7",
+              label: "New York Mets at Braves",
+              time: "7:00 PM",
+            },
           ],
         });
       }),

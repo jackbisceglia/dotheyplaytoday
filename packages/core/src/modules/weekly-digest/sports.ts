@@ -55,7 +55,7 @@ const matchup = Effect.fn("SportsSchedule.matchup")(function* (
     });
   }
 
-  return `${side.separator} ${side.trailing.details.title}`;
+  return `${awayTeam.details.title} at ${homeTeam.details.title}`;
 });
 
 /** Adapt a domain group into display rows; validate variant identity once here. */

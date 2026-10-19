@@ -23,10 +23,10 @@ describe("weekly digest email", () => {
         expect(email.body.text.match(/October 5–11/g)).toHaveLength(1);
         expect(email.body.text).toContain("New York Mets");
         expect(email.body.text).toContain(
-          "Mon, Oct 5 · vs. Atlanta Braves · 7:10 PM",
+          "- Atlanta Braves at New York Mets\n  Mon, Oct 5 · 7:10 PM",
         );
         expect(email.body.text).toContain(
-          "Fri, Oct 9 · @ Philadelphia Phillies · 7:05 PM",
+          "- New York Mets at Philadelphia Phillies\n  Fri, Oct 9 · 7:05 PM",
         );
         expect(email.body.text).toContain(
           "New York Rangers\nNo games this week.",
@@ -40,7 +40,8 @@ describe("weekly digest email", () => {
         expect(email.metadata?.unsubscribe).toBe(
           `https://example.com/unsubscribe/${digest.user.unsubscribeToken}`,
         );
-        expect(email.body.html).toContain('<table role="presentation"');
+        expect(email.body.html).toContain("Atlanta Braves at New York Mets");
+        expect(email.body.html.match(/&bull;/g)).toHaveLength(6);
         expect(email.body.html).toContain(
           'src="https://example.com/email/headlines/your-teams-this-week.png"',
         );
@@ -109,8 +110,9 @@ describe("weekly digest email", () => {
           { subject: knicks, events: [game] },
         ],
       });
-      expect(email.body.text).toContain("vs. New York Knicks");
-      expect(email.body.text).toContain("@ New York Mets");
+      expect(
+        email.body.text.match(/- New York Knicks at New York Mets/g),
+      ).toHaveLength(2);
     }),
   );
 
@@ -136,7 +138,7 @@ describe("weekly digest email", () => {
         });
 
         expect(email.body.text).toContain(
-          "Sun, Oct 11 · vs. Atlanta Braves · 11:30 PM",
+          "- Atlanta Braves at New York Mets\n  Sun, Oct 11 · 11:30 PM",
         );
         expect(email.body.text.indexOf("Mon, Oct 5")).toBeLessThan(
           email.body.text.indexOf("Sun, Oct 11"),

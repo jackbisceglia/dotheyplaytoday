@@ -175,9 +175,10 @@ const blockText = (block: Block): readonly string[] => {
         block.title,
         ...(block.rows.length === 0
           ? [block.emptyText]
-          : block.rows.map(
-              (row) => `${row.date} · ${row.label} · ${row.time}`,
-            )),
+          : block.rows.flatMap((row) => [
+              `- ${row.label}`,
+              `  ${row.date} · ${row.time}`,
+            ])),
       ];
     case "code":
       return [block.value];
@@ -326,15 +327,15 @@ const blockHtml = (block: Block): string => {
 ${
   block.rows.length === 0
     ? element.note(escapeHtml(block.emptyText))
-    : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${block.rows
-        .map(
-          (row) => `<tr>
-<td class="email-muted schedule-date" style="width: 90px; padding: 8px 8px 8px 0; font-size: 13px; vertical-align: top; white-space: nowrap;">${escapeHtml(row.date)}</td>
-<td class="email-ink schedule-label" style="padding: 8px 8px 8px 0; font-size: 14px; font-weight: 600; vertical-align: top; overflow-wrap: anywhere;">${escapeHtml(row.label)}</td>
-<td class="email-ink schedule-time" align="right" style="padding: 8px 0; font-size: 13px; white-space: nowrap; vertical-align: top;">${escapeHtml(row.time)}</td>
-</tr>`,
-        )
-        .join("\n")}</table>`
+    : stack(
+        block.rows.map((row) =>
+          element.bullet(
+            escapeHtml(row.label),
+            escapeHtml(`${row.date} · ${row.time}`),
+          ),
+        ),
+        12,
+      )
 }
 </section>`;
     case "code":
@@ -408,12 +409,6 @@ const html = (input: EmailViewProps) => {
 
       table {
         border-collapse: collapse;
-      }
-
-      @media (max-width: 430px) {
-        .schedule-date { width: 86px !important; }
-        .schedule-label { display: block; padding-bottom: 0 !important; }
-        .schedule-time { display: block; text-align: left !important; padding-top: 2px !important; white-space: normal !important; }
       }
 
       /* Keep iOS from turning start times into blue "detected data" links. */

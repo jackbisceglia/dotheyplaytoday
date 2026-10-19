@@ -76,9 +76,11 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
   picks remain excluded; mixed rosters include their team picks only. Before
   MMA weekly enablement, settle card versus fighter grouping, overlapping picks
   and deduplication, no-fight weeks, and wording that works across sports.
-- The By team email includes every followed team in weekly scope, chronological dates,
-  opponents, `vs.` / `@`, and local start times. A fixture between two followed
-  teams appears in both sections. Cancelled games are excluded.
+- The By team email keeps each followed team as a section heading. Games appear
+  as bullets with the full away-team-at-home-team matchup, followed by the date
+  and local start time underneath. A fixture between two followed teams appears
+  in both sections with the same full matchup. Games stay chronological and
+  cancelled games are excluded.
 - Quiet weeks still produce an email. Each team with no matching fixtures shows
   “No games this week.”
 - The subject is “Your Weekly Update”. The body starts with the branded image

@@ -218,7 +218,7 @@ describe("weekly digest orchestration", () => {
         college.details.display,
       );
       expect(harness.sends[0]?.rendered.body.text).toContain(
-        "vs. Test Opponent",
+        "Test Opponent at New York College",
       );
     }),
   );
