@@ -218,9 +218,9 @@ const normalizeName = (name: string) =>
 
 describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
-    expect(catalog.events).toHaveLength(6);
+    expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 22, 26, 24,
+      24, 26, 28, 22, 26, 24, 4,
     ]);
     expect(catalog.subjects).toHaveLength(289);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
@@ -249,6 +249,31 @@ describe("UFC catalog", () => {
       );
       expect(subject.feedIds).toEqual(expected.map((event) => event.sourceId));
     }
+  });
+
+  it("holds Qatar's unassigned bouts out of fighter feeds", () => {
+    const card = catalog.events.find((event) =>
+      event.sourceUrl.endsWith("ufc-fight-night-november-21-2026"),
+    );
+    expect(
+      card?.participants.map((participant) => participant.details),
+    ).toEqual(
+      [
+        "Jiří Procházka",
+        "Navajo Stirling",
+        "Aljamain Sterling",
+        "Kevin Vallejos",
+      ].map((title, index) => ({
+        _tag: "mma_card",
+        title,
+        fightId: index < 2 ? "fight-1" : "fight-2",
+        placement: "main",
+      })),
+    );
+    const hooker = catalog.subjects.find(
+      (subject) => subject.details.display === "Dan Hooker",
+    );
+    expect(hooker?.feedIds).not.toContain(card?.sourceId);
   });
 
   it("includes the men's P4P top 15 even without a booked fight", () => {
@@ -365,6 +390,7 @@ describe("UFC catalog", () => {
       "8:00 PM EDT",
       "8:00 PM EST",
       "9:00 PM EST",
+      "1:00 PM EST",
     ]);
     expect(localStarts).toEqual([
       "5:00 PM EDT",
@@ -373,6 +399,7 @@ describe("UFC catalog", () => {
       "5:00 PM EDT",
       "5:00 PM EST",
       "5:00 PM EST",
+      "10:00 AM EST",
     ]);
   });
 });

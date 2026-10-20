@@ -4,7 +4,7 @@ import type { MmaSeedEncoded } from "../../schema/mma.js";
 
 type UfcEventSeed = MmaSeedEncoded["events"][number];
 
-// Upcoming lineups reviewed October 19, 2026 against UFC event listings.
+// Upcoming lineups reviewed October 20, 2026 against UFC event listings.
 // Additional UFC 333 prelims: https://www.ufc.com.br/news/ufc-333-card-completo-horarios-onde-assistir
 export const events: readonly UfcEventSeed[] = [
   {
@@ -1499,6 +1499,69 @@ export const events: readonly UfcEventSeed[] = [
           title: "Jefferson Nascimento",
           fightId: "fight-12",
           placement: "prelims",
+        },
+      },
+    ],
+  },
+  // Main/co-main confirmed October 12; accessed October 20, 2026:
+  // https://www.ufc.com/news/former-champion-jiri-prochazka-takes-undefeated-navajo-stirling-ufc-returns-doha-november-21
+  // Other announced bouts remain withheld until UFC confirms segment placement.
+  {
+    _tag: "mma_card",
+    id: "58daebd8-00ad-4816-8461-d58232b67a57",
+    sourceId: "mma_card:ufc:58daebd8-00ad-4816-8461-d58232b67a57",
+    availability: "active",
+    sourceUrl: "https://www.ufc.com/event/ufc-fight-night-november-21-2026",
+    startsAt: "2026-11-21T15:00:00.000Z",
+    details: {
+      _tag: "mma_card",
+      leagueId: "ufc",
+      title: "UFC Fight Night: Prochazka vs Stirling",
+      category: "fight_night",
+      venue: {
+        title: "ABHA Arena",
+        location: "Doha, Qatar",
+      },
+      timings: {
+        prelims: "2026-11-21T15:00:00.000Z",
+        main: "2026-11-21T18:00:00.000Z",
+      },
+    },
+    participants: [
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Jiří Procházka",
+          fightId: "fight-1",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Navajo Stirling",
+          fightId: "fight-1",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Aljamain Sterling",
+          fightId: "fight-2",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Kevin Vallejos",
+          fightId: "fight-2",
+          placement: "main",
         },
       },
     ],
