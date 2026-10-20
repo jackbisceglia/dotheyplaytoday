@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /home/jackb/.t3/worktrees/dotheyplaytoday/research-typescript-rust-build-benchmarks
+
+
+ Test Files  59 passed | 2 skipped (61)
+      Tests  359 passed | 3 skipped (362)
+   Start at  12:42:06
+   Duration  32.30s (import 67%, tests 21%, transform 12%)
+

@@ -1,0 +1,13 @@
+{
+  "baseline_files": 419,
+  "candidate_files": 419,
+  "differences": {},
+  "extensions": {
+    ".js": 150,
+    ".map": 140,
+    ".json": 1,
+    ".css": 2,
+    ".png": 125,
+    ".svg": 1
+  }
+}

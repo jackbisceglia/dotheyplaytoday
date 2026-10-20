@@ -1,0 +1,58 @@
+[
+  {
+    "probe": "effect",
+    "source": "import { Effect } from \"effect\";\nEffect.succeed(1);\n",
+    "compiler": "baseline",
+    "command": [
+      "./node_modules/.bin/tsc",
+      "-p",
+      "packages/core/tsconfig.json",
+      "--noEmit",
+      "--pretty",
+      "false"
+    ],
+    "exit": 1
+  },
+  {
+    "probe": "effect",
+    "source": "import { Effect } from \"effect\";\nEffect.succeed(1);\n",
+    "compiler": "candidate",
+    "command": [
+      "/tmp/dtpt-tsrs-research/candidate/node_modules/.bin/tsrs",
+      "-p",
+      "packages/core/tsconfig.json",
+      "--noEmit",
+      "--pretty",
+      "false"
+    ],
+    "exit": 0
+  },
+  {
+    "probe": "typescript",
+    "source": "export const mismatch: string = 123;\n",
+    "compiler": "baseline",
+    "command": [
+      "./node_modules/.bin/tsc",
+      "-p",
+      "packages/core/tsconfig.json",
+      "--noEmit",
+      "--pretty",
+      "false"
+    ],
+    "exit": 1
+  },
+  {
+    "probe": "typescript",
+    "source": "export const mismatch: string = 123;\n",
+    "compiler": "candidate",
+    "command": [
+      "/tmp/dtpt-tsrs-research/candidate/node_modules/.bin/tsrs",
+      "-p",
+      "packages/core/tsconfig.json",
+      "--noEmit",
+      "--pretty",
+      "false"
+    ],
+    "exit": 2
+  }
+]

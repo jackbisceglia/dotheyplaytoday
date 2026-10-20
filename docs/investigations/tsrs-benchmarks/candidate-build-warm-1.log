@@ -1,0 +1,48 @@
+
+> dotheyplaytoday@1.0.0 build /home/jackb/.t3/worktrees/dotheyplaytoday/research-typescript-rust-build-benchmarks
+> pnpm -r run build
+
+(node:1124110) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Scope: 5 of 6 workspace projects
+packages/core build$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" -p tsconfig.build.json
+packages/core build: Done
+packages/api build$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" -p tsconfig.build.json
+packages/data build$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" -p tsconfig.build.json
+packages/jobs build$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" -p tsconfig.build.json
+packages/jobs build: Done
+packages/data build: Done
+packages/api build: Done
+packages/web build$ vite build
+packages/web build: vite v8.2.1 building client environment for production...
+packages/web build: transforming...
+packages/web build: new URL("../../../../../", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.
+packages/web build: ✓ 606 modules transformed.
+packages/web build: rendering chunks...
+packages/web build: computing gzip size...
+packages/web build: dist/client/.vite/manifest.json                                   1.58 kB │ gzip:   0.37 kB
+packages/web build: dist/client/assets/virtual_solid-ssr-entry-client-v8-HZb9j.css   30.25 kB │ gzip:   6.42 kB
+packages/web build: dist/client/assets/serverForms-jk2l99lk.js                       11.59 kB │ gzip:   4.56 kB
+packages/web build: dist/client/assets/decode-3X5v8ClT.js                            19.92 kB │ gzip:   5.87 kB
+packages/web build: dist/client/assets/virtual_solid-ssr-entry-client-CkuzY8A9.js   609.39 kB │ gzip: 196.02 kB
+packages/web build: ✓ built in 397ms
+packages/web build: [plugin builtin:vite-reporter] 
+packages/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+packages/web build: - Using dynamic import() to code-split the application
+packages/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+packages/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+packages/web build: vite v8.2.1 building ssr environment for production...
+packages/web build: transforming...
+packages/web build: ✓ 696 modules transformed.
+packages/web build: rendering chunks...
+packages/web build: computing gzip size...
+packages/web build: dist/server/assets/index-CEM0-XEj.css                   30.24 kB │ gzip:   6.41 kB
+packages/web build: dist/server/assets/decode-D_A6skCj.js                    2.63 kB │ gzip:   1.10 kB
+packages/web build: dist/server/assets/cloudflare-http-client-C3c_bNt7.js   13.63 kB │ gzip:   4.56 kB
+packages/web build: dist/server/assets/serverForms-BlIFUQj2.js              16.80 kB │ gzip:   5.64 kB
+packages/web build: dist/server/assets/web-CpJ2dlT6.js                      54.67 kB │ gzip:  13.66 kB
+packages/web build: dist/server/assets/query-DASzRfbR.js                   143.01 kB │ gzip:  37.61 kB
+packages/web build: dist/server/server.js                                  665.02 kB │ gzip: 156.96 kB
+packages/web build: dist/server/assets/HttpServerRequest-ChgRVdV6.js       832.92 kB │ gzip: 190.57 kB
+packages/web build: ✓ built in 276ms
+packages/web build: Done

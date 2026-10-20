@@ -1,0 +1,43 @@
+[
+  {
+    "name": "baseline-typecheck",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 5.584573287982494,
+    "exit": 0
+  },
+  {
+    "name": "candidate-typecheck",
+    "command": [
+      "pnpm",
+      "-r",
+      "exec",
+      "/tmp/dtpt-tsrs-research/candidate/node_modules/.bin/tsrs",
+      "--noEmit"
+    ],
+    "seconds": 1.2917593909660354,
+    "exit": 0
+  },
+  {
+    "name": "baseline-version",
+    "command": [
+      "pnpm",
+      "exec",
+      "tsc",
+      "--version"
+    ],
+    "seconds": 0.2568646869622171,
+    "exit": 0
+  },
+  {
+    "name": "candidate-version",
+    "command": [
+      "/tmp/dtpt-tsrs-research/candidate/node_modules/.bin/tsrs",
+      "--version"
+    ],
+    "seconds": 0.02787509298650548,
+    "exit": 0
+  }
+]

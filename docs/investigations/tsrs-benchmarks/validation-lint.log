@@ -1,0 +1,17 @@
+
+> dotheyplaytoday@1.0.0 lint /home/jackb/.t3/worktrees/dotheyplaytoday/research-typescript-rust-build-benchmarks
+> pnpm -r run lint
+
+(node:1125480) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Scope: 5 of 6 workspace projects
+packages/core lint$ oxlint .
+packages/core lint: Done
+packages/api lint$ oxlint .
+packages/data lint$ oxlint .
+packages/jobs lint$ oxlint .
+packages/jobs lint: Done
+packages/api lint: Done
+packages/data lint: Done
+packages/web lint$ oxlint .
+packages/web lint: Done

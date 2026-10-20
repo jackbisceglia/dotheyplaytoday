@@ -1,0 +1,17 @@
+
+> dotheyplaytoday@1.0.0 typecheck /home/jackb/.t3/worktrees/dotheyplaytoday/research-typescript-rust-build-benchmarks
+> pnpm -r run typecheck
+
+(node:1122809) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Scope: 5 of 6 workspace projects
+packages/core typecheck$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" --noEmit
+packages/core typecheck: Done
+packages/api typecheck$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" --noEmit
+packages/data typecheck$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" --noEmit
+packages/jobs typecheck$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" --noEmit
+packages/jobs typecheck: Done
+packages/data typecheck: Done
+packages/api typecheck: Done
+packages/web typecheck$ "/tmp/dtpt-tsrs-research/candidate/node_modules/tsrs/bin/tsrs" --noEmit
+packages/web typecheck: Done

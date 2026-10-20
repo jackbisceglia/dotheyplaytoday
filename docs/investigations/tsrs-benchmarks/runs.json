@@ -1,0 +1,310 @@
+[
+  {
+    "label": "baseline-typecheck-warmup",
+    "iteration": 0,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 5.409216332016513,
+    "exit": 0,
+    "log": "baseline-typecheck-warmup-0.log"
+  },
+  {
+    "label": "baseline-typecheck",
+    "iteration": 1,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 5.408222549012862,
+    "exit": 0,
+    "log": "baseline-typecheck-1.log"
+  },
+  {
+    "label": "baseline-typecheck",
+    "iteration": 2,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 5.328322115004994,
+    "exit": 0,
+    "log": "baseline-typecheck-2.log"
+  },
+  {
+    "label": "baseline-typecheck",
+    "iteration": 3,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 5.499186442000791,
+    "exit": 0,
+    "log": "baseline-typecheck-3.log"
+  },
+  {
+    "label": "baseline-typecheck",
+    "iteration": 4,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 5.374423925008159,
+    "exit": 0,
+    "log": "baseline-typecheck-4.log"
+  },
+  {
+    "label": "baseline-typecheck",
+    "iteration": 5,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 5.280910559988115,
+    "exit": 0,
+    "log": "baseline-typecheck-5.log"
+  },
+  {
+    "label": "baseline-build-clean",
+    "iteration": 1,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 3.9907054119976237,
+    "exit": 0,
+    "log": "baseline-build-clean-1.log"
+  },
+  {
+    "label": "baseline-build-clean",
+    "iteration": 2,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 3.970801435993053,
+    "exit": 0,
+    "log": "baseline-build-clean-2.log"
+  },
+  {
+    "label": "baseline-build-clean",
+    "iteration": 3,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 4.1149729149765335,
+    "exit": 0,
+    "log": "baseline-build-clean-3.log"
+  },
+  {
+    "label": "baseline-build-warm",
+    "iteration": 1,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 4.002881137013901,
+    "exit": 0,
+    "log": "baseline-build-warm-1.log"
+  },
+  {
+    "label": "baseline-build-warm",
+    "iteration": 2,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 3.921403923013713,
+    "exit": 0,
+    "log": "baseline-build-warm-2.log"
+  },
+  {
+    "label": "baseline-build-warm",
+    "iteration": 3,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 3.9876697799772955,
+    "exit": 0,
+    "log": "baseline-build-warm-3.log"
+  },
+  {
+    "label": "baseline-build-warm",
+    "iteration": 4,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 3.9729581840219907,
+    "exit": 0,
+    "log": "baseline-build-warm-4.log"
+  },
+  {
+    "label": "baseline-build-warm",
+    "iteration": 5,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 4.122311010025442,
+    "exit": 0,
+    "log": "baseline-build-warm-5.log"
+  },
+  {
+    "label": "candidate-typecheck-warmup",
+    "iteration": 0,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 1.5956163459923118,
+    "exit": 0,
+    "log": "candidate-typecheck-warmup-0.log"
+  },
+  {
+    "label": "candidate-typecheck",
+    "iteration": 1,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 1.5326262870221399,
+    "exit": 0,
+    "log": "candidate-typecheck-1.log"
+  },
+  {
+    "label": "candidate-typecheck",
+    "iteration": 2,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 1.5504183949669823,
+    "exit": 0,
+    "log": "candidate-typecheck-2.log"
+  },
+  {
+    "label": "candidate-typecheck",
+    "iteration": 3,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 1.53453654400073,
+    "exit": 0,
+    "log": "candidate-typecheck-3.log"
+  },
+  {
+    "label": "candidate-typecheck",
+    "iteration": 4,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 1.541912859014701,
+    "exit": 0,
+    "log": "candidate-typecheck-4.log"
+  },
+  {
+    "label": "candidate-typecheck",
+    "iteration": 5,
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "seconds": 1.548499988974072,
+    "exit": 0,
+    "log": "candidate-typecheck-5.log"
+  },
+  {
+    "label": "candidate-build-clean",
+    "iteration": 1,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 2.0600938159623183,
+    "exit": 0,
+    "log": "candidate-build-clean-1.log"
+  },
+  {
+    "label": "candidate-build-clean",
+    "iteration": 2,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 2.0068195260246284,
+    "exit": 0,
+    "log": "candidate-build-clean-2.log"
+  },
+  {
+    "label": "candidate-build-clean",
+    "iteration": 3,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 2.031953547964804,
+    "exit": 0,
+    "log": "candidate-build-clean-3.log"
+  },
+  {
+    "label": "candidate-build-warm",
+    "iteration": 1,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 2.044397718971595,
+    "exit": 0,
+    "log": "candidate-build-warm-1.log"
+  },
+  {
+    "label": "candidate-build-warm",
+    "iteration": 2,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 2.0249395439750515,
+    "exit": 0,
+    "log": "candidate-build-warm-2.log"
+  },
+  {
+    "label": "candidate-build-warm",
+    "iteration": 3,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 2.0286884760134853,
+    "exit": 0,
+    "log": "candidate-build-warm-3.log"
+  },
+  {
+    "label": "candidate-build-warm",
+    "iteration": 4,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 2.009162809990812,
+    "exit": 0,
+    "log": "candidate-build-warm-4.log"
+  },
+  {
+    "label": "candidate-build-warm",
+    "iteration": 5,
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "seconds": 2.023508049955126,
+    "exit": 0,
+    "log": "candidate-build-warm-5.log"
+  }
+]
