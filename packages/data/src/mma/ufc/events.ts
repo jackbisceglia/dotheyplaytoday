@@ -4,8 +4,18 @@ import type { MmaSeedEncoded } from "../../schema/mma.js";
 
 type UfcEventSeed = MmaSeedEncoded["events"][number];
 
-// Upcoming lineups reviewed October 20, 2026 against UFC event listings.
+// Upcoming lineups reviewed October 21, 2026 against UFC event listings.
 // Additional UFC 333 prelims: https://www.ufc.com.br/news/ufc-333-card-completo-horarios-onde-assistir
+// Withdrawal announcements cross-checked October 21, 2026; UFC indexed cards lag these reports.
+// October 31: Leal out; Bolanos announced his withdrawal. Replacements await UFC confirmation.
+// https://www.mmamania.com/ufc-fight-announcements/480767/undefeated-welterweight-jacobe-smith-steps-in-for-ufc-vegas-123
+// https://www.aol.com/articles/ufc-fight-booked-halloween-card-211025000.html
+// November 7: Hines announced his withdrawal; retain Lorenço with opponent unknown.
+// https://www.sherdog.com/news/news/Vertigo-delays-Alvin-Hines-pursuit-of-first-UFC-victory-203121
+// November 14: Susurkaev and Yanez out; Sadykhov–Nascimento cancelled.
+// https://www.mmafighting.com/ufc/513222/ufc-334-loses-top-middleweight-prospect-cesar-almeida-steps-in
+// https://www.si.com/fannation/mma/news/ufc-334-loses-fight-of-the-night-contender-weeks-out-msg-event
+// https://uk.sports.yahoo.com/news/ufc-334-loses-lightweight-bout-202023865.html
 export const events: readonly UfcEventSeed[] = [
   {
     _tag: "mma_card",
@@ -834,15 +844,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Carlos Leal",
-          fightId: "fight-2",
-          placement: "main",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
           title: "Yana Santos",
           fightId: "fight-3",
           placement: "main",
@@ -880,15 +881,6 @@ export const events: readonly UfcEventSeed[] = [
         details: {
           _tag: "mma_card",
           title: "Francis Marshall",
-          fightId: "fight-5",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Gaston Bolanos",
           fightId: "fight-5",
           placement: "prelims",
         },
@@ -1140,15 +1132,6 @@ export const events: readonly UfcEventSeed[] = [
         details: {
           _tag: "mma_card",
           title: "Gabriel Lorenço",
-          fightId: "fight-7",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Alvin Hines",
           fightId: "fight-7",
           placement: "prelims",
         },
@@ -1442,15 +1425,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Baisangur Susurkaev",
-          fightId: "fight-9",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
           title: "Macy Chiasson",
           fightId: "fight-10",
           placement: "prelims",
@@ -1469,35 +1443,8 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Adrian Yanez",
-          fightId: "fight-11",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
           title: "Juan Diaz",
           fightId: "fight-11",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Nazim Sadykhov",
-          fightId: "fight-12",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Jefferson Nascimento",
-          fightId: "fight-12",
           placement: "prelims",
         },
       },

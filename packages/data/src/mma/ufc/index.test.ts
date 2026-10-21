@@ -220,7 +220,7 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 22, 26, 24, 4,
+      24, 26, 28, 20, 25, 20, 4,
     ]);
     expect(catalog.subjects).toHaveLength(289);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
@@ -248,6 +248,83 @@ describe("UFC catalog", () => {
             ),
       );
       expect(subject.feedIds).toEqual(expected.map((event) => event.sourceId));
+    }
+  });
+
+  it("removes withdrawn fighters while preserving confirmed slots with unknown opponents", () => {
+    const changes = [
+      {
+        source: "ufc-fight-night-october-31-2026",
+        withdrawn: ["Carlos Leal", "Gaston Bolanos"],
+        remaining: [
+          { title: "Randy Brown", fightId: "fight-2", placement: "main" },
+          {
+            title: "Francis Marshall",
+            fightId: "fight-5",
+            placement: "prelims",
+          },
+        ],
+      },
+      {
+        source:
+          "tickets-sale-october-10-october-31-and-november-7-ufc-fight-night-events-meta-apex",
+        withdrawn: ["Alvin Hines"],
+        remaining: [
+          {
+            title: "Gabriel Lorenço",
+            fightId: "fight-7",
+            placement: "prelims",
+          },
+        ],
+      },
+      {
+        source: "ufc-334",
+        withdrawn: [
+          "Baisangur Susurkaev",
+          "Adrian Yanez",
+          "Nazim Sadykhov",
+          "Jefferson Nascimento",
+        ],
+        remaining: [
+          { title: "Donte Johnson", fightId: "fight-9", placement: "prelims" },
+          { title: "Juan Diaz", fightId: "fight-11", placement: "prelims" },
+        ],
+      },
+    ];
+
+    for (const change of changes) {
+      const card = catalog.events.find((event) =>
+        event.sourceUrl.endsWith(change.source),
+      );
+      expect(card).toBeDefined();
+      for (const title of change.withdrawn) {
+        expect(
+          card?.participants.some(
+            (participant) => participant.details.title === title,
+          ),
+        ).toBe(false);
+        const fighter = catalog.subjects.find(
+          (subject) => subject.details.display === title,
+        );
+        expect(fighter).toBeDefined();
+        expect(fighter?.feedIds).not.toContain(card?.sourceId);
+      }
+      for (const slot of change.remaining) {
+        expect(
+          card?.participants
+            .filter(
+              (participant) => participant.details.fightId === slot.fightId,
+            )
+            .map((participant) => participant.details),
+        ).toEqual([{ _tag: "mma_card", ...slot }]);
+      }
+      if (change.source === "ufc-334") {
+        expect(
+          card?.participants.some(
+            (participant) => participant.details.fightId === "fight-12",
+          ),
+        ).toBe(false);
+      }
     }
   });
 
