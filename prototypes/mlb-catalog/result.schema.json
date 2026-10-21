@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outcome", "summary", "sources", "excluded"],
+  "properties": {
+    "outcome": {
+      "type": "string",
+      "enum": ["changed", "no_change", "blocked"]
+    },
+    "summary": { "type": "string" },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "excluded": { "type": "array", "items": { "type": "string" } }
+  }
+}

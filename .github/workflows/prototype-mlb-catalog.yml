@@ -1,0 +1,146 @@
+name: Prototype MLB catalog agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Smoke is fake/no model; dry-run researches without publishing
+        type: choice
+        options: [smoke, dry-run, publish]
+        default: smoke
+        required: true
+  schedule:
+    - cron: "0 4 * * MON,TUE,WED,THU,FRI,SAT,SUN"
+      timezone: America/New_York
+
+# A logical MLB runner, isolated from notification jobs and production deploys.
+# Serializes manual, scheduled and retry runs. Never cancel an active publisher.
+concurrency:
+  group: prototype-mlb-catalog
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  research:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.mode == 'smoke') ||
+      (github.ref == 'refs/heads/main' && vars.MLB_CATALOG_ENABLED == 'true' &&
+       (github.event_name == 'workflow_dispatch' || vars.MLB_CATALOG_PUBLISH_ENABLED == 'true'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      mode: ${{ steps.mode.outputs.mode }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.mode == 'smoke' && github.sha || 'main' }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Choose explicit mode
+        id: mode
+        env:
+          REQUESTED_MODE: ${{ inputs.mode }}
+          PUBLISH_ENABLED: ${{ vars.MLB_CATALOG_PUBLISH_ENABLED }}
+        run: |
+          mode="${REQUESTED_MODE:-publish}"
+          if [ "$mode" = publish ] && [ "$PUBLISH_ENABLED" != true ]; then
+            echo 'Publishing is disabled' >&2; exit 1
+          fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+      - name: Inspect remote state and prepare research context
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MODE: ${{ steps.mode.outputs.mode }}
+        run: |
+          gh pr list --state open --json number,title,url,headRefName,body > "$RUNNER_TEMP/open-prs.json"
+          if [ "$MODE" = publish ]; then
+            # Do not replace work awaiting review or an orphaned push. Retry the
+            # failed publisher job to reconcile a successful push/PR timeout.
+            gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/heads/automation/mlb-catalog" > "$RUNNER_TEMP/branches.json"
+            python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          temp = Path(os.environ['RUNNER_TEMP'])
+          prs = json.loads((temp / 'open-prs.json').read_text())
+          branches = json.loads((temp / 'branches.json').read_text())
+          if any(p['headRefName'] == 'automation/mlb-catalog' for p in prs) or any(b['ref'] == 'refs/heads/automation/mlb-catalog' for b in branches):
+              raise SystemExit('Existing MLB agent branch/PR: review or recover it first; never overwrite.')
+          PY
+          fi
+          python3 - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          context = {
+              'baseline': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+              'recent_commits': subprocess.check_output(['git', 'log', '-10', '--oneline'], text=True),
+              'open_prs': json.loads((Path(os.environ['RUNNER_TEMP']) / 'open-prs.json').read_text())
+          }
+          Path('prototypes/mlb-catalog/context.json').write_text(json.dumps(context, indent=2))
+          PY
+      - name: Test controller boundaries
+        run: python3 -m unittest discover -s prototypes/mlb-catalog -p 'test_*.py' -v
+      - name: Build isolated Linux tool image
+        run: docker build -t mlb-catalog-prototype:local prototypes/mlb-catalog
+      - name: Fake model and Linux/browser smoke (no credentials or publication)
+        if: steps.mode.outputs.mode == 'smoke'
+        run: python3 prototypes/mlb-catalog/runner.py run --state "$RUNNER_TEMP/mlb-run" --mode smoke --container-smoke
+      - name: Research and validate
+        if: steps.mode.outputs.mode != 'smoke'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.MLB_CATALOG_ANTHROPIC_API_KEY }}
+          MLB_MODEL: ${{ vars.MLB_CATALOG_MODEL }}
+          MODE: ${{ steps.mode.outputs.mode }}
+        run: python3 prototypes/mlb-catalog/runner.py run --state "$RUNNER_TEMP/mlb-run" --mode "$MODE"
+      - name: Persist status, patch, result and validation logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mlb-catalog-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/mlb-run/artifact
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Run summary
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/mlb-run/artifact/status.json" ]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat "$RUNNER_TEMP/mlb-run/artifact/status.json" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  publish:
+    needs: research
+    if: needs.research.outputs.mode == 'publish' && vars.MLB_CATALOG_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: mlb-catalog-${{ github.run_id }}-*
+          path: ${{ runner.temp }}/mlb-artifacts
+      - name: Publish validated files only; no candidate code execution
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Configure authentication only in this trusted process environment.
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          # Failed-job retries retain the successful research job's artifact.
+          artifact=$(find "$RUNNER_TEMP/mlb-artifacts" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          test -n "$artifact"
+          python3 prototypes/mlb-catalog/runner.py publish --state "$artifact" --run-url "$RUN_URL" | tee "$RUNNER_TEMP/pr-url.txt"
+          cat "$RUNNER_TEMP/pr-url.txt" >> "$GITHUB_STEP_SUMMARY"
