@@ -19,4 +19,5 @@
 - Keep changes scoped and preserve unrelated tracked and untracked work.
 - Update current documentation when behavior or architecture changes.
 - Run relevant tests while editing.
+- Run heavy validation commands (tests, lint, typecheck, build) sequentially; other agents may be validating other worktrees at the same time.
 - Run `pnpm lint` and `pnpm typecheck` before declaring implementation work complete.

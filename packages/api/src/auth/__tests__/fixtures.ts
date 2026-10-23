@@ -13,7 +13,7 @@ import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { ConfigProvider, Effect, Layer } from "effect";
-import { onTestFinished, vi } from "vitest";
+import { afterAll, beforeAll, vi } from "vitest";
 
 import { Auth } from "../auth.js";
 
@@ -34,11 +34,9 @@ vi.mock("@dtpt/core/modules/email/transactional/sign-in", () => ({
   sendSignInCode: vi.fn(() => Effect.void),
 }));
 
-let client = 0;
-
-export const makeAuthFixture = async () => {
+beforeAll(async () => {
   const database = new PGlite();
-  onTestFinished(() => database.close());
+  storage.current = database;
   await database.exec(
     await readFile(
       new URL(
@@ -48,8 +46,6 @@ export const makeAuthFixture = async () => {
       "utf8",
     ),
   );
-  await database.exec(`INSERT INTO users (id, email, timezone, unsubscribe_token)
-    VALUES ('existing-notification-user', 'user@example.com', 'America/New_York', 'existing-unsubscribe-token')`);
   await database.exec(
     await readFile(
       new URL(
@@ -59,7 +55,23 @@ export const makeAuthFixture = async () => {
       "utf8",
     ),
   );
-  storage.current = database;
+});
+
+afterAll(async () => {
+  await storage.current?.close();
+  delete storage.current;
+});
+
+let client = 0;
+
+export const makeAuthFixture = async () => {
+  const database = storage.current;
+  if (!database) throw new Error("Missing test database");
+  // Per-test PGlite WASM heaps accumulate before GC. Reuse one per file while
+  // resetting persisted state for every fixture.
+  await database.exec(`TRUNCATE users, subjects, events, auth_verifications CASCADE;
+    INSERT INTO users (id, email, timezone, unsubscribe_token)
+    VALUES ('existing-notification-user', 'user@example.com', 'America/New_York', 'existing-unsubscribe-token')`);
   const rows = async (
     table: "users" | "auth_sessions" | "auth_verifications",
   ) =>
