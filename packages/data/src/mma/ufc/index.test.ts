@@ -220,7 +220,7 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 22, 26, 24, 4,
+      24, 26, 28, 20, 25, 20, 4,
     ]);
     expect(catalog.subjects).toHaveLength(289);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
@@ -249,6 +249,55 @@ describe("UFC catalog", () => {
       );
       expect(subject.feedIds).toEqual(expected.map((event) => event.sourceId));
     }
+  });
+
+  it("removes withdrawn appearances while preserving subjects and confirmed opponent slots", () => {
+    for (const name of [
+      "Carlos Leal",
+      "Gaston Bolanos",
+      "Alvin Hines",
+      "Baisangur Susurkaev",
+      "Adrian Yanez",
+      "Nazim Sadykhov",
+      "Jefferson Nascimento",
+    ]) {
+      const fighter = catalog.subjects.find(
+        (subject) => subject.details.display === name,
+      );
+      expect(fighter).toBeDefined();
+      expect(fighter?.feedIds).toEqual([]);
+      expect(
+        catalog.events
+          .flatMap((card) => card.participants)
+          .some((participant) => participant.details.title === name),
+      ).toBe(false);
+    }
+
+    for (const [name, fightId, placement] of [
+      ["Randy Brown", "fight-2", "main"],
+      ["Francis Marshall", "fight-5", "prelims"],
+      ["Gabriel Lorenço", "fight-7", "prelims"],
+      ["Donte Johnson", "fight-9", "prelims"],
+      ["Juan Diaz", "fight-11", "prelims"],
+    ]) {
+      const card = catalog.events.find((event) =>
+        event.participants.some((p) => p.details.title === name),
+      );
+      expect(
+        card?.participants
+          .filter((p) => p.details.fightId === fightId)
+          .map((p) => p.details),
+      ).toEqual([{ _tag: "mma_card", title: name, fightId, placement }]);
+    }
+
+    const numberedCard = catalog.events.find((card) =>
+      card.sourceUrl.endsWith("ufc-334"),
+    );
+    expect(
+      numberedCard?.participants.some(
+        (participant) => participant.details.fightId === "fight-12",
+      ),
+    ).toBe(false);
   });
 
   it("holds Qatar's unassigned bouts out of fighter feeds", () => {
