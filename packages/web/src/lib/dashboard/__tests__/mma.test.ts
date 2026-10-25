@@ -85,7 +85,7 @@ describe("UFC schedule", () => {
   it("uses the card start for local dates and enriches rows with main-card times", () => {
     const rows = scheduleRows([pick(all)], ny, [all], now);
     expect(rows[0]?.time).toBe("7:00 PM");
-    expect(rows[0]?.day).toBe("Today");
+    expect(rows[0]?.day.name).toBe("Today");
     expect(
       rows[0]?.sections.map((section) => [section.name, section.time]),
     ).toEqual([["Main card", "10:00 PM"]]);

@@ -10,7 +10,7 @@ import {
 } from "solid-js";
 
 import { getSubjectLogo } from "../catalog/index.js";
-import type { ScheduleRow } from "./schedule.js";
+import type { ScheduleDay, ScheduleRow } from "./schedule.js";
 
 // A previewed team fades everyone else's games; a pinned team collapses them,
 // so its own slide up together.
@@ -37,7 +37,7 @@ export function Schedule(props: {
     Object.entries(
       Array.groupBy(
         props.rows.map((row, index) => ({ row, index })),
-        ({ row }) => row.day,
+        ({ row }) => row.day.date,
       ),
     ),
   );
@@ -125,14 +125,14 @@ export function Schedule(props: {
         fallback={<p class="dashboard-schedule-empty">{emptyMessage()}</p>}
       >
         <For each={days()}>
-          {([day, rows]) => (
+          {([, rows]) => (
             <div
               class="dashboard-schedule-group"
               data-focused={
                 rows.some(({ row }) => isFocused(row)) ? "true" : undefined
               }
             >
-              <h3 class="dashboard-schedule-day">{day}</h3>
+              <DayHeading day={rows[0].row.day} />
               <ol class="dashboard-schedule-list">
                 <For each={rows}>
                   {({ row, index }) => (
@@ -160,6 +160,17 @@ export function Schedule(props: {
         </Show>
       </Show>
     </section>
+  );
+}
+
+function DayHeading(props: { readonly day: ScheduleDay }) {
+  return (
+    <h3 class="dashboard-schedule-day">
+      {props.day.name}{" "}
+      <time class="dashboard-schedule-date" datetime={props.day.date}>
+        {props.day.label}
+      </time>
+    </h3>
   );
 }
 
