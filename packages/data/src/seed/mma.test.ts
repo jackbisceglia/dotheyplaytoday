@@ -75,7 +75,7 @@ if (!first) throw new Error("Expected seed card");
 describe("MMA import boundaries", () => {
   it("decodes nested league membership for every UFC subject without changing IDs", () => {
     const imported = Schema.decodeUnknownSync(MmaSeed)(catalog);
-    expect(imported.subjects).toHaveLength(289);
+    expect(imported.subjects).toHaveLength(293);
     expect(imported.subjects.map((subject) => subject.id)).toEqual(
       catalog.subjects.map((subject) => subject.id),
     );
