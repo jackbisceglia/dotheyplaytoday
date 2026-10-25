@@ -3335,6 +3335,50 @@ export const Fighters = {
     },
     feedIds: getFighterFeedIds("Jefferson Nascimento"),
   },
+  JacobeSmith: {
+    id: "3cafb5ff-b35b-4632-abdf-73799b3b6eb3",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Jacobe Smith",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Jacobe Smith"),
+  },
+  DakotaHope: {
+    id: "8a012a8d-7a12-4857-ba6e-e14b801d6975",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Dakota Hope",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Dakota Hope"),
+  },
+  OdeOsbourne: {
+    id: "a55d7958-e0c6-4be5-ad08-1c45d9b18844",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Ode' Osbourne",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Ode' Osbourne"),
+  },
+  CodyDurden: {
+    id: "8e1e599f-737a-4686-af00-73ee352e7885",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Cody Durden",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Cody Durden"),
+  },
 } as const satisfies Record<string, UfcSubjectSeed>;
 
 export const Tracking = {

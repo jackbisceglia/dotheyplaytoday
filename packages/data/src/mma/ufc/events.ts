@@ -4,7 +4,7 @@ import type { MmaSeedEncoded } from "../../schema/mma.js";
 
 type UfcEventSeed = MmaSeedEncoded["events"][number];
 
-// Upcoming lineups reviewed October 23, 2026; confirmed withdrawals removed.
+// Upcoming lineups reviewed October 25, 2026; confirmed replacements and segments.
 // Withdrawal sources and access dates are recorded in the catalog update PR.
 // Additional UFC 333 prelims: https://www.ufc.com.br/news/ufc-333-card-completo-horarios-onde-assistir
 export const events: readonly UfcEventSeed[] = [
@@ -835,6 +835,15 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
+          title: "Jacobe Smith",
+          fightId: "fight-2",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
           title: "Yana Santos",
           fightId: "fight-3",
           placement: "main",
@@ -871,7 +880,34 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
+          title: "Ode' Osbourne",
+          fightId: "fight-12",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Cody Durden",
+          fightId: "fight-12",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
           title: "Francis Marshall",
+          fightId: "fight-5",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Dakota Hope",
           fightId: "fight-5",
           placement: "prelims",
         },

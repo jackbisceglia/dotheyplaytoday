@@ -220,11 +220,11 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 20, 25, 20, 4,
+      24, 26, 28, 24, 25, 20, 4,
     ]);
-    expect(catalog.subjects).toHaveLength(289);
+    expect(catalog.subjects).toHaveLength(293);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      289,
+      293,
     );
 
     for (const event of catalog.events) {
@@ -274,8 +274,6 @@ describe("UFC catalog", () => {
     }
 
     for (const [name, fightId, placement] of [
-      ["Randy Brown", "fight-2", "main"],
-      ["Francis Marshall", "fight-5", "prelims"],
       ["Gabriel Lorenço", "fight-7", "prelims"],
       ["Donte Johnson", "fight-9", "prelims"],
       ["Juan Diaz", "fight-11", "prelims"],
@@ -298,6 +296,23 @@ describe("UFC catalog", () => {
         (participant) => participant.details.fightId === "fight-12",
       ),
     ).toBe(false);
+  });
+
+  it("publishes confirmed October 31 replacements and segments", () => {
+    const card = catalog.events.find((event) =>
+      event.sourceUrl.endsWith("ufc-fight-night-october-31-2026"),
+    );
+    for (const [fightId, placement, names] of [
+      ["fight-2", "main", ["Randy Brown", "Jacobe Smith"]],
+      ["fight-5", "prelims", ["Francis Marshall", "Dakota Hope"]],
+      ["fight-12", "main", ["Ode' Osbourne", "Cody Durden"]],
+    ] as const) {
+      expect(
+        card?.participants
+          .filter((p) => p.details.fightId === fightId)
+          .map((p) => [p.details.title, p.details.placement]),
+      ).toEqual(names.map((name) => [name, placement]));
+    }
   });
 
   it("holds Qatar's unassigned bouts out of fighter feeds", () => {
