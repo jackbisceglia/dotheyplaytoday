@@ -15,7 +15,8 @@ import { drizzle } from "drizzle-orm/pglite";
 import { ConfigProvider, Effect, Layer } from "effect";
 import { afterAll, beforeAll, vi } from "vitest";
 
-import { Auth } from "../auth.js";
+import { makeReusableAuth } from "../auth.js";
+import { RuntimeContext } from "alchemy/RuntimeContext";
 
 // Keep the production auth/adapter configuration; replace only the DB driver.
 const storage = vi.hoisted<{ current?: PGlite }>(() => ({}));
@@ -98,6 +99,7 @@ export const makeAuthFixture = async () => {
       }),
     ),
     Layer.mock(Id, {}),
+    Layer.mock(RuntimeContext, { Type: "test", id: "test", env: {} }),
     Layer.mock(Cloudflare.WorkerExecutionContext, {
       cache: { purge: () => Effect.die("Cache is not used by auth") },
       raw: {
@@ -112,13 +114,30 @@ export const makeAuthFixture = async () => {
       },
     }),
   );
-  const makeAuth = () =>
-    Effect.runPromise(
-      Auth.make("postgres://user:password@localhost:5432/database").pipe(
-        Effect.provide(layer),
-        Effect.scoped,
-      ),
+  const makeAuth = async () => {
+    const service = await Effect.runPromise(
+      makeReusableAuth(
+        Effect.succeed("postgres://user:password@localhost:5432/database"),
+      ).pipe(Effect.provide(layer)),
     );
+    const run = <A>(operation: Parameters<typeof service.use<A>>[0]) =>
+      Effect.runPromise(
+        service.use(operation).pipe(Effect.provide(layer), Effect.scoped),
+      );
+    const client = await run((client) => Promise.resolve(client));
+    return {
+      ...service,
+      client,
+      handle: (request: Request) => run((client) => client.handler(request)),
+      readSession: (input: Parameters<typeof client.api.getSession>[0]) =>
+        run((client) => client.api.getSession(input)),
+      signOut: (input: Parameters<typeof client.api.signOut>[0]) =>
+        run((client) => client.api.signOut(input)),
+      signInMagicLink: (
+        input: Parameters<typeof client.api.signInMagicLink>[0],
+      ) => run((client) => client.api.signInMagicLink(input)),
+    };
+  };
   const auth = await makeAuth();
   const ip = `192.0.2.${String(++client)}`;
   const request = (

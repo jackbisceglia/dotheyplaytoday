@@ -2,31 +2,12 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import { Stack } from "alchemy";
 import { getManagedServiceDomain } from "@dtpt/core/lib/alchemy/domain";
 import { DatabaseHyperdrive } from "@dtpt/core/lib/database/clients/postgres/resource";
-import { createDatabaseLayerFromHyperdriveResource } from "@dtpt/core/lib/database/service";
-import { CloudflareCryptoLayer } from "@dtpt/core/lib/effect/crypto/cloudflare";
-import { Platform } from "alchemy/Http/Platform";
-import { IdLayer } from "@dtpt/core/lib/id/service";
 import { exactOptional } from "@dtpt/core/lib/utils";
 import { EmailConfig, ResendConfig } from "@dtpt/core/modules/email/config";
-import { EventsLayer } from "@dtpt/core/modules/events/service";
-import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
-import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
-import { UsersLayer } from "@dtpt/core/modules/users/service";
-import { Effect, Layer, pipe } from "effect";
-import * as HttpRouter from "effect/unstable/http/HttpRouter";
-import { createAuthLayerFromHyperdriveResource } from "./auth/auth.js";
+import { Effect, Layer } from "effect";
+import { makeApiFetch } from "./runtime.js";
 import { AuthConfig } from "./auth/config.js";
-import { HttpApiLayer } from "./index.js";
-import { RateLimiter, RateLimiterLayer } from "./rate-limit/service.js";
-
-const ApiBaseLayer = pipe(
-  EventsLayer,
-  Layer.provideMerge(
-    Layer.mergeAll(SubjectsLayer, SubscriptionsLayer, UsersLayer),
-  ),
-  Layer.provideMerge(IdLayer),
-  Layer.provide(CloudflareCryptoLayer),
-);
+import { RateLimiterLayer } from "./rate-limit/service.js";
 
 const WorkerLayer = Layer.merge(
   Cloudflare.Hyperdrive.ConnectBinding,
@@ -57,29 +38,7 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     yield* EmailConfig;
     yield* ResendConfig;
 
-    // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.
-    // Layers
-    const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
-    const AuthLayer = createAuthLayerFromHyperdriveResource(hyperdrive);
-    const ApiServicesLayer = AuthLayer.pipe(
-      Layer.provideMerge(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
-    );
-
-    const ApiWorkerLayer = HttpApiLayer.pipe(
-      Layer.provide([ApiServicesLayer, Platform]),
-    );
-
-    const rateLimiter = yield* RateLimiter;
-
-    return {
-      fetch: Effect.gen(function* () {
-        const handler = yield* Effect.orDie(
-          HttpRouter.toHttpEffect(ApiWorkerLayer),
-        );
-
-        return yield* handler;
-      }).pipe(Effect.provideService(RateLimiter, rateLimiter)),
-    };
+    return { fetch: yield* makeApiFetch(hyperdrive) };
   }).pipe(Effect.provide(WorkerLayer)),
 ) {}
 

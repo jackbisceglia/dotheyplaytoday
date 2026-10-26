@@ -1,0 +1,546 @@
+[
+  {
+    "runtime": "node",
+    "variant": "before",
+    "import": {
+      "cpuMs": 215.041,
+      "wallMs": 181.121597
+    },
+    "path": "/api/ping",
+    "authenticated": false,
+    "init": {
+      "cpuMs": 2.139,
+      "wallMs": 2.0485000000000184
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "{\"ok\":true,\"service\":\"api\"}"
+      },
+      "wallMs": 19.301476000000008,
+      "cpuMs": 22.692
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "before",
+    "import": {
+      "cpuMs": 214.53,
+      "wallMs": 181.562214
+    },
+    "path": "/api/ping",
+    "authenticated": true,
+    "init": {
+      "cpuMs": 1.563,
+      "wallMs": 1.4689170000000047
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "{\"ok\":true,\"service\":\"api\"}"
+      },
+      "wallMs": 19.319114000000013,
+      "cpuMs": 22.64
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "before",
+    "import": {
+      "cpuMs": 215.974,
+      "wallMs": 181.718287
+    },
+    "path": "/api/auth/get-session",
+    "authenticated": false,
+    "init": {
+      "cpuMs": 2.159,
+      "wallMs": 2.0490680000000054
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "null"
+      },
+      "wallMs": 26.068787999999984,
+      "cpuMs": 30.404
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "before",
+    "import": {
+      "cpuMs": 212.719,
+      "wallMs": 179.262566
+    },
+    "path": "/api/auth/get-session",
+    "authenticated": true,
+    "init": {
+      "cpuMs": 1.531,
+      "wallMs": 1.423527000000007
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "{\"session\":{\"expiresAt\":\"2099-01-01T00:00:00.000Z\",\"token\":\"benchmark-token\",\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"ipAddress\":null,\"userAgent\":null,\"userId\":\"00000000-0000-4000-8000-000000000001\",\"id\":\"session-id\"},\"user\":{\"name\":null,\"email\":\"user@example.com\",\"emailVerified\":true,\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"id\":\"00000000-0000-4000-8000-000000000001\"}}"
+      },
+      "wallMs": 30.417497999999995,
+      "cpuMs": 35.194
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "before",
+    "import": {
+      "cpuMs": 215.375,
+      "wallMs": 179.616659
+    },
+    "path": "/api/user",
+    "authenticated": false,
+    "init": {
+      "cpuMs": 1.671,
+      "wallMs": 1.5809439999999881
+    },
+    "first": {
+      "value": {
+        "status": 401,
+        "body": "{\"_tag\":\"Unauthorized\"}"
+      },
+      "wallMs": 22.194623000000007,
+      "cpuMs": 25.789
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "before",
+    "import": {
+      "cpuMs": 216.728,
+      "wallMs": 183.040942
+    },
+    "path": "/api/user",
+    "authenticated": true,
+    "init": {
+      "cpuMs": 1.554,
+      "wallMs": 1.4453310000000101
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "{\"email\":\"user@example.com\",\"timezone\":\"UTC\"}"
+      },
+      "wallMs": 41.39265900000001,
+      "cpuMs": 46.551
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "before",
+    "import": {
+      "cpuMs": 211.884,
+      "wallMs": 179.051647
+    },
+    "path": "/api/user/events",
+    "authenticated": false,
+    "init": {
+      "cpuMs": 1.895,
+      "wallMs": 1.7978979999999751
+    },
+    "first": {
+      "value": {
+        "status": 401,
+        "body": "{\"_tag\":\"Unauthorized\"}"
+      },
+      "wallMs": 22.286873000000014,
+      "cpuMs": 26.102
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "before",
+    "import": {
+      "cpuMs": 213.539,
+      "wallMs": 179.21214
+    },
+    "path": "/api/user/events",
+    "authenticated": true,
+    "init": {
+      "cpuMs": 1.669,
+      "wallMs": 1.5731229999999812
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "[]"
+      },
+      "wallMs": 43.03766399999998,
+      "cpuMs": 48.453
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "after",
+    "import": {
+      "cpuMs": 214.291,
+      "wallMs": 183.133762
+    },
+    "path": "/api/ping",
+    "authenticated": false,
+    "init": {
+      "cpuMs": 2.617,
+      "wallMs": 2.52428900000001
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "{\"ok\":true,\"service\":\"api\"}"
+      },
+      "wallMs": 16.918833000000006,
+      "cpuMs": 20.321
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "after",
+    "import": {
+      "cpuMs": 215.821,
+      "wallMs": 182.025938
+    },
+    "path": "/api/ping",
+    "authenticated": true,
+    "init": {
+      "cpuMs": 2.083,
+      "wallMs": 1.9811070000000086
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "{\"ok\":true,\"service\":\"api\"}"
+      },
+      "wallMs": 16.724160000000012,
+      "cpuMs": 19.981
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "after",
+    "import": {
+      "cpuMs": 214.903,
+      "wallMs": 179.212704
+    },
+    "path": "/api/auth/get-session",
+    "authenticated": false,
+    "init": {
+      "cpuMs": 2.386,
+      "wallMs": 2.296935000000019
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "null"
+      },
+      "wallMs": 25.847908000000018,
+      "cpuMs": 30.198
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "after",
+    "import": {
+      "cpuMs": 215.866,
+      "wallMs": 180.11834900000002
+    },
+    "path": "/api/auth/get-session",
+    "authenticated": true,
+    "init": {
+      "cpuMs": 2.143,
+      "wallMs": 2.037374
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "{\"session\":{\"expiresAt\":\"2099-01-01T00:00:00.000Z\",\"token\":\"benchmark-token\",\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"ipAddress\":null,\"userAgent\":null,\"userId\":\"00000000-0000-4000-8000-000000000001\",\"id\":\"session-id\"},\"user\":{\"name\":null,\"email\":\"user@example.com\",\"emailVerified\":true,\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"id\":\"00000000-0000-4000-8000-000000000001\"}}"
+      },
+      "wallMs": 30.10761099999999,
+      "cpuMs": 34.879
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "after",
+    "import": {
+      "cpuMs": 213.29,
+      "wallMs": 179.13294499999998
+    },
+    "path": "/api/user",
+    "authenticated": false,
+    "init": {
+      "cpuMs": 2.107,
+      "wallMs": 2.0014550000000213
+    },
+    "first": {
+      "value": {
+        "status": 401,
+        "body": "{\"_tag\":\"Unauthorized\"}"
+      },
+      "wallMs": 22.065197000000012,
+      "cpuMs": 25.705
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "after",
+    "import": {
+      "cpuMs": 216.637,
+      "wallMs": 183.795839
+    },
+    "path": "/api/user",
+    "authenticated": true,
+    "init": {
+      "cpuMs": 2.381,
+      "wallMs": 2.273190999999997
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "{\"email\":\"user@example.com\",\"timezone\":\"UTC\"}"
+      },
+      "wallMs": 41.269447000000014,
+      "cpuMs": 46.358
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "after",
+    "import": {
+      "cpuMs": 214.86,
+      "wallMs": 181.529959
+    },
+    "path": "/api/user/events",
+    "authenticated": false,
+    "init": {
+      "cpuMs": 2.532,
+      "wallMs": 2.4372529999999983
+    },
+    "first": {
+      "value": {
+        "status": 401,
+        "body": "{\"_tag\":\"Unauthorized\"}"
+      },
+      "wallMs": 22.104585999999983,
+      "cpuMs": 26.005
+    }
+  },
+  {
+    "runtime": "node",
+    "variant": "after",
+    "import": {
+      "cpuMs": 215.777,
+      "wallMs": 181.57388
+    },
+    "path": "/api/user/events",
+    "authenticated": true,
+    "init": {
+      "cpuMs": 2.142,
+      "wallMs": 1.9975749999999834
+    },
+    "first": {
+      "value": {
+        "status": 200,
+        "body": "[]"
+      },
+      "wallMs": 42.738095000000015,
+      "cpuMs": 48.138
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "before",
+    "path": "/api/ping",
+    "authenticated": false,
+    "initWallMs": 3.6714039999999954,
+    "firstWallMs": 17.784509000000014,
+    "response": {
+      "status": 200,
+      "body": "{\"ok\":true,\"service\":\"api\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "before",
+    "path": "/api/ping",
+    "authenticated": true,
+    "initWallMs": 3.516914999999983,
+    "firstWallMs": 17.90144700000002,
+    "response": {
+      "status": 200,
+      "body": "{\"ok\":true,\"service\":\"api\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "before",
+    "path": "/api/auth/get-session",
+    "authenticated": false,
+    "initWallMs": 3.8651089999999613,
+    "firstWallMs": 22.877620999999976,
+    "response": {
+      "status": 200,
+      "body": "null"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "before",
+    "path": "/api/auth/get-session",
+    "authenticated": true,
+    "initWallMs": 3.5957140000000436,
+    "firstWallMs": 27.604174,
+    "response": {
+      "status": 200,
+      "body": "{\"session\":{\"expiresAt\":\"2099-01-01T00:00:00.000Z\",\"token\":\"benchmark-token\",\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"ipAddress\":null,\"userAgent\":null,\"userId\":\"00000000-0000-4000-8000-000000000001\",\"id\":\"session-id\"},\"user\":{\"name\":null,\"email\":\"user@example.com\",\"emailVerified\":true,\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"id\":\"00000000-0000-4000-8000-000000000001\"}}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "before",
+    "path": "/api/user",
+    "authenticated": false,
+    "initWallMs": 3.45234099999999,
+    "firstWallMs": 20.32397000000003,
+    "response": {
+      "status": 401,
+      "body": "{\"_tag\":\"Unauthorized\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "before",
+    "path": "/api/user",
+    "authenticated": true,
+    "initWallMs": 3.5568470000000048,
+    "firstWallMs": 40.041743,
+    "response": {
+      "status": 200,
+      "body": "{\"email\":\"user@example.com\",\"timezone\":\"UTC\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "before",
+    "path": "/api/user/events",
+    "authenticated": false,
+    "initWallMs": 3.411101999999971,
+    "firstWallMs": 20.78172699999999,
+    "response": {
+      "status": 401,
+      "body": "{\"_tag\":\"Unauthorized\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "before",
+    "path": "/api/user/events",
+    "authenticated": true,
+    "initWallMs": 3.4178229999999985,
+    "firstWallMs": 40.698194,
+    "response": {
+      "status": 200,
+      "body": "[]"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "after",
+    "path": "/api/ping",
+    "authenticated": false,
+    "initWallMs": 4.225075000000004,
+    "firstWallMs": 15.042740999999978,
+    "response": {
+      "status": 200,
+      "body": "{\"ok\":true,\"service\":\"api\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "after",
+    "path": "/api/ping",
+    "authenticated": true,
+    "initWallMs": 4.87913199999997,
+    "firstWallMs": 15.415395999999987,
+    "response": {
+      "status": 200,
+      "body": "{\"ok\":true,\"service\":\"api\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "after",
+    "path": "/api/auth/get-session",
+    "authenticated": false,
+    "initWallMs": 4.159402,
+    "firstWallMs": 22.713235999999995,
+    "response": {
+      "status": 200,
+      "body": "null"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "after",
+    "path": "/api/auth/get-session",
+    "authenticated": true,
+    "initWallMs": 4.128721000000041,
+    "firstWallMs": 27.142394000000024,
+    "response": {
+      "status": 200,
+      "body": "{\"session\":{\"expiresAt\":\"2099-01-01T00:00:00.000Z\",\"token\":\"benchmark-token\",\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"ipAddress\":null,\"userAgent\":null,\"userId\":\"00000000-0000-4000-8000-000000000001\",\"id\":\"session-id\"},\"user\":{\"name\":null,\"email\":\"user@example.com\",\"emailVerified\":true,\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"id\":\"00000000-0000-4000-8000-000000000001\"}}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "after",
+    "path": "/api/user",
+    "authenticated": false,
+    "initWallMs": 4.177919000000031,
+    "firstWallMs": 20.09103699999997,
+    "response": {
+      "status": 401,
+      "body": "{\"_tag\":\"Unauthorized\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "after",
+    "path": "/api/user",
+    "authenticated": true,
+    "initWallMs": 4.380798999999968,
+    "firstWallMs": 37.61242900000002,
+    "response": {
+      "status": 200,
+      "body": "{\"email\":\"user@example.com\",\"timezone\":\"UTC\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "after",
+    "path": "/api/user/events",
+    "authenticated": false,
+    "initWallMs": 3.9940819999999917,
+    "firstWallMs": 19.943399,
+    "response": {
+      "status": 401,
+      "body": "{\"_tag\":\"Unauthorized\"}"
+    }
+  },
+  {
+    "runtime": "workerd",
+    "variant": "after",
+    "path": "/api/user/events",
+    "authenticated": true,
+    "initWallMs": 3.9476290000000063,
+    "firstWallMs": 39.77936199999999,
+    "response": {
+      "status": 200,
+      "body": "[]"
+    }
+  }
+]

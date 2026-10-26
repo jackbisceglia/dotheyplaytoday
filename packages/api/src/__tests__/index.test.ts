@@ -130,6 +130,10 @@ const makeFixture = async () => {
   );
   onTestFinished(web.dispose);
 
+  const requestContext = await Effect.runPromise(
+    Layer.build(fixture.layer).pipe(Effect.scoped),
+  );
+
   const request = (path: string, body?: unknown, cookie?: string) =>
     web.handler(
       new Request(`https://api.example.com/api${path}`, {
@@ -149,15 +153,15 @@ const makeFixture = async () => {
         env: {},
         get: () => Effect.die("Unexpected binding lookup"),
         set: () => Effect.die("Unexpected binding write"),
-      }),
+      }).pipe(Context.merge(requestContext)),
     );
   const signIn = async () => {
-    await fixture.auth.client.handler(
+    await fixture.auth.handle(
       fixture.request("/sign-in/magic-link", { email: user.email }),
     );
     const url = fixture.sendConfirmationLink.mock.calls[0]?.[1];
     if (!url) throw new Error("Missing magic link");
-    const response = await fixture.auth.client.handler(new Request(url));
+    const response = await fixture.auth.handle(new Request(url));
     const cookie = response.headers.get("set-cookie")?.split(";", 1)[0];
     if (!cookie) throw new Error("Missing session cookie");
     return cookie;
@@ -361,7 +365,7 @@ describe("assembled HTTP API", () => {
     expect(
       await (await f.request("/user/subscription", undefined, cookie)).json(),
     ).toEqual([]);
-    await f.auth.client.api.signOut({ headers: new Headers({ cookie }) });
+    await f.auth.signOut({ headers: new Headers({ cookie }) });
     for (const path of reads)
       expect((await f.request(path, undefined, cookie)).status).toBe(401);
   });

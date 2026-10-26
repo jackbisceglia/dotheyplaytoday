@@ -1,0 +1,333 @@
+{
+  "variant": "after",
+  "runtime": "workerd 2026-09-01",
+  "measurement": "Local workerd process CPU from /proc (user+system, includes runtime overhead); inspector enabled; HTTP wall time includes loopback; mocked SQL drivers",
+  "cpuTickMs": 10,
+  "profile": {
+    "samples": 1895,
+    "topFunctions": [
+      [
+        "(anonymous)",
+        348
+      ],
+      [
+        "createInternalContext",
+        100
+      ],
+      [
+        "(program)",
+        97
+      ],
+      [
+        "(garbage collector)",
+        78
+      ],
+      [
+        "(idle)",
+        64
+      ],
+      [
+        "makePrimitiveProto",
+        55
+      ],
+      [
+        "is5",
+        47
+      ],
+      [
+        "runLoop",
+        35
+      ],
+      [
+        "Headers",
+        34
+      ],
+      [
+        "Request",
+        27
+      ],
+      [
+        "collectSQL",
+        27
+      ],
+      [
+        "makePrimitive",
+        22
+      ],
+      [
+        "get",
+        21
+      ],
+      [
+        "Response",
+        18
+      ],
+      [
+        "fetch",
+        18
+      ],
+      [
+        "lookup",
+        18
+      ],
+      [
+        "run",
+        18
+      ],
+      [
+        "transformSingleOutput",
+        18
+      ],
+      [
+        "scopeMakeUnsafe",
+        17
+      ],
+      [
+        "addRoute",
+        16
+      ],
+      [
+        "request3",
+        15
+      ],
+      [
+        "URL",
+        15
+      ],
+      [
+        "getUtf8ByteLength",
+        15
+      ],
+      [
+        "bigint",
+        14
+      ],
+      [
+        "init3",
+        14
+      ],
+      [
+        "handler2",
+        14
+      ],
+      [
+        "mergeTableIndexes",
+        14
+      ],
+      [
+        "makeExit",
+        12
+      ],
+      [
+        "fromInput3",
+        12
+      ],
+      [
+        "getCont",
+        12
+      ]
+    ]
+  },
+  "cases": [
+    {
+      "path": "/api/ping",
+      "authenticated": false,
+      "initWallMs": 3.9975319999999783,
+      "firstWallMs": 15.278697000000022,
+      "response": {
+        "status": 200,
+        "body": "{\"ok\":true,\"service\":\"api\"}"
+      },
+      "warm": {
+        "samples": 300,
+        "processCpuMs": 160,
+        "processCpuMeanMs": 0.5333333333333333,
+        "wallMs": {
+          "median": 1.6610709999999926,
+          "p90": 1.8952069999999708,
+          "mean": 1.6806801966666711
+        },
+        "counters": {
+          "pools": 0,
+          "closes": 0,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/ping",
+      "authenticated": true,
+      "initWallMs": 1.6927469999999403,
+      "firstWallMs": 4.3347199999999475,
+      "response": {
+        "status": 200,
+        "body": "{\"ok\":true,\"service\":\"api\"}"
+      },
+      "warm": {
+        "samples": 300,
+        "processCpuMs": 130,
+        "processCpuMeanMs": 0.43333333333333335,
+        "wallMs": {
+          "median": 1.5525400000001355,
+          "p90": 1.7271840000000793,
+          "mean": 1.5625377800000062
+        },
+        "counters": {
+          "pools": 0,
+          "closes": 0,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/auth/get-session",
+      "authenticated": false,
+      "initWallMs": 1.5496820000000753,
+      "firstWallMs": 12.894549000000097,
+      "response": {
+        "status": 200,
+        "body": "null"
+      },
+      "warm": {
+        "samples": 300,
+        "processCpuMs": 430,
+        "processCpuMeanMs": 1.4333333333333333,
+        "wallMs": {
+          "median": 2.180164999999988,
+          "p90": 2.5653299999999035,
+          "mean": 2.2585497866666673
+        },
+        "counters": {
+          "pools": 300,
+          "closes": 300,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/auth/get-session",
+      "authenticated": true,
+      "initWallMs": 1.562525999999707,
+      "firstWallMs": 8.316082999999708,
+      "response": {
+        "status": 200,
+        "body": "{\"session\":{\"expiresAt\":\"2099-01-01T00:00:00.000Z\",\"token\":\"benchmark-token\",\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"ipAddress\":null,\"userAgent\":null,\"userId\":\"00000000-0000-4000-8000-000000000001\",\"id\":\"session-id\"},\"user\":{\"name\":null,\"email\":\"user@example.com\",\"emailVerified\":true,\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"id\":\"00000000-0000-4000-8000-000000000001\"}}"
+      },
+      "warm": {
+        "samples": 300,
+        "processCpuMs": 530,
+        "processCpuMeanMs": 1.7666666666666666,
+        "wallMs": {
+          "median": 2.235359000000244,
+          "p90": 2.484052000000247,
+          "mean": 2.351749946666681
+        },
+        "counters": {
+          "pools": 300,
+          "closes": 300,
+          "queries": 600
+        }
+      }
+    },
+    {
+      "path": "/api/user",
+      "authenticated": false,
+      "initWallMs": 1.4854889999996885,
+      "firstWallMs": 4.907104000000345,
+      "response": {
+        "status": 401,
+        "body": "{\"_tag\":\"Unauthorized\"}"
+      },
+      "warm": {
+        "samples": 300,
+        "processCpuMs": 200,
+        "processCpuMeanMs": 0.6666666666666666,
+        "wallMs": {
+          "median": 1.7263950000001387,
+          "p90": 1.885142999999971,
+          "mean": 1.763298946666667
+        },
+        "counters": {
+          "pools": 300,
+          "closes": 300,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/user",
+      "authenticated": true,
+      "initWallMs": 1.5119639999998071,
+      "firstWallMs": 20.169459000000188,
+      "response": {
+        "status": 200,
+        "body": "{\"email\":\"user@example.com\",\"timezone\":\"UTC\"}"
+      },
+      "warm": {
+        "samples": 300,
+        "processCpuMs": 400,
+        "processCpuMeanMs": 1.3333333333333333,
+        "wallMs": {
+          "median": 2.221331000000646,
+          "p90": 2.4484999999999673,
+          "mean": 2.2713674166666804
+        },
+        "counters": {
+          "pools": 600,
+          "closes": 600,
+          "queries": 900
+        }
+      }
+    },
+    {
+      "path": "/api/user/events",
+      "authenticated": false,
+      "initWallMs": 1.6439150000005611,
+      "firstWallMs": 3.2687609999993583,
+      "response": {
+        "status": 401,
+        "body": "{\"_tag\":\"Unauthorized\"}"
+      },
+      "warm": {
+        "samples": 300,
+        "processCpuMs": 210,
+        "processCpuMeanMs": 0.7,
+        "wallMs": {
+          "median": 1.7755059999999503,
+          "p90": 1.923279999999977,
+          "mean": 1.7883034899999954
+        },
+        "counters": {
+          "pools": 300,
+          "closes": 300,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/user/events",
+      "authenticated": true,
+      "initWallMs": 1.5713569999998072,
+      "firstWallMs": 5.234002999999575,
+      "response": {
+        "status": 200,
+        "body": "[]"
+      },
+      "warm": {
+        "samples": 300,
+        "processCpuMs": 510,
+        "processCpuMeanMs": 1.7,
+        "wallMs": {
+          "median": 2.2708709999997154,
+          "p90": 2.4507940000003146,
+          "mean": 2.3885551900000124
+        },
+        "counters": {
+          "pools": 600,
+          "closes": 600,
+          "queries": 1200
+        }
+      }
+    }
+  ]
+}

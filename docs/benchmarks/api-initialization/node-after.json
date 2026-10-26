@@ -1,0 +1,283 @@
+{
+  "variant": "after",
+  "runtime": "v24.18.0",
+  "measurement": "Node process CPU (user+system) and wall time; mocked SQL drivers; modules imported once",
+  "import": {
+    "cpuMs": 216.072,
+    "wallMs": 182.234205
+  },
+  "cases": [
+    {
+      "path": "/api/ping",
+      "authenticated": false,
+      "init": {
+        "cpuMs": 2.587,
+        "wallMs": 2.472315000000009
+      },
+      "first": {
+        "value": {
+          "status": 200,
+          "body": "{\"ok\":true,\"service\":\"api\"}"
+        },
+        "wallMs": 16.37367599999999,
+        "cpuMs": 19.763
+      },
+      "warm": {
+        "samples": 300,
+        "cpuMs": {
+          "median": 0.22,
+          "p90": 0.57,
+          "mean": 0.32402666666666663
+        },
+        "wallMs": {
+          "median": 0.21541100000001734,
+          "p90": 0.29514999999997826,
+          "mean": 0.2295638633333339
+        },
+        "counters": {
+          "pools": 0,
+          "closes": 0,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/ping",
+      "authenticated": true,
+      "init": {
+        "cpuMs": 0.095,
+        "wallMs": 0.07872400000002244
+      },
+      "first": {
+        "value": {
+          "status": 200,
+          "body": "{\"ok\":true,\"service\":\"api\"}"
+        },
+        "wallMs": 2.219750000000033,
+        "cpuMs": 2.634
+      },
+      "warm": {
+        "samples": 300,
+        "cpuMs": {
+          "median": 0.131,
+          "p90": 0.442,
+          "mean": 0.26223999999999964
+        },
+        "wallMs": {
+          "median": 0.1299799999999891,
+          "p90": 0.19625999999999522,
+          "mean": 0.14666083333333554
+        },
+        "counters": {
+          "pools": 0,
+          "closes": 0,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/auth/get-session",
+      "authenticated": false,
+      "init": {
+        "cpuMs": 0.403,
+        "wallMs": 0.11166600000001381
+      },
+      "first": {
+        "value": {
+          "status": 200,
+          "body": "null"
+        },
+        "wallMs": 11.553480999999977,
+        "cpuMs": 15.324
+      },
+      "warm": {
+        "samples": 300,
+        "cpuMs": {
+          "median": 0.941,
+          "p90": 1.648,
+          "mean": 1.3396566666666663
+        },
+        "wallMs": {
+          "median": 0.8699220000000878,
+          "p90": 1.2842229999999972,
+          "mean": 0.97090547666667
+        },
+        "counters": {
+          "pools": 300,
+          "closes": 300,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/auth/get-session",
+      "authenticated": true,
+      "init": {
+        "cpuMs": 0.099,
+        "wallMs": 0.097725999999966
+      },
+      "first": {
+        "value": {
+          "status": 200,
+          "body": "{\"session\":{\"expiresAt\":\"2099-01-01T00:00:00.000Z\",\"token\":\"benchmark-token\",\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"ipAddress\":null,\"userAgent\":null,\"userId\":\"00000000-0000-4000-8000-000000000001\",\"id\":\"session-id\"},\"user\":{\"name\":null,\"email\":\"user@example.com\",\"emailVerified\":true,\"createdAt\":\"2098-01-01T00:00:00.000Z\",\"updatedAt\":\"2098-01-01T00:00:00.000Z\",\"id\":\"00000000-0000-4000-8000-000000000001\"}}"
+        },
+        "wallMs": 9.195761999999945,
+        "cpuMs": 19.646
+      },
+      "warm": {
+        "samples": 300,
+        "cpuMs": {
+          "median": 0.884,
+          "p90": 2.437,
+          "mean": 1.401426666666667
+        },
+        "wallMs": {
+          "median": 0.8645510000000058,
+          "p90": 1.0178059999999505,
+          "mean": 0.9430415033333327
+        },
+        "counters": {
+          "pools": 300,
+          "closes": 300,
+          "queries": 600
+        }
+      }
+    },
+    {
+      "path": "/api/user",
+      "authenticated": false,
+      "init": {
+        "cpuMs": 0.181,
+        "wallMs": 0.11981600000012804
+      },
+      "first": {
+        "value": {
+          "status": 401,
+          "body": "{\"_tag\":\"Unauthorized\"}"
+        },
+        "wallMs": 2.958902999999964,
+        "cpuMs": 3.41
+      },
+      "warm": {
+        "samples": 300,
+        "cpuMs": {
+          "median": 0.316,
+          "p90": 0.619,
+          "mean": 0.4880566666666666
+        },
+        "wallMs": {
+          "median": 0.31577699999979814,
+          "p90": 0.5978569999999763,
+          "mean": 0.37971551000000164
+        },
+        "counters": {
+          "pools": 300,
+          "closes": 300,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/user",
+      "authenticated": true,
+      "init": {
+        "cpuMs": 0.09,
+        "wallMs": 0.09027400000013586
+      },
+      "first": {
+        "value": {
+          "status": 200,
+          "body": "{\"email\":\"user@example.com\",\"timezone\":\"UTC\"}"
+        },
+        "wallMs": 17.789592999999968,
+        "cpuMs": 20.857
+      },
+      "warm": {
+        "samples": 300,
+        "cpuMs": {
+          "median": 0.761,
+          "p90": 1.484,
+          "mean": 1.1656200000000003
+        },
+        "wallMs": {
+          "median": 0.7559679999999389,
+          "p90": 0.8764129999999568,
+          "mean": 0.8150566299999998
+        },
+        "counters": {
+          "pools": 600,
+          "closes": 600,
+          "queries": 900
+        }
+      }
+    },
+    {
+      "path": "/api/user/events",
+      "authenticated": false,
+      "init": {
+        "cpuMs": 0.067,
+        "wallMs": 0.06799299999988762
+      },
+      "first": {
+        "value": {
+          "status": 401,
+          "body": "{\"_tag\":\"Unauthorized\"}"
+        },
+        "wallMs": 1.9151329999999689,
+        "cpuMs": 2.032
+      },
+      "warm": {
+        "samples": 300,
+        "cpuMs": {
+          "median": 0.271,
+          "p90": 0.384,
+          "mean": 0.3642066666666672
+        },
+        "wallMs": {
+          "median": 0.27046500000005835,
+          "p90": 0.3280640000000403,
+          "mean": 0.2913666999999994
+        },
+        "counters": {
+          "pools": 300,
+          "closes": 300,
+          "queries": 0
+        }
+      }
+    },
+    {
+      "path": "/api/user/events",
+      "authenticated": true,
+      "init": {
+        "cpuMs": 0.158,
+        "wallMs": 0.08876899999995658
+      },
+      "first": {
+        "value": {
+          "status": 200,
+          "body": "[]"
+        },
+        "wallMs": 6.692806000000019,
+        "cpuMs": 17.649
+      },
+      "warm": {
+        "samples": 300,
+        "cpuMs": {
+          "median": 0.872,
+          "p90": 1.491,
+          "mean": 1.1650600000000007
+        },
+        "wallMs": {
+          "median": 0.8706879999999728,
+          "p90": 0.9807909999999538,
+          "mean": 0.9138245866666663
+        },
+        "counters": {
+          "pools": 600,
+          "closes": 600,
+          "queries": 1200
+        }
+      }
+    }
+  ]
+}

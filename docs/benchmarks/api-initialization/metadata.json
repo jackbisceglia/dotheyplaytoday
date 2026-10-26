@@ -1,0 +1,19 @@
+{
+  "baseline": "c342341c9507e58f678a965dab1a5daa8ff7f4ca",
+  "recordedAt": "2026-10-26",
+  "platform": "Linux x86_64",
+  "cpuModel": "AMD Ryzen 7 7800X3D 8-Core Processor",
+  "dependencies": {
+    "effect": "4.0.0-rc.117",
+    "alchemy": "2.0.0-beta.78",
+    "better-auth": "1.7.2",
+    "drizzle-orm": "1.0.0-rc.5-ab785fc",
+    "pg": "8.22.0"
+  },
+  "implementationSha256": {
+    "packages/api/src/auth/auth.ts": "b799706ed8971c9d4bd61afbdb81005d2f68a9c46497898766a08c81a32a5341",
+    "packages/api/src/runtime.ts": "b8db95eded4914a68953e31cb13cabe9ac4626be8e94694a08d5bfafb4018783",
+    "packages/api/src/worker.ts": "74093b6b0a4e784412e798b2a371ee6dad72e1ab39afcfb2a8c506581a3f5239"
+  },
+  "note": "Final implementation measured with deterministic SQL-driver substitutes; no production telemetry was accessed."
+}
