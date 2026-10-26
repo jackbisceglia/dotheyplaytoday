@@ -23,7 +23,9 @@ delivery history. Email and timezone are not shown.
 
 In view mode, the schedule below the roster shows today plus the next thirteen
 local calendar days, grouped by day and ordered by game start, with quiet
-“Today” or “Monday, Oct 5” group headings and light row separators. Each row
+group headings and light row separators. Every heading pairs a bold day name,
+“Today”, “Tomorrow”, or the weekday, with its lighter date, as in
+“Tomorrow Oct 5”. Each row
 puts a neutral, medium-weight local start time beside the teams and home/away
 matchup, and ends with a light grey league tag. Matching participant sets at the same start time appear once, including
 when both teams are subscribed; the first subscription supplies the row’s order.

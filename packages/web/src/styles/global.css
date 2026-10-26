@@ -2212,6 +2212,11 @@ body:has(.dashboard-form[data-editing="true"]) .site-footer {
   line-height: 24px;
 }
 
+.dashboard-schedule-date {
+  font-weight: 500;
+  color: rgba(19, 23, 17, 0.52);
+}
+
 .dashboard-schedule-empty {
   margin-top: 24px;
   padding: 16px 0;
