@@ -29,6 +29,3 @@ reference/
 
 # open graph renderer fonts (downloaded binaries)
 packages/web/assets/fonts/
-
-# local API benchmark bundles and raw runs
-.api-benchmark/

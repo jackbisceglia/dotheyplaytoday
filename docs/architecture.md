@@ -104,43 +104,27 @@ Auth also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
-The API builds its router and Better Auth configuration once per initialized
-Worker. `makeApiFetch` allocates a lazy Effect memo during Alchemy init, then
-compiles using that init context, excluding `WorkerExecutionContext`. The first
-request triggers compilation after the stack's URL bindings are available;
-concurrent callers share it. Compilation completes even if its first caller
-aborts, so cancellation cannot poison the shared memo. `HttpApiBuilder` captures build services, so it must
-never capture a first request's execution context. Each Worker initialization
-owns its own memo; there is no module-global cache of bindings or secrets.
-
-`makeReusableAuth` creates the Better Auth endpoints/plugins once. Its typed
-adapter forwards database operations through `AsyncLocalStorage` established by
-`auth.use`. Alchemy's `makeExecutionMemo` acquires one Promise-native `pg.Pool`
-and Drizzle adapter per active execution scope on first auth use. It resolves
-Hyperdrive credentials at that point, and closes the pool with that scope.
-The pool has one connection. Ping, preflight, and unmatched routes do not acquire
-an auth pool. Application persistence independently retains Alchemy's deferred,
-execution-scoped Effect PostgreSQL bridge.
-
-The forwarding adapter delegates transactions, single-use token consumption,
-and guarded OTP attempt updates to the installed Drizzle adapter. Better Auth's
-transaction context owns the transaction adapter; the API does not emulate
-transactions or alter validation, cookie, session, or rate-limit policy.
-Promise-native auth operations finish before interruption can release their
-pool. Callers must perform SDK work inside `auth.use`; there is no public raw
-`auth.client`. The request's email runner and execution context are resolved
-inside that boundary, so overlapping requests register their own `waitUntil`
-work. Better Auth's optional database background-task handler remains disabled.
-
-See [API initialization measurements](./benchmarks/api-initialization/README.md)
-for the pinned lifecycle trace, local runtime profiles, and their limits.
+The API Worker builds its router, including `Auth`, once per isolate on the
+first request, from init services rather than that request's execution context.
+`Auth.make` reads runtime configuration and constructs Better Auth once.
+`auth.use` binds the invocation's resources around each SDK call through
+`AsyncLocalStorage`: on first use in an execution scope it resolves Hyperdrive
+credentials, opens a one-connection Promise-native `pg.Pool` with Better Auth's
+Drizzle adapter, and captures that invocation's `waitUntil` for email. The pool
+closes with the execution scope. SDK calls outside `auth.use` fail.
+Auth uses standard Promise-native Drizzle over that pool, reusing the existing
+user, session, account, and verification table definitions. Drizzle owns the SQL
+column names; auth no longer repeats column mappings. Adapter transactions are
+enabled. Application persistence remains on Effect + Drizzle. Better Auth awaits
+its database work before returning; its optional background-task handler is not
+enabled.
 
 Magic-link email uses the existing transactional Email/Resend workflow. After
 eligibility is checked, delivery is registered directly with the Worker's
 `waitUntil`; it needs no further database access and does not delay the response.
 There is no separate auth task queue. Protected reads use
 `auth.use(client => client.api.getSession({ headers }))`; the adapter maps SDK
-rejections to `AuthRequestError`.
+rejections to `AuthRequestError` and also exposes the underlying `auth.client`.
 Both reads validate the session user ID through `UserId.makeEffect` and delegate
 persistence and decoding to `Users.get` and `Subscriptions.listForUser`.
 Responses, including errors, set `Cache-Control: no-store`.

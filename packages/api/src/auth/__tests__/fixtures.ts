@@ -1,5 +1,6 @@
 import { exactOptional } from "@dtpt/core/lib/utils";
 import * as Cloudflare from "alchemy/Cloudflare";
+import { RuntimeContext } from "alchemy/RuntimeContext";
 import { Id } from "@dtpt/core/lib/id/service";
 import {
   sendConfirmationCode,
@@ -12,11 +13,10 @@ import {
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
-import { ConfigProvider, Effect, Layer } from "effect";
+import { ConfigProvider, Effect, Layer, Redacted } from "effect";
 import { afterAll, beforeAll, vi } from "vitest";
 
-import { makeReusableAuth } from "../auth.js";
-import { RuntimeContext } from "alchemy/RuntimeContext";
+import { Auth } from "../auth.js";
 
 // Keep the production auth/adapter configuration; replace only the DB driver.
 const storage = vi.hoisted<{ current?: PGlite }>(() => ({}));
@@ -115,27 +115,23 @@ export const makeAuthFixture = async () => {
     }),
   );
   const makeAuth = async () => {
-    const service = await Effect.runPromise(
-      makeReusableAuth(
-        Effect.succeed("postgres://user:password@localhost:5432/database"),
+    const auth = await Effect.runPromise(
+      Auth.make(
+        Effect.succeed(
+          Redacted.make("postgres://user:password@localhost:5432/database"),
+        ),
       ).pipe(Effect.provide(layer)),
     );
-    const run = <A>(operation: Parameters<typeof service.use<A>>[0]) =>
-      Effect.runPromise(
-        service.use(operation).pipe(Effect.provide(layer), Effect.scoped),
-      );
-    const client = await run((client) => Promise.resolve(client));
+    // Each call stands in for one Worker invocation.
+    const run = <A>(f: (client: typeof auth.client) => PromiseLike<A>) =>
+      Effect.runPromise(auth.use(f).pipe(Effect.provide(layer), Effect.scoped));
     return {
-      ...service,
-      client,
-      handle: (request: Request) => run((client) => client.handler(request)),
-      readSession: (input: Parameters<typeof client.api.getSession>[0]) =>
-        run((client) => client.api.getSession(input)),
-      signOut: (input: Parameters<typeof client.api.signOut>[0]) =>
-        run((client) => client.api.signOut(input)),
-      signInMagicLink: (
-        input: Parameters<typeof client.api.signInMagicLink>[0],
-      ) => run((client) => client.api.signInMagicLink(input)),
+      ...auth,
+      run,
+      client: {
+        ...auth.client,
+        handler: (request: Request) => run((client) => client.handler(request)),
+      },
     };
   };
   const auth = await makeAuth();

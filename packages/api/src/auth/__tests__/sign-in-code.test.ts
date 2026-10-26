@@ -11,10 +11,12 @@ const makeVerifiedFixture = async () => {
 };
 
 const sendCode = (f: Fixture, email: string, type = "sign-in") =>
-  f.auth.handle(f.request("/email-otp/send-verification-otp", { email, type }));
+  f.auth.client.handler(
+    f.request("/email-otp/send-verification-otp", { email, type }),
+  );
 
 const signIn = (f: Fixture, otp: string, email = "user@example.com") =>
-  f.auth.handle(f.request("/sign-in/email-otp", { email, otp }));
+  f.auth.client.handler(f.request("/sign-in/email-otp", { email, otp }));
 
 const issuedCode = async (f: Fixture, index = 0, sender = f.sendSignInCode) => {
   await Promise.all(f.pending);
@@ -164,7 +166,7 @@ describe("email sign-in codes", () => {
       "/email-otp/request-email-change",
       "/email-otp/change-email",
     ]) {
-      const response = await f.auth.handle(
+      const response = await f.auth.client.handler(
         f.request(path, { email: "user@example.com", otp: "123456" }),
       );
       expect(response.status).toBe(404);

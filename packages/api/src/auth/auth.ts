@@ -1,7 +1,7 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
-import { Id } from "@dtpt/core/lib/id/service";
+import type { Id } from "@dtpt/core/lib/id/service";
 import {
   sendSignInCode,
   sendSignInLink,
@@ -19,14 +19,9 @@ import {
   authSessionsTable,
   authVerificationsTable,
 } from "@dtpt/core/modules/auth/schema";
-import {
-  betterAuth,
-  type BetterAuthOptions,
-  type DBAdapter,
-} from "better-auth";
-import { AsyncLocalStorage } from "node:async_hooks";
-import type { RuntimeContext } from "alchemy/RuntimeContext";
 import { makeExecutionMemo } from "alchemy/Runtime/ExecutionMemo";
+import type { RuntimeContext } from "alchemy/RuntimeContext";
+import { betterAuth, type DBAdapter } from "better-auth";
 import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -41,6 +36,7 @@ import {
   Schema,
 } from "effect";
 import type { Headers } from "effect/unstable/http/Headers";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
@@ -80,88 +76,126 @@ export class AuthRequestError extends Schema.TaggedError<AuthRequestError>()(
   { cause: Schema.Defect() },
 ) {}
 
-const createAdapter = (pool: Pool) =>
-  drizzleAdapter(drizzle({ client: pool }), {
-    provider: "pg",
-    transaction: true,
-    schema: {
-      user: usersTable,
-      session: authSessionsTable,
-      account: authAccountsTable,
-      verification: authVerificationsTable,
-    },
-  });
+type Send = ReturnType<typeof sendSignInCode>;
 
-type SendEmail = (send: ReturnType<typeof sendSignInCode>) => void;
+/** @effect-expect-leaking RuntimeContext | Cloudflare.WorkerExecutionContext */
+export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
+  make: Effect.fn("Auth.make")(function* (
+    connectionString: Effect.Effect<Redacted.Redacted, never, RuntimeContext>,
+  ) {
+    const config = yield* AuthConfig;
+    const apiUrl = new URL(yield* ApiUrl);
+    const webUrl = new URL("/", yield* WebUrl);
+    const homeUrl = new URL("/home", webUrl);
+    // Preserve runtime config and Id when Better Auth calls back into Effect.
+    const runPromise = Effect.runPromiseWith(yield* Effect.context<Id>());
 
-const createClient = (
-  secret: Redacted.Redacted,
-  apiUrl: URL,
-  webUrl: URL,
-  database: (options: BetterAuthOptions) => DBAdapter,
-  sendEmail: SendEmail,
-) => {
-  const homeUrl = new URL("/home", webUrl);
-  return betterAuth({
-    appName: "dotheyplaytoday",
-    basePath: "/api/auth",
-    baseURL: apiUrl.origin,
-    secret: Redacted.value(secret),
-    trustedOrigins: [apiUrl.origin, webUrl.origin],
-    database,
-    disabledPaths: [
-      "/update-user",
-      "/email-otp/check-verification-otp",
-      "/email-otp/verify-email",
-      "/email-otp/request-password-reset",
-      "/email-otp/reset-password",
-      "/forget-password/email-otp",
-      "/email-otp/request-email-change",
-      "/email-otp/change-email",
-    ],
-    rateLimit: {
-      enabled: true,
-      window: 60,
-      max: 100,
-      customRules: {
-        "/sign-in/magic-link": { window: 60, max: 5 },
-        "/magic-link/verify": { window: 60, max: 10 },
-        "/email-otp/send-verification-otp": { window: 60, max: 5 },
-        "/sign-in/email-otp": { window: 60, max: 10 },
+    // The client is built once per Worker; `use` binds the invocation's
+    // database adapter and email `waitUntil` for the duration of each call.
+    const invocation = new AsyncLocalStorage<{
+      readonly adapter: DBAdapter;
+      readonly send: (send: Send) => void;
+    }>();
+    const current = () => {
+      const store = invocation.getStore();
+      if (!store) throw new Error("Auth used outside Auth.use");
+      return store;
+    };
+    const adapter: DBAdapter = {
+      id: "drizzle",
+      create: (args) => current().adapter.create(args),
+      findOne: (args) => current().adapter.findOne(args),
+      findMany: (args) => current().adapter.findMany(args),
+      count: (args) => current().adapter.count(args),
+      update: (args) => current().adapter.update(args),
+      updateMany: (args) => current().adapter.updateMany(args),
+      delete: (args) => current().adapter.delete(args),
+      deleteMany: (args) => current().adapter.deleteMany(args),
+      consumeOne: (args) => current().adapter.consumeOne(args),
+      incrementOne: (args) => current().adapter.incrementOne(args),
+      transaction: (callback) => current().adapter.transaction(callback),
+    };
+
+    const client = betterAuth({
+      appName: "dotheyplaytoday",
+      basePath: "/api/auth",
+      baseURL: apiUrl.origin,
+      secret: Redacted.value(config.secret),
+      trustedOrigins: [apiUrl.origin, webUrl.origin],
+      database: () => adapter,
+      disabledPaths: [
+        "/update-user",
+        "/email-otp/check-verification-otp",
+        "/email-otp/verify-email",
+        "/email-otp/request-password-reset",
+        "/email-otp/reset-password",
+        "/forget-password/email-otp",
+        "/email-otp/request-email-change",
+        "/email-otp/change-email",
+      ],
+      rateLimit: {
+        enabled: true,
+        window: 60,
+        max: 100,
+        customRules: {
+          "/sign-in/magic-link": { window: 60, max: 5 },
+          "/magic-link/verify": { window: 60, max: 10 },
+          "/email-otp/send-verification-otp": { window: 60, max: 5 },
+          "/sign-in/email-otp": { window: 60, max: 10 },
+        },
       },
-    },
-    advanced: {
-      disableOriginCheck: false,
-      useSecureCookies: apiUrl.protocol === "https:",
-      ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
-    },
-    hooks: {
-      before: createAuthMiddleware(async (ctx) => {
-        if (ctx.path === "/email-otp/send-verification-otp") {
-          const body = decodeSignInCodeBody(ctx.body);
+      advanced: {
+        disableOriginCheck: false,
+        useSecureCookies: apiUrl.protocol === "https:",
+        ipAddress: { ipAddressHeaders: ["cf-connecting-ip"] },
+      },
+      hooks: {
+        before: createAuthMiddleware(async (ctx) => {
+          if (ctx.path === "/email-otp/send-verification-otp") {
+            const body = decodeSignInCodeBody(ctx.body);
 
-          if (Option.isNone(body)) {
-            throw APIError.fromStatus("BAD_REQUEST", {
-              message: "Invalid OTP type",
-            });
+            if (Option.isNone(body)) {
+              throw APIError.fromStatus("BAD_REQUEST", {
+                message: "Invalid OTP type",
+              });
+            }
+
+            const email = body.value.email;
+            const account =
+              await ctx.context.internalAdapter.findUserByEmail(email);
+            const user = account?.user;
+
+            if (!user) return ctx.json({ success: true });
+
+            return {
+              context: {
+                body: { email },
+                context: { user },
+              },
+            };
           }
 
-          const email = body.value.email;
-          const account =
-            await ctx.context.internalAdapter.findUserByEmail(email);
-          const user = account?.user;
+          if (ctx.path === "/sign-in/email-otp") {
+            const body = decodeEmailBody(ctx.body);
 
-          if (!user) return ctx.json({ success: true });
+            if (Option.isNone(body)) return;
 
-          return {
-            context: {
-              body: { email },
-              context: { user },
-            },
-          };
-        }
+            const account = await ctx.context.internalAdapter.findUserByEmail(
+              body.value.email,
+            );
 
-        if (ctx.path === "/sign-in/email-otp") {
+            return {
+              context: {
+                body: { email: body.value.email },
+                context: {
+                  confirmsEmail: account?.user.emailVerified === false,
+                },
+              },
+            };
+          }
+
+          if (ctx.path !== "/sign-in/magic-link") return;
+
           const body = decodeEmailBody(ctx.body);
 
           if (Option.isNone(body)) return;
@@ -170,199 +204,116 @@ const createClient = (
             body.value.email,
           );
 
+          const user = account?.user ?? null;
+          const isUserVerified = user?.emailVerified ?? false;
+
           return {
             context: {
-              body: { email: body.value.email },
-              context: {
-                confirmsEmail: account?.user.emailVerified === false,
+              body: {
+                callbackURL: Boolean.match(isUserVerified, {
+                  onTrue: () => homeUrl.href,
+                  onFalse: () => new URL("?confirmation=1", homeUrl).href,
+                }),
+                // TODO: surface the failed-link message as a toast, mirroring the confirmation marker.
+                errorCallbackURL: webUrl.href,
               },
+              context: { user },
             },
           };
-        }
+        }),
+        after: createAuthMiddleware(async (ctx) => {
+          if (ctx.path !== "/sign-in/email-otp") return;
 
-        if (ctx.path !== "/sign-in/magic-link") return;
+          const returned = ctx.context.returned;
 
-        const body = decodeEmailBody(ctx.body);
+          if (!confirmsEmail(ctx.context) || isAPIError(returned)) return;
+          if (typeof returned !== "object" || returned === null) return;
 
-        if (Option.isNone(body)) return;
+          return ctx.json({ ...returned, confirmation: true });
+        }),
+      },
+      plugins: [
+        magicLink({
+          disableSignUp: true,
+          expiresIn: 15 * 60,
+          storeToken: "hashed",
+          sendMagicLink: (options, endpoint) => {
+            if (!endpoint) return;
 
-        const account = await ctx.context.internalAdapter.findUserByEmail(
-          body.value.email,
-        );
+            const recipient = decodeRecipientContext(endpoint.context);
 
-        const user = account?.user ?? null;
-        const isUserVerified = user?.emailVerified ?? false;
+            if (Option.isNone(recipient)) return;
 
+            const { email, emailVerified } = recipient.value.user;
+            const send = emailVerified
+              ? sendSignInLink(email, options.url)
+              : sendConfirmationLink(email, options.url);
+
+            current().send(send);
+          },
+        }),
+        emailOTP({
+          disableSignUp: true,
+          expiresIn: 10 * 60,
+          storeOTP: "hashed",
+          allowedAttempts: 3,
+          sendVerificationOTP: ({ otp }, endpoint) => {
+            const recipient = decodeRecipientContext(endpoint?.context);
+
+            if (Option.isSome(recipient)) {
+              const { email, emailVerified } = recipient.value.user;
+              const send = emailVerified
+                ? sendSignInCode(email, otp)
+                : sendConfirmationCode(email, otp);
+
+              current().send(send);
+            }
+
+            return Promise.resolve();
+          },
+        }),
+      ],
+    });
+
+    const resources = yield* makeExecutionMemo(
+      Effect.gen(function* () {
+        const url = yield* connectionString;
+        const pool = yield* createAuthPool(Redacted.value(url));
+        const cloudflare = yield* Cloudflare.WorkerExecutionContext;
         return {
-          context: {
-            body: {
-              callbackURL: Boolean.match(isUserVerified, {
-                onTrue: () => homeUrl.href,
-                onFalse: () => new URL("?confirmation=1", homeUrl).href,
-              }),
-              // TODO: surface the failed-link message as a toast, mirroring the confirmation marker.
-              errorCallbackURL: webUrl.href,
+          adapter: drizzleAdapter(drizzle({ client: pool }), {
+            provider: "pg",
+            transaction: true,
+            schema: {
+              user: usersTable,
+              session: authSessionsTable,
+              account: authAccountsTable,
+              verification: authVerificationsTable,
             },
-            context: { user },
+          })(client.options),
+          send: (send: Send) => {
+            cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
           },
         };
       }),
-      after: createAuthMiddleware(async (ctx) => {
-        if (ctx.path !== "/sign-in/email-otp") return;
+    );
 
-        const returned = ctx.context.returned;
-
-        if (!confirmsEmail(ctx.context) || isAPIError(returned)) return;
-        if (typeof returned !== "object" || returned === null) return;
-
-        return ctx.json({ ...returned, confirmation: true });
-      }),
-    },
-    plugins: [
-      magicLink({
-        disableSignUp: true,
-        expiresIn: 15 * 60,
-        storeToken: "hashed",
-        sendMagicLink: (options, endpoint) => {
-          if (!endpoint) return;
-
-          const recipient = decodeRecipientContext(endpoint.context);
-
-          if (Option.isNone(recipient)) return;
-
-          const { email, emailVerified } = recipient.value.user;
-          const send = emailVerified
-            ? sendSignInLink(email, options.url)
-            : sendConfirmationLink(email, options.url);
-
-          sendEmail(send);
-        },
-      }),
-      emailOTP({
-        disableSignUp: true,
-        expiresIn: 10 * 60,
-        storeOTP: "hashed",
-        allowedAttempts: 3,
-        sendVerificationOTP: ({ otp }, endpoint) => {
-          const recipient = decodeRecipientContext(endpoint?.context);
-
-          if (Option.isSome(recipient)) {
-            const { email, emailVerified } = recipient.value.user;
-            const send = emailVerified
-              ? sendSignInCode(email, otp)
-              : sendConfirmationCode(email, otp);
-
-            sendEmail(send);
-          }
-
-          return Promise.resolve();
-        },
-      }),
-    ],
-  });
-};
-
-type Client = ReturnType<typeof createClient>;
-
-/** @effect-expect-leaking RuntimeContext | Cloudflare.WorkerExecutionContext */
-export class Auth extends Context.Service<
-  Auth,
-  {
-    readonly use: <A>(
-      f: (auth: Client) => PromiseLike<A>,
-    ) => Effect.Effect<
-      A,
-      AuthRequestError,
-      RuntimeContext | Cloudflare.WorkerExecutionContext
-    >;
-    readonly getSession: (
-      headers: Headers,
-    ) => Effect.Effect<
-      Awaited<ReturnType<Client["api"]["getSession"]>>,
-      AuthRequestError,
-      RuntimeContext | Cloudflare.WorkerExecutionContext
-    >;
-  }
->()("@dtpt/api/Auth") {}
-
-/** Builds reusable endpoints; only `use` enters the current request's resources. */
-export const makeReusableAuth = Effect.fn("Auth.makeReusable")(function* (
-  connectionString: Effect.Effect<string, never, RuntimeContext>,
-) {
-  const config = yield* AuthConfig;
-  const apiUrl = new URL(yield* ApiUrl);
-  const webUrl = new URL("/", yield* WebUrl);
-  const id = yield* Id;
-  const current = new AsyncLocalStorage<{
-    readonly adapter: DBAdapter;
-    readonly sendEmail: SendEmail;
-  }>();
-  const request = () => {
-    const value = current.getStore();
-    if (!value) throw new Error("Auth operation outside request scope");
-    return value;
-  };
-  const adapter: DBAdapter = {
-    id: "drizzle",
-    create: (args) => request().adapter.create(args),
-    findOne: (args) => request().adapter.findOne(args),
-    findMany: (args) => request().adapter.findMany(args),
-    count: (args) => request().adapter.count(args),
-    update: (args) => request().adapter.update(args),
-    updateMany: (args) => request().adapter.updateMany(args),
-    delete: (args) => request().adapter.delete(args),
-    deleteMany: (args) => request().adapter.deleteMany(args),
-    consumeOne: (args) => request().adapter.consumeOne(args),
-    incrementOne: (args) => request().adapter.incrementOne(args),
-    transaction: (callback) => request().adapter.transaction(callback),
-  };
-  const client = createClient(
-    config.secret,
-    apiUrl,
-    webUrl,
-    () => adapter,
-    (send) => {
-      request().sendEmail(send);
-    },
-  );
-  yield* Effect.promise(() => client.$context);
-
-  const resources = yield* makeExecutionMemo(
-    Effect.gen(function* () {
-      const pool = yield* createAuthPool(yield* connectionString);
-      const cloudflare = yield* Cloudflare.WorkerExecutionContext;
-      const runPromise = Effect.runPromiseWith(
-        yield* Effect.context<Id>().pipe(Effect.provideService(Id, id)),
+    const use = <A>(f: (auth: typeof client) => PromiseLike<A>) =>
+      Effect.flatMap(resources, (resources) =>
+        Effect.tryPromise({
+          try: () => invocation.run(resources, () => f(client)),
+          catch: (cause) => new AuthRequestError({ cause }),
+        }),
       );
-      return {
-        adapter: createAdapter(pool)(client.options),
-        sendEmail: (send: ReturnType<typeof sendSignInCode>) => {
-          cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
-        },
-      };
-    }),
-  );
 
-  const use: Auth["Service"]["use"] = (f) =>
-    Effect.gen(function* () {
-      const runtime = yield* resources;
-      return yield* Effect.tryPromise({
-        try: () => current.run(runtime, () => f(client)),
-        catch: (cause) => new AuthRequestError({ cause }),
-      });
-    }).pipe(Effect.uninterruptible);
-  return Auth.of({
-    use,
-    getSession: Effect.fn("Auth.getSession")((headers: Headers) =>
-      use((auth) => auth.api.getSession({ headers })),
-    ),
-  });
-});
+    const getSession = Effect.fn("Auth.getSession")((headers: Headers) =>
+      use((client) => client.api.getSession({ headers })),
+    );
+
+    return { use, client, getSession };
+  }),
+}) {}
 
 export const createAuthLayerFromHyperdriveResource = (
   client: Cloudflare.Hyperdrive.ConnectClient,
-) =>
-  Layer.effect(
-    Auth,
-    makeReusableAuth(client.connectionString.pipe(Effect.map(Redacted.value))),
-  );
+) => Layer.effect(Auth, Auth.make(client.connectionString));

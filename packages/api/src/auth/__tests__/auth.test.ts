@@ -1,7 +1,7 @@
 import { makeAuthFixture } from "./fixtures.js";
 import { describe, expect, it, vi } from "vitest";
 import * as Cloudflare from "alchemy/Cloudflare";
-import { Context, Effect, Layer } from "effect";
+import { Effect, Layer } from "effect";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 
@@ -20,7 +20,7 @@ describe("authentication boundaries", () => {
       } = await makeAuthFixture();
       await database.query("UPDATE users SET email_verified = $1", [verified]);
       for (const email of ["User@Example.COM", "unknown@example.com"]) {
-        const response = await auth.handle(
+        const response = await auth.client.handler(
           request("/sign-in/magic-link", {
             email,
             // The shared before hook owns these; caller values must not leak in.
@@ -49,7 +49,7 @@ describe("authentication boundaries", () => {
       expect(new URL(link).searchParams.get("errorCallbackURL")).toBe(
         "https://www.example.com/",
       );
-      const redeemed = await auth.handle(new Request(link));
+      const redeemed = await auth.client.handler(new Request(link));
       expect(redeemed.headers.get("location")).toBe(
         new URL(link).searchParams.get("callbackURL"),
       );
@@ -72,18 +72,20 @@ describe("authentication boundaries", () => {
       emailVerified: true,
     };
     const [confirmation, signIn, unknown] = await Promise.all([
-      f.auth.handle(
+      f.auth.client.handler(
         f.request("/sign-in/magic-link", {
           email: "User@Example.COM",
           user: forgedRecipient,
           metadata: { user: forgedRecipient },
         }),
       ),
-      f.auth.signInMagicLink({
-        headers: f.request("/sign-in/magic-link").headers,
-        body: { email: "verified@example.com" },
-      }),
-      f.auth.handle(
+      f.auth.run((client) =>
+        client.api.signInMagicLink({
+          headers: f.request("/sign-in/magic-link").headers,
+          body: { email: "verified@example.com" },
+        }),
+      ),
+      f.auth.client.handler(
         f.request("/sign-in/magic-link", {
           email: "unknown@example.com",
           metadata: { user: forgedRecipient },
@@ -123,54 +125,53 @@ describe("authentication boundaries", () => {
     }
   });
 
-  it("registers overlapping email deliveries on each invocation's execution context", async () => {
+  it("registers each email with the invocation that requested it", async () => {
     const f = await makeAuthFixture();
-    const context = await Effect.runPromise(
-      Layer.build(f.layer).pipe(Effect.scoped),
-    );
-    const initial = Context.get(context, Cloudflare.WorkerExecutionContext);
-    const first: Promise<unknown>[] = [];
-    const second: Promise<unknown>[] = [];
-    const delivery = Promise.withResolvers<undefined>();
-    f.sendConfirmationLink.mockImplementation(() =>
-      Effect.promise(() => delivery.promise),
-    );
-    const issue = (pending: Promise<unknown>[]) =>
-      Effect.runPromise(
+    const invoke = (email: string) => {
+      const pending: Promise<unknown>[] = [];
+      return Effect.runPromise(
         f.auth
           .use((client) =>
             client.api.signInMagicLink({
               headers: f.request("/sign-in/magic-link").headers,
-              body: { email: "user@example.com" },
+              body: { email },
             }),
           )
           .pipe(
-            Effect.provideService(Cloudflare.WorkerExecutionContext, {
-              ...initial,
-              raw: {
-                passThroughOnException: () => undefined,
-                props: {},
-                get tracing(): never {
-                  throw new Error("Unused");
-                },
-                waitUntil: (promise) => {
-                  pending.push(promise);
-                },
-              },
-            }),
-            Effect.provide(f.layer),
+            Effect.provide(
+              Layer.merge(
+                f.layer,
+                Layer.mock(Cloudflare.WorkerExecutionContext, {
+                  cache: {
+                    purge: () => Effect.die("Cache is not used by auth"),
+                  },
+                  raw: {
+                    waitUntil: (promise) => {
+                      pending.push(promise);
+                    },
+                    passThroughOnException: () => undefined,
+                    props: {},
+                    get tracing(): never {
+                      throw new Error("Tracing is not used by auth");
+                    },
+                  },
+                }),
+              ),
+            ),
             Effect.scoped,
+            Effect.as(pending),
           ),
       );
-    try {
-      await Promise.all([issue(first), issue(second)]);
-      expect(first).toHaveLength(1);
-      expect(second).toHaveLength(1);
-      expect(f.pending).toHaveLength(0);
-    } finally {
-      delivery.resolve(undefined);
-      await Promise.all([...first, ...second]);
-    }
+    };
+    await f.database.exec(
+      "INSERT INTO users (id, email, timezone, unsubscribe_token) VALUES ('second-user', 'second@example.com', 'America/New_York', 'second-token')",
+    );
+    const invocations = await Promise.all([
+      invoke("user@example.com"),
+      invoke("second@example.com"),
+    ]);
+    expect(invocations.map((pending) => pending.length)).toEqual([1, 1]);
+    expect(f.pending).toHaveLength(0);
   });
 
   it("uses the same verification snapshot for the callback and email copy", async () => {
@@ -184,7 +185,7 @@ describe("authentication boundaries", () => {
         await f.database.exec("UPDATE users SET email_verified = true");
         return user;
       });
-    const response = await f.auth.handle(
+    const response = await f.auth.client.handler(
       f.request("/sign-in/magic-link", { email: "user@example.com" }),
     );
     expect(response.status).toBe(200);
@@ -201,7 +202,7 @@ describe("authentication boundaries", () => {
 
   it("rejects untrusted request origins and callback URLs", async () => {
     const { auth, sendConfirmationLink, request } = await makeAuthFixture();
-    const response = await auth.handle(
+    const response = await auth.client.handler(
       request(
         "/sign-in/magic-link",
         {
@@ -211,7 +212,7 @@ describe("authentication boundaries", () => {
       ),
     );
     expect(response.status).toBe(403);
-    const callback = await auth.handle(
+    const callback = await auth.client.handler(
       request("/sign-in/magic-link", {
         email: "user@example.com",
         callbackURL: "https://untrusted.example/account",
@@ -221,12 +222,12 @@ describe("authentication boundaries", () => {
     expect(sendConfirmationLink).not.toHaveBeenCalled();
   });
 
-  it("enforces magic-link rate limits across independently initialized auth services", async () => {
+  it("enforces magic-link rate limits across request-scoped auth instances", async () => {
     const { makeAuth, request } = await makeAuthFixture();
     for (let attempt = 0; attempt < 6; attempt++) {
       const response = await (
         await makeAuth()
-      ).handle(
+      ).client.handler(
         request("/sign-in/magic-link", {
           email: "unknown@example.com",
         }),
@@ -247,7 +248,7 @@ describe("authentication boundaries", () => {
       }),
     );
     try {
-      const response = await auth.handle(
+      const response = await auth.client.handler(
         request("/sign-in/magic-link", { email: "user@example.com" }),
       );
       expect(response.status).toBe(200);
@@ -272,7 +273,7 @@ describe("authentication boundaries", () => {
       ),
     );
     for (let attempt = 0; attempt < 2; attempt++) {
-      const response = await f.auth.handle(
+      const response = await f.auth.client.handler(
         f.request("/sign-in/magic-link", { email: "user@example.com" }),
       );
       expect(response.status).toBe(200);
@@ -284,14 +285,14 @@ describe("authentication boundaries", () => {
     const replacementUrl = f.sendConfirmationLink.mock.calls[1]?.[1];
     expect(replacementUrl).not.toBe(firstUrl);
     if (!replacementUrl) throw new Error("Missing replacement link");
-    const redemption = await f.auth.handle(new Request(replacementUrl));
+    const redemption = await f.auth.client.handler(new Request(replacementUrl));
     expect(redemption.status).toBe(302);
     expect(await f.rows("auth_sessions")).toHaveLength(1);
   });
 
   it("keeps profile updates outside this foundation", async () => {
     const { auth, request } = await makeAuthFixture();
-    const response = await auth.handle(
+    const response = await auth.client.handler(
       request("/update-user", { image: "https://example.com/photo.png" }),
     );
     expect(response.status).toBe(404);
