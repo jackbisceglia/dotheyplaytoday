@@ -3379,6 +3379,28 @@ export const Fighters = {
     },
     feedIds: getFighterFeedIds("Cody Durden"),
   },
+  ZacharyReese: {
+    id: "5ad1656d-055c-4b03-aa98-a073a3fceed7",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Zachary Reese",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Zachary Reese"),
+  },
+  MickeyGall: {
+    id: "b6788cfa-daaa-4225-98a7-8f16e2e79a9e",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Mickey Gall",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Mickey Gall"),
+  },
 } as const satisfies Record<string, UfcSubjectSeed>;
 
 export const Tracking = {

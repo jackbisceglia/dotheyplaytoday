@@ -220,11 +220,11 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 24, 25, 20, 4,
+      24, 26, 28, 25, 25, 20, 4,
     ]);
-    expect(catalog.subjects).toHaveLength(293);
+    expect(catalog.subjects).toHaveLength(295);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      293,
+      295,
     );
 
     for (const event of catalog.events) {
@@ -257,6 +257,7 @@ describe("UFC catalog", () => {
       "Gaston Bolanos",
       "Alvin Hines",
       "Baisangur Susurkaev",
+      "Azamat Bekoev",
       "Adrian Yanez",
       "Nazim Sadykhov",
       "Jefferson Nascimento",
@@ -274,6 +275,7 @@ describe("UFC catalog", () => {
     }
 
     for (const [name, fightId, placement] of [
+      ["Andre Petroski", "fight-6", "prelims"],
       ["Gabriel Lorenço", "fight-7", "prelims"],
       ["Donte Johnson", "fight-9", "prelims"],
       ["Juan Diaz", "fight-11", "prelims"],
@@ -306,6 +308,7 @@ describe("UFC catalog", () => {
       ["fight-2", "main", ["Randy Brown", "Jacobe Smith"]],
       ["fight-5", "prelims", ["Francis Marshall", "Dakota Hope"]],
       ["fight-12", "main", ["Ode' Osbourne", "Cody Durden"]],
+      ["fight-13", "main", ["Zachary Reese", "Mickey Gall"]],
     ] as const) {
       expect(
         card?.participants
