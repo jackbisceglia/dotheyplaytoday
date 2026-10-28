@@ -220,11 +220,11 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 25, 25, 20, 4,
+      24, 26, 28, 24, 27, 21, 4,
     ]);
-    expect(catalog.subjects).toHaveLength(295);
+    expect(catalog.subjects).toHaveLength(298);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      295,
+      298,
     );
 
     for (const event of catalog.events) {
@@ -253,6 +253,7 @@ describe("UFC catalog", () => {
 
   it("removes withdrawn appearances while preserving subjects and confirmed opponent slots", () => {
     for (const name of [
+      "Wes Schultz",
       "Carlos Leal",
       "Gaston Bolanos",
       "Alvin Hines",
@@ -275,9 +276,7 @@ describe("UFC catalog", () => {
     }
 
     for (const [name, fightId, placement] of [
-      ["Andre Petroski", "fight-6", "prelims"],
       ["Gabriel Lorenço", "fight-7", "prelims"],
-      ["Donte Johnson", "fight-9", "prelims"],
       ["Juan Diaz", "fight-11", "prelims"],
     ]) {
       const card = catalog.events.find((event) =>
@@ -293,6 +292,17 @@ describe("UFC catalog", () => {
     const numberedCard = catalog.events.find((card) =>
       card.sourceUrl.endsWith("ufc-334"),
     );
+    expect(
+      numberedCard?.participants
+        .filter((participant) => participant.details.fightId === "fight-9")
+        .map((participant) => [
+          participant.details.title,
+          participant.details.placement,
+        ]),
+    ).toEqual([
+      ["Donte Johnson", "prelims"],
+      ["Cesar Almeida", "prelims"],
+    ]);
     expect(
       numberedCard?.participants.some(
         (participant) => participant.details.fightId === "fight-12",
@@ -312,6 +322,26 @@ describe("UFC catalog", () => {
     ] as const) {
       expect(
         card?.participants
+          .filter((p) => p.details.fightId === fightId)
+          .map((p) => [p.details.title, p.details.placement]),
+      ).toEqual(names.map((name) => [name, placement]));
+    }
+  });
+
+  it("moves Petroski to November 7 and includes the confirmed new prelim", () => {
+    const october = catalog.events.find((card) =>
+      card.sourceUrl.endsWith("ufc-fight-night-october-31-2026"),
+    );
+    expect(
+      october?.participants.some((p) => p.details.title === "Andre Petroski"),
+    ).toBe(false);
+    const november = catalog.events.find((card) => card.id.endsWith("000006"));
+    for (const [fightId, placement, names] of [
+      ["fight-6", "main", ["Mantas Kondratavicius", "Andre Petroski"]],
+      ["fight-14", "prelims", ["Mitch Raposo", "Marcos Degli"]],
+    ] as const) {
+      expect(
+        november?.participants
           .filter((p) => p.details.fightId === fightId)
           .map((p) => [p.details.title, p.details.placement]),
       ).toEqual(names.map((name) => [name, placement]));

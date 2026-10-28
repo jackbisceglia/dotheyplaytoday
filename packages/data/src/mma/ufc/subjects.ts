@@ -13,6 +13,39 @@ type UfcSubjectSeed = MmaSeedEncoded["subjects"][number];
 
 // Champions, divisional top 15, and P4P: https://www.ufc.com/rankings (October 6, 2026).
 export const Fighters = {
+  MitchRaposo: {
+    id: "855b4086-6a5a-4e7e-a394-b960045b5d33",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Mitch Raposo",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Mitch Raposo"),
+  },
+  MarcosDegli: {
+    id: "807d7b37-27da-4789-b028-6fdadb4bc377",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Marcos Degli",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Marcos Degli"),
+  },
+  CesarAlmeida: {
+    id: "85fbb622-1875-45e2-b585-1232c1f528ca",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Cesar Almeida",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Cesar Almeida"),
+  },
   NataliaSilva: {
     id: "c759cf80-2526-432b-8010-000000000001",
     _tag: "mma_fighter",
