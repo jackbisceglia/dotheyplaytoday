@@ -4,7 +4,8 @@ import type { MmaSeedEncoded } from "../../schema/mma.js";
 
 type UfcEventSeed = MmaSeedEncoded["events"][number];
 
-// Upcoming lineups reviewed October 25, 2026; confirmed replacements and segments.
+// Upcoming lineups reviewed October 27, 2026; confirmed replacements and segments.
+// Reese–Gall placement: https://www.ufc.com/news/fight-fight-preview-ufc-fight-night-moicano-vs-nolan
 // Withdrawal sources and access dates are recorded in the catalog update PR.
 // Additional UFC 333 prelims: https://www.ufc.com.br/news/ufc-333-card-completo-horarios-onde-assistir
 export const events: readonly UfcEventSeed[] = [
@@ -916,15 +917,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Azamat Bekoev",
-          fightId: "fight-6",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
           title: "Andre Petroski",
           fightId: "fight-6",
           placement: "prelims",
@@ -1018,6 +1010,24 @@ export const events: readonly UfcEventSeed[] = [
           title: "Tainara Lisboa",
           fightId: "fight-11",
           placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Zachary Reese",
+          fightId: "fight-13",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Mickey Gall",
+          fightId: "fight-13",
+          placement: "main",
         },
       },
     ],
