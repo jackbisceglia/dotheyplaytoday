@@ -1802,6 +1802,7 @@ export const Teams = {
       Games._849802.sourceId,
       Games._849804.sourceId,
       Games._849803.sourceId,
+      Games._849799.sourceId,
     ],
   },
   TexasRangers: {
@@ -2590,6 +2591,7 @@ export const Teams = {
       Games._849802.sourceId,
       Games._849804.sourceId,
       Games._849803.sourceId,
+      Games._849799.sourceId,
     ],
   },
 } as const satisfies Record<string, MlbSportSubjectSeed>;
