@@ -4,7 +4,8 @@ import type { MmaSeedEncoded } from "../../schema/mma.js";
 
 type UfcEventSeed = MmaSeedEncoded["events"][number];
 
-// Upcoming lineups reviewed October 27, 2026; confirmed replacements and segments.
+// Upcoming lineups reviewed October 28, 2026; confirmed replacements and segments.
+// Johnson–Almeida prelim placement: https://www.ufc.com/event/ufc-334
 // Reese–Gall placement: https://www.ufc.com/news/fight-fight-preview-ufc-fight-night-moicano-vs-nolan
 // Withdrawal sources and access dates are recorded in the catalog update PR.
 // Additional UFC 333 prelims: https://www.ufc.com.br/news/ufc-333-card-completo-horarios-onde-assistir
@@ -917,15 +918,6 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Andre Petroski",
-          fightId: "fight-6",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
           title: "Rodrigo Sezinando",
           fightId: "fight-7",
           placement: "prelims",
@@ -1159,7 +1151,7 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Wes Schultz",
+          title: "Andre Petroski",
           fightId: "fight-6",
           placement: "main",
         },
@@ -1278,6 +1270,24 @@ export const events: readonly UfcEventSeed[] = [
           _tag: "mma_card",
           title: "José Souza",
           fightId: "fight-13",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Mitch Raposo",
+          fightId: "fight-14",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Marcos Degli",
+          fightId: "fight-14",
           placement: "prelims",
         },
       },
@@ -1454,6 +1464,15 @@ export const events: readonly UfcEventSeed[] = [
         details: {
           _tag: "mma_card",
           title: "Donte Johnson",
+          fightId: "fight-9",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Cesar Almeida",
           fightId: "fight-9",
           placement: "prelims",
         },
