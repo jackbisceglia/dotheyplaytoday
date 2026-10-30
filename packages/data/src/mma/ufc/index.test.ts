@@ -220,7 +220,7 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 24, 27, 21, 4,
+      24, 26, 28, 24, 26, 21, 4,
     ]);
     expect(catalog.subjects).toHaveLength(298);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
@@ -253,6 +253,7 @@ describe("UFC catalog", () => {
 
   it("removes withdrawn appearances while preserving subjects and confirmed opponent slots", () => {
     for (const name of [
+      "Sean Brady",
       "Wes Schultz",
       "Carlos Leal",
       "Gaston Bolanos",
@@ -276,6 +277,7 @@ describe("UFC catalog", () => {
     }
 
     for (const [name, fightId, placement] of [
+      ["Gabriel Bonfim", "fight-1", "main"],
       ["Gabriel Lorenço", "fight-7", "prelims"],
       ["Juan Diaz", "fight-11", "prelims"],
     ]) {

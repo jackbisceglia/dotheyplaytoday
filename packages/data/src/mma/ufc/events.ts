@@ -4,7 +4,10 @@ import type { MmaSeedEncoded } from "../../schema/mma.js";
 
 type UfcEventSeed = MmaSeedEncoded["events"][number];
 
-// Upcoming lineups reviewed October 28, 2026; confirmed replacements and segments.
+// Sean Brady withdrawal reviewed October 30, 2026:
+// https://www.mmafighting.com/ufc/518348/sean-brady-out-of-ufc-vegas-124-main-event-against-gabriel-bonfim
+// Bonfim retains his confirmed main-card slot pending a verified replacement.
+// Official event title/timings retained pending a confirmed update.
 // Johnson–Almeida prelim placement: https://www.ufc.com/event/ufc-334
 // Reese–Gall placement: https://www.ufc.com/news/fight-fight-preview-ufc-fight-night-moicano-vs-nolan
 // Withdrawal sources and access dates are recorded in the catalog update PR.
@@ -1053,15 +1056,6 @@ export const events: readonly UfcEventSeed[] = [
         details: {
           _tag: "mma_card",
           title: "Gabriel Bonfim",
-          fightId: "fight-1",
-          placement: "main",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Sean Brady",
           fightId: "fight-1",
           placement: "main",
         },
