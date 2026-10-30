@@ -4,7 +4,10 @@ import type { MmaSeedEncoded } from "../../schema/mma.js";
 
 type UfcEventSeed = MmaSeedEncoded["events"][number];
 
-// Upcoming lineups reviewed October 20, 2026 against UFC event listings.
+// Upcoming lineups reviewed October 28, 2026; confirmed replacements and segments.
+// Johnson–Almeida prelim placement: https://www.ufc.com/event/ufc-334
+// Reese–Gall placement: https://www.ufc.com/news/fight-fight-preview-ufc-fight-night-moicano-vs-nolan
+// Withdrawal sources and access dates are recorded in the catalog update PR.
 // Additional UFC 333 prelims: https://www.ufc.com.br/news/ufc-333-card-completo-horarios-onde-assistir
 export const events: readonly UfcEventSeed[] = [
   {
@@ -834,7 +837,7 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Carlos Leal",
+          title: "Jacobe Smith",
           fightId: "fight-2",
           placement: "main",
         },
@@ -879,6 +882,24 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
+          title: "Ode' Osbourne",
+          fightId: "fight-12",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Cody Durden",
+          fightId: "fight-12",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
           title: "Francis Marshall",
           fightId: "fight-5",
           placement: "prelims",
@@ -888,26 +909,8 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Gaston Bolanos",
+          title: "Dakota Hope",
           fightId: "fight-5",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Azamat Bekoev",
-          fightId: "fight-6",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Andre Petroski",
-          fightId: "fight-6",
           placement: "prelims",
         },
       },
@@ -999,6 +1002,24 @@ export const events: readonly UfcEventSeed[] = [
           title: "Tainara Lisboa",
           fightId: "fight-11",
           placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Zachary Reese",
+          fightId: "fight-13",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Mickey Gall",
+          fightId: "fight-13",
+          placement: "main",
         },
       },
     ],
@@ -1130,7 +1151,7 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Wes Schultz",
+          title: "Andre Petroski",
           fightId: "fight-6",
           placement: "main",
         },
@@ -1140,15 +1161,6 @@ export const events: readonly UfcEventSeed[] = [
         details: {
           _tag: "mma_card",
           title: "Gabriel Lorenço",
-          fightId: "fight-7",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Alvin Hines",
           fightId: "fight-7",
           placement: "prelims",
         },
@@ -1258,6 +1270,24 @@ export const events: readonly UfcEventSeed[] = [
           _tag: "mma_card",
           title: "José Souza",
           fightId: "fight-13",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Mitch Raposo",
+          fightId: "fight-14",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Marcos Degli",
+          fightId: "fight-14",
           placement: "prelims",
         },
       },
@@ -1442,7 +1472,7 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Baisangur Susurkaev",
+          title: "Cesar Almeida",
           fightId: "fight-9",
           placement: "prelims",
         },
@@ -1469,35 +1499,8 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Adrian Yanez",
-          fightId: "fight-11",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
           title: "Juan Diaz",
           fightId: "fight-11",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Nazim Sadykhov",
-          fightId: "fight-12",
-          placement: "prelims",
-        },
-      },
-      {
-        _tag: "mma_card",
-        details: {
-          _tag: "mma_card",
-          title: "Jefferson Nascimento",
-          fightId: "fight-12",
           placement: "prelims",
         },
       },

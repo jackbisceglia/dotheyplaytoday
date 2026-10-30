@@ -220,11 +220,11 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 22, 26, 24, 4,
+      24, 26, 28, 24, 27, 21, 4,
     ]);
-    expect(catalog.subjects).toHaveLength(289);
+    expect(catalog.subjects).toHaveLength(298);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      289,
+      298,
     );
 
     for (const event of catalog.events) {
@@ -248,6 +248,103 @@ describe("UFC catalog", () => {
             ),
       );
       expect(subject.feedIds).toEqual(expected.map((event) => event.sourceId));
+    }
+  });
+
+  it("removes withdrawn appearances while preserving subjects and confirmed opponent slots", () => {
+    for (const name of [
+      "Wes Schultz",
+      "Carlos Leal",
+      "Gaston Bolanos",
+      "Alvin Hines",
+      "Baisangur Susurkaev",
+      "Azamat Bekoev",
+      "Adrian Yanez",
+      "Nazim Sadykhov",
+      "Jefferson Nascimento",
+    ]) {
+      const fighter = catalog.subjects.find(
+        (subject) => subject.details.display === name,
+      );
+      expect(fighter).toBeDefined();
+      expect(fighter?.feedIds).toEqual([]);
+      expect(
+        catalog.events
+          .flatMap((card) => card.participants)
+          .some((participant) => participant.details.title === name),
+      ).toBe(false);
+    }
+
+    for (const [name, fightId, placement] of [
+      ["Gabriel Lorenço", "fight-7", "prelims"],
+      ["Juan Diaz", "fight-11", "prelims"],
+    ]) {
+      const card = catalog.events.find((event) =>
+        event.participants.some((p) => p.details.title === name),
+      );
+      expect(
+        card?.participants
+          .filter((p) => p.details.fightId === fightId)
+          .map((p) => p.details),
+      ).toEqual([{ _tag: "mma_card", title: name, fightId, placement }]);
+    }
+
+    const numberedCard = catalog.events.find((card) =>
+      card.sourceUrl.endsWith("ufc-334"),
+    );
+    expect(
+      numberedCard?.participants
+        .filter((participant) => participant.details.fightId === "fight-9")
+        .map((participant) => [
+          participant.details.title,
+          participant.details.placement,
+        ]),
+    ).toEqual([
+      ["Donte Johnson", "prelims"],
+      ["Cesar Almeida", "prelims"],
+    ]);
+    expect(
+      numberedCard?.participants.some(
+        (participant) => participant.details.fightId === "fight-12",
+      ),
+    ).toBe(false);
+  });
+
+  it("publishes confirmed October 31 replacements and segments", () => {
+    const card = catalog.events.find((event) =>
+      event.sourceUrl.endsWith("ufc-fight-night-october-31-2026"),
+    );
+    for (const [fightId, placement, names] of [
+      ["fight-2", "main", ["Randy Brown", "Jacobe Smith"]],
+      ["fight-5", "prelims", ["Francis Marshall", "Dakota Hope"]],
+      ["fight-12", "main", ["Ode' Osbourne", "Cody Durden"]],
+      ["fight-13", "main", ["Zachary Reese", "Mickey Gall"]],
+    ] as const) {
+      expect(
+        card?.participants
+          .filter((p) => p.details.fightId === fightId)
+          .map((p) => [p.details.title, p.details.placement]),
+      ).toEqual(names.map((name) => [name, placement]));
+    }
+  });
+
+  it("moves Petroski to November 7 and includes the confirmed new prelim", () => {
+    const october = catalog.events.find((card) =>
+      card.sourceUrl.endsWith("ufc-fight-night-october-31-2026"),
+    );
+    expect(
+      october?.participants.some((p) => p.details.title === "Andre Petroski"),
+    ).toBe(false);
+    const november = catalog.events.find((card) => card.id.endsWith("000006"));
+    for (const [fightId, placement, names] of [
+      ["fight-6", "main", ["Mantas Kondratavicius", "Andre Petroski"]],
+      ["fight-14", "prelims", ["Mitch Raposo", "Marcos Degli"]],
+    ] as const) {
+      expect(
+        november?.participants
+          .filter((p) => p.details.fightId === fightId)
+          .map((p) => [p.details.title, p.details.placement]),
+      ).toEqual(names.map((name) => [name, placement]));
     }
   });
 

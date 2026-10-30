@@ -90,13 +90,63 @@ describe("dashboard schedule", () => {
     const result = rows(schedule);
     expect(
       result.map((row) => [
-        row.day,
+        row.day.name,
+        row.day.label,
         row.time,
         `${row.matchup} ${row.opponent}`,
       ]),
     ).toEqual([
-      ["Today", "8:30 PM", "vs Knicks"],
-      ["Monday, Mar 9", "1:00 PM", "vs Knicks"],
+      ["Today", "Mar 8", "8:30 PM", "vs Knicks"],
+      ["Tomorrow", "Mar 9", "1:00 PM", "vs Knicks"],
+    ]);
+  });
+
+  it("names days by local calendar date across daylight saving changes", () => {
+    const days = (at: string, starts: readonly string[]) =>
+      scheduleRows(
+        [
+          subscription(
+            celtics,
+            starts.map((startsAt, index) =>
+              game(
+                `00000000-0000-4000-8000-${index.toString().padStart(12, "0")}`,
+                startsAt,
+              ),
+            ),
+          ),
+        ],
+        timezone,
+        [celtics, knicks],
+        DateTime.makeUnsafe(at),
+      ).map(({ day }) => [day.date, day.name, day.label]);
+
+    // Spring forward: March 8 is 23 hours long.
+    expect(
+      days("2026-03-08T12:00:00Z", [
+        "2026-03-09T03:59:00Z",
+        "2026-03-09T04:30:00Z",
+        "2026-03-10T03:59:00Z",
+        "2026-03-10T04:00:00Z",
+      ]),
+    ).toEqual([
+      ["2026-03-08", "Today", "Mar 8"],
+      ["2026-03-09", "Tomorrow", "Mar 9"],
+      ["2026-03-09", "Tomorrow", "Mar 9"],
+      ["2026-03-10", "Tuesday", "Mar 10"],
+    ]);
+    // Fall back: November 1 is 25 hours long, and late evening is still today.
+    expect(
+      days("2026-11-01T03:30:00Z", [
+        "2026-11-01T03:45:00Z",
+        "2026-11-02T04:30:00Z",
+        "2026-11-02T05:00:00Z",
+        "2026-11-09T05:00:00Z",
+      ]),
+    ).toEqual([
+      ["2026-10-31", "Today", "Oct 31"],
+      ["2026-11-01", "Tomorrow", "Nov 1"],
+      ["2026-11-02", "Monday", "Nov 2"],
+      ["2026-11-09", "Monday", "Nov 9"],
     ]);
   });
 
@@ -208,7 +258,7 @@ describe("dashboard schedule", () => {
     expect(rows([])).toEqual([]);
     expect(rows([subscription(celtics, [])])).toEqual([]);
     expect(rows([subscription(celtics, [todayGame])], [])).toMatchObject([
-      { matchup: "vs", opponent: "New York Knicks", day: "Today" },
+      { matchup: "vs", opponent: "New York Knicks", day: { name: "Today" } },
     ]);
   });
 });

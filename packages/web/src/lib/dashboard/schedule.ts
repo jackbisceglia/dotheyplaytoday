@@ -18,7 +18,7 @@ import {
 export type ScheduleRow = {
   readonly eventId: string;
   readonly startsAt: string;
-  readonly day: string;
+  readonly day: ScheduleDay;
   readonly time: string;
   readonly title: string;
   // Context above the headline, such as a card's event name.
@@ -44,6 +44,13 @@ export type ScheduleRow = {
       }[];
     }
 );
+
+// "Today", "Tomorrow", or the weekday, beside its local date.
+export type ScheduleDay = {
+  readonly date: string;
+  readonly name: string;
+  readonly label: string;
+};
 
 type Fighter = { readonly name: string; readonly followed: boolean };
 
@@ -204,10 +211,16 @@ export function scheduleRows(
   now: DateTime.Utc = DateTime.nowUnsafe(),
 ): readonly ScheduleRow[] {
   const todayDate = SubscriptionTiming.formatLocalDate(now, timezone);
+  const tomorrowDate = DateTime.formatIsoDate(
+    DateTime.add(DateTime.makeUnsafe(todayDate), { days: 1 }),
+  );
   const zoneName = DateTime.zoneToString(timezone);
-  const dayFormat = new Intl.DateTimeFormat("en-US", {
+  const weekdayFormat = new Intl.DateTimeFormat("en-US", {
     timeZone: zoneName,
     weekday: "long",
+  });
+  const dateFormat = new Intl.DateTimeFormat("en-US", {
+    timeZone: zoneName,
     month: "short",
     day: "numeric",
   });
@@ -233,13 +246,23 @@ export function scheduleRows(
       );
       const startsAt = DateTime.formatIso(event.startsAt);
       const date = new Date(startsAt);
-      const today =
-        SubscriptionTiming.formatLocalDate(event.startsAt, timezone) ===
-        todayDate;
+      const localDate = SubscriptionTiming.formatLocalDate(
+        event.startsAt,
+        timezone,
+      );
       const common = {
         eventId: event.id,
         startsAt,
-        day: today ? "Today" : dayFormat.format(date),
+        day: {
+          date: localDate,
+          name:
+            localDate === todayDate
+              ? "Today"
+              : localDate === tomorrowDate
+                ? "Tomorrow"
+                : weekdayFormat.format(date),
+          label: dateFormat.format(date),
+        },
         time: timeFormat.format(date),
         subjects,
       };

@@ -13,6 +13,39 @@ type UfcSubjectSeed = MmaSeedEncoded["subjects"][number];
 
 // Champions, divisional top 15, and P4P: https://www.ufc.com/rankings (October 6, 2026).
 export const Fighters = {
+  MitchRaposo: {
+    id: "855b4086-6a5a-4e7e-a394-b960045b5d33",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Mitch Raposo",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Mitch Raposo"),
+  },
+  MarcosDegli: {
+    id: "807d7b37-27da-4789-b028-6fdadb4bc377",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Marcos Degli",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Marcos Degli"),
+  },
+  CesarAlmeida: {
+    id: "85fbb622-1875-45e2-b585-1232c1f528ca",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Cesar Almeida",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Cesar Almeida"),
+  },
   NataliaSilva: {
     id: "c759cf80-2526-432b-8010-000000000001",
     _tag: "mma_fighter",
@@ -3334,6 +3367,72 @@ export const Fighters = {
       p4p: null,
     },
     feedIds: getFighterFeedIds("Jefferson Nascimento"),
+  },
+  JacobeSmith: {
+    id: "3cafb5ff-b35b-4632-abdf-73799b3b6eb3",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Jacobe Smith",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Jacobe Smith"),
+  },
+  DakotaHope: {
+    id: "8a012a8d-7a12-4857-ba6e-e14b801d6975",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Dakota Hope",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Dakota Hope"),
+  },
+  OdeOsbourne: {
+    id: "a55d7958-e0c6-4be5-ad08-1c45d9b18844",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Ode' Osbourne",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Ode' Osbourne"),
+  },
+  CodyDurden: {
+    id: "8e1e599f-737a-4686-af00-73ee352e7885",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Cody Durden",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Cody Durden"),
+  },
+  ZacharyReese: {
+    id: "5ad1656d-055c-4b03-aa98-a073a3fceed7",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Zachary Reese",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Zachary Reese"),
+  },
+  MickeyGall: {
+    id: "b6788cfa-daaa-4225-98a7-8f16e2e79a9e",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Mickey Gall",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Mickey Gall"),
   },
 } as const satisfies Record<string, UfcSubjectSeed>;
 
