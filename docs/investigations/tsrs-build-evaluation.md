@@ -1,5 +1,8 @@
 # tsrs evaluation — 2026-10-20
 
+Historical result. The [October 30 Effect-enabled retest](./tsrs-effect-evaluation.md)
+supersedes this recommendation using the newly supported integration.
+
 Recommendation: keep TypeScript 7.0.2 with `@effect/tsgo` 0.51.1. The released
 Rust compiler can check this source and build it, but it does not preserve the
 repository's Effect diagnostics. A direct replacement therefore fails the

@@ -1,0 +1,13 @@
+{
+  "files": 140,
+  "changed_fields": {
+    "sourceRoot": 140
+  },
+  "examples": {
+    "sourceRoot": {
+      "path": "packages/core/dist/index.js.map",
+      "baseline": "",
+      "beta": null
+    }
+  }
+}

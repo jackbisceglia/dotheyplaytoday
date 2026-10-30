@@ -1,0 +1,230 @@
+{
+  "baseline-build-clean": {
+    "median": 4.118894043000182,
+    "minimum": 4.09747364098439,
+    "maximum": 4.148266037023859,
+    "exits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "baseline-build-warm": {
+    "median": 4.0620214469963685,
+    "minimum": 3.930571733013494,
+    "maximum": 4.477350364992162,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "baseline-emit": {
+    "median": 2.7726475829840638,
+    "minimum": 2.7628337100031786,
+    "maximum": 2.8866620819899254,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "baseline-incremental-cold": {
+    "median": 1.5989628099778201,
+    "minimum": 1.596819635014981,
+    "maximum": 1.6227087919833139,
+    "exits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "baseline-incremental-warm": {
+    "median": 0.6095445349928923,
+    "minimum": 0.6030966310063377,
+    "maximum": 0.6200847899890505,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "baseline-typecheck": {
+    "median": 6.65196864400059,
+    "minimum": 6.560212362004677,
+    "maximum": 6.673946205002721,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "baseline-typecheck-warmup": {
+    "median": 6.627154686982976,
+    "minimum": 6.627154686982976,
+    "maximum": 6.627154686982976,
+    "exits": [
+      0
+    ]
+  },
+  "go-control-build-clean": {
+    "median": 3.7755111169826705,
+    "minimum": 3.774656676017912,
+    "maximum": 3.779590375983389,
+    "exits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "go-control-build-warm": {
+    "median": 3.824720945995068,
+    "minimum": 3.6967646370176226,
+    "maximum": 4.077430250996258,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "go-control-emit": {
+    "median": 2.5546775390102994,
+    "minimum": 2.415860242996132,
+    "maximum": 2.564248446986312,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "go-control-incremental-cold": {
+    "median": 1.4953417540236842,
+    "minimum": 1.4603485150146298,
+    "maximum": 1.4994367359904572,
+    "exits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "go-control-incremental-warm": {
+    "median": 0.7372797509888187,
+    "minimum": 0.7221303359838203,
+    "maximum": 0.758939149993239,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "go-control-typecheck": {
+    "median": 6.231011844007298,
+    "minimum": 6.174278024991509,
+    "maximum": 6.256237649999093,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "go-control-typecheck-warmup": {
+    "median": 6.17339721598546,
+    "minimum": 6.17339721598546,
+    "maximum": 6.17339721598546,
+    "exits": [
+      0
+    ]
+  },
+  "rust-build-clean": {
+    "median": 2.5664037200040184,
+    "minimum": 2.556580002012197,
+    "maximum": 2.6362500799878035,
+    "exits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "rust-build-warm": {
+    "median": 2.581290608010022,
+    "minimum": 2.539224333013408,
+    "maximum": 2.61602910401416,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "rust-emit": {
+    "median": 1.3174119329778478,
+    "minimum": 1.2870846480072942,
+    "maximum": 1.3405250670039095,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "rust-incremental-cold": {
+    "median": 0.6534946210158523,
+    "minimum": 0.6493795489950571,
+    "maximum": 0.6776354990142863,
+    "exits": [
+      0,
+      0,
+      0
+    ]
+  },
+  "rust-incremental-warm": {
+    "median": 0.3893728159891907,
+    "minimum": 0.3814570829854347,
+    "maximum": 0.39624742401065305,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "rust-typecheck": {
+    "median": 3.1994042930018622,
+    "minimum": 3.0947539689950645,
+    "maximum": 3.292459047981538,
+    "exits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "rust-typecheck-warmup": {
+    "median": 3.1592235589923803,
+    "minimum": 3.1592235589923803,
+    "maximum": 3.1592235589923803,
+    "exits": [
+      0
+    ]
+  }
+}

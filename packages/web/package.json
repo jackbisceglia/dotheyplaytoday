@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "assets:generate": "node scripts/og.ts && node scripts/email-headlines.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "effect-tsgo tsrs@0.20.1-ts7.1.0-beta --noEmit",
     "lint": "oxlint .",
     "format": "prettier --write ."
   },

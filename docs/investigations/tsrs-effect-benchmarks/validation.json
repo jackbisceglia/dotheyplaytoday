@@ -1,0 +1,10 @@
+{
+  "frozen_install": 0,
+  "build": 0,
+  "lint": 0,
+  "typecheck": 0,
+  "tests": 0,
+  "tests_passed": 364,
+  "tests_skipped": 3,
+  "installed_output_matches_benchmark": true
+}
