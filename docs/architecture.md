@@ -447,8 +447,7 @@ Rust compiler through `effect-tsgo tsrs@0.20.1-ts7.1.0-beta`, supplied by pinned
 `@effect/tsgo` 0.63.0. This preserves TypeScript and Effect diagnostics in one
 compiler invocation. Vite still builds Solid client/SSR output. The prepare
 hook continues patching installed TypeScript 7.0.2 for tools/editors that
-resolve `tsc`; no separate `tsrs` package is required. See the
-[compatibility probes and benchmarks](./investigations/tsrs-effect-evaluation.md).
+resolve `tsc`; no separate `tsrs` package is required.
 
 Oxlint's native checker supplies lint diagnostics, not Effect language-service
 diagnostics. The web config omits the obsolete `baseUrl` option while preserving
