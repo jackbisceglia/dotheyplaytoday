@@ -2572,6 +2572,18 @@ export const Fighters = {
     },
     feedIds: getFighterFeedIds("Curtis Blaydes"),
   },
+  JohnnyWalker: {
+    id: "a58b0933-fa60-40ed-937a-c244d31f7ec8",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Johnny Walker",
+      p4p: null,
+      profileUrl: "https://www.ufc.com/athlete/johnny-walker",
+    },
+    feedIds: getFighterFeedIds("Johnny Walker"),
+  },
   WaldoCortesAcosta: {
     id: "0d13d237-ee54-449b-a21a-6e346e96421e",
     _tag: "mma_fighter",
