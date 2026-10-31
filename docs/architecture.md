@@ -441,7 +441,12 @@ Each package's `oxlint.config.ts` imports and extends the root config with
 `extends: [base]`. `pnpm lint` keeps the recursive package workflow. The root
 config enables `options.typeAware` using `oxlint-tsgolint`, so package scripts
 and direct `oxlint` runs need no flag. Build dependent packages before linting,
-as production CI already does. `pnpm typecheck` runs TypeScript 7 (native `tsc`) patched by `@effect/tsgo`;
+as production CI already does. `pnpm typecheck` and the four non-web package
+builds run `tsrs` 0.20.1 (TypeScript 7.1 beta). The install prepare hook uses
+`@effect/tsgo` 0.63.0 to patch both `tsrs` and TypeScript 7.0.2, preserving
+Effect diagnostics for CLI checks and tools/editors that resolve `tsc`.
+Vite still builds Solid client/SSR output.
+
 Oxlint's native checker supplies lint diagnostics, not Effect language-service
 diagnostics. The web config omits the obsolete `baseUrl` option while preserving
 its relative `~/*` mapping.

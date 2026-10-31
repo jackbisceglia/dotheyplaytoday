@@ -5,7 +5,7 @@ catalog:
   "@effect/platform-browser": 4.0.0-rc.117
   "@effect/platform-node": 4.0.0-rc.117
   "@effect/sql-pg": 4.0.0-rc.117
-  "@effect/tsgo": 0.51.1
+  "@effect/tsgo": 0.63.0
   "@effect/vitest": 4.0.0-rc.117
   "@types/pg": 8.15.5
   alchemy: 2.0.0-beta.78
