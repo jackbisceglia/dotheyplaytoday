@@ -220,11 +220,11 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 24, 26, 21, 4,
+      24, 26, 28, 24, 27, 21, 4,
     ]);
-    expect(catalog.subjects).toHaveLength(298);
+    expect(catalog.subjects).toHaveLength(299);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      298,
+      299,
     );
 
     for (const event of catalog.events) {
@@ -254,6 +254,7 @@ describe("UFC catalog", () => {
   it("removes withdrawn appearances while preserving subjects and confirmed opponent slots", () => {
     for (const name of [
       "Sean Brady",
+      "Gabriel Bonfim",
       "Wes Schultz",
       "Carlos Leal",
       "Gaston Bolanos",
@@ -277,7 +278,6 @@ describe("UFC catalog", () => {
     }
 
     for (const [name, fightId, placement] of [
-      ["Gabriel Bonfim", "fight-1", "main"],
       ["Gabriel Lorenço", "fight-7", "prelims"],
       ["Juan Diaz", "fight-11", "prelims"],
     ]) {
@@ -290,6 +290,24 @@ describe("UFC catalog", () => {
           .map((p) => p.details),
       ).toEqual([{ _tag: "mma_card", title: name, fightId, placement }]);
     }
+
+    const november7 = catalog.events.find((card) =>
+      card.id.endsWith("000000000006"),
+    );
+    expect(november7?.details.title).toBe(
+      "UFC Fight Night: Cortes-Acosta vs Walker",
+    );
+    expect(
+      november7?.participants
+        .filter((participant) => participant.details.fightId === "fight-1")
+        .map((participant) => [
+          participant.details.title,
+          participant.details.placement,
+        ]),
+    ).toEqual([
+      ["Waldo Cortes Acosta", "main"],
+      ["Johnny Walker", "main"],
+    ]);
 
     const numberedCard = catalog.events.find((card) =>
       card.sourceUrl.endsWith("ufc-334"),

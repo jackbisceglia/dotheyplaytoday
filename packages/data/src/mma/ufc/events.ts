@@ -4,10 +4,8 @@ import type { MmaSeedEncoded } from "../../schema/mma.js";
 
 type UfcEventSeed = MmaSeedEncoded["events"][number];
 
-// Sean Brady withdrawal reviewed October 30, 2026:
-// https://www.mmafighting.com/ufc/518348/sean-brady-out-of-ufc-vegas-124-main-event-against-gabriel-bonfim
-// Bonfim retains his confirmed main-card slot pending a verified replacement.
-// Official event title/timings retained pending a confirmed update.
+// November 7 replacement main event confirmed; accessed October 31, 2026:
+// https://www.ufc.com/news/ufc-fight-night-bonfim-vs-brady-updates
 // Johnson–Almeida prelim placement: https://www.ufc.com/event/ufc-334
 // Reese–Gall placement: https://www.ufc.com/news/fight-fight-preview-ufc-fight-night-moicano-vs-nolan
 // Withdrawal sources and access dates are recorded in the catalog update PR.
@@ -1034,12 +1032,12 @@ export const events: readonly UfcEventSeed[] = [
     availability: "active",
     // Placement: https://us.ufcespanol.com/event/ufc-fight-night-november-07-2026
     sourceUrl:
-      "https://www.ufc.com/news/tickets-sale-october-10-october-31-and-november-7-ufc-fight-night-events-meta-apex",
+      "https://www.ufc.com/news/ufc-fight-night-bonfim-vs-brady-updates",
     startsAt: "2026-11-07T22:00:00.000Z",
     details: {
       _tag: "mma_card",
       leagueId: "ufc",
-      title: "UFC Fight Night: Bonfim vs Brady",
+      title: "UFC Fight Night: Cortes-Acosta vs Walker",
       category: "fight_night",
       venue: {
         title: "Meta APEX",
@@ -1055,7 +1053,16 @@ export const events: readonly UfcEventSeed[] = [
         _tag: "mma_card",
         details: {
           _tag: "mma_card",
-          title: "Gabriel Bonfim",
+          title: "Waldo Cortes Acosta",
+          fightId: "fight-1",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Johnny Walker",
           fightId: "fight-1",
           placement: "main",
         },
