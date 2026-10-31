@@ -14,8 +14,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit",
+    "build": "tsrs -p tsconfig.build.json",
+    "typecheck": "tsrs --noEmit",
     "lint": "oxlint .",
     "format": "prettier --write .",
     "test": "pnpm -w exec vitest run packages/core/src"
