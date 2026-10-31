@@ -14,9 +14,9 @@
     }
   },
   "scripts": {
-    "build": "effect-tsgo tsrs@0.20.1-ts7.1.0-beta -p tsconfig.build.json",
+    "build": "tsrs -p tsconfig.build.json",
     "start:notify": "node dist/notify/cli.js",
-    "typecheck": "effect-tsgo tsrs@0.20.1-ts7.1.0-beta --noEmit",
+    "typecheck": "tsrs --noEmit",
     "lint": "oxlint .",
     "format": "prettier --write .",
     "test": "pnpm --filter @dtpt/core build && pnpm -w exec vitest run packages/jobs/src"
