@@ -12,7 +12,7 @@ import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { SubjectsLayer } from "@dtpt/core/modules/subjects/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
-import { Effect, Layer, pipe } from "effect";
+import { Context, Effect, Layer, pipe, Scope } from "effect";
 import * as HttpRouter from "effect/unstable/http/HttpRouter";
 import { createAuthLayerFromHyperdriveResource } from "./auth/auth.js";
 import { AuthConfig } from "./auth/config.js";
@@ -71,14 +71,27 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
 
     const rateLimiter = yield* RateLimiter;
 
-    return {
-      fetch: Effect.gen(function* () {
-        const handler = yield* Effect.orDie(
-          HttpRouter.toHttpEffect(ApiWorkerLayer),
-        );
+    // Build the router once, on first request (URL bindings resolve at
+    // runtime). HttpApiBuilder captures its build context, so build from
+    // init services rather than the first request's execution context.
+    const context = (yield* Effect.context()).pipe(
+      Context.omit(Cloudflare.WorkerExecutionContext),
+    );
+    const scope = yield* Scope.make();
+    const handler = yield* Effect.cached(
+      HttpRouter.toHttpEffect(ApiWorkerLayer).pipe(
+        Scope.provide(scope),
+        Effect.provideContext(context),
+        Effect.orDie,
+      ),
+    );
 
-        return yield* handler;
-      }).pipe(Effect.provideService(RateLimiter, rateLimiter)),
+    return {
+      // An interrupted first caller must not cache its interruption.
+      fetch: Effect.flatMap(
+        Effect.uninterruptible(handler),
+        (handle) => handle,
+      ).pipe(Effect.provideService(RateLimiter, rateLimiter)),
     };
   }).pipe(Effect.provide(WorkerLayer)),
 ) {}

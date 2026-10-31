@@ -1,5 +1,6 @@
 import { exactOptional } from "@dtpt/core/lib/utils";
 import * as Cloudflare from "alchemy/Cloudflare";
+import { RuntimeContext } from "alchemy/RuntimeContext";
 import { Id } from "@dtpt/core/lib/id/service";
 import {
   sendConfirmationCode,
@@ -12,7 +13,7 @@ import {
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
-import { ConfigProvider, Effect, Layer } from "effect";
+import { ConfigProvider, Effect, Layer, Redacted } from "effect";
 import { afterAll, beforeAll, vi } from "vitest";
 
 import { Auth } from "../auth.js";
@@ -98,6 +99,7 @@ export const makeAuthFixture = async () => {
       }),
     ),
     Layer.mock(Id, {}),
+    Layer.mock(RuntimeContext, { Type: "test", id: "test", env: {} }),
     Layer.mock(Cloudflare.WorkerExecutionContext, {
       cache: { purge: () => Effect.die("Cache is not used by auth") },
       raw: {
@@ -112,13 +114,26 @@ export const makeAuthFixture = async () => {
       },
     }),
   );
-  const makeAuth = () =>
-    Effect.runPromise(
-      Auth.make("postgres://user:password@localhost:5432/database").pipe(
-        Effect.provide(layer),
-        Effect.scoped,
-      ),
+  const makeAuth = async () => {
+    const auth = await Effect.runPromise(
+      Auth.make(
+        Effect.succeed(
+          Redacted.make("postgres://user:password@localhost:5432/database"),
+        ),
+      ).pipe(Effect.provide(layer)),
     );
+    // Each call stands in for one Worker invocation.
+    const run = <A>(f: (client: typeof auth.client) => PromiseLike<A>) =>
+      Effect.runPromise(auth.use(f).pipe(Effect.provide(layer), Effect.scoped));
+    return {
+      ...auth,
+      run,
+      client: {
+        ...auth.client,
+        handler: (request: Request) => run((client) => client.handler(request)),
+      },
+    };
+  };
   const auth = await makeAuth();
   const ip = `192.0.2.${String(++client)}`;
   const request = (

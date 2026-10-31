@@ -104,16 +104,20 @@ Auth also has signup disabled, so an unknown address cannot create a row missing
 timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
-`Auth.make` reads runtime configuration, opens a scoped Promise-native
-`pg.Pool` through Hyperdrive, and constructs Better Auth with its Drizzle adapter.
+The API Worker builds its router, including `Auth`, once per isolate on the
+first request, from init services rather than that request's execution context.
+`Auth.make` reads runtime configuration and constructs Better Auth once.
+`auth.use` binds the invocation's resources around each SDK call through
+`AsyncLocalStorage`: on first use in an execution scope it resolves Hyperdrive
+credentials, opens a one-connection Promise-native `pg.Pool` with Better Auth's
+Drizzle adapter, and captures that invocation's `waitUntil` for email. The pool
+closes with the execution scope. SDK calls outside `auth.use` fail.
 Auth uses standard Promise-native Drizzle over that pool, reusing the existing
 user, session, account, and verification table definitions. Drizzle owns the SQL
 column names; auth no longer repeats column mappings. Adapter transactions are
 enabled. Application persistence remains on Effect + Drizzle. Better Auth awaits
 its database work before returning; its optional background-task handler is not
-enabled. `Auth.make(connectionString)` accepts a resolved string; the Worker
-resolves Hyperdrive credentials when building that layer during an invocation.
-The pool has one connection and closes with the Worker execution scope.
+enabled.
 
 Magic-link email uses the existing transactional Email/Resend workflow. After
 eligibility is checked, delivery is registered directly with the Worker's

@@ -45,7 +45,9 @@ describe("server session lookup", () => {
     const cookie = setCookie?.split(";", 1)[0];
     if (!cookie) throw new Error("Missing session cookie");
     const headers = new Headers({ cookie });
-    const session = await (await makeAuth()).client.api.getSession({ headers });
+    const session = await (
+      await makeAuth()
+    ).run((client) => client.api.getSession({ headers }));
     expect(session?.user).toMatchObject({
       id: "existing-notification-user",
       email: "user@example.com",
@@ -67,9 +69,11 @@ describe("server session lookup", () => {
     );
     expect(await rows("auth_sessions")).toHaveLength(1);
 
-    await auth.client.api.signOut({ headers });
+    await auth.run((client) => client.api.signOut({ headers }));
     expect(
-      await (await makeAuth()).client.api.getSession({ headers }),
+      await (
+        await makeAuth()
+      ).run((client) => client.api.getSession({ headers })),
     ).toBeNull();
     expect(await rows("auth_sessions")).toHaveLength(0);
   });
@@ -117,14 +121,18 @@ describe("server session lookup", () => {
   it("returns no session for absent or invalid cookies", async () => {
     const { auth } = await makeAuthFixture();
     expect(
-      await auth.client.api.getSession({ headers: new Headers() }),
+      await auth.run((client) =>
+        client.api.getSession({ headers: new Headers() }),
+      ),
     ).toBeNull();
     expect(
-      await auth.client.api.getSession({
-        headers: new Headers({
-          cookie: "__Secure-better-auth.session_token=invalid",
+      await auth.run((client) =>
+        client.api.getSession({
+          headers: new Headers({
+            cookie: "__Secure-better-auth.session_token=invalid",
+          }),
         }),
-      }),
+      ),
     ).toBeNull();
   });
 });

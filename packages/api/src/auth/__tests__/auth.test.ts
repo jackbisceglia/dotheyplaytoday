@@ -1,6 +1,7 @@
 import { makeAuthFixture } from "./fixtures.js";
 import { describe, expect, it, vi } from "vitest";
-import { Effect } from "effect";
+import * as Cloudflare from "alchemy/Cloudflare";
+import { Effect, Layer } from "effect";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { WebUrl } from "@dtpt/core/lib/config/web";
 
@@ -78,10 +79,12 @@ describe("authentication boundaries", () => {
           metadata: { user: forgedRecipient },
         }),
       ),
-      f.auth.client.api.signInMagicLink({
-        headers: f.request("/sign-in/magic-link").headers,
-        body: { email: "verified@example.com" },
-      }),
+      f.auth.run((client) =>
+        client.api.signInMagicLink({
+          headers: f.request("/sign-in/magic-link").headers,
+          body: { email: "verified@example.com" },
+        }),
+      ),
       f.auth.client.handler(
         f.request("/sign-in/magic-link", {
           email: "unknown@example.com",
@@ -120,6 +123,55 @@ describe("authentication boundaries", () => {
         "https://www.example.com/",
       );
     }
+  });
+
+  it("registers each email with the invocation that requested it", async () => {
+    const f = await makeAuthFixture();
+    const invoke = (email: string) => {
+      const pending: Promise<unknown>[] = [];
+      return Effect.runPromise(
+        f.auth
+          .use((client) =>
+            client.api.signInMagicLink({
+              headers: f.request("/sign-in/magic-link").headers,
+              body: { email },
+            }),
+          )
+          .pipe(
+            Effect.provide(
+              Layer.merge(
+                f.layer,
+                Layer.mock(Cloudflare.WorkerExecutionContext, {
+                  cache: {
+                    purge: () => Effect.die("Cache is not used by auth"),
+                  },
+                  raw: {
+                    waitUntil: (promise) => {
+                      pending.push(promise);
+                    },
+                    passThroughOnException: () => undefined,
+                    props: {},
+                    get tracing(): never {
+                      throw new Error("Tracing is not used by auth");
+                    },
+                  },
+                }),
+              ),
+            ),
+            Effect.scoped,
+            Effect.as(pending),
+          ),
+      );
+    };
+    await f.database.exec(
+      "INSERT INTO users (id, email, timezone, unsubscribe_token) VALUES ('second-user', 'second@example.com', 'America/New_York', 'second-token')",
+    );
+    const invocations = await Promise.all([
+      invoke("user@example.com"),
+      invoke("second@example.com"),
+    ]);
+    expect(invocations.map((pending) => pending.length)).toEqual([1, 1]);
+    expect(f.pending).toHaveLength(0);
   });
 
   it("uses the same verification snapshot for the callback and email copy", async () => {
