@@ -1,9 +1,10 @@
 import { makeAuthFixture } from "./fixtures.js";
 import { describe, expect, it, vi } from "vitest";
 import * as Cloudflare from "alchemy/Cloudflare";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Redacted } from "effect";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { WebUrl } from "@dtpt/core/lib/config/web";
+import { Auth, createAuthLayerFromHyperdriveResource } from "../auth.js";
 
 describe("authentication boundaries", () => {
   it.each([false, true])(
@@ -79,12 +80,10 @@ describe("authentication boundaries", () => {
           metadata: { user: forgedRecipient },
         }),
       ),
-      f.auth.run((client) =>
-        client.api.signInMagicLink({
-          headers: f.request("/sign-in/magic-link").headers,
-          body: { email: "verified@example.com" },
-        }),
-      ),
+      f.auth.client.api.signInMagicLink({
+        headers: f.request("/sign-in/magic-link").headers,
+        body: { email: "verified@example.com" },
+      }),
       f.auth.client.handler(
         f.request("/sign-in/magic-link", {
           email: "unknown@example.com",
@@ -125,52 +124,62 @@ describe("authentication boundaries", () => {
     }
   });
 
-  it("registers each email with the invocation that requested it", async () => {
+  it("gives each invocation its own client and email context", async () => {
     const f = await makeAuthFixture();
-    const invoke = (email: string) => {
+    const auth = await Effect.runPromise(
+      Effect.gen(function* () {
+        return yield* Auth;
+      }).pipe(
+        Effect.provide(
+          createAuthLayerFromHyperdriveResource({
+            connectionString: Effect.succeed(
+              Redacted.make("postgres://user:password@localhost:5432/database"),
+            ),
+          }).pipe(Layer.provide(f.layer)),
+        ),
+      ),
+    );
+    const invoke = async () => {
       const pending: Promise<unknown>[] = [];
-      return Effect.runPromise(
-        f.auth
-          .use((client) =>
+      const clients = await Effect.runPromise(
+        Effect.gen(function* () {
+          const first = yield* auth.use((client) => Promise.resolve(client));
+          yield* auth.use((client) =>
             client.api.signInMagicLink({
               headers: f.request("/sign-in/magic-link").headers,
-              body: { email },
+              body: { email: "user@example.com" },
             }),
-          )
-          .pipe(
-            Effect.provide(
-              Layer.merge(
-                f.layer,
-                Layer.mock(Cloudflare.WorkerExecutionContext, {
-                  cache: {
-                    purge: () => Effect.die("Cache is not used by auth"),
+          );
+          const second = yield* auth.use((client) => Promise.resolve(client));
+          return [first, second];
+        }).pipe(
+          Effect.provide(
+            Layer.merge(
+              f.layer,
+              Layer.mock(Cloudflare.WorkerExecutionContext, {
+                cache: { purge: () => Effect.die("Cache is not used by auth") },
+                raw: {
+                  waitUntil: (promise) => {
+                    pending.push(promise);
                   },
-                  raw: {
-                    waitUntil: (promise) => {
-                      pending.push(promise);
-                    },
-                    passThroughOnException: () => undefined,
-                    props: {},
-                    get tracing(): never {
-                      throw new Error("Tracing is not used by auth");
-                    },
+                  passThroughOnException: () => undefined,
+                  props: {},
+                  get tracing(): never {
+                    throw new Error("Tracing is not used by auth");
                   },
-                }),
-              ),
+                },
+              }),
             ),
-            Effect.scoped,
-            Effect.as(pending),
           ),
+          Effect.scoped,
+        ),
       );
+      return { clients, pending };
     };
-    await f.database.exec(
-      "INSERT INTO users (id, email, timezone, unsubscribe_token) VALUES ('second-user', 'second@example.com', 'America/New_York', 'second-token')",
-    );
-    const invocations = await Promise.all([
-      invoke("user@example.com"),
-      invoke("second@example.com"),
-    ]);
-    expect(invocations.map((pending) => pending.length)).toEqual([1, 1]);
+    const [a, b] = await Promise.all([invoke(), invoke()]);
+    expect(a.clients[0]).toBe(a.clients[1]);
+    expect(a.clients[0]).not.toBe(b.clients[0]);
+    expect([a.pending.length, b.pending.length]).toEqual([1, 1]);
     expect(f.pending).toHaveLength(0);
   });
 

@@ -129,9 +129,6 @@ const makeFixture = async () => {
     ),
   );
   onTestFinished(web.dispose);
-  const invocation = await Effect.runPromise(
-    Layer.build(fixture.layer).pipe(Effect.scoped),
-  );
 
   const request = (path: string, body?: unknown, cookie?: string) =>
     web.handler(
@@ -152,7 +149,7 @@ const makeFixture = async () => {
         env: {},
         get: () => Effect.die("Unexpected binding lookup"),
         set: () => Effect.die("Unexpected binding write"),
-      }).pipe(Context.merge(invocation)),
+      }),
     );
   const signIn = async () => {
     await fixture.auth.client.handler(
@@ -364,9 +361,7 @@ describe("assembled HTTP API", () => {
     expect(
       await (await f.request("/user/subscription", undefined, cookie)).json(),
     ).toEqual([]);
-    await f.auth.run((client) =>
-      client.api.signOut({ headers: new Headers({ cookie }) }),
-    );
+    await f.auth.client.api.signOut({ headers: new Headers({ cookie }) });
     for (const path of reads)
       expect((await f.request(path, undefined, cookie)).status).toBe(401);
   });

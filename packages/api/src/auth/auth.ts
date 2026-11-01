@@ -1,7 +1,7 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
-import type { Id } from "@dtpt/core/lib/id/service";
+import { Id } from "@dtpt/core/lib/id/service";
 import {
   sendSignInCode,
   sendSignInLink,
@@ -20,8 +20,7 @@ import {
   authVerificationsTable,
 } from "@dtpt/core/modules/auth/schema";
 import { makeExecutionMemo } from "alchemy/Runtime/ExecutionMemo";
-import type { RuntimeContext } from "alchemy/RuntimeContext";
-import { betterAuth, type DBAdapter } from "better-auth";
+import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -36,7 +35,6 @@ import {
   Schema,
 } from "effect";
 import type { Headers } from "effect/unstable/http/Headers";
-import { AsyncLocalStorage } from "node:async_hooks";
 import { Pool } from "pg";
 
 import { AuthConfig } from "./config.js";
@@ -76,45 +74,16 @@ export class AuthRequestError extends Schema.TaggedError<AuthRequestError>()(
   { cause: Schema.Defect() },
 ) {}
 
-type Send = ReturnType<typeof sendSignInCode>;
-
-/** @effect-expect-leaking RuntimeContext | Cloudflare.WorkerExecutionContext */
-export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
-  make: Effect.fn("Auth.make")(function* (
-    connectionString: Effect.Effect<Redacted.Redacted, never, RuntimeContext>,
-  ) {
+export class AuthSdk extends Context.Service<AuthSdk>()("@dtpt/api/AuthSdk", {
+  make: Effect.fn("AuthSdk.make")(function* (connectionString: string) {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL("/", yield* WebUrl);
     const homeUrl = new URL("/home", webUrl);
+    const pool = yield* createAuthPool(connectionString);
+    const cloudflare = yield* Cloudflare.WorkerExecutionContext;
     // Preserve runtime config and Id when Better Auth calls back into Effect.
     const runPromise = Effect.runPromiseWith(yield* Effect.context<Id>());
-
-    // The client is built once per Worker; `use` binds the invocation's
-    // database adapter and email `waitUntil` for the duration of each call.
-    const invocation = new AsyncLocalStorage<{
-      readonly adapter: DBAdapter;
-      readonly send: (send: Send) => void;
-    }>();
-    const current = () => {
-      const store = invocation.getStore();
-      if (!store) throw new Error("Auth used outside Auth.use");
-      return store;
-    };
-    const adapter: DBAdapter = {
-      id: "drizzle",
-      create: (args) => current().adapter.create(args),
-      findOne: (args) => current().adapter.findOne(args),
-      findMany: (args) => current().adapter.findMany(args),
-      count: (args) => current().adapter.count(args),
-      update: (args) => current().adapter.update(args),
-      updateMany: (args) => current().adapter.updateMany(args),
-      delete: (args) => current().adapter.delete(args),
-      deleteMany: (args) => current().adapter.deleteMany(args),
-      consumeOne: (args) => current().adapter.consumeOne(args),
-      incrementOne: (args) => current().adapter.incrementOne(args),
-      transaction: (callback) => current().adapter.transaction(callback),
-    };
 
     const client = betterAuth({
       appName: "dotheyplaytoday",
@@ -122,7 +91,16 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
       baseURL: apiUrl.origin,
       secret: Redacted.value(config.secret),
       trustedOrigins: [apiUrl.origin, webUrl.origin],
-      database: () => adapter,
+      database: drizzleAdapter(drizzle({ client: pool }), {
+        provider: "pg",
+        transaction: true,
+        schema: {
+          user: usersTable,
+          session: authSessionsTable,
+          account: authAccountsTable,
+          verification: authVerificationsTable,
+        },
+      }),
       disabledPaths: [
         "/update-user",
         "/email-otp/check-verification-otp",
@@ -249,7 +227,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
               ? sendSignInLink(email, options.url)
               : sendConfirmationLink(email, options.url);
 
-            current().send(send);
+            cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
           },
         }),
         emailOTP({
@@ -266,7 +244,7 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
                 ? sendSignInCode(email, otp)
                 : sendConfirmationCode(email, otp);
 
-              current().send(send);
+              cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
             }
 
             return Promise.resolve();
@@ -275,36 +253,11 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
       ],
     });
 
-    const resources = yield* makeExecutionMemo(
-      Effect.gen(function* () {
-        const url = yield* connectionString;
-        const pool = yield* createAuthPool(Redacted.value(url));
-        const cloudflare = yield* Cloudflare.WorkerExecutionContext;
-        return {
-          adapter: drizzleAdapter(drizzle({ client: pool }), {
-            provider: "pg",
-            transaction: true,
-            schema: {
-              user: usersTable,
-              session: authSessionsTable,
-              account: authAccountsTable,
-              verification: authVerificationsTable,
-            },
-          })(client.options),
-          send: (send: Send) => {
-            cloudflare.raw.waitUntil(runPromise(send.pipe(Effect.ignore)));
-          },
-        };
-      }),
-    );
-
     const use = <A>(f: (auth: typeof client) => PromiseLike<A>) =>
-      Effect.flatMap(resources, (resources) =>
-        Effect.tryPromise({
-          try: () => invocation.run(resources, () => f(client)),
-          catch: (cause) => new AuthRequestError({ cause }),
-        }),
-      );
+      Effect.tryPromise({
+        try: () => f(client),
+        catch: (cause) => new AuthRequestError({ cause }),
+      });
 
     const getSession = Effect.fn("Auth.getSession")((headers: Headers) =>
       use((client) => client.api.getSession({ headers })),
@@ -314,6 +267,38 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
   }),
 }) {}
 
+export class Auth extends Context.Service<
+  Auth,
+  Pick<AuthSdk["Service"], "use" | "getSession">
+>()("@dtpt/api/Auth") {}
+
+/**
+ * The router captures this service once per Worker. A Better Auth client's pool
+ * and execution context are pinned to one invocation, so each invocation that
+ * uses auth builds its own client, and the rest never pay for one.
+ */
 export const createAuthLayerFromHyperdriveResource = (
-  client: Cloudflare.Hyperdrive.ConnectClient,
-) => Layer.effect(Auth, Auth.make(client.connectionString));
+  hyperdrive: Pick<Cloudflare.Hyperdrive.ConnectClient, "connectionString">,
+) =>
+  Layer.effect(
+    Auth,
+    Effect.gen(function* () {
+      const id = yield* Id;
+      const memo = yield* makeExecutionMemo(
+        Effect.gen(function* () {
+          // Hyperdrive credentials are only available during a Worker invocation.
+          const connection = yield* hyperdrive.connectionString;
+          return yield* AuthSdk.make(Redacted.value(connection));
+        }).pipe(Effect.provideService(Id, id), Effect.orDie),
+      );
+      // lint(anti-slop/require-safety-comment-for-type-assertion): every Worker
+      // invocation provides RuntimeContext and WorkerExecutionContext.
+      const sdk = memo as Effect.Effect<Effect.Success<typeof memo>>;
+
+      return Auth.of({
+        use: (f) => Effect.flatMap(sdk, (sdk) => sdk.use(f)),
+        getSession: (headers) =>
+          Effect.flatMap(sdk, (sdk) => sdk.getSession(headers)),
+      });
+    }),
+  );
