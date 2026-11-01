@@ -74,8 +74,8 @@ export class AuthRequestError extends Schema.TaggedError<AuthRequestError>()(
   { cause: Schema.Defect() },
 ) {}
 
-export const makeAuthClient = (connectionString: string) =>
-  Effect.gen(function* () {
+export const makeAuthClient = Effect.fn("Auth.makeClient")(
+  function* (connectionString: string) {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL("/", yield* WebUrl);
@@ -264,7 +264,8 @@ export const makeAuthClient = (connectionString: string) =>
     );
 
     return { use, client, getSession };
-  }).pipe(Effect.withSpan("Auth.makeClient"));
+  },
+);
 
 type AuthClient = Effect.Success<ReturnType<typeof makeAuthClient>>;
 

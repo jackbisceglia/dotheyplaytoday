@@ -127,9 +127,7 @@ describe("authentication boundaries", () => {
   it("gives each invocation its own client and email context", async () => {
     const f = await makeAuthFixture();
     const auth = await Effect.runPromise(
-      Effect.gen(function* () {
-        return yield* Auth;
-      }).pipe(
+      Auth.pipe(
         Effect.provide(
           createAuthLayerFromHyperdriveResource({
             connectionString: Effect.succeed(
