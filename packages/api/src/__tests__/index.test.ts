@@ -104,8 +104,9 @@ const makeFixture = async () => {
   onTestFinished(() => pool.end());
 
   const web = HttpRouter.toWebHandler(
-    HttpApiLayer(Layer.succeed(Auth, fixture.auth)).pipe(
+    HttpApiLayer.pipe(
       Layer.provide([
+        Layer.succeed(Auth, Effect.succeed(fixture.auth)),
         Layer.mock(Users, {
           get,
           create,
@@ -125,6 +126,7 @@ const makeFixture = async () => {
         Platform,
       ]),
       Layer.provide(fixture.layer),
+      HttpRouter.provideRequest(fixture.layer),
     ),
   );
   onTestFinished(web.dispose);

@@ -1,7 +1,9 @@
 import * as Cloudflare from "alchemy/Cloudflare";
+import { makeExecutionMemo } from "alchemy/Runtime/ExecutionMemo";
+import type { RuntimeContext } from "alchemy/RuntimeContext";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
-import type { Id } from "@dtpt/core/lib/id/service";
+import { Id } from "@dtpt/core/lib/id/service";
 import {
   sendSignInCode,
   sendSignInLink,
@@ -74,12 +76,14 @@ export class AuthRequestError extends Schema.TaggedError<AuthRequestError>()(
 ) {}
 
 export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
-  make: Effect.fn("Auth.make")(function* (connectionString: string) {
+  make: Effect.fn("Auth.make")(function* (
+    connectionString: Effect.Effect<string, never, RuntimeContext>,
+  ) {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL("/", yield* WebUrl);
     const homeUrl = new URL("/home", webUrl);
-    const pool = yield* createAuthPool(connectionString);
+    const pool = yield* createAuthPool(yield* connectionString);
     const cloudflare = yield* Cloudflare.WorkerExecutionContext;
     // Preserve runtime config and Id when Better Auth calls back into Effect.
     const runPromise = Effect.runPromiseWith(yield* Effect.context<Id>());
@@ -263,13 +267,17 @@ export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
     );
 
     return { use, client, getSession };
-  }),
+  }, Effect.orDie, (make) =>
+    Effect.flatMap(Id, (id) =>
+      makeExecutionMemo(make.pipe(Effect.provideService(Id, id))),
+    ),
+  ),
 }) {}
 
-export const createAuthLayerFromHyperdriveResource = Effect.fn(
-  "Auth.createLayerFromHyperdriveResource",
-)(function* (client: Cloudflare.Hyperdrive.ConnectClient) {
-  // Hyperdrive credentials are only available during a Worker invocation.
-  const connection = yield* client.connectionString;
-  return yield* Auth.make(Redacted.value(connection));
-}, Layer.effect(Auth));
+export const createAuthLayerFromHyperdriveResource = (
+  client: Cloudflare.Hyperdrive.ConnectClient,
+) =>
+  Layer.effect(
+    Auth,
+    Auth.make(client.connectionString.pipe(Effect.map(Redacted.value))),
+  );

@@ -60,13 +60,12 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // HttpApiLayer reads WebConfig at runtime from the Stack's late binding.
     // Layers
     const DatabaseLayer = createDatabaseLayerFromHyperdriveResource(hyperdrive);
-    const AuthLayer = createAuthLayerFromHyperdriveResource(hyperdrive).pipe(
-      Layer.provide(IdLayer.pipe(Layer.provide(CloudflareCryptoLayer))),
-      Layer.orDie,
+    const AuthLayer = createAuthLayerFromHyperdriveResource(hyperdrive);
+    const ApiServicesLayer = AuthLayer.pipe(
+      Layer.provideMerge(ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer))),
     );
-    const ApiServicesLayer = ApiBaseLayer.pipe(Layer.provideMerge(DatabaseLayer));
 
-    const ApiWorkerLayer = HttpApiLayer(AuthLayer).pipe(
+    const ApiWorkerLayer = HttpApiLayer.pipe(
       Layer.provide([ApiServicesLayer, Platform]),
     );
 

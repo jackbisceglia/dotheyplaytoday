@@ -105,8 +105,9 @@ timezone or unsubscribe identity. Both known and unknown requests receive
 Better Auth's ordinary success response.
 
 The API Worker builds its router once from initialization services, excluding
-request context. Auth-using handlers provide their Auth layer during execution
-with `Effect.provide`, so public routes never construct Auth.
+request context. The Auth service holds an acquisition effect memoized with
+Alchemy's `makeExecutionMemo`. Handlers resolve it inside the current request;
+public routes never acquire an auth client or pool.
 
 `Auth.make` reads runtime configuration, opens a scoped Promise-native
 `pg.Pool` through Hyperdrive, and constructs Better Auth with its Drizzle adapter.
@@ -115,9 +116,10 @@ user, session, account, and verification table definitions. Drizzle owns the SQL
 column names; auth no longer repeats column mappings. Adapter transactions are
 enabled. Application persistence remains on Effect + Drizzle. Better Auth awaits
 its database work before returning; its optional background-task handler is not
-enabled. `Auth.make(connectionString)` accepts a resolved string; the Worker
-resolves Hyperdrive credentials when building that layer during an invocation.
-The pool has one connection and closes when the provided auth operation finishes.
+enabled. `Auth.make(connectionString)` accepts a deferred connection string;
+credentials, configuration, and email execution context are read on acquisition.
+The pool has one connection, is shared within that execution scope, and closes
+when the scope closes. Only the stable Id service is captured at initialization.
 
 Magic-link email uses the existing transactional Email/Resend workflow. After
 eligibility is checked, delivery is registered directly with the Worker's

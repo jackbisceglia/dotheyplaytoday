@@ -4,7 +4,7 @@ import { whenSchemaIssue } from "@dtpt/core/lib/effect/index";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, type Layer, SchemaIssue } from "effect";
+import { Effect, SchemaIssue } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -23,12 +23,11 @@ const UnexpectedUpdateErrorTags = [
   "DatabaseTransactionError",
 ] as const;
 
-export const SubscriptionGroupLayer = <R>(
-  authLayer: Layer.Layer<Auth, never, R>,
-) => HttpApiBuilder.group(
+export const SubscriptionGroupLayer = HttpApiBuilder.group(
   Api,
   "subscription",
   Effect.fn("SubscriptionHttpApi.group")(function* (handlers) {
+    const getAuth = yield* Auth;
     const rateLimiter = yield* RateLimiter;
 
     const users = yield* Users;
@@ -39,7 +38,7 @@ export const SubscriptionGroupLayer = <R>(
         "list",
         Effect.fn("SubscriptionHttpApi.list")(
           function* (ctx) {
-            const auth = yield* Auth;
+            const auth = yield* getAuth;
             const session = yield* auth.getSession(ctx.request.headers);
 
             if (!session) {
@@ -75,14 +74,13 @@ export const SubscriptionGroupLayer = <R>(
               Effect.fail(new HttpApiError.InternalServerError({})),
           }),
           withNoStoreResponse,
-          Effect.provide(authLayer),
         ),
       )
       .handle(
         "update",
         Effect.fn("SubscriptionHttpApi.update")(
           function* (ctx) {
-            const auth = yield* Auth;
+            const auth = yield* getAuth;
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
             const session = yield* auth.getSession(ctx.request.headers);
@@ -120,7 +118,6 @@ export const SubscriptionGroupLayer = <R>(
             Effect.fail(new HttpApiError.InternalServerError({})),
           ),
           withNoStoreResponse,
-          Effect.provide(authLayer),
         ),
       );
   }),
