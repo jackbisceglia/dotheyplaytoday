@@ -106,17 +106,17 @@ Better Auth's ordinary success response.
 
 The API Worker builds its router once per isolate on the first request, from
 init services rather than that request's execution context. The router holds the
-`Auth` service, which creates an `AuthSdk` on first use in each Worker
+`Auth` service, which creates a Better Auth client on first use in each Worker
 invocation; requests that never use auth create none.
 
-`AuthSdk.make` reads runtime configuration, opens a scoped Promise-native
+`makeAuthClient` reads runtime configuration, opens a scoped Promise-native
 `pg.Pool` through Hyperdrive, and constructs Better Auth with its Drizzle adapter.
 Auth uses standard Promise-native Drizzle over that pool, reusing the existing
 user, session, account, and verification table definitions. Drizzle owns the SQL
 column names; auth no longer repeats column mappings. Adapter transactions are
 enabled. Application persistence remains on Effect + Drizzle. Better Auth awaits
 its database work before returning; its optional background-task handler is not
-enabled. `AuthSdk.make(connectionString)` accepts a resolved string; the
+enabled. `makeAuthClient(connectionString)` accepts a resolved string; the
 `Auth` service resolves Hyperdrive credentials during an invocation.
 The pool has one connection and closes with the Worker execution scope.
 

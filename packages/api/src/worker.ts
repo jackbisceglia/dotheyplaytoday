@@ -74,14 +74,14 @@ export default class ApiWorker extends Cloudflare.Worker<ApiWorker>()(
     // Build the router once, on first request (URL bindings resolve at
     // runtime). HttpApiBuilder captures its build context, so build from
     // init services rather than the first request's execution context.
-    const context = (yield* Effect.context()).pipe(
+    const context = (yield* Effect.context<RateLimiter>()).pipe(
       Context.omit(Cloudflare.WorkerExecutionContext),
     );
     const scope = yield* Scope.make();
     const handler = yield* Effect.cached(
       HttpRouter.toHttpEffect(ApiWorkerLayer).pipe(
         Scope.provide(scope),
-        Effect.provideContext(context),
+        Effect.updateContext((_: Context.Context<never>) => context),
         Effect.orDie,
       ),
     );

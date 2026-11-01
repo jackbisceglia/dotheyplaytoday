@@ -74,8 +74,8 @@ export class AuthRequestError extends Schema.TaggedError<AuthRequestError>()(
   { cause: Schema.Defect() },
 ) {}
 
-export class AuthSdk extends Context.Service<AuthSdk>()("@dtpt/api/AuthSdk", {
-  make: Effect.fn("AuthSdk.make")(function* (connectionString: string) {
+export const makeAuthClient = (connectionString: string) =>
+  Effect.gen(function* () {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL("/", yield* WebUrl);
@@ -264,19 +264,15 @@ export class AuthSdk extends Context.Service<AuthSdk>()("@dtpt/api/AuthSdk", {
     );
 
     return { use, client, getSession };
-  }),
-}) {}
+  }).pipe(Effect.withSpan("Auth.makeClient"));
+
+type AuthClient = Effect.Success<ReturnType<typeof makeAuthClient>>;
 
 export class Auth extends Context.Service<
   Auth,
-  Pick<AuthSdk["Service"], "use" | "getSession">
+  Pick<AuthClient, "use" | "getSession">
 >()("@dtpt/api/Auth") {}
 
-/**
- * The router captures this service once per Worker. A Better Auth client's pool
- * and execution context are pinned to one invocation, so each invocation that
- * uses auth builds its own client, and the rest never pay for one.
- */
 export const createAuthLayerFromHyperdriveResource = (
   hyperdrive: Pick<Cloudflare.Hyperdrive.ConnectClient, "connectionString">,
 ) =>
@@ -285,20 +281,18 @@ export const createAuthLayerFromHyperdriveResource = (
     Effect.gen(function* () {
       const id = yield* Id;
       const memo = yield* makeExecutionMemo(
-        Effect.gen(function* () {
-          // Hyperdrive credentials are only available during a Worker invocation.
-          const connection = yield* hyperdrive.connectionString;
-          return yield* AuthSdk.make(Redacted.value(connection));
-        }).pipe(Effect.provideService(Id, id), Effect.orDie),
+        Effect.flatMap(hyperdrive.connectionString, (url) =>
+          makeAuthClient(Redacted.value(url)),
+        ).pipe(Effect.provideService(Id, id), Effect.orDie),
       );
-      // lint(anti-slop/require-safety-comment-for-type-assertion): every Worker
-      // invocation provides RuntimeContext and WorkerExecutionContext.
-      const sdk = memo as Effect.Effect<Effect.Success<typeof memo>>;
 
+      // lint(anti-slop/require-safety-comment-for-type-assertion): Worker invocations
+      // supply RuntimeContext and WorkerExecutionContext when auth is used.
+      const client = memo as Effect.Effect<AuthClient>;
       return Auth.of({
-        use: (f) => Effect.flatMap(sdk, (sdk) => sdk.use(f)),
+        use: (f) => Effect.flatMap(client, (auth) => auth.use(f)),
         getSession: (headers) =>
-          Effect.flatMap(sdk, (sdk) => sdk.getSession(headers)),
+          Effect.flatMap(client, (auth) => auth.getSession(headers)),
       });
     }),
   );
