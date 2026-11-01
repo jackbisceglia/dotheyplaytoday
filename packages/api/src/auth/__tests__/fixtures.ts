@@ -1,5 +1,6 @@
 import { exactOptional } from "@dtpt/core/lib/utils";
 import * as Cloudflare from "alchemy/Cloudflare";
+import { RuntimeContext } from "alchemy/RuntimeContext";
 import { Id } from "@dtpt/core/lib/id/service";
 import {
   sendConfirmationCode,
@@ -98,6 +99,7 @@ export const makeAuthFixture = async () => {
       }),
     ),
     Layer.mock(Id, {}),
+    Layer.mock(RuntimeContext, { Type: "test", id: "auth-test", env: {} }),
     Layer.mock(Cloudflare.WorkerExecutionContext, {
       cache: { purge: () => Effect.die("Cache is not used by auth") },
       raw: {
@@ -114,10 +116,9 @@ export const makeAuthFixture = async () => {
   );
   const makeAuth = () =>
     Effect.runPromise(
-      Auth.make("postgres://user:password@localhost:5432/database").pipe(
-        Effect.provide(layer),
-        Effect.scoped,
-      ),
+      Auth.make(
+        Effect.succeed("postgres://user:password@localhost:5432/database"),
+      ).pipe(Effect.flatten, Effect.provide(layer), Effect.scoped),
     );
   const auth = await makeAuth();
   const ip = `192.0.2.${String(++client)}`;
