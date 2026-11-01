@@ -10,7 +10,7 @@ import { whenSchemaIssue } from "@dtpt/core/lib/effect/index";
 import { Subscriptions } from "@dtpt/core/modules/subscriptions/service";
 import { type EmailAddress, UserId } from "@dtpt/core/modules/users/schema";
 import { Users } from "@dtpt/core/modules/users/service";
-import { Effect, Match, Option, SchemaIssue } from "effect";
+import { Effect, type Layer, Match, Option, SchemaIssue } from "effect";
 import { type Headers } from "effect/unstable/http";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
@@ -39,9 +39,10 @@ const CreateErrorTags = [
   "SchemaError",
 ] as const;
 
-export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
+export const UserGroupLayer = <R>(
+  authLayer: Layer.Layer<Auth, never, R>,
+) => HttpApiBuilder.group(Api, "user", (handlers) =>
   Effect.gen(function* () {
-    const auth = yield* Auth;
     const rateLimiter = yield* RateLimiter;
 
     const database = yield* Database;
@@ -50,11 +51,13 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
     const requestMagicLink = Effect.fn("User.requestMagicLink")(
       function* (email: EmailAddress, headers: Headers.Headers) {
+        const auth = yield* Auth;
         yield* auth.use((client) =>
           // The shared auth before hook owns the success/error callbacks.
           client.api.signInMagicLink({ headers, body: { email } }),
         );
       },
+      Effect.provide(authLayer),
       Effect.catchTag("AuthRequestError", () =>
         Effect.logError("signup: magic-link issuance failed"),
       ),
@@ -116,6 +119,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
         "get",
         Effect.fn("UserHttpApi.get")(
           function* (ctx) {
+            const auth = yield* Auth;
             const session = yield* auth.use((client) =>
               client.api.getSession({ headers: ctx.request.headers }),
             );
@@ -151,6 +155,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
               Effect.fail(new HttpApiError.InternalServerError({})),
           }),
           withNoStoreResponse,
+          Effect.provide(authLayer),
         ),
       )
       .handle(
@@ -159,6 +164,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
+            const auth = yield* Auth;
             const token = Option.fromNullishOr(ctx.payload.token);
             const session = Option.fromNullOr(
               yield* auth.getSession(ctx.request.headers),
@@ -224,6 +230,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
             AuthRequestError: () =>
               Effect.fail(new HttpApiError.InternalServerError({})),
           }),
+          Effect.provide(authLayer),
         ),
       );
   }),

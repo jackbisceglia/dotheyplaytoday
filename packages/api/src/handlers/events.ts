@@ -2,7 +2,7 @@ import { Api } from "@dtpt/core/contracts/api";
 import { whenSchemaIssue } from "@dtpt/core/lib/effect/index";
 import { Events } from "@dtpt/core/modules/events/service";
 import { UserId } from "@dtpt/core/modules/users/schema";
-import { Effect, SchemaIssue } from "effect";
+import { Effect, type Layer, SchemaIssue } from "effect";
 import { HttpApiBuilder, HttpApiError } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
@@ -14,18 +14,19 @@ const UnexpectedErrorTags = [
   "SchemaError",
 ] as const;
 
-export const EventsGroupLayer = HttpApiBuilder.group(
+export const EventsGroupLayer = <R>(
+  authLayer: Layer.Layer<Auth, never, R>,
+) => HttpApiBuilder.group(
   Api,
   "events",
   Effect.fn("EventsHttpApi.group")(function* (handlers) {
-    const auth = yield* Auth;
-
     const events = yield* Events;
 
     return handlers.handle(
       "list",
       Effect.fn("EventsHttpApi.list")(
         function* (ctx) {
+          const auth = yield* Auth;
           const session = yield* auth.getSession(ctx.request.headers);
 
           if (!session) return yield* new HttpApiError.Unauthorized({});
@@ -51,6 +52,7 @@ export const EventsGroupLayer = HttpApiBuilder.group(
           Effect.fail(new HttpApiError.InternalServerError({})),
         ),
         withNoStoreResponse,
+        Effect.provide(authLayer),
       ),
     );
   }),

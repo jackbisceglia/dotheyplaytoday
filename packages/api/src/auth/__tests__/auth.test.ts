@@ -1,10 +1,10 @@
 import { makeAuthFixture } from "./fixtures.js";
 import { describe, expect, it, vi } from "vitest";
 import * as Cloudflare from "alchemy/Cloudflare";
-import { Effect, Layer, Redacted } from "effect";
+import { Effect, Layer } from "effect";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { WebUrl } from "@dtpt/core/lib/config/web";
-import { Auth, createAuthLayerFromHyperdriveResource } from "../auth.js";
+import { Auth } from "../auth.js";
 
 describe("authentication boundaries", () => {
   it.each([false, true])(
@@ -126,57 +126,53 @@ describe("authentication boundaries", () => {
 
   it("gives each invocation its own client and email context", async () => {
     const f = await makeAuthFixture();
-    const auth = await Effect.runPromise(
-      Auth.pipe(
-        Effect.provide(
-          createAuthLayerFromHyperdriveResource({
-            connectionString: Effect.succeed(
-              Redacted.make("postgres://user:password@localhost:5432/database"),
-            ),
-          }).pipe(Layer.provide(f.layer)),
-        ),
-      ),
+    const authLayer = Layer.effect(
+      Auth,
+      Auth.make("postgres://user:password@localhost:5432/database"),
     );
     const invoke = async () => {
       const pending: Promise<unknown>[] = [];
-      const clients = await Effect.runPromise(
+      const client = await Effect.runPromise(
         Effect.gen(function* () {
-          const first = yield* auth.use((client) => Promise.resolve(client));
+          const auth = yield* Auth;
           yield* auth.use((client) =>
             client.api.signInMagicLink({
               headers: f.request("/sign-in/magic-link").headers,
               body: { email: "user@example.com" },
             }),
           );
-          const second = yield* auth.use((client) => Promise.resolve(client));
-          return [first, second];
+          return auth.client;
         }).pipe(
           Effect.provide(
-            Layer.merge(
-              f.layer,
-              Layer.mock(Cloudflare.WorkerExecutionContext, {
-                cache: { purge: () => Effect.die("Cache is not used by auth") },
-                raw: {
-                  waitUntil: (promise) => {
-                    pending.push(promise);
-                  },
-                  passThroughOnException: () => undefined,
-                  props: {},
-                  get tracing(): never {
-                    throw new Error("Tracing is not used by auth");
-                  },
-                },
-              }),
+            authLayer.pipe(
+              Layer.provide(
+                Layer.merge(
+                  f.layer,
+                  Layer.mock(Cloudflare.WorkerExecutionContext, {
+                    cache: {
+                      purge: () => Effect.die("Cache is not used by auth"),
+                    },
+                    raw: {
+                      waitUntil: (promise) => {
+                        pending.push(promise);
+                      },
+                      passThroughOnException: () => undefined,
+                      props: {},
+                      get tracing(): never {
+                        throw new Error("Tracing is not used by auth");
+                      },
+                    },
+                  }),
+                ),
+              ),
             ),
           ),
-          Effect.scoped,
         ),
       );
-      return { clients, pending };
+      return { client, pending };
     };
     const [a, b] = await Promise.all([invoke(), invoke()]);
-    expect(a.clients[0]).toBe(a.clients[1]);
-    expect(a.clients[0]).not.toBe(b.clients[0]);
+    expect(a.client).not.toBe(b.client);
     expect([a.pending.length, b.pending.length]).toEqual([1, 1]);
     expect(f.pending).toHaveLength(0);
   });

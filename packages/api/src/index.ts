@@ -4,6 +4,7 @@ import { Effect, Layer } from "effect";
 import { HttpRouter } from "effect/unstable/http";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
 
+import type { Auth } from "./auth/auth.js";
 import { EventsGroupLayer } from "./handlers/events.js";
 import { AuthGroupLayer } from "./handlers/auth.js";
 import { FeedbackGroupLayer } from "./handlers/feedback.js";
@@ -24,13 +25,15 @@ const CorsLayer = Layer.unwrap(
   }),
 );
 
-export const HttpApiLayer = Layer.mergeAll(
+export const HttpApiLayer = <R>(
+  authLayer: Layer.Layer<Auth, never, R>,
+) => Layer.mergeAll(
   HttpApiBuilder.layer(Api).pipe(
     Layer.provide([
-      UserGroupLayer,
-      EventsGroupLayer,
-      SubscriptionGroupLayer,
-      AuthGroupLayer,
+      UserGroupLayer(authLayer),
+      EventsGroupLayer(authLayer),
+      SubscriptionGroupLayer(authLayer),
+      AuthGroupLayer(authLayer),
       PingGroupLayer,
       FeedbackGroupLayer,
       SubjectsGroupLayer,

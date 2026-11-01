@@ -1,7 +1,7 @@
 import * as Cloudflare from "alchemy/Cloudflare";
 import { ApiUrl } from "@dtpt/core/lib/config/api";
 import { WebUrl } from "@dtpt/core/lib/config/web";
-import { Id } from "@dtpt/core/lib/id/service";
+import type { Id } from "@dtpt/core/lib/id/service";
 import {
   sendSignInCode,
   sendSignInLink,
@@ -19,7 +19,6 @@ import {
   authSessionsTable,
   authVerificationsTable,
 } from "@dtpt/core/modules/auth/schema";
-import { makeExecutionMemo } from "alchemy/Runtime/ExecutionMemo";
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -74,8 +73,8 @@ export class AuthRequestError extends Schema.TaggedError<AuthRequestError>()(
   { cause: Schema.Defect() },
 ) {}
 
-export const makeAuthClient = Effect.fn("Auth.makeClient")(
-  function* (connectionString: string) {
+export class Auth extends Context.Service<Auth>()("@dtpt/api/Auth", {
+  make: Effect.fn("Auth.make")(function* (connectionString: string) {
     const config = yield* AuthConfig;
     const apiUrl = new URL(yield* ApiUrl);
     const webUrl = new URL("/", yield* WebUrl);
@@ -264,36 +263,13 @@ export const makeAuthClient = Effect.fn("Auth.makeClient")(
     );
 
     return { use, client, getSession };
-  },
-);
+  }),
+}) {}
 
-type AuthClient = Effect.Success<ReturnType<typeof makeAuthClient>>;
-
-export class Auth extends Context.Service<
-  Auth,
-  Pick<AuthClient, "use" | "getSession">
->()("@dtpt/api/Auth") {}
-
-export const createAuthLayerFromHyperdriveResource = (
-  hyperdrive: Pick<Cloudflare.Hyperdrive.ConnectClient, "connectionString">,
-) =>
-  Layer.effect(
-    Auth,
-    Effect.gen(function* () {
-      const id = yield* Id;
-      const memo = yield* makeExecutionMemo(
-        Effect.flatMap(hyperdrive.connectionString, (url) =>
-          makeAuthClient(Redacted.value(url)),
-        ).pipe(Effect.provideService(Id, id), Effect.orDie),
-      );
-
-      // lint(anti-slop/require-safety-comment-for-type-assertion): Worker invocations
-      // supply RuntimeContext and WorkerExecutionContext when auth is used.
-      const client = memo as Effect.Effect<AuthClient>;
-      return Auth.of({
-        use: (f) => Effect.flatMap(client, (auth) => auth.use(f)),
-        getSession: (headers) =>
-          Effect.flatMap(client, (auth) => auth.getSession(headers)),
-      });
-    }),
-  );
+export const createAuthLayerFromHyperdriveResource = Effect.fn(
+  "Auth.createLayerFromHyperdriveResource",
+)(function* (client: Cloudflare.Hyperdrive.ConnectClient) {
+  // Hyperdrive credentials are only available during a Worker invocation.
+  const connection = yield* client.connectionString;
+  return yield* Auth.make(Redacted.value(connection));
+}, Layer.effect(Auth));

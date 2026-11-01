@@ -1,18 +1,17 @@
 import { Api } from "@dtpt/core/contracts/api";
-import { Effect } from "effect";
+import { Effect, type Layer } from "effect";
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest";
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse";
 import { HttpApiBuilder } from "effect/unstable/httpapi";
 
 import { Auth } from "../auth/auth.js";
 
-export const AuthGroupLayer = HttpApiBuilder.group(Api, "auth", (handlers) =>
-  Effect.gen(function* () {
-    const auth = yield* Auth;
-
+export const AuthGroupLayer = <R>(authLayer: Layer.Layer<Auth, never, R>) =>
+  HttpApiBuilder.group(Api, "auth", (handlers) => {
     const handler = Effect.fn("BetterAuth.handler")(function* (input: {
       readonly request: HttpServerRequest.HttpServerRequest;
     }) {
+      const auth = yield* Auth;
       const request = yield* HttpServerRequest.toWeb(input.request).pipe(
         Effect.orDie,
       );
@@ -21,8 +20,7 @@ export const AuthGroupLayer = HttpApiBuilder.group(Api, "auth", (handlers) =>
         .pipe(Effect.orDie);
 
       return HttpServerResponse.fromWeb(response);
-    });
+    }, Effect.provide(authLayer));
 
     return handlers.handleRaw("get", handler).handleRaw("post", handler);
-  }),
-);
+  });

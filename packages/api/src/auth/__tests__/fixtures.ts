@@ -15,7 +15,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { ConfigProvider, Effect, Layer } from "effect";
 import { afterAll, beforeAll, vi } from "vitest";
 
-import { makeAuthClient } from "../auth.js";
+import { Auth } from "../auth.js";
 
 // Keep the production auth/adapter configuration; replace only the DB driver.
 const storage = vi.hoisted<{ current?: PGlite }>(() => ({}));
@@ -114,7 +114,7 @@ export const makeAuthFixture = async () => {
   );
   const makeAuth = () =>
     Effect.runPromise(
-      makeAuthClient("postgres://user:password@localhost:5432/database").pipe(
+      Auth.make("postgres://user:password@localhost:5432/database").pipe(
         Effect.provide(layer),
         Effect.scoped,
       ),
