@@ -27,7 +27,7 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
   Api,
   "subscription",
   Effect.fn("SubscriptionHttpApi.group")(function* (handlers) {
-    const auth = yield* Auth;
+    const getAuth = yield* Auth;
     const rateLimiter = yield* RateLimiter;
 
     const users = yield* Users;
@@ -38,6 +38,7 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
         "list",
         Effect.fn("SubscriptionHttpApi.list")(
           function* (ctx) {
+            const auth = yield* getAuth;
             const session = yield* auth.getSession(ctx.request.headers);
 
             if (!session) {
@@ -79,6 +80,7 @@ export const SubscriptionGroupLayer = HttpApiBuilder.group(
         "update",
         Effect.fn("SubscriptionHttpApi.update")(
           function* (ctx) {
+            const auth = yield* getAuth;
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
             const session = yield* auth.getSession(ctx.request.headers);

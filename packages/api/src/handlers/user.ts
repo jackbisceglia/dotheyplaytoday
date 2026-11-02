@@ -41,7 +41,7 @@ const CreateErrorTags = [
 
 export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
   Effect.gen(function* () {
-    const auth = yield* Auth;
+    const getAuth = yield* Auth;
     const rateLimiter = yield* RateLimiter;
 
     const database = yield* Database;
@@ -50,6 +50,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
 
     const requestMagicLink = Effect.fn("User.requestMagicLink")(
       function* (email: EmailAddress, headers: Headers.Headers) {
+        const auth = yield* getAuth;
         yield* auth.use((client) =>
           // The shared auth before hook owns the success/error callbacks.
           client.api.signInMagicLink({ headers, body: { email } }),
@@ -116,6 +117,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
         "get",
         Effect.fn("UserHttpApi.get")(
           function* (ctx) {
+            const auth = yield* getAuth;
             const session = yield* auth.use((client) =>
               client.api.getSession({ headers: ctx.request.headers }),
             );
@@ -159,6 +161,7 @@ export const UserGroupLayer = HttpApiBuilder.group(Api, "user", (handlers) =>
           function* (ctx) {
             yield* rateLimiter.check(getRateLimitKey(ctx.request));
 
+            const auth = yield* getAuth;
             const token = Option.fromNullishOr(ctx.payload.token);
             const session = Option.fromNullOr(
               yield* auth.getSession(ctx.request.headers),
