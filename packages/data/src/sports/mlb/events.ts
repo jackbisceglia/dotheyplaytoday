@@ -29728,6 +29728,122 @@ export const Games = {
       },
     ],
   },
+  _852989: {
+    id: "00000000-0000-4000-8000-100000852989",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000852989",
+    startsAt: "2027-03-25T17:35:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "New York Yankees",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Toronto Blue Jays",
+        },
+      },
+    ],
+  },
+  _852187: {
+    id: "00000000-0000-4000-8000-100000852187",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000852187",
+    startsAt: "2027-03-25T20:05:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Washington Nationals",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Philadelphia Phillies",
+        },
+      },
+    ],
+  },
+  _852752: {
+    id: "00000000-0000-4000-8000-100000852752",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000852752",
+    startsAt: "2027-03-25T20:10:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "San Diego Padres",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Arizona Diamondbacks",
+        },
+      },
+    ],
+  },
+  _853965: {
+    id: "00000000-0000-4000-8000-100000853965",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000853965",
+    startsAt: "2027-03-25T20:10:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Cincinnati Reds",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "St. Louis Cardinals",
+        },
+      },
+    ],
+  },
 } as const satisfies Record<string, MlbSportEventSeed>;
 
 export const events = Object.values(Games);
