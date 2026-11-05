@@ -29844,6 +29844,180 @@ export const Games = {
       },
     ],
   },
+  _868576: {
+    id: "00000000-0000-4000-8000-100000868576",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868576",
+    startsAt: "2027-02-19T18:05:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Baltimore Orioles",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Atlanta Braves",
+        },
+      },
+    ],
+  },
+  _868572: {
+    id: "00000000-0000-4000-8000-100000868572",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868572",
+    startsAt: "2027-02-19T18:07:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Toronto Blue Jays",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "New York Yankees",
+        },
+      },
+    ],
+  },
+  _868345: {
+    id: "00000000-0000-4000-8000-100000868345",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868345",
+    startsAt: "2027-02-19T20:05:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Athletics",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago Cubs",
+        },
+      },
+    ],
+  },
+  _868340: {
+    id: "00000000-0000-4000-8000-100000868340",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868340",
+    startsAt: "2027-02-19T20:05:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Los Angeles Dodgers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Chicago White Sox",
+        },
+      },
+    ],
+  },
+  _868342: {
+    id: "00000000-0000-4000-8000-100000868342",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868342",
+    startsAt: "2027-02-19T20:10:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Seattle Mariners",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "San Diego Padres",
+        },
+      },
+    ],
+  },
+  _868570: {
+    id: "00000000-0000-4000-8000-100000868570",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868570",
+    startsAt: "2027-02-19T23:05:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Minnesota Twins",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Tampa Bay Rays",
+        },
+      },
+    ],
+  },
 } as const satisfies Record<string, MlbSportEventSeed>;
 
 export const events = Object.values(Games);
