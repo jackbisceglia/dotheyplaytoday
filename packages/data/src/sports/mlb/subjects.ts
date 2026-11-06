@@ -85,6 +85,7 @@ export const Teams = {
       Games._823085.sourceId,
       Games._823083.sourceId,
       Games._823084.sourceId,
+      Games._853235.sourceId,
     ],
   },
   ArizonaDiamondbacks: {
@@ -942,6 +943,7 @@ export const Teams = {
       Games._824058.sourceId,
       Games._824057.sourceId,
       Games._824055.sourceId,
+      Games._868341.sourceId,
     ],
   },
   LosAngelesDodgers: {
@@ -1899,6 +1901,7 @@ export const Teams = {
       Games._823652.sourceId,
       Games._823653.sourceId,
       Games._823650.sourceId,
+      Games._868341.sourceId,
     ],
   },
   TorontoBlueJays: {
@@ -2612,6 +2615,7 @@ export const Teams = {
       Games._849804.sourceId,
       Games._849803.sourceId,
       Games._849799.sourceId,
+      Games._853235.sourceId,
     ],
   },
 } as const satisfies Record<string, MlbSportSubjectSeed>;
