@@ -30076,6 +30076,35 @@ export const Games = {
       },
     ],
   },
+  _868574: {
+    id: "00000000-0000-4000-8000-100000868574",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868574",
+    startsAt: "2027-02-19T18:10:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "New York Mets",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Miami Marlins",
+        },
+      },
+    ],
+  },
 } as const satisfies Record<string, MlbSportEventSeed>;
 
 export const events = Object.values(Games);
