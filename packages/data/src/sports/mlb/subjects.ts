@@ -1138,6 +1138,7 @@ export const Teams = {
       slug: "new-york-mets",
     },
     feedIds: [
+      Games._868574.sourceId,
       Games._823441.sourceId,
       Games._823439.sourceId,
       Games._823762.sourceId,
@@ -2362,6 +2363,7 @@ export const Teams = {
       slug: "miami-marlins",
     },
     feedIds: [
+      Games._868574.sourceId,
       Games._823766.sourceId,
       Games._823763.sourceId,
       Games._823764.sourceId,
