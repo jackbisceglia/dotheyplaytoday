@@ -32,12 +32,47 @@ only cards in the existing two-day seed window.
 
 ## Authoritative sources and identity
 
-Use [UFC's event listings](https://www.ufc.com/events), each official UFC event
-page, official event-update announcements, and
-[UFC athlete profiles](https://www.ufc.com/athletes/all). Store the consulted
-UFC URL on each import record. Git history and the catalog seed version track
-updates; there is no separate per-card revision or stale-snapshot check. Never infer a cancellation from a
-missing search result, a failed scrape, or a shortened broadcast listing.
+Prefer [UFC's event listings](https://www.ufc.com/events), official event pages,
+event-update announcements, and [athlete profiles](https://www.ufc.com/athletes/all).
+Keep the official UFC URL as the import record's source identity. Record the
+actual evidence URLs, publication/retrieval dates, and facts they establish in
+the PR; an official identity URL is not a claim that its page was accessible.
+
+When official material is inaccessible or omits a fact, two reputable,
+independent sources may establish that fact. Both must explicitly agree on the
+same event, fighters, segment, or broadcast time being changed. Syndicated copies
+or articles repeating the same underlying report count as one source. Candidates
+include established MMA reporting, event databases, and broadcaster listings;
+being on that list alone does not make a claim verified. Prefer full source
+content over search snippets and check that it is current. Accessible official
+updates take precedence over older secondary reports; unresolved contradictions
+must be reported, not decided by majority vote.
+
+Verify each field independently. Bout announcement does not establish placement;
+require explicit main-card/prelim labels, never infer placement from list order.
+A timing conflict does not block independently corroborated lineup changes on an
+existing card: retain its last confirmed times and flag the conflict in the PR.
+Do not carry forward times explicitly invalidated by a confirmed postponement;
+use the cancellation/time policy below. New cards still require verified venue
+and both broadcast times. Unknown placement remains unsupported.
+
+After a source access failure, try up to three materially different public source
+routes for the missing fact. Respect access restrictions; do not bypass CAPTCHAs,
+logins or rate limits. Continue checking other fields and cards. Open a scoped,
+ready-for-review PR for changes meeting this evidence policy even when other
+facts remain unresolved. Human review and merge remain the release boundary.
+Never infer cancellation from a missing search result, failed scrape, or shortened
+listing. Report verified changes, verified no changes within stated coverage,
+partial verification, or blocked, with specific withheld facts and source outcomes.
+
+Git history and the catalog seed version track updates; there is no separate
+per-card revision or stale-snapshot check.
+
+### Historical snapshots (not current maintenance gates)
+
+The following dated notes describe past imports, not permanent withholding rules
+or the current catalog horizon. Reassess withheld bouts using the evidence policy
+above on each run.
 
 The October 9, 2026 snapshot covers the rolling month through November 9:
 
@@ -65,9 +100,9 @@ The historical UFC 332 card leaves the active checked-in window; omitting it
 does not delete its stored event or associations. Keep its original UUID ending
 in 000001 reserved if a historical correction is needed.
 
-October 31 and November 7 have published headliners but no confirmed segment
-assignment for their other announced bouts: withhold those 22 fights from the
-catalog until UFC confirms prelims/main placement. Keep their fighter subjects;
+At that snapshot, October 31 and November 7 had published headliners but no
+confirmed segment assignments for their other announced bouts. Those 22 fights
+were withheld under the policy then in force. Their fighter subjects were retained;
 without a published participant row, those follows do not match these cards.
 Lucia Szabova has an announced bout but no verified athlete profile URL; omit
 that optional display link until UFC publishes one. José Souza's official
@@ -94,6 +129,8 @@ fight, using an empty feed list until an imported card includes them. The picker
 shows ranks 1–15 when search is empty. Bump `CatalogSeedVersion` after rank changes,
 as for other catalog updates.
 
+### Ongoing identity and update rules
+
 1. Allocate a UUID once for each new fighter and card. Keep a card's
    `sourceId` (`mma_card:ufc:<allocated UUID>`) and `id` forever. Do not derive IDs
    from a title, headliner, URL, venue, scheduled date, or opponent names. Search
@@ -105,7 +142,8 @@ as for other catalog updates.
    replace the corresponding participant row. Opponents share a `details.fightId`
    within the card and the same required `details.placement` (prelims or main).
    Never publish new fight participants without confirmed segment placement;
-   hold the fight out until UFC publishes it. Early-prelim fights use prelims.
+   hold the fight out until the evidence policy above establishes it. Early-prelim
+   fights use prelims.
    A partial source that omits an existing confirmed placement does not erase it.
    A known fighter with an unknown opponent has one participant in that group.
    Do not invent an opponent subject. Fight IDs are display grouping keys, not
