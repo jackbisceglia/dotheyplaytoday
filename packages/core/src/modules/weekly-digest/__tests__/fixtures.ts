@@ -56,6 +56,12 @@ export const college = team(
   314,
 );
 
+export const collegeFootball = team(
+  "Football",
+  { id: "ncaaf", conferenceId: "aac", apRank: null },
+  315,
+);
+
 export const makeGame = (
   subject: ReturnType<typeof team>,
   opponent: string,

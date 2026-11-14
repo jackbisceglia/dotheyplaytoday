@@ -17,6 +17,7 @@ const team = (
   display: string,
   conferenceId: string,
   apRank?: number,
+  leagueId = "ncaam",
 ) =>
   Schema.decodeUnknownSync(Subject)({
     id: `20000000-0000-4000-8000-0000000000${suffix}`,
@@ -24,7 +25,7 @@ const team = (
     details: {
       _tag: "sports_team",
       league: {
-        id: "ncaam",
+        id: leagueId,
         conferenceId,
         ...exactOptional(apRank, (rank) => ({ apRank: rank })),
       },
@@ -45,6 +46,22 @@ const teams = getTeams([uconn, miami, dayton, duke, butler]).filter(
 );
 
 describe("college browsing", () => {
+  it("browses football with the same conference and ranking rules", () => {
+    const alabama = team("21", "Alabama Crimson Tide", "sec", 2, "ncaaf");
+    const army = team("22", "Army Black Knights", "aac", undefined, "ncaaf");
+    const football = getTeams([army, alabama]).filter(isCollegeTeam);
+    expect(football).toHaveLength(2);
+    expect(getCollegeGroups(football, conferenceLabels)).toEqual({
+      ranked: true,
+      conferences: [
+        { id: "aac", label: "American" },
+        { id: "sec", label: "SEC" },
+      ],
+    });
+    expect(getCollegeTeams(football, topRankedGroup)).toEqual([alabama]);
+    expect(getCollegeTeams(football, "aac")).toEqual([army]);
+  });
+
   it("lists only conferences with teams, sorted by label", () => {
     expect(getCollegeGroups(teams, conferenceLabels).conferences).toEqual([
       { id: "acc", label: "ACC" },

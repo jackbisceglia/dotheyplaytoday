@@ -20,9 +20,19 @@ Dependencies point inward toward `core`. The API, jobs, data, and web packages d
 
 Every subject exposes `details.league.id`. Sports-team details are one tagged struct with a required `league: { id, conferenceId }`. Its league field is a discriminated union keyed by `id`, so conference constraints are enforced by the schema and its inferred TypeScript type. MMA fighter and tracking subjects use `league: { id: "ufc" }` without conferences. `SubjectDetails` uses the ordinary project `TaggedUnion` helper with one sports-team member; no suspended schema, custom grouping, or mixed-subject league accessor is needed. Event details retain their existing `leagueId` fields. Generalizing MMA to CombatSports is deferred to [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
 
-Only NCAAM league membership contains `apRank`, an integer from 1 to 25 or null for unranked/unavailable. Decoding a missing rank defaults to null, matching the MMA P4P rank convention. No AP poll data is populated or refreshed automatically.
+NCAAM and NCAAF league membership contain `apRank`, an integer from 1 to 25 or null for unranked/unavailable. Decoding a missing rank defaults to null, matching the MMA P4P rank convention. No AP poll data is populated or refreshed automatically.
 
 The NCAAM catalog contains 158 teams across 12 conferences and 1,604 confirmed-time events from the ESPN snapshot fetched on 2026-10-13. The import excluded 1,442 unconfirmed starts before writing the checked-in schedule. The snapshot does not refresh automatically; provider terms/SLA, schedule completeness, and postponement/reschedule semantics remain unverified. Conference rosters were checked against the [NCAA directory](https://web3.ncaa.org/directory/memberList?division=I&sportCode=MBB&type=12) and official conference member pages. Noncatalog opponents remain participant titles without subject/feed edges.
+
+College football follows the same catalog and runtime architecture as NCAAM:
+`ncaaf` adds eight football conferences, 112 distinct sports-team subjects, and
+707 ESPN-confirmed 2026 games, registered in `SeedCollections` at catalog version
+`2026-11-14.1`. The shared college picker recognizes both leagues; their conference
+labels merge in the college catalog helper. Existing sports feed edges,
+subscription selection, dashboard, daily/weekly rendering, and development seed
+window need no football-specific service or migration. Generated headline assets
+are checked for all sports subjects. See the [football catalog](./catalogs/college-football.md)
+for membership differences, provenance, time checks, release ordering, and refresh limitations.
 
 SQL migration `0006_subject_league_membership.sql` adds nested membership to existing subjects before new workers activate, including a hand-authored conference backfill for all 124 professional team IDs. It retains legacy fields so old workers can read rows during deployment, and fails atomically for invalid/unmapped membership. Public schemas and writes remain nested-only; no application compatibility decoder is needed. The first release keeps `CatalogSeedVersion` at `2026-10-14.1`. After that deploy and retirement of old workers, migration `0007_remove_legacy_subject_membership.sql` removes the flat subject fields, including on noncatalog rows; catalog revision `2026-10-15.1` triggers the NCAA catalog refresh. Event `leagueId` fields are unchanged. Follow the [two-stage rollout](./runbooks/subject-league-rollout.md); do not combine or force the second-stage cleanup/seed into the first deployment.
 

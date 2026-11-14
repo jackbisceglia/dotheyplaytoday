@@ -4,11 +4,15 @@ import { SportsSeed, type SportsSeedEncoded } from "../schema/sports.js";
 
 import { mlbCollection } from "../sports/mlb/index.js";
 import { nbaCollection } from "../sports/nba/index.js";
+import { ncaafCollection } from "../sports/ncaaf/index.js";
 import { ncaamCollection } from "../sports/ncaam/index.js";
 import { nflCollection } from "../sports/nfl/index.js";
 import { nhlCollection } from "../sports/nhl/index.js";
 
-type TeamDetail = Pick<SportsSeedEncoded["subjects"][number]["details"], "league" | "display">;
+type TeamDetail = Pick<
+  SportsSeedEncoded["subjects"][number]["details"],
+  "league" | "display"
+>;
 
 const byConference = (subjects: readonly { details: TeamDetail }[]) =>
   subjects.reduce<Record<string, number>>((counts, subject) => {
@@ -25,6 +29,7 @@ describe("conference coverage", () => {
       mlbCollection,
       nhlCollection,
       ncaamCollection,
+      ncaafCollection,
     ]) {
       const decoded = Schema.decodeUnknownSync(SportsSeed)(collection);
       expect(decoded.subjects.map((subject) => subject.id)).toEqual(
@@ -63,6 +68,18 @@ describe("conference coverage", () => {
     expect(byConference(mlbCollection.subjects)).toMatchObject({
       al: 15,
       nl: 15,
+    });
+
+    expect(ncaafCollection.subjects).toHaveLength(112);
+    expect(byConference(ncaafCollection.subjects)).toEqual({
+      acc: 17,
+      aac: 14,
+      "big-ten": 18,
+      "big-12": 16,
+      mac: 13,
+      "mountain-west": 10,
+      "pac-12": 8,
+      sec: 16,
     });
 
     expect(ncaamCollection.subjects).toHaveLength(158);

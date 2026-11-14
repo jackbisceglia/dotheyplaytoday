@@ -1,8 +1,17 @@
 import { SportLeague } from "@dtpt/core/modules/subjects/variants/sport.schema";
 
 import type { SportsSubject } from "./sports/index.js";
+import { conferenceLabels as basketballConferences } from "./sports/ncaam.js";
+import { conferenceLabels as footballConferences } from "./sports/ncaaf.js";
 
-type CollegeLeague = typeof SportLeague.cases.ncaam.Type;
+export const conferenceLabels = {
+  ...basketballConferences,
+  ...footballConferences,
+};
+
+type CollegeLeague =
+  | typeof SportLeague.cases.ncaam.Type
+  | typeof SportLeague.cases.ncaaf.Type;
 type CollegeTeam = SportsSubject & {
   readonly details: { readonly league: CollegeLeague };
 };
@@ -10,7 +19,8 @@ type CollegeTeam = SportsSubject & {
 // College leagues are browsed by AP Top 25 or conference instead of as one
 // grid. Teams arrive filtered to the league and sorted by display name.
 export const isCollegeTeam = (team: SportsSubject): team is CollegeTeam =>
-  SportLeague.guards.ncaam(team.details.league);
+  SportLeague.guards.ncaam(team.details.league) ||
+  SportLeague.guards.ncaaf(team.details.league);
 
 // [SLOP: TO FIX] Group selection mixes "top-25" and conference IDs as plain
 // strings, losing the schema-derived conference type. Use tagged top25/conference
