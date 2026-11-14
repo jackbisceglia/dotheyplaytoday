@@ -44,7 +44,7 @@ touch screens get it, and outranks hovering another tile. It's recorded in the
 URL as `?team=mlb-mil` (league and abbreviation). A link for a team that isn't
 picked shows the full schedule, and Edit clears the filter.
 
-Supported sports subjects include NBA, NFL, MLB, NHL, and NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences). Only provider-confirmed game starts become notification-capable events.
+Supported sports subjects include NBA, NFL, MLB, NHL, NCAA Division I men's basketball (2026-27 snapshot data; 12 conferences), and college football (2026 snapshot; 112 teams in eight conferences). Only provider-confirmed game starts become notification-capable events.
 
 Conferences organize team browsing; they are not separate subscriptions. UFC offers fighter and event-coverage subscriptions. Broader support for combat sports such as boxing and Muay Thai is tracked in [#185](https://github.com/jackbisceglia/dotheyplaytoday/issues/185).
 
@@ -233,3 +233,18 @@ that it takes its own line, and on phones it spans the full width.
 A team's optional `apRank` records its latest AP Top 25 position; an absent key
 means unranked. Conferences only filter the picker; teams remain the only
 NCAAM subjects.
+
+## College football
+
+The `NCAAF` picker, conference grouping, optional AP Top 25, four-pick limit,
+dashboard, daily reminders, and weekly emails follow the CBB sports path.
+The initial snapshot has no AP ranks, so conferences are shown first.
+
+Coverage uses football membership in CBB's supported conferences: ACC, American,
+Big Ten, Big 12, MAC, Mountain West, Pac-12, and SEC. It includes football-only
+members, not every school with a supported basketball team. Independents
+(including Notre Dame and UConn), C-USA, Sun Belt, and FCS are outside coverage.
+The 707 confirmed-time games are a November 14 snapshot, not a live schedule;
+52 games with unconfirmed times are omitted. Postseason and provisional Pac-12
+final-week matchups require confirmed pairings and starts before inclusion.
+See [scope, sources, identity mapping, and refresh limitations](./catalogs/college-football.md).

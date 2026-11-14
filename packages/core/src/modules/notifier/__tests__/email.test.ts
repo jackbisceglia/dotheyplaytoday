@@ -7,6 +7,10 @@ import { EmailResponseError } from "../../email/errors.js";
 import { NotifierLayerEmail, EmailRenderError } from "../email.js";
 import { NotifierError } from "../errors.js";
 import { fighter, nflNotification, notification, ufcCard } from "./fixtures.js";
+import {
+  collegeFootball,
+  makeGame,
+} from "../../weekly-digest/__tests__/fixtures.js";
 import type { Notification } from "../notification.js";
 import { card, all } from "../../mma/__tests__/fixtures.js";
 import { Notifier } from "../service.js";
@@ -70,6 +74,31 @@ describe("email rendering", () => {
     resendMock.send.mockReset();
     resendMock.send.mockResolvedValue(successResponse);
   });
+
+  it.effect("renders college football through the sports daily email", () =>
+    Effect.gen(function* () {
+      yield* send({
+        ...notification,
+        subject: collegeFootball,
+        events: [
+          makeGame(
+            collegeFootball,
+            "Test Opponent",
+            "2026-11-15T00:30:00Z",
+            750,
+            false,
+          ),
+        ],
+      });
+      const payload = lastPayload();
+      expect(payload.subject).toBe("Football play today");
+      expect(payload.text).toContain("New York Football @ Test Opponent");
+      expect(payload.text).toContain("7:30 PM EST");
+      expect(payload.html).toContain(
+        "/email/headlines/football-play-today.png",
+      );
+    }),
+  );
 
   it.effect("sums up a covered card as its title and main-card start", () =>
     Effect.gen(function* () {

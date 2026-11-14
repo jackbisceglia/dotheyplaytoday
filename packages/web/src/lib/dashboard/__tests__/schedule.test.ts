@@ -4,6 +4,11 @@ import { Subject } from "@dtpt/core/modules/subjects/schema";
 import { EventWithParticipants } from "@dtpt/core/modules/events/joined";
 import { SubscriptionWithSubject } from "@dtpt/core/modules/subscriptions/schema";
 
+import {
+  collegeFootball,
+  makeGame,
+} from "@dtpt/core/modules/weekly-digest/__tests__/fixtures";
+
 import { scheduleRows } from "../schedule.js";
 
 const team = (id: string, display: string, name: string) =>
@@ -86,6 +91,32 @@ const rows = (
   );
 
 describe("dashboard schedule", () => {
+  it("uses the sports schedule path and local date for college football", () => {
+    const event = makeGame(
+      collegeFootball,
+      "Test Opponent",
+      "2026-11-15T00:30:00Z",
+      750,
+      false,
+    );
+    const result = scheduleRows(
+      [subscription(collegeFootball, [event])],
+      timezone,
+      [collegeFootball],
+      DateTime.makeUnsafe("2026-11-14T12:00:00Z"),
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      _tag: "sports_game",
+      title: "Football",
+      opponent: "Test Opponent",
+      matchup: "at",
+      day: { date: "2026-11-14", name: "Today" },
+      time: "7:30 PM",
+      subjects: [collegeFootball],
+    });
+  });
+
   it("sorts subscription batches by start and uses the user's calendar and local time", () => {
     const result = rows(schedule);
     expect(

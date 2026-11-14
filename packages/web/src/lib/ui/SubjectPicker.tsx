@@ -2,9 +2,9 @@ import type { Subject } from "@dtpt/core/modules/subjects/schema";
 import type { ParentProps } from "solid-js";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { getTeams, getSportsLogo } from "../catalog/sports/index.js";
-import { conferenceLabels } from "../catalog/sports/ncaam.js";
 import { leagues as catalogLeagues } from "../catalog/index.js";
 import {
+  conferenceLabels,
   getCollegeGroups,
   getCollegeTeams,
   isCollegeTeam,

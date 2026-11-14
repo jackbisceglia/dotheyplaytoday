@@ -44,6 +44,20 @@ const ncaam = createLeague({
   ],
 });
 
+const ncaaf = createLeague({
+  id: "ncaaf",
+  conferences: [
+    "acc",
+    "aac",
+    "big-ten",
+    "big-12",
+    "mac",
+    "mountain-west",
+    "pac-12",
+    "sec",
+  ],
+});
+
 // The latest AP Top 25 position; null when the team is unranked.
 const ApRank = Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 25 }));
 
@@ -65,6 +79,13 @@ export const SportLeague = Schema.Union([
   createLeagueSchema(nhl),
   Schema.Struct({
     ...createLeagueSchema(ncaam).fields,
+    apRank: ApRank.pipe(
+      Schema.NullOr,
+      Schema.withDecodingDefaultKey(Effect.succeed(null)),
+    ),
+  }),
+  Schema.Struct({
+    ...createLeagueSchema(ncaaf).fields,
     apRank: ApRank.pipe(
       Schema.NullOr,
       Schema.withDecodingDefaultKey(Effect.succeed(null)),
