@@ -4,13 +4,13 @@ import { exactOptional } from "@dtpt/core/lib/utils";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 
 import {
+  conferenceLabels,
   getCollegeGroups,
   getCollegeTeams,
   isCollegeTeam,
   topRankedGroup,
 } from "../college.js";
 import { getTeams } from "../sports/index.js";
-import { conferenceLabels } from "../sports/ncaam.js";
 
 const team = (
   suffix: string,
@@ -74,13 +74,36 @@ describe("college browsing", () => {
     expect(
       getCollegeGroups(teams, {
         ...conferenceLabels,
-        acc: "Atlantic Coast",
+        ncaam: { ...conferenceLabels.ncaam, acc: "Atlantic Coast" },
       }).conferences,
     ).toEqual([
       { id: "a10", label: "Atlantic 10" },
       { id: "acc", label: "Atlantic Coast" },
       { id: "big-east", label: "Big East" },
     ]);
+  });
+
+  it("keeps overlapping conference labels scoped to their league", () => {
+    const footballDuke = team(
+      "23",
+      "Duke Blue Devils",
+      "acc",
+      undefined,
+      "ncaaf",
+    );
+    const labels = {
+      ncaam: { ...conferenceLabels.ncaam, acc: "Basketball ACC" },
+      ncaaf: { ...conferenceLabels.ncaaf, acc: "Football ACC" },
+    };
+
+    expect(
+      getCollegeGroups(getTeams([duke]).filter(isCollegeTeam), labels)
+        .conferences,
+    ).toEqual([{ id: "acc", label: "Basketball ACC" }]);
+    expect(
+      getCollegeGroups(getTeams([footballDuke]).filter(isCollegeTeam), labels)
+        .conferences,
+    ).toEqual([{ id: "acc", label: "Football ACC" }]);
   });
 
   it("has no groups or rankings without college teams", () => {

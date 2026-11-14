@@ -5,8 +5,8 @@ import { conferenceLabels as basketballConferences } from "./sports/ncaam.js";
 import { conferenceLabels as footballConferences } from "./sports/ncaaf.js";
 
 export const conferenceLabels = {
-  ...basketballConferences,
-  ...footballConferences,
+  ncaam: basketballConferences,
+  ncaaf: footballConferences,
 };
 
 type CollegeLeague =
@@ -31,12 +31,17 @@ export type CollegeGroup = { readonly id: string; readonly label: string };
 
 export function getCollegeGroups(
   teams: readonly CollegeTeam[],
-  labels: Readonly<Record<CollegeLeague["conferenceId"], string>>,
+  labels: typeof conferenceLabels,
 ) {
   const conferences = new Map<string, string>();
   for (const team of teams) {
-    const id = team.details.league.conferenceId;
-    conferences.set(id, labels[id]);
+    const league = team.details.league;
+    const label =
+      league.id === "ncaam"
+        ? labels.ncaam[league.conferenceId]
+        : labels.ncaaf[league.conferenceId];
+
+    conferences.set(league.conferenceId, label);
   }
 
   return {

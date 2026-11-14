@@ -28,7 +28,7 @@ College football follows the same catalog and runtime architecture as NCAAM:
 `ncaaf` adds eight football conferences, 112 distinct sports-team subjects, and
 707 ESPN-confirmed 2026 games, registered in `SeedCollections` at catalog version
 `2026-11-14.1`. The shared college picker recognizes both leagues; their conference
-labels merge in the college catalog helper. Existing sports feed edges,
+labels remain scoped to each league in the college catalog helper. Existing sports feed edges,
 subscription selection, dashboard, daily/weekly rendering, and development seed
 window need no football-specific service or migration. Generated headline assets
 are checked for all sports subjects. See the [football catalog](./catalogs/college-football.md)
