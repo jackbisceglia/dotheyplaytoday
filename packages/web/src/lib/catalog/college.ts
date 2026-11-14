@@ -1,3 +1,4 @@
+import { Match } from "effect";
 import { SportLeague } from "@dtpt/core/modules/subjects/variants/sport.schema";
 
 import type { SportsSubject } from "./sports/index.js";
@@ -36,10 +37,17 @@ export function getCollegeGroups(
   const conferences = new Map<string, string>();
   for (const team of teams) {
     const league = team.details.league;
-    const label =
-      league.id === "ncaam"
-        ? labels.ncaam[league.conferenceId]
-        : labels.ncaaf[league.conferenceId];
+    const label = Match.value(league).pipe(
+      Match.when(
+        { id: "ncaam" },
+        ({ conferenceId }) => labels.ncaam[conferenceId],
+      ),
+      Match.when(
+        { id: "ncaaf" },
+        ({ conferenceId }) => labels.ncaaf[conferenceId],
+      ),
+      Match.exhaustive,
+    );
 
     conferences.set(league.conferenceId, label);
   }
