@@ -13,6 +13,63 @@ type UfcSubjectSeed = MmaSeedEncoded["subjects"][number];
 
 // Champions, divisional top 15, and P4P: https://www.ufc.com/rankings (October 6, 2026).
 export const Fighters = {
+  DomMarFan: {
+    id: "d1ceb86c-1213-4562-bab1-104c3dc1c0a1",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Dom Mar Fan",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Dom Mar Fan"),
+  },
+  NikolasMotta: {
+    id: "501b87ae-b8a1-459d-9b8d-0939e17653c3",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Nikolas Motta",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Nikolas Motta"),
+  },
+
+  JakeMatthews: {
+    id: "bf936231-c8f8-414f-8ad8-2d6f5438a502",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Jake Matthews",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Jake Matthews"),
+  },
+  TahirAbdullayev: {
+    id: "4c9d2597-ac33-47ff-be48-1f1d66f3dbe3",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Tahir Abdullayev",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Tahir Abdullayev"),
+  },
+  AlessandroCosta: {
+    id: "b39ba456-69b9-43df-a020-90f2b1d03d57",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Alessandro Costa",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Alessandro Costa"),
+  },
+
   MitchRaposo: {
     id: "855b4086-6a5a-4e7e-a394-b960045b5d33",
     _tag: "mma_fighter",
