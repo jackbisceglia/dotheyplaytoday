@@ -220,11 +220,11 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 24, 27, 21, 4,
+      24, 26, 28, 24, 27, 21, 14,
     ]);
-    expect(catalog.subjects).toHaveLength(299);
+    expect(catalog.subjects).toHaveLength(304);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      299,
+      304,
     );
 
     for (const event of catalog.events) {
@@ -368,7 +368,7 @@ describe("UFC catalog", () => {
     }
   });
 
-  it("holds Qatar's unassigned bouts out of fighter feeds", () => {
+  it("includes corroborated Qatar bouts and their fighter feeds", () => {
     const card = catalog.events.find((event) =>
       event.sourceUrl.endsWith("ufc-fight-night-november-21-2026"),
     );
@@ -380,17 +380,35 @@ describe("UFC catalog", () => {
         "Navajo Stirling",
         "Aljamain Sterling",
         "Kevin Vallejos",
+        "Dan Hooker",
+        "Brian Ortega",
+        "Jared Cannonier",
+        "Ikram Aliskerov",
+        "Jake Matthews",
+        "Tahir Abdullayev",
+        "Amir Albazi",
+        "Alessandro Costa",
+        "Dom Mar Fan",
+        "Nikolas Motta",
       ].map((title, index) => ({
         _tag: "mma_card",
         title,
-        fightId: index < 2 ? "fight-1" : "fight-2",
-        placement: "main",
+        fightId: [
+          "fight-1",
+          "fight-2",
+          "fight-3",
+          "fight-4",
+          "fight-6",
+          "fight-7",
+          "fight-8",
+        ][Math.floor(index / 2)],
+        placement: index < 8 ? "main" : "prelims",
       })),
     );
     const hooker = catalog.subjects.find(
       (subject) => subject.details.display === "Dan Hooker",
     );
-    expect(hooker?.feedIds).not.toContain(card?.sourceId);
+    expect(hooker?.feedIds).toContain(card?.sourceId);
   });
 
   it("includes the men's P4P top 15 even without a booked fight", () => {

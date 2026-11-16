@@ -1568,6 +1568,96 @@ export const events: readonly UfcEventSeed[] = [
           placement: "main",
         },
       },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Dan Hooker",
+          fightId: "fight-3",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Brian Ortega",
+          fightId: "fight-3",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Jared Cannonier",
+          fightId: "fight-4",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Ikram Aliskerov",
+          fightId: "fight-4",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Jake Matthews",
+          fightId: "fight-6",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Tahir Abdullayev",
+          fightId: "fight-6",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Amir Albazi",
+          fightId: "fight-7",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Alessandro Costa",
+          fightId: "fight-7",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Dom Mar Fan",
+          fightId: "fight-8",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Nikolas Motta",
+          fightId: "fight-8",
+          placement: "prelims",
+        },
+      },
     ],
   },
 ];
