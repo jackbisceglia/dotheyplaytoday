@@ -30105,6 +30105,151 @@ export const Games = {
       },
     ],
   },
+  _868346: {
+    id: "00000000-0000-4000-8000-100000868346",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868346",
+    startsAt: "2027-02-19T20:10:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Milwaukee Brewers",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Los Angeles Angels",
+        },
+      },
+    ],
+  },
+  _853558: {
+    id: "00000000-0000-4000-8000-100000853558",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000853558",
+    startsAt: "2027-03-25T20:10:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Kansas City Royals",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Minnesota Twins",
+        },
+      },
+    ],
+  },
+  _852822: {
+    id: "00000000-0000-4000-8000-100000852822",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000852822",
+    startsAt: "2027-03-25T20:12:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Pittsburgh Pirates",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Athletics",
+        },
+      },
+    ],
+  },
+  _868573: {
+    id: "00000000-0000-4000-8000-100000868573",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000868573",
+    startsAt: "2027-02-19T18:05:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Pittsburgh Pirates",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Toronto Blue Jays",
+        },
+      },
+    ],
+  },
+  _853645: {
+    id: "00000000-0000-4000-8000-100000853645",
+    _tag: "sports_game",
+    sourceId: "sports_game:mlb:00000000-0000-4000-8000-100000853645",
+    startsAt: "2027-03-25T20:10:00Z",
+    availability: "active",
+    details: {
+      _tag: "sports_game",
+      leagueId: "mlb",
+    },
+    participants: [
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "home",
+          title: "Houston Astros",
+        },
+      },
+      {
+        _tag: "sports_game",
+        details: {
+          _tag: "sports_game",
+          role: "away",
+          title: "Texas Rangers",
+        },
+      },
+    ],
+  },
 } as const satisfies Record<string, MlbSportEventSeed>;
 
 export const events = Object.values(Games);

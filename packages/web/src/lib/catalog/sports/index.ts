@@ -4,6 +4,7 @@ import { Match, Predicate } from "effect";
 
 import { getMlbLogo } from "./mlb.js";
 import { getNbaLogo } from "./nba.js";
+import { getNcaafLogo } from "./ncaaf.js";
 import { getNcaamLogo } from "./ncaam.js";
 import { getNflLogo } from "./nfl.js";
 import { getNhlLogo } from "./nhl.js";
@@ -19,6 +20,7 @@ export const leagues = [
   { id: "mlb", label: "MLB" },
   { id: "nhl", label: "NHL" },
   { id: "ncaam", label: "NCAAM" },
+  { id: "ncaaf", label: "NCAAF" },
 ] as const satisfies readonly League[];
 
 export const getSportsLogo = (details: SportTeamSubject) =>
@@ -27,6 +29,7 @@ export const getSportsLogo = (details: SportTeamSubject) =>
     Match.when("nfl", () => getNflLogo(details.abbreviation)),
     Match.when("mlb", () => getMlbLogo(details.abbreviation)),
     Match.when("nhl", () => getNhlLogo(details.abbreviation)),
+    Match.when("ncaaf", () => getNcaafLogo(details.abbreviation)),
     Match.when("ncaam", () => getNcaamLogo(details.abbreviation)),
     Match.exhaustive,
   );

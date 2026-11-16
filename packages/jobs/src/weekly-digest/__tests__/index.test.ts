@@ -26,6 +26,7 @@ import {
 import {
   digest,
   college,
+  collegeFootball,
   makeGame,
 } from "@dtpt/core/modules/weekly-digest/__tests__/fixtures";
 import { weeklyDigest } from "../index.js";
@@ -295,6 +296,40 @@ describe("weekly digest orchestration", () => {
       );
       expect(harness.sends[0]?.rendered.body.text).toContain(
         "New York College vs Test Opponent",
+      );
+    }),
+  );
+
+  it.effect("sends college-football-only users their team games", () =>
+    Effect.gen(function* () {
+      const recipient = {
+        ...otherRecipient,
+        subscription: {
+          ...otherRecipient.subscription,
+          subject: collegeFootball,
+          subjectId: collegeFootball.id,
+        },
+      };
+      const harness = makeHarness({
+        recipients: [recipient],
+        events: [
+          makeGame(
+            collegeFootball,
+            "Test Opponent",
+            "2026-10-07T23:00:00Z",
+            732,
+          ),
+        ],
+      });
+
+      yield* weeklyDigest({ now }).pipe(Effect.provide(harness.layer));
+
+      expect(harness.sends).toHaveLength(1);
+      expect(harness.sends[0]?.rendered.body.text).toContain(
+        collegeFootball.details.display,
+      );
+      expect(harness.sends[0]?.rendered.body.text).toContain(
+        "New York Football vs Test Opponent",
       );
     }),
   );

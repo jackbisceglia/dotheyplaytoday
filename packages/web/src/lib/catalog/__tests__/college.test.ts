@@ -4,19 +4,20 @@ import { exactOptional } from "@dtpt/core/lib/utils";
 import { Subject } from "@dtpt/core/modules/subjects/schema";
 
 import {
+  conferenceLabels,
   getCollegeGroups,
   getCollegeTeams,
   isCollegeTeam,
   topRankedGroup,
 } from "../college.js";
 import { getTeams } from "../sports/index.js";
-import { conferenceLabels } from "../sports/ncaam.js";
 
 const team = (
   suffix: string,
   display: string,
   conferenceId: string,
   apRank?: number,
+  leagueId = "ncaam",
 ) =>
   Schema.decodeUnknownSync(Subject)({
     id: `20000000-0000-4000-8000-0000000000${suffix}`,
@@ -24,7 +25,7 @@ const team = (
     details: {
       _tag: "sports_team",
       league: {
-        id: "ncaam",
+        id: leagueId,
         conferenceId,
         ...exactOptional(apRank, (rank) => ({ apRank: rank })),
       },
@@ -45,6 +46,22 @@ const teams = getTeams([uconn, miami, dayton, duke, butler]).filter(
 );
 
 describe("college browsing", () => {
+  it("browses football with the same conference and ranking rules", () => {
+    const alabama = team("21", "Alabama Crimson Tide", "sec", 2, "ncaaf");
+    const army = team("22", "Army Black Knights", "aac", undefined, "ncaaf");
+    const football = getTeams([army, alabama]).filter(isCollegeTeam);
+    expect(football).toHaveLength(2);
+    expect(getCollegeGroups(football, conferenceLabels)).toEqual({
+      ranked: true,
+      conferences: [
+        { id: "aac", label: "American" },
+        { id: "sec", label: "SEC" },
+      ],
+    });
+    expect(getCollegeTeams(football, topRankedGroup)).toEqual([alabama]);
+    expect(getCollegeTeams(football, "aac")).toEqual([army]);
+  });
+
   it("lists only conferences with teams, sorted by label", () => {
     expect(getCollegeGroups(teams, conferenceLabels).conferences).toEqual([
       { id: "acc", label: "ACC" },
@@ -57,13 +74,36 @@ describe("college browsing", () => {
     expect(
       getCollegeGroups(teams, {
         ...conferenceLabels,
-        acc: "Atlantic Coast",
+        ncaam: { ...conferenceLabels.ncaam, acc: "Atlantic Coast" },
       }).conferences,
     ).toEqual([
       { id: "a10", label: "Atlantic 10" },
       { id: "acc", label: "Atlantic Coast" },
       { id: "big-east", label: "Big East" },
     ]);
+  });
+
+  it("keeps overlapping conference labels scoped to their league", () => {
+    const footballDuke = team(
+      "23",
+      "Duke Blue Devils",
+      "acc",
+      undefined,
+      "ncaaf",
+    );
+    const labels = {
+      ncaam: { ...conferenceLabels.ncaam, acc: "Basketball ACC" },
+      ncaaf: { ...conferenceLabels.ncaaf, acc: "Football ACC" },
+    };
+
+    expect(
+      getCollegeGroups(getTeams([duke]).filter(isCollegeTeam), labels)
+        .conferences,
+    ).toEqual([{ id: "acc", label: "Basketball ACC" }]);
+    expect(
+      getCollegeGroups(getTeams([footballDuke]).filter(isCollegeTeam), labels)
+        .conferences,
+    ).toEqual([{ id: "acc", label: "Football ACC" }]);
   });
 
   it("has no groups or rankings without college teams", () => {
