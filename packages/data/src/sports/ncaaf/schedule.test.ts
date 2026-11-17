@@ -6,7 +6,7 @@ import { events } from "./events.js";
 import { ncaafCollection } from "./index.js";
 import { subjects } from "./subjects.js";
 
-const confirmedEventCount = 707;
+const confirmedEventCount = 745;
 
 describe("2026 college football schedule", () => {
   it("decodes as a sports seed with 112 subjects", () => {
@@ -22,6 +22,9 @@ describe("2026 college football schedule", () => {
     for (const [espnId, instant, hour] of [
       ["401866408", "2026-08-29T22:30:00Z", 18],
       ["401862844", "2026-12-12T20:00:00Z", 15],
+      ["401858311", "2026-11-28T17:00:00Z", 12],
+      ["401856752", "2026-11-21T20:45:00Z", 15],
+      ["401866475", "2026-11-28T20:30:00Z", 15],
     ] as const) {
       const event = events.find((event) => event.id.endsWith(espnId));
       expect(event?.startsAt).toBe(instant);
@@ -37,7 +40,7 @@ describe("2026 college football schedule", () => {
   });
 
   it("excludes unconfirmed placeholder times and provisional Pac-12 flex games", () => {
-    expect(events.some((event) => event.id.endsWith("401858311"))).toBe(false);
+    expect(events.some((event) => event.id.endsWith("401858312"))).toBe(false);
     const pac12 = new Set<string>(
       subjects
         .filter((subject) => subject.details.league.conferenceId === "pac-12")

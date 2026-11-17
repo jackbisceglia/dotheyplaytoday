@@ -244,7 +244,8 @@ Coverage uses football membership in CBB's supported conferences: ACC, American,
 Big Ten, Big 12, MAC, Mountain West, Pac-12, and SEC. It includes football-only
 members, not every school with a supported basketball team. Independents
 (including Notre Dame and UConn), C-USA, Sun Belt, and FCS are outside coverage.
-The 707 confirmed-time games are a November 14 snapshot, not a live schedule;
-52 games with unconfirmed times are omitted. Postseason and provisional Pac-12
-final-week matchups require confirmed pairings and starts before inclusion.
+The November 17 catalog contains 745 confirmed-time games, not a live schedule;
+14 regular-season fixtures still lack confirmed starts or opponents. Postseason
+and provisional Pac-12 final-week matchups require confirmed pairings and starts
+before inclusion.
 See [scope, sources, identity mapping, and refresh limitations](./catalogs/college-football.md).
