@@ -2,7 +2,9 @@
 
 ## Scope and decisions
 
-Reviewed 112 supported team feeds across the existing eight football conferences. The priority window is November 17–30 in America/New_York; November 14–16 was also compared for late rescheduling, and known future fixtures plus postseason sources were checked. Base: `d4273652eb2ba04d16d608e0234fd471df07d483`. No same-league open PR existed. Merged #217 supplied the prior snapshot; #218 advanced the seed version to November 15. Open MLB #215 uses November 16.1; this update uses November 17.1.
+Reviewed 112 supported team feeds across the existing eight football conferences. The priority window is November 17–30 in America/New_York; November 14–16 was also compared for late rescheduling, and known future fixtures plus postseason sources were checked. Base: `d4273652eb2ba04d16d608e0234fd471df07d483`. No same-league open PR existed. Merged #217 supplied the prior snapshot; #218 advanced the seed version to November 15. Open MLB #215 uses November 16.1; this update initially used November 17.1.
+
+After NFL PR #220 merged, main was merged into this branch. Its NFL changes are retained; the shared seed version advances from main’s `2026-11-17.3` to `2026-11-17.4`. The schedule evidence and game decisions below are unchanged.
 
 Publish 38 additions and two in-place kickoff corrections: 745 total games. Preserve all IDs, subjects and coverage. Feed associations are derived by participant name and automatically include every supported participant. Notre Dame and UConn remain opponents only. The historical 52 omissions are now 38 verified additions and 14 withheld regular-season fixtures (ten unknown starts and four Pac-12 opponent/start placeholders).
 

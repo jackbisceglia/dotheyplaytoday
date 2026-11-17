@@ -84,7 +84,7 @@ limit, dashboard, daily reminders, and weekly digest use existing sports paths.
 The generic football emoji is used. NFL's special kickoff headline remains NFL-only.
 
 `SeedCollections` registers the catalog. The initial seed version was
-`2026-11-14.1`; the November 17 schedule refresh uses `2026-11-17.1`.
+`2026-11-14.1`; the November 17 schedule refresh uses `2026-11-17.4`.
 Development subsets and production's historical cutoff apply
 unchanged. No database migration or scheduled task is added. Release schema
 consumers before publishing the new catalog so older workers do not encounter
