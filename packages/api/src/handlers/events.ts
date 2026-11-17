@@ -18,7 +18,7 @@ export const EventsGroupLayer = HttpApiBuilder.group(
   Api,
   "events",
   Effect.fn("EventsHttpApi.group")(function* (handlers) {
-    const auth = yield* Auth;
+    const getAuth = yield* Auth;
 
     const events = yield* Events;
 
@@ -26,6 +26,7 @@ export const EventsGroupLayer = HttpApiBuilder.group(
       "list",
       Effect.fn("EventsHttpApi.list")(
         function* (ctx) {
+          const auth = yield* getAuth;
           const session = yield* auth.getSession(ctx.request.headers);
 
           if (!session) return yield* new HttpApiError.Unauthorized({});

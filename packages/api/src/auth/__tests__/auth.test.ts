@@ -1,8 +1,11 @@
 import { makeAuthFixture } from "./fixtures.js";
-import { describe, expect, it, vi } from "vitest";
-import { Effect } from "effect";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
+import * as Cloudflare from "alchemy/Cloudflare";
+import { Effect, Layer } from "effect";
+import { Pool } from "pg";
 import { EmailResponseError } from "@dtpt/core/modules/email/errors";
 import { WebUrl } from "@dtpt/core/lib/config/web";
+import { Auth } from "../auth.js";
 
 describe("authentication boundaries", () => {
   it.each([false, true])(
@@ -120,6 +123,65 @@ describe("authentication boundaries", () => {
         "https://www.example.com/",
       );
     }
+  });
+
+  it("gives each invocation its own client and email context", async () => {
+    const f = await makeAuthFixture();
+    const getAuth = await Effect.runPromise(
+      Auth.make(
+        Effect.succeed("postgres://user:password@localhost:5432/database"),
+      ).pipe(Effect.provide(f.layer)),
+    );
+    const end = vi.spyOn(Pool.prototype, "end");
+    onTestFinished(() => {
+      end.mockRestore();
+    });
+    const invoke = async () => {
+      const pending: Promise<unknown>[] = [];
+      const client = await Effect.runPromise(
+        Effect.gen(function* () {
+          const [auth, reused] = yield* Effect.all([getAuth, getAuth], {
+            concurrency: "unbounded",
+          });
+          expect(auth).toBe(reused);
+          yield* auth.use((client) =>
+            client.api.signInMagicLink({
+              headers: f.request("/sign-in/magic-link").headers,
+              body: { email: "user@example.com" },
+            }),
+          );
+          return auth.client;
+        }).pipe(
+          Effect.provide(
+            Layer.merge(
+              f.layer,
+              Layer.mock(Cloudflare.WorkerExecutionContext, {
+                cache: {
+                  purge: () => Effect.die("Cache is not used by auth"),
+                },
+                raw: {
+                  waitUntil: (promise) => {
+                    pending.push(promise);
+                  },
+                  passThroughOnException: () => undefined,
+                  props: {},
+                  get tracing(): never {
+                    throw new Error("Tracing is not used by auth");
+                  },
+                },
+              }),
+            ),
+          ),
+          Effect.scoped,
+        ),
+      );
+      return { client, pending };
+    };
+    const [a, b] = await Promise.all([invoke(), invoke()]);
+    expect(a.client).not.toBe(b.client);
+    expect(end).toHaveBeenCalledTimes(2);
+    expect([a.pending.length, b.pending.length]).toEqual([1, 1]);
+    expect(f.pending).toHaveLength(0);
   });
 
   it("uses the same verification snapshot for the callback and email copy", async () => {
