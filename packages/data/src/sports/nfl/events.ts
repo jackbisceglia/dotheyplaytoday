@@ -4960,7 +4960,7 @@ export const Games = {
       id: "00000000-0000-4000-8000-000401873086",
       _tag: "sports_game",
       sourceId: "sports_game:espn:00000000-0000-4000-8000-000401873086",
-      startsAt: "2026-11-29T18:00:00Z",
+      startsAt: "2026-11-30T01:20:00Z",
       availability: "active",
       details: {
         _tag: "sports_game",
@@ -5076,7 +5076,7 @@ export const Games = {
       id: "00000000-0000-4000-8000-000401873090",
       _tag: "sports_game",
       sourceId: "sports_game:espn:00000000-0000-4000-8000-000401873090",
-      startsAt: "2026-11-29T21:05:00Z",
+      startsAt: "2026-11-29T18:00:00Z",
       availability: "active",
       details: {
         _tag: "sports_game",
@@ -5163,7 +5163,7 @@ export const Games = {
       id: "00000000-0000-4000-8000-000401873093",
       _tag: "sports_game",
       sourceId: "sports_game:espn:00000000-0000-4000-8000-000401873093",
-      startsAt: "2026-11-30T01:20:00Z",
+      startsAt: "2026-11-29T21:05:00Z",
       availability: "active",
       details: {
         _tag: "sports_game",
