@@ -220,11 +220,11 @@ describe("UFC catalog", () => {
   it("links the upcoming lineups to their fighter and coverage feeds", () => {
     expect(catalog.events).toHaveLength(7);
     expect(catalog.events.map((event) => event.participants.length)).toEqual([
-      24, 26, 28, 24, 27, 21, 14,
+      24, 26, 28, 24, 27, 21, 22,
     ]);
-    expect(catalog.subjects).toHaveLength(304);
+    expect(catalog.subjects).toHaveLength(310);
     expect(new Set(catalog.subjects.map((subject) => subject.id)).size).toBe(
-      304,
+      310,
     );
 
     for (const event of catalog.events) {
@@ -390,6 +390,14 @@ describe("UFC catalog", () => {
         "Alessandro Costa",
         "Dom Mar Fan",
         "Nikolas Motta",
+        "Kyoji Horiguchi",
+        "Asu Almabayev",
+        "Aleksandre Topuria",
+        "Santiago Luna",
+        "Shamil Gaziev",
+        "Tallison Teixeira",
+        "Diyar Nurgozhay",
+        "Alik Lorenz",
       ].map((title, index) => ({
         _tag: "mma_card",
         title,
@@ -401,8 +409,13 @@ describe("UFC catalog", () => {
           "fight-6",
           "fight-7",
           "fight-8",
+          "fight-5",
+          "fight-9",
+          "fight-10",
+          "fight-11",
         ][Math.floor(index / 2)],
-        placement: index < 8 ? "main" : "prelims",
+        placement:
+          index < 8 || (index >= 14 && index < 16) ? "main" : "prelims",
       })),
     );
     const hooker = catalog.subjects.find(

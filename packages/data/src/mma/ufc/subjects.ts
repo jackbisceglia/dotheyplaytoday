@@ -13,6 +13,73 @@ type UfcSubjectSeed = MmaSeedEncoded["subjects"][number];
 
 // Champions, divisional top 15, and P4P: https://www.ufc.com/rankings (October 6, 2026).
 export const Fighters = {
+  AleksandreTopuria: {
+    id: "5b2fc959-b9c0-4b9c-94a7-a3acd2ea8e72",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Aleksandre Topuria",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Aleksandre Topuria"),
+  },
+  SantiagoLuna: {
+    id: "483a3f57-5614-4c61-8614-e0784324d2f9",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Santiago Luna",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Santiago Luna"),
+  },
+  ShamilGaziev: {
+    id: "5591f772-f4fe-4e0b-9049-d1a1948a2fdf",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Shamil Gaziev",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Shamil Gaziev"),
+  },
+  TallisonTeixeira: {
+    id: "f987636b-9df6-470d-8f11-0502fc8fc56d",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Tallison Teixeira",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Tallison Teixeira"),
+  },
+  DiyarNurgozhay: {
+    id: "8d86b73b-b8aa-4e18-b3db-d1efbcf537ff",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Diyar Nurgozhay",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Diyar Nurgozhay"),
+  },
+  AlikLorenz: {
+    id: "b64ada75-4be1-4528-a56b-7e7c53cf8984",
+    _tag: "mma_fighter",
+    details: {
+      _tag: "mma_fighter",
+      league: { id: "ufc" },
+      display: "Alik Lorenz",
+      p4p: null,
+    },
+    feedIds: getFighterFeedIds("Alik Lorenz"),
+  },
+
   DomMarFan: {
     id: "d1ceb86c-1213-4562-bab1-104c3dc1c0a1",
     _tag: "mma_fighter",
