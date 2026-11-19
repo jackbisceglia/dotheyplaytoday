@@ -1658,6 +1658,78 @@ export const events: readonly UfcEventSeed[] = [
           placement: "prelims",
         },
       },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Kyoji Horiguchi",
+          fightId: "fight-5",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Asu Almabayev",
+          fightId: "fight-5",
+          placement: "main",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Aleksandre Topuria",
+          fightId: "fight-9",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Santiago Luna",
+          fightId: "fight-9",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Shamil Gaziev",
+          fightId: "fight-10",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Tallison Teixeira",
+          fightId: "fight-10",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Diyar Nurgozhay",
+          fightId: "fight-11",
+          placement: "prelims",
+        },
+      },
+      {
+        _tag: "mma_card",
+        details: {
+          _tag: "mma_card",
+          title: "Alik Lorenz",
+          fightId: "fight-11",
+          placement: "prelims",
+        },
+      },
     ],
   },
 ];
