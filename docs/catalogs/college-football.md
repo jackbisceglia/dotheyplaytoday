@@ -30,12 +30,14 @@ and official sources for sport-specific differences:
 
 ## Schedule snapshot and refresh
 
-The [November 17 maintenance ledger](./college-football-2026-11-17.md) records
-38 verified additions and two kickoff corrections, bringing the catalog to
-745 games. Fourteen regular-season fixtures remain withheld: ten unconfirmed
-starts and four Pac-12 flex opponent/start placeholders. Championship, bowl,
-and CFP slots still lack confirmed pairings. The historical snapshot below is
-retained as provenance, not a current omission count.
+The [November 25 maintenance ledger](./college-football-2026-11-25.md) records
+16 verified additions and two historical kickoff corrections, bringing the
+catalog to 761 games: 759 regular-season games and the confirmed ACC and Pac-12
+championships. All fourteen fixtures withheld in the
+[November 17 ledger](./college-football-2026-11-17.md) now have confirmed opponents
+and starts. Six other supported conference championships and bowl/CFP slots
+still lack complete pairings. The historical snapshot below is retained as
+provenance, not a current omission count.
 
 Fetched 2026-11-14 from ESPN's college-football team schedule endpoint:
 `https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{espnId}/schedule?season=2026`.
@@ -84,7 +86,7 @@ limit, dashboard, daily reminders, and weekly digest use existing sports paths.
 The generic football emoji is used. NFL's special kickoff headline remains NFL-only.
 
 `SeedCollections` registers the catalog. The initial seed version was
-`2026-11-14.1`; the November 17 schedule refresh uses `2026-11-17.4`.
+`2026-11-14.1`; the November 25 schedule refresh uses `2026-11-25.1`.
 Development subsets and production's historical cutoff apply
 unchanged. No database migration or scheduled task is added. Release schema
 consumers before publishing the new catalog so older workers do not encounter
