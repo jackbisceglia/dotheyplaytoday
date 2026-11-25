@@ -6,7 +6,7 @@ import { events } from "./events.js";
 import { ncaamCollection } from "./index.js";
 import { subjects } from "./subjects.js";
 
-const storedEventCount = 1749;
+const storedEventCount = 1819;
 
 describe("2026-27 NCAA men's basketball schedule", () => {
   it("decodes as a sports seed with 158 subjects", () => {
@@ -87,18 +87,23 @@ describe("2026-27 NCAA men's basketball schedule", () => {
     ).toHaveLength(2);
   });
 
-  it.each(["401920517", "401920519", "401920520"])(
-    "links confirmed placement game %s to both supported teams",
-    (espnId) => {
-      const game = events.find((event) => event.id.endsWith(espnId));
-      expect(game?.availability).toBe("active");
-      expect(
-        subjects.filter((subject) =>
-          subject.feedIds.includes(game?.sourceId ?? ""),
-        ),
-      ).toHaveLength(2);
-    },
-  );
+  it.each([
+    "401920517",
+    "401920519",
+    "401920520",
+    "401921716",
+    "401921713",
+    "401921714",
+    "401921672",
+  ])("links confirmed placement game %s to both supported teams", (espnId) => {
+    const game = events.find((event) => event.id.endsWith(espnId));
+    expect(game?.availability).toBe("active");
+    expect(
+      subjects.filter((subject) =>
+        subject.feedIds.includes(game?.sourceId ?? ""),
+      ),
+    ).toHaveLength(2);
+  });
 
   it("retains noncatalog opponents as participants without subject feeds", () => {
     const supportedTitles = new Set<string>(
