@@ -18,6 +18,7 @@ import {
   kickoffLines,
   ufcLines,
 } from "@dtpt/core/modules/notifier/email";
+import { Editions } from "@dtpt/core/modules/editions/catalog";
 import { weeklyDigestLines } from "@dtpt/core/modules/weekly-digest/email";
 import { SeedCollections } from "@dtpt/data/seed/index";
 import { Predicate } from "effect";
@@ -153,6 +154,7 @@ const headlines = [
       kickoffLines,
       ufcLines,
       weeklyDigestLines,
+      ...Editions.map((edition) => edition.presentation.lines),
       ...teams,
     ].map((lines) => [buildHeadlineImagePath(lines), lines]),
   ),

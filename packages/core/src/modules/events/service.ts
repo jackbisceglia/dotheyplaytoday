@@ -71,6 +71,14 @@ export class Events extends Context.Service<
       DatabaseReadError | Schema.SchemaError
     >;
 
+    /** Active events of every subject starting within the range. */
+    readonly listByRange: (
+      range: Range<DateTime.Utc>,
+    ) => Effect.Effect<
+      readonly EventWithParticipants[],
+      DatabaseReadError | Schema.SchemaError
+    >;
+
     readonly listForUser: (
       userId: UserId,
     ) => Effect.Effect<
@@ -169,6 +177,30 @@ export const EventsLayer = Layer.effect(
       const eventsWithParticipants = yield* decodeEventWithParticipants(rows);
 
       return eventsWithParticipants;
+    });
+
+    const listByRange: Events["Service"]["listByRange"] = Effect.fn(
+      "Events.listByRange",
+    )(function* (range) {
+      const rows = yield* database.query.eventsTable
+        .findMany({
+          where: {
+            availability: "active",
+            startsAt: {
+              gte: yield* encodeDateTimeUtc(range.from),
+              lt: yield* encodeDateTimeUtc(range.to),
+            },
+          },
+          with: {
+            participants: {
+              orderBy: { id: "asc" },
+            },
+          },
+          orderBy: { startsAt: "asc", id: "asc" },
+        })
+        .pipe(mapToReadError("Events.listByRange", { range }));
+
+      return yield* decodeEventWithParticipants(rows);
     });
 
     const listForUser: Events["Service"]["listForUser"] = Effect.fn(
@@ -286,6 +318,7 @@ export const EventsLayer = Layer.effect(
     return Events.of({
       get,
       listBySubject,
+      listByRange,
       listForUser,
       setParticipants,
       upsert,

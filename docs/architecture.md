@@ -408,6 +408,26 @@ notify options and CLI's `--weekly` flag. A dry run logs the rendered email,
 uses no email provider, and writes no delivery state. Production exposes no
 manual trigger. The Worker and generated weekly headline asset deploy together.
 
+## One-off editions
+
+An edition is configuration in `core`'s `editions/catalog.ts`: an audience by
+league, a slate of active league games on one date in a named timezone, the
+subject and headline-tile lines, and a send window with a cron mode (`off`,
+`dry-run`, `live`). `editions/edition.ts` owns pure selection (one entry per
+verified follower, games by local date in kickoff order), the
+`edition:<id>:<user-id>` provider key, and the window gate.
+`editions/email.ts` renders the slate as `Matchups` in each recipient's
+timezone with the weekly footer. The slate comes from `Events.listByRange`,
+an active-event query on the indexed start time, filtered by league in memory.
+
+`jobs/src/editions` runs an edition through the generic `Email` service with
+the same per-recipient error handling as the weekly digest. Live runs outside
+the window stop before reading; dry runs always render. The notification
+Worker's quarter-hour cron runs an edition whose cron mode is on only at the
+tick in `[opensAt, opensAt + 15 min)` of the scheduled time. `POST
+/test/edition` and `start:notify --edition <id>` are development-only. Edition
+lines feed `assets:generate`. See the [editions runbook](./runbooks/editions.md).
+
 ## Testing and validation
 
 API contract tests live in `packages/core/src/contracts/__tests__`, named for

@@ -4,6 +4,7 @@ import { HttpClient, HttpClientRequest } from "effect/unstable/http";
 import { exactOptional } from "@dtpt/core/lib/utils";
 
 import { JobsCliRuntime } from "../runtime.js";
+import { EditionOptions } from "../editions/index.js";
 import { NotifyOptions } from "./index.js";
 import { Trigger } from "./worker.js";
 
@@ -43,22 +44,41 @@ export const NotifyCommand = Command.make(
       Flag.withDefault(false),
       Flag.withDescription("Run the weekly digest instead of daily reminders"),
     ),
+    edition: Flag.String("edition").pipe(
+      Flag.optional,
+      Flag.withDescription(
+        "Run this one-off edition instead of daily reminders; live sends only inside its window",
+      ),
+    ),
   },
   Effect.fn("Notify.Cli")(function* (opts) {
     const now = Option.getOrUndefined(opts.now);
     const userEmail = Option.getOrUndefined(opts.user);
 
-    const trigger = opts.weekly ? Trigger.weeklyDigest : Trigger.daily;
+    const edition = Option.getOrUndefined(opts.edition);
+    const trigger = edition
+      ? Trigger.edition
+      : opts.weekly
+        ? Trigger.weeklyDigest
+        : Trigger.daily;
     const triggerUrl = trigger.getLocalUrl();
+    const shared = {
+      dryRun: opts.dryRun,
+      ...exactOptional(now, (now) => ({ now })),
+      ...exactOptional(userEmail, (userEmail) => ({ userEmail })),
+    };
 
     const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
     const request = yield* HttpClientRequest.post(triggerUrl).pipe(
-      HttpClientRequest.schemaBodyJson(NotifyOptions)({
-        dryRun: opts.dryRun,
-        force: opts.force,
-        ...exactOptional(now, (now) => ({ now })),
-        ...exactOptional(userEmail, (userEmail) => ({ userEmail })),
-      }),
+      edition
+        ? HttpClientRequest.schemaBodyJson(EditionOptions)({
+            ...shared,
+            edition,
+          })
+        : HttpClientRequest.schemaBodyJson(NotifyOptions)({
+            ...shared,
+            force: opts.force,
+          }),
     );
 
     const response = yield* client.execute(request);

@@ -20,7 +20,13 @@ import { EventsLayer } from "@dtpt/core/modules/events/service";
 import { UsersLayer } from "@dtpt/core/modules/users/service";
 import { SubscriptionsLayer } from "@dtpt/core/modules/subscriptions/service";
 import { isWeeklyDigestBatchTime } from "@dtpt/core/modules/weekly-digest/time";
+import { findEdition } from "@dtpt/core/modules/editions/catalog";
 import { weeklyDigest } from "../weekly-digest/index.js";
+import {
+  EditionOptions,
+  scheduledEditions,
+  sendEdition,
+} from "../editions/index.js";
 import { notify, NotifyOptions } from "./index.js";
 
 const NotifySchedule = "*/15 * * * *";
@@ -39,7 +45,21 @@ export const Trigger = {
   port: NotifyPort,
   daily: makeTrigger("/test/notify"),
   weeklyDigest: makeTrigger("/test/weekly-digest"),
+  edition: makeTrigger("/test/edition"),
 } as const;
+
+// Dry runs never build or call the provider layer.
+const withEmailUnlessDryRun = <A, E, R>(
+  run: Effect.Effect<A, E, R>,
+  dryRun: boolean,
+) =>
+  dryRun
+    ? run.pipe(
+        Effect.provideService(Email, {
+          send: () => Effect.die("Dry runs must not send email"),
+        }),
+      )
+    : run.pipe(Effect.provide(EmailLayerResend));
 
 const NotifyDomainsLayer = pipe(
   EventsLayer,
@@ -80,8 +100,21 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
     yield* Cloudflare.Workers.cron(
       NotifySchedule,
       Effect.fn(
-        function* () {
+        function* (controller) {
           yield* Effect.logInfo("notify job: scheduled");
+
+          // Editions run first and never fail the tick, so a reminder failure
+          // cannot skip an edition's only tick. Each ships with cron "off";
+          // see docs/runbooks/editions.md.
+          yield* scheduledEditions(
+            DateTime.makeUnsafe(controller.scheduledTime),
+          ).pipe(
+            Effect.provide(Layer.merge(NotifyLayer, EmailLayerResend)),
+            Effect.tapCause((cause) =>
+              Effect.logError("edition: cron failed", cause),
+            ),
+            Effect.ignore,
+          );
 
           yield* notify({}).pipe(
             Effect.provide(Layer.merge(NotifyLayer, NotifierLayerEmail)),
@@ -126,9 +159,25 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
         if (
           request.method !== "POST" ||
           (pathname !== Trigger.daily.path &&
-            pathname !== Trigger.weeklyDigest.path)
+            pathname !== Trigger.weeklyDigest.path &&
+            pathname !== Trigger.edition.path)
         ) {
           return HttpServerResponse.empty({ status: 404 });
+        }
+
+        if (pathname === Trigger.edition.path) {
+          const { edition: id, ...opts } =
+            yield* HttpServerRequest.schemaBodyJson(EditionOptions);
+          const edition = findEdition(id);
+
+          if (!edition) return HttpServerResponse.empty({ status: 404 });
+
+          yield* withEmailUnlessDryRun(
+            sendEdition(edition, opts),
+            opts.dryRun,
+          ).pipe(Effect.provide(NotifyLayer));
+
+          return yield* HttpServerResponse.json({ ok: true });
         }
 
         const bodyResult = yield* Effect.result(
@@ -142,21 +191,9 @@ export default class NotifyJobWorker extends Cloudflare.Worker<NotifyJobWorker>(
         const body = bodyResult.success;
 
         if (pathname === Trigger.weeklyDigest.path) {
-          // Dry runs never build or call the provider layer.
-          const run = weeklyDigest(body);
-
-          if (body.dryRun) {
-            yield* run.pipe(
-              Effect.provide(NotifyLayer),
-              Effect.provideService(Email, {
-                send: () => Effect.die("Dry runs must not send email"),
-              }),
-            );
-          } else {
-            yield* run.pipe(
-              Effect.provide(Layer.merge(NotifyLayer, EmailLayerResend)),
-            );
-          }
+          yield* withEmailUnlessDryRun(weeklyDigest(body), body.dryRun).pipe(
+            Effect.provide(NotifyLayer),
+          );
 
           return yield* HttpServerResponse.json({ ok: true });
         }

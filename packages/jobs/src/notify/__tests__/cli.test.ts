@@ -39,10 +39,18 @@ describe("notify CLI", () => {
         yield* run(["--dry-run", "--force"]).pipe(
           Effect.provideService(HttpClient.HttpClient, client),
         );
+        yield* run([
+          "--edition",
+          "thanksgiving-football-2026",
+          "--dry-run",
+          "--now",
+          "2026-11-26T19:00:00Z",
+        ]).pipe(Effect.provideService(HttpClient.HttpClient, client));
 
         expect(requests.map((request) => request.url)).toEqual([
           "http://localhost:8788/test/weekly-digest",
           "http://localhost:8788/test/notify",
+          "http://localhost:8788/test/edition",
         ]);
         expect(JSON.parse(requests[0]?.body ?? "null")).toEqual({
           dryRun: true,
@@ -53,6 +61,11 @@ describe("notify CLI", () => {
         expect(JSON.parse(requests[1]?.body ?? "null")).toEqual({
           dryRun: true,
           force: true,
+        });
+        expect(JSON.parse(requests[2]?.body ?? "null")).toEqual({
+          edition: "thanksgiving-football-2026",
+          dryRun: true,
+          now: "2026-11-26T19:00:00.000Z",
         });
       }).pipe(Effect.provide(NodeServices.layer)),
   );

@@ -3,13 +3,15 @@ import { expect, it } from "vitest";
 import { Predicate } from "effect";
 import { buildHeadlineImagePath } from "@dtpt/core/modules/email/headline";
 import { gameDayLines } from "@dtpt/core/modules/notifier/email";
+import { Editions } from "@dtpt/core/modules/editions/catalog";
 import { weeklyDigestLines } from "@dtpt/core/modules/weekly-digest/email";
 
 import { SeedCollections } from "./index.js";
 
-it("ships a valid headline PNG for every catalog team and the weekly digest", () => {
+it("ships a valid headline PNG for every catalog team, digest, and edition", () => {
   const headlines = [
     weeklyDigestLines,
+    ...Editions.map((edition) => edition.presentation.lines),
     ...SeedCollections.flatMap((collection) =>
       collection.subjects.flatMap((subject) =>
         Predicate.isTagged(subject.details, "sports_team")

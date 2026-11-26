@@ -107,6 +107,7 @@ const makeHarness = (opts: HarnessOptions = {}) => {
       Events,
       Events.of({
         get: () => Effect.die("unused"),
+        listByRange: () => Effect.die("unused"),
         listForUser: () => Effect.die("unused"),
         upsert: () => Effect.die("unused"),
         setParticipants: () => Effect.die("unused"),

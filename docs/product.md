@@ -114,6 +114,17 @@ Conferences organize team browsing; they are not separate subscriptions. UFC off
   writing delivery state. Repeating a week retains its provider key and does
   not guarantee a fresh delivery.
 
+## One-off editions
+
+- An edition emails every verified user who follows at least one team in its
+  leagues, once per user, about that league's games on one date. The first is
+  Thanksgiving football (2026-11-26): the NFL's three Thanksgiving games,
+  headline tile “Thanksgiving football.”, subject “Thanksgiving football is
+  on”, and the shared “Manage teams” / “Unsubscribe” footer.
+- Editions never send by default. A live send needs a reviewed change to the
+  edition's cron mode and happens only inside its send window; see the
+  [editions runbook](./runbooks/editions.md).
+
 ## Registration and confirmation rollout
 
 - New users start unverified and receive a “Confirm your updates” magic link. The success message is “Check your email to start your updates.”
