@@ -7,6 +7,7 @@ type NcaamScheduleEntry = readonly [
   homeTeam: string,
   awayTeam: string,
   availability?: NcaamSportEventSeed["availability"],
+
 ];
 
 // NCAA Division I men's basketball 2026-27 schedule snapshot from ESPN team feeds.
@@ -1834,6 +1835,23 @@ const Schedule: readonly NcaamScheduleEntry[] = [
   ["401922234", "2026-12-09T02:00:00Z", "Colorado State Rams", "Queens University Royals"],
   ["401909802", "2026-12-09T02:00:00Z", "Kansas State Wildcats", "IU Indianapolis Jaguars"],
   ["401929457", "2026-12-09T03:00:00Z", "San Francisco Dons", "Grace (CA) Talons"],
+  // Confirmed November 26; see docs/catalogs/ncaam-maintenance-2026-11-26.md.
+  ["401929288", "2026-11-27T18:30:00Z", "Memphis Tigers", "Wake Forest Demon Deacons"],
+  ["401929289", "2026-11-28T00:30:00Z", "Mississippi State Bulldogs", "Penn State Nittany Lions"],
+  ["401925859", "2026-12-09T23:30:00Z", "Temple Owls", "Cheyney (PA) Wolves"],
+  ["401923265", "2026-12-10T00:00:00Z", "Florida Atlantic Owls", "Barry Buccaneers"],
+  ["401918998", "2026-12-10T00:00:00Z", "South Florida Bulls", "Jacksonville Dolphins"],
+  ["401911266", "2026-12-10T00:00:00Z", "Siena Saints", "St. Bonaventure Bonnies"],
+  ["401911214", "2026-12-10T00:00:00Z", "George Washington Revolutionaries", "American University Eagles"],
+  ["401911045", "2026-12-10T00:00:00Z", "Toledo Rockets", "Eastern Michigan Eagles"],
+  ["401927384", "2026-12-10T01:00:00Z", "Murray State Racers", "Arkansas-Pine Bluff Golden Lions"],
+  ["401909755", "2026-12-10T01:00:00Z", "Baylor Bears", "Queens University Royals"],
+  ["401921688", "2026-12-10T01:30:00Z", "Robert Morris Colonials", "Duquesne Dukes"],
+  ["401929188", "2026-12-10T02:00:00Z", "Gonzaga Bulldogs", "Incarnate Word Cardinals"],
+  ["401920346", "2026-12-10T02:00:00Z", "Utah Utes", "California Baptist Lancers"],
+  ["401926120", "2026-12-10T02:30:00Z", "Pepperdine Waves", "Prairie View A&M Panthers"],
+  ["401917564", "2026-12-10T03:00:00Z", "Saint Mary's Gaels", "New Mexico State Aggies"],
+  ["401911461", "2026-12-10T03:00:00Z", "Nevada Wolf Pack", "Loyola Marymount Lions"],
 ];
 
 export const events: readonly NcaamSportEventSeed[] = Schedule.map(
