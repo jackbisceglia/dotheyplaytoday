@@ -6,7 +6,7 @@ import { events } from "./events.js";
 import { ncaamCollection } from "./index.js";
 import { subjects } from "./subjects.js";
 
-const storedEventCount = 1835;
+const storedEventCount = 1849;
 
 describe("2026-27 NCAA men's basketball schedule", () => {
   it("decodes as a sports seed with 158 subjects", () => {
@@ -96,6 +96,7 @@ describe("2026-27 NCAA men's basketball schedule", () => {
     "401921714",
     "401921672",
     "401929289",
+    "401921717",
   ])("links confirmed placement game %s to both supported teams", (espnId) => {
     const game = events.find((event) => event.id.endsWith(espnId));
     expect(game?.availability).toBe("active");

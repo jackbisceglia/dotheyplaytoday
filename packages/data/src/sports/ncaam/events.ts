@@ -11,8 +11,8 @@ type NcaamScheduleEntry = readonly [
 ];
 
 // NCAA Division I men's basketball 2026-27 schedule snapshot from ESPN team feeds.
-// Initially fetched 2026-10-13; confirmed schedule maintenance applied 2026-11-25.
-// Evidence and withheld games: docs/catalogs/ncaam-maintenance-2026-11-25.md.
+// Initially fetched 2026-10-13; confirmed schedule maintenance applied 2026-11-27.
+// Evidence and withheld games: docs/catalogs/ncaam-maintenance-2026-11-27.md.
 // prettier-ignore
 const Schedule: readonly NcaamScheduleEntry[] = [
   ["401909552", "2026-11-06T21:00:00Z", "Boston College Eagles", "Massachusetts Minutemen"],
@@ -1852,6 +1852,20 @@ const Schedule: readonly NcaamScheduleEntry[] = [
   ["401926120", "2026-12-10T02:30:00Z", "Pepperdine Waves", "Prairie View A&M Panthers"],
   ["401917564", "2026-12-10T03:00:00Z", "Saint Mary's Gaels", "New Mexico State Aggies"],
   ["401911461", "2026-12-10T03:00:00Z", "Nevada Wolf Pack", "Loyola Marymount Lions"],
+  ["401920533", "2026-11-27T18:00:00Z", "Iowa State Cyclones", "St. John's Red Storm"],
+  ["401921717", "2026-11-27T19:30:00Z", "UCLA Bruins", "Georgetown Hoyas"],
+  ["401920542", "2026-11-27T20:00:00Z", "Baylor Bears", "TCU Horned Frogs"],
+  ["401920532", "2026-11-27T20:30:00Z", "Maryland Terrapins", "Oregon Ducks"],
+  ["401921718", "2026-11-27T22:00:00Z", "Saint Mary's Gaels", "Texas Longhorns"],
+  ["401920541", "2026-11-27T22:30:00Z", "Kansas State Wildcats", "Michigan Wolverines"],
+  ["401920543", "2026-11-28T01:30:00Z", "Alabama Crimson Tide", "Miami Hurricanes"],
+  ["401920534", "2026-11-28T02:00:00Z", "Louisville Cardinals", "Tennessee Volunteers"],
+  ["401920544", "2026-11-28T04:00:00Z", "Gonzaga Bulldogs", "Creighton Bluejays"],
+  ["401920535", "2026-11-28T04:30:00Z", "San Diego State Aztecs", "Texas Tech Red Raiders"],
+  ["401911206", "2026-12-11T00:00:00Z", "Fordham Rams", "Bryant Bulldogs"],
+  ["401927394", "2026-12-11T01:00:00Z", "Howard Bison", "Loyola Chicago Ramblers"],
+  ["401911341", "2026-12-11T01:00:00Z", "Austin Peay Governors", "Air Force Falcons"],
+  ["401918060", "2026-12-11T03:00:00Z", "California Golden Bears", "SE Louisiana Lions"],
 ];
 
 export const events: readonly NcaamSportEventSeed[] = Schedule.map(
