@@ -9,7 +9,7 @@ type NcaafScheduleEntry = readonly [
 ];
 
 // NCAA FBS football 2026 schedule snapshot from ESPN team feeds.
-// Refreshed 2026-11-25; only confirmed starts. See docs/catalogs/college-football.md.
+// Refreshed 2026-11-27; only confirmed starts. See docs/catalogs/college-football.md.
 // prettier-ignore
 const Schedule: readonly NcaafScheduleEntry[] = [
   ["401856766", "2026-08-29T16:00:00Z", "TCU Horned Frogs", "North Carolina Tar Heels"],
@@ -717,7 +717,7 @@ const Schedule: readonly NcaafScheduleEntry[] = [
   ["401866471", "2026-11-25T00:00:00Z", "Western Michigan Broncos", "Miami (OH) RedHawks"],
   ["401856879", "2026-11-27T01:00:00Z", "Texas Tech Red Raiders", "TCU Horned Frogs"],
   ["401856762", "2026-11-27T17:00:00Z", "Ole Miss Rebels", "Mississippi State Bulldogs"],
-  ["401858536", "2026-11-27T17:00:00Z", "Iowa Hawkeyes", "Nebraska Cornhuskers"],
+  ["401858536", "2026-11-27T17:08:00Z", "Iowa Hawkeyes", "Nebraska Cornhuskers"],
   ["401862840", "2026-11-27T17:00:00Z", "UTSA Roadrunners", "Tulsa Golden Hurricane"],
   ["401866472", "2026-11-27T17:00:00Z", "Akron Zips", "Buffalo Bulls"],
   ["401866473", "2026-11-27T17:00:00Z", "Ohio Bobcats", "Toledo Rockets"],
@@ -770,6 +770,7 @@ const Schedule: readonly NcaafScheduleEntry[] = [
   ["401860928", "2026-11-29T02:30:00Z", "Utah State Aggies", "Texas State Bobcats"],
   ["401860927", "2026-11-29T03:00:00Z", "Fresno State Bulldogs", "Oregon State Beavers"],
   ["401864547", "2026-11-29T04:00:00Z", "Hawai'i Rainbow Warriors", "Sacramento State Hornets"],
+  ["401869533", "2026-12-05T01:00:00Z", "Utah Utes", "Texas Tech Red Raiders"],
   ["401869542", "2026-12-05T01:00:00Z", "Boise State Broncos", "San Diego State Aztecs"],
   ["401858318", "2026-12-05T17:00:00Z", "Miami Hurricanes", "Wake Forest Demon Deacons"],
   ["401862844", "2026-12-12T20:00:00Z", "Army Black Knights", "Navy Midshipmen"],

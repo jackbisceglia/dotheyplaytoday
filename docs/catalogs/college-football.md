@@ -30,14 +30,15 @@ and official sources for sport-specific differences:
 
 ## Schedule snapshot and refresh
 
-The [November 25 maintenance ledger](./college-football-2026-11-25.md) records
-16 verified additions and two historical kickoff corrections, bringing the
-catalog to 761 games: 759 regular-season games and the confirmed ACC and Pac-12
-championships. All fourteen fixtures withheld in the
-[November 17 ledger](./college-football-2026-11-17.md) now have confirmed opponents
-and starts. Six other supported conference championships and bowl/CFP slots
-still lack complete pairings. The historical snapshot below is retained as
-provenance, not a current omission count.
+The [November 27 maintenance ledger](./college-football-2026-11-27.md) adds the
+confirmed Texas Tech–Utah Big 12 championship and corrects Nebraska–Iowa's
+exact kickoff. The catalog has 762 games: 759 regular-season games and three
+confirmed conference championships (ACC, Big 12 and Pac-12). The
+[November 25 ledger](./college-football-2026-11-25.md) records the prior additions
+that closed all fourteen regular-season omissions in the
+[November 17 ledger](./college-football-2026-11-17.md). Five other supported
+championships and bowl/CFP slots still lack complete pairings. The historical
+snapshot below is retained as provenance, not a current omission count.
 
 Fetched 2026-11-14 from ESPN's college-football team schedule endpoint:
 `https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{espnId}/schedule?season=2026`.

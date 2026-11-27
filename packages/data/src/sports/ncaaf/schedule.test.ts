@@ -6,7 +6,7 @@ import { events } from "./events.js";
 import { ncaafCollection } from "./index.js";
 import { subjects } from "./subjects.js";
 
-const confirmedEventCount = 761;
+const confirmedEventCount = 762;
 
 describe("2026 college football schedule", () => {
   it("decodes as a sports seed with 112 subjects", () => {
@@ -27,6 +27,8 @@ describe("2026 college football schedule", () => {
       ["401866475", "2026-11-28T20:30:00Z", 15],
       ["401858312", "2026-11-28T20:30:00Z", 15],
       ["401860928", "2026-11-29T02:30:00Z", 21],
+      ["401858536", "2026-11-27T17:08:00Z", 12],
+      ["401869533", "2026-12-05T01:00:00Z", 20],
       ["401869542", "2026-12-05T01:00:00Z", 20],
       ["401858318", "2026-12-05T17:00:00Z", 12],
     ] as const) {
