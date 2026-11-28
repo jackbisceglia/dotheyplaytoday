@@ -719,7 +719,7 @@ const Schedule: readonly NcaamScheduleEntry[] = [
   ["401926229", "2026-11-28T20:00:00Z", "New Mexico State Aggies", "Denver Pioneers"],
   ["401926147", "2026-12-05T21:00:00Z", "SIU Edwardsville Cougars", "Denver Pioneers"],
   ["401926230", "2026-12-09T21:00:00Z", "Denver Pioneers", "Sam Houston Bearkats"],
-  ["401926231", "2026-12-11T19:00:00Z", "UTSA Roadrunners", "Denver Pioneers"],
+  ["401926231", "2026-12-11T17:00:00Z", "UTSA Roadrunners", "Denver Pioneers"],
   ["401925945", "2026-12-15T02:00:00Z", "Utah Tech Trailblazers", "Denver Pioneers"],
   ["401926232", "2026-12-17T03:00:00Z", "Denver Pioneers", "Colorado Christian Cougars"],
   ["401921102", "2026-12-19T20:00:00Z", "Denver Pioneers", "Rice Owls"],
@@ -1712,7 +1712,7 @@ const Schedule: readonly NcaamScheduleEntry[] = [
   ["401917550", "2026-11-29T00:00:00Z", "Santa Clara Broncos", "Utah Tech Trailblazers"],
   ["401925783", "2026-11-29T00:30:00Z", "Duquesne Dukes", "South Carolina State Bulldogs"],
   ["401919851", "2026-11-29T01:00:00Z", "Notre Dame Fighting Irish", "Stonehill Skyhawks"],
-  ["401926869", "2026-11-29T19:00:00Z", "Oregon State Beavers", "Milwaukee Panthers"],
+  ["401926869", "2026-11-29T19:30:00Z", "Oregon State Beavers", "Milwaukee Panthers"],
   ["401925866", "2026-11-29T19:00:00Z", "Tulsa Golden Hurricane", "IU Indianapolis Jaguars"],
   ["401921098", "2026-11-29T19:00:00Z", "Arkansas State Red Wolves", "Rice Owls"],
   ["401925821", "2026-11-29T20:00:00Z", "Charlotte 49ers", "Western Carolina Catamounts"],
@@ -1866,6 +1866,14 @@ const Schedule: readonly NcaamScheduleEntry[] = [
   ["401927394", "2026-12-11T01:00:00Z", "Howard Bison", "Loyola Chicago Ramblers"],
   ["401911341", "2026-12-11T01:00:00Z", "Austin Peay Governors", "Air Force Falcons"],
   ["401918060", "2026-12-11T03:00:00Z", "California Golden Bears", "SE Louisiana Lions"],
+
+  // Confirmed November 28 final and December 11 starts; see November 28 evidence ledger.
+  ["401920536", "2026-11-29T03:30:00Z", "Louisville Cardinals", "Creighton Bluejays"],
+  ["401927355", "2026-12-12T00:30:00Z", "Drake Bulldogs", "North Carolina Central Eagles"],
+  ["401924923", "2026-12-12T01:00:00Z", "Colorado State Rams", "Wyoming Cowboys"],
+  ["401925016", "2026-12-12T02:30:00Z", "Oregon State Beavers", "Lamar Cardinals"],
+  ["401917566", "2026-12-12T02:30:00Z", "San Diego Toreros", "Prairie View A&M Panthers"],
+  ["401925883", "2026-12-12T03:00:00Z", "San Diego State Aztecs", "Montana State Bobcats"],
 ];
 
 export const events: readonly NcaamSportEventSeed[] = Schedule.map(

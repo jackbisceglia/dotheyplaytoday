@@ -6,7 +6,7 @@ import { events } from "./events.js";
 import { ncaamCollection } from "./index.js";
 import { subjects } from "./subjects.js";
 
-const storedEventCount = 1849;
+const storedEventCount = 1855;
 
 describe("2026-27 NCAA men's basketball schedule", () => {
   it("decodes as a sports seed with 158 subjects", () => {
