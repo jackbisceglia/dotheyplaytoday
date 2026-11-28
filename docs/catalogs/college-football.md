@@ -30,6 +30,11 @@ and official sources for sport-specific differences:
 
 ## Schedule snapshot and refresh
 
+The [November 28 maintenance ledger](./college-football-2026-11-28.md) adds
+confirmed MAC and SEC championship matchups, bringing PR #224 to 764 games.
+Three supported championship pairings and bowl/CFP matchups remain incomplete.
+The seed version is `2026-11-28.1`.
+
 The [November 27 maintenance ledger](./college-football-2026-11-27.md) adds the
 confirmed Texas Tech–Utah Big 12 championship and corrects Nebraska–Iowa's
 exact kickoff. The catalog has 762 games: 759 regular-season games and three

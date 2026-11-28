@@ -9,7 +9,7 @@ type NcaafScheduleEntry = readonly [
 ];
 
 // NCAA FBS football 2026 schedule snapshot from ESPN team feeds.
-// Refreshed 2026-11-27; only confirmed starts. See docs/catalogs/college-football.md.
+// Refreshed 2026-11-28; only confirmed starts. See docs/catalogs/college-football.md.
 // prettier-ignore
 const Schedule: readonly NcaafScheduleEntry[] = [
   ["401856766", "2026-08-29T16:00:00Z", "TCU Horned Frogs", "North Carolina Tar Heels"],
@@ -773,6 +773,8 @@ const Schedule: readonly NcaafScheduleEntry[] = [
   ["401869533", "2026-12-05T01:00:00Z", "Utah Utes", "Texas Tech Red Raiders"],
   ["401869542", "2026-12-05T01:00:00Z", "Boise State Broncos", "San Diego State Aztecs"],
   ["401858318", "2026-12-05T17:00:00Z", "Miami Hurricanes", "Wake Forest Demon Deacons"],
+  ["401869536", "2026-12-05T17:00:00Z", "Buffalo Bulls", "Toledo Rockets"],
+  ["401869545", "2026-12-05T21:00:00Z", "Georgia Bulldogs", "Texas Longhorns"],
   ["401862844", "2026-12-12T20:00:00Z", "Army Black Knights", "Navy Midshipmen"],
 ];
 

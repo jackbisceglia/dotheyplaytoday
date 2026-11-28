@@ -6,7 +6,7 @@ import { events } from "./events.js";
 import { ncaafCollection } from "./index.js";
 import { subjects } from "./subjects.js";
 
-const confirmedEventCount = 762;
+const confirmedEventCount = 764;
 
 describe("2026 college football schedule", () => {
   it("decodes as a sports seed with 112 subjects", () => {
@@ -58,7 +58,7 @@ describe("2026 college football schedule", () => {
         event?.participants.map((participant) => participant.details.title),
       ).toEqual([home, away]);
     }
-    expect(events.some((event) => event.id.endsWith("401869545"))).toBe(false);
+    expect(events.some((event) => event.id.endsWith("401869532"))).toBe(false);
     expect(
       events.every((event) =>
         event.participants.every(
