@@ -30,12 +30,20 @@ and official sources for sport-specific differences:
 
 ## Schedule snapshot and refresh
 
-The [November 17 maintenance ledger](./college-football-2026-11-17.md) records
-38 verified additions and two kickoff corrections, bringing the catalog to
-745 games. Fourteen regular-season fixtures remain withheld: ten unconfirmed
-starts and four Pac-12 flex opponent/start placeholders. Championship, bowl,
-and CFP slots still lack confirmed pairings. The historical snapshot below is
-retained as provenance, not a current omission count.
+The [November 28 maintenance ledger](./college-football-2026-11-28.md) adds
+confirmed MAC and SEC championship matchups, bringing PR #224 to 764 games.
+Three supported championship pairings and bowl/CFP matchups remain incomplete.
+The seed version is `2026-11-28.1`.
+
+The [November 27 maintenance ledger](./college-football-2026-11-27.md) adds the
+confirmed Texas Tech–Utah Big 12 championship and corrects Nebraska–Iowa's
+exact kickoff. The catalog has 762 games: 759 regular-season games and three
+confirmed conference championships (ACC, Big 12 and Pac-12). The
+[November 25 ledger](./college-football-2026-11-25.md) records the prior additions
+that closed all fourteen regular-season omissions in the
+[November 17 ledger](./college-football-2026-11-17.md). Five other supported
+championships and bowl/CFP slots still lack complete pairings. The historical
+snapshot below is retained as provenance, not a current omission count.
 
 Fetched 2026-11-14 from ESPN's college-football team schedule endpoint:
 `https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams/{espnId}/schedule?season=2026`.
@@ -84,7 +92,7 @@ limit, dashboard, daily reminders, and weekly digest use existing sports paths.
 The generic football emoji is used. NFL's special kickoff headline remains NFL-only.
 
 `SeedCollections` registers the catalog. The initial seed version was
-`2026-11-14.1`; the November 17 schedule refresh uses `2026-11-17.4`.
+`2026-11-14.1`; the November 25 schedule refresh uses `2026-11-25.1`.
 Development subsets and production's historical cutoff apply
 unchanged. No database migration or scheduled task is added. Release schema
 consumers before publishing the new catalog so older workers do not encounter

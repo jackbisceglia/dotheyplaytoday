@@ -6,7 +6,7 @@ import { events } from "./events.js";
 import { ncaafCollection } from "./index.js";
 import { subjects } from "./subjects.js";
 
-const confirmedEventCount = 745;
+const confirmedEventCount = 764;
 
 describe("2026 college football schedule", () => {
   it("decodes as a sports seed with 112 subjects", () => {
@@ -25,6 +25,12 @@ describe("2026 college football schedule", () => {
       ["401858311", "2026-11-28T17:00:00Z", 12],
       ["401856752", "2026-11-21T20:45:00Z", 15],
       ["401866475", "2026-11-28T20:30:00Z", 15],
+      ["401858312", "2026-11-28T20:30:00Z", 15],
+      ["401860928", "2026-11-29T02:30:00Z", 21],
+      ["401858536", "2026-11-27T17:08:00Z", 12],
+      ["401869533", "2026-12-05T01:00:00Z", 20],
+      ["401869542", "2026-12-05T01:00:00Z", 20],
+      ["401858318", "2026-12-05T17:00:00Z", 12],
     ] as const) {
       const event = events.find((event) => event.id.endsWith(espnId));
       expect(event?.startsAt).toBe(instant);
@@ -39,22 +45,27 @@ describe("2026 college football schedule", () => {
     ).toBe(true);
   });
 
-  it("excludes unconfirmed placeholder times and provisional Pac-12 flex games", () => {
-    expect(events.some((event) => event.id.endsWith("401858312"))).toBe(false);
-    const pac12 = new Set<string>(
-      subjects
-        .filter((subject) => subject.details.league.conferenceId === "pac-12")
-        .map((subject) => subject.details.display),
-    );
+  it("includes confirmed flex opponents and excludes incomplete championships", () => {
+    const flexGames = [
+      ["401860926", "Colorado State Rams", "Boise State Broncos"],
+      ["401860927", "Fresno State Bulldogs", "Oregon State Beavers"],
+      ["401860928", "Utah State Aggies", "Texas State Bobcats"],
+      ["401860929", "Washington State Cougars", "San Diego State Aztecs"],
+    ] as const;
+    for (const [id, home, away] of flexGames) {
+      const event = events.find((event) => event.id.endsWith(id));
+      expect(
+        event?.participants.map((participant) => participant.details.title),
+      ).toEqual([home, away]);
+    }
+    expect(events.some((event) => event.id.endsWith("401869532"))).toBe(false);
     expect(
-      events.some(
-        (event) =>
-          event.startsAt.startsWith("2026-11-28") &&
-          event.participants.every((participant) =>
-            pac12.has(participant.details.title),
-          ),
+      events.every((event) =>
+        event.participants.every(
+          (participant) => participant.details.title !== "TBD",
+        ),
       ),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("has unique provider-backed event identities", () => {
